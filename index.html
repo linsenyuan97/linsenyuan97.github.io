@@ -212,11 +212,21 @@ tr:hover td { background: #f9fafb; }
 </div>
 <script>
 // ▼▼▼ 唯一需要修改的地方：貼上你的 Apps Script 網址 ▼▼▼
-//const SCRIPT_URL = 'https://script.google.com/macros/s/你的SCRIPT_ID/exec';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxl72JqnTQczbO9hYw2LoR2i1GymTLmoolZdS3QhAGyqkB9xeviv7ricTZqwBKmzfX9mg/exec';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 let currentUser = null;
+
+// 日期格式化：不管來源格式，統一轉成 YYYY-MM-DD
+function formatDate(val) {
+  if (!val) return '';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return val;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 async function doLogin() {
   const account  = document.getElementById('account').value.trim();
@@ -283,7 +293,7 @@ function showDataSection(data) {
     const expired = !isNaN(expDate) && expDate < today;
     const badge = expired ? '<span class="badge badge-red">已過期</span>' : '<span class="badge badge-green">有效</span>';
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.accountNo}</td><td>${r.expireDate}</td>
+    tr.innerHTML = `<td>${r.accountNo}</td><td>${formatDate(r.expireDate)}</td>
       <td style="font-weight:600;color:#1a56db;">${parseFloat(r.points).toLocaleString()}</td>
       <td>${badge}</td>`;
     tbody.appendChild(tr);
@@ -318,7 +328,7 @@ async function loadUsing() {
       empty.style.display = 'none';
       rows.forEach(r => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${r.accountNo}</td><td>${r.useDate}</td>
+        tr.innerHTML = `<td>${r.accountNo}</td><td>${formatDate(r.useDate)}</td>
           <td>${r.facilityName}</td>
           <td style="font-weight:600;color:#dc2626;">-${parseFloat(r.usePoints).toLocaleString()}</td>`;
         tbody.appendChild(tr);
