@@ -4,7 +4,8 @@
 // ╚══════════════════════════════════════════════════════════════╝
 
 // ▼▼▼ 填入你的 Google Sheets ID（網址列中間那段）▼▼▼
-const SHEET_ID = '你的_GOOGLE_SHEETS_ID';
+//const SHEET_ID = '你的_GOOGLE_SHEETS_ID';
+const SHEET_ID = '14PfUOhfFWFVmYHd9CtEgZvxthFdzAioQrNfhCkICXWo';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 // 工作表名稱（與 Google Sheets 分頁名稱一致）
