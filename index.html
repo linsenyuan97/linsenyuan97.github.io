@@ -273,19 +273,25 @@ function showDataSection(data) {
   const lastUpdate = data.lastUpdate || '';
 
   document.getElementById('statRow').innerHTML = `
-    <div class="stat-box">
-      <div class="point-big">${totalPts.toLocaleString()}</div>
-      <div class="point-label">目前總點數</div>
-      ${lastUpdate ? `<div class="expire-note" style="color:#6b7280;">最後更新日：${lastUpdate}</div>` : ''}
+    <div style="background:#1a56db;border-radius:14px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);font-weight:500;margin-bottom:4px;">目前剩餘點數</div>
+        <div style="font-size:48px;font-weight:800;color:#fff;line-height:1;">${totalPts.toLocaleString()}</div>
+        ${lastUpdate ? `<div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:6px;">最後更新日：${lastUpdate}</div>` : ''}
+      </div>
+      <div style="font-size:48px;opacity:0.15;">◈</div>
     </div>
-    <div class="stat-box warn">
-      <div class="point-big warn">${expiringPts.toLocaleString()}</div>
-      <div class="point-label">即將歸零點數</div>
-      <div class="expire-note">⚠ 到期日：${expireDate}</div>
-    </div>
-    <div class="stat-box" style="background:#f0fdf4;">
-      <div class="point-big" style="color:#059669;">${safePts.toLocaleString()}</div>
-      <div class="point-label">不歸零點數</div>
+    <div style="display:flex;gap:12px;">
+      <div style="flex:1;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:14px 16px;">
+        <div style="font-size:11px;color:#c2410c;font-weight:600;margin-bottom:6px;">到期日歸零點數</div>
+        <div style="font-size:24px;font-weight:700;color:#c2410c;">${expiringPts.toLocaleString()}</div>
+        <div style="font-size:11px;color:#9a3412;margin-top:4px;">⚠ ${expireDate} 到期</div>
+      </div>
+      <div style="flex:1;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:14px 16px;">
+        <div style="font-size:11px;color:#15803d;font-weight:600;margin-bottom:6px;">不歸零點數</div>
+        <div style="font-size:24px;font-weight:700;color:#15803d;">${safePts.toLocaleString()}</div>
+        <div style="font-size:11px;color:#166534;margin-top:4px;">下次歸零點數</div>
+      </div>
     </div>`;
 }
 
@@ -363,13 +369,7 @@ function showError(msg) { const el = document.getElementById('errorMsg'); el.tex
 function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
 document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
-// 頁面載入時自動帶入上次的帳號密碼
-window.addEventListener('DOMContentLoaded', () => {
-  const savedAccount  = localStorage.getItem('lsy_account');
-  const savedPassword = localStorage.getItem('lsy_password');
-  if (savedAccount)  document.getElementById('account').value  = savedAccount;
-  if (savedPassword) document.getElementById('password').value = savedPassword;
-});
+
 </script>
 </body>
 </html>
