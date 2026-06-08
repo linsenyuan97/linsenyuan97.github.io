@@ -11,7 +11,7 @@ body {
   background: #f0f2f5;
   min-height: 100vh;
   display: flex; align-items: flex-start; justify-content: center;
-  padding: 40px 16px 60px;
+  padding: 20px 16px 60px;
 }
 .container { width: 680px; max-width: 100%; }
 
@@ -124,6 +124,9 @@ tr:hover td { background: #f9fafb; }
 
 @media (max-width: 520px) {
   #statRow { flex-direction: column; }
+  body { padding: 0 0 40px; align-items: flex-start; }
+  .card { border-radius: 0; box-shadow: none; padding: 20px 16px 24px; }
+  .section { border-radius: 0; margin-top: 8px; padding: 20px 16px; }
 }
 </style>
 </head>
@@ -252,8 +255,13 @@ async function doLogin() {
     const res = await fetch(`${SCRIPT_URL}?action=login&account=${encodeURIComponent(account)}&password=${encodeURIComponent(password)}`);
     const json = await res.json();
     if (!json.success) { showError('帳號密碼請洽詢大樓櫃檯祕書'); return; }
+    // 儲存帳號密碼到 localStorage
+    try {
+      localStorage.setItem('lsy_account', account);
+      localStorage.setItem('lsy_password', password);
+    } catch(e) {}
     currentUser = { account, accountNo: json.accountNo };
-    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('loginCard').style.cssText = 'display:none;margin:0;padding:0;';
     showDataSection(json.data);
   } catch(e) {
     showError('連線失敗，請稍後再試');
@@ -369,6 +377,16 @@ function doLogout() {
 function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = msg; el.style.display = 'block'; }
 function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
 document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// 頁面載入時自動帶入上次的帳號密碼
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    const savedAccount  = localStorage.getItem('lsy_account');
+    const savedPassword = localStorage.getItem('lsy_password');
+    if (savedAccount)  document.getElementById('account').value  = savedAccount;
+    if (savedPassword) document.getElementById('password').value = savedPassword;
+  } catch(e) {}
+});
 
 
 </script>
