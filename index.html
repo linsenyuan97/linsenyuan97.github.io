@@ -319,12 +319,8 @@ function renderUsing() {
   const showZero = document.getElementById('showZero').checked;
   const rows = showZero ? allUsingData : allUsingData.filter(r => Number(r.txPoints) !== 0);
 
-  const totalCount = allUsingData.length;
-  const showCount  = rows.length;
-  const hiddenCount = totalCount - showCount;
-  let subtitle = '共 ' + showCount + ' 筆（依時間遞減）';
-  if (!showZero && hiddenCount > 0) subtitle += `　已隱藏 ${hiddenCount} 筆 0 點紀錄`;
-  document.getElementById('usingSubtitle').textContent = subtitle;
+  const showCount = rows.length;
+  document.getElementById('usingSubtitle').textContent = '共 ' + showCount + ' 筆（依時間遞減）';
 
   const tbody = document.getElementById('usingBody');
   const empty = document.getElementById('usingEmpty');
@@ -366,6 +362,14 @@ function doLogout() {
 function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = msg; el.style.display = 'block'; }
 function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
 document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// 頁面載入時自動帶入上次的帳號密碼
+window.addEventListener('DOMContentLoaded', () => {
+  const savedAccount  = localStorage.getItem('lsy_account');
+  const savedPassword = localStorage.getItem('lsy_password');
+  if (savedAccount)  document.getElementById('account').value  = savedAccount;
+  if (savedPassword) document.getElementById('password').value = savedPassword;
+});
 </script>
 </body>
 </html>
