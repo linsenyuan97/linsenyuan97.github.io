@@ -267,7 +267,7 @@ function showDataSection(data) {
 
   const totalPts    = Number(data.totalPoints)    || 0;
   const expiringPts = Number(data.expiringPoints) || 0;
-  const expireDate  = fmtDate(data.expiringDate);
+  const expireDate  = fmtDate(data.expiringDate).replace(/-/g, '/');
   const safePts     = Number(data.safePoints)     || (totalPts - expiringPts);
 
   const lastUpdate = data.lastUpdate || '';
