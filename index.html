@@ -357,8 +357,7 @@ function renderUsing() {
 function doLogout() {
   currentUser = null;
   document.getElementById('loginCard').style.display = 'block';
-  document.getElementById('account').value = '';
-  document.getElementById('password').value = '';
+  // 保留帳號密碼，方便重新登入
   document.getElementById('dataSection').style.display = 'none';
   document.getElementById('usingSection').style.display = 'none';
   hideError();
