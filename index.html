@@ -265,15 +265,18 @@ function showDataSection(data) {
   document.getElementById('userBarName').textContent = '帳號：' + currentUser.account;
   document.getElementById('userBarSub').textContent  = '戶號：' + currentUser.accountNo;
 
-  const totalPts    = Number(data.totalPoints) || 0;
+  const totalPts    = Number(data.totalPoints)    || 0;
   const expiringPts = Number(data.expiringPoints) || 0;
   const expireDate  = fmtDate(data.expiringDate);
-  const safePts     = totalPts - expiringPts; // 不歸零的點數
+  const safePts     = Number(data.safePoints)     || (totalPts - expiringPts);
+
+  const lastUpdate = data.lastUpdate || '';
 
   document.getElementById('statRow').innerHTML = `
     <div class="stat-box">
       <div class="point-big">${totalPts.toLocaleString()}</div>
       <div class="point-label">目前總點數</div>
+      ${lastUpdate ? `<div class="expire-note" style="color:#6b7280;">最後更新日：${lastUpdate}</div>` : ''}
     </div>
     <div class="stat-box warn">
       <div class="point-big warn">${expiringPts.toLocaleString()}</div>
