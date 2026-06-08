@@ -279,20 +279,20 @@ function showDataSection(data) {
   const lastUpdate = data.lastUpdate || '';
 
   document.getElementById('statRow').innerHTML = `
-    <div class="stat-cards">
-      <div class="stat-card" style="border-color:#bfdbfe;">
-        <div class="stat-card-label" style="color:#1a56db;">目前剩餘點數</div>
-        <div class="stat-card-value" style="color:#1a56db;">${totalPts.toLocaleString()}</div>
-        ${lastUpdate ? `<div class="stat-card-note">最後更新日：${lastUpdate}</div>` : ''}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:120px;background:#fff;border:1.5px solid #bfdbfe;border-radius:12px;padding:16px 18px;">
+        <div style="font-size:13px;color:#1a56db;font-weight:600;margin-bottom:8px;">目前剩餘點數</div>
+        <div style="font-size:28px;font-weight:800;color:#1a56db;line-height:1;">${totalPts.toLocaleString()}</div>
+        ${lastUpdate ? `<div style="font-size:11px;color:#6b7280;margin-top:6px;">最後更新日：${lastUpdate}</div>` : ''}
       </div>
-      <div class="stat-card" style="border-color:#fed7aa;">
-        <div class="stat-card-label" style="color:#c2410c;">到期日歸零點數</div>
-        <div class="stat-card-value" style="color:#c2410c;">${expiringPts.toLocaleString()}</div>
-        <div class="stat-card-note" style="color:#9a3412;">⚠ ${expireDate} 到期</div>
+      <div style="flex:1;min-width:120px;background:#fff;border:1.5px solid #fed7aa;border-radius:12px;padding:16px 18px;">
+        <div style="font-size:13px;color:#c2410c;font-weight:600;margin-bottom:8px;">到期日歸零點數</div>
+        <div style="font-size:28px;font-weight:800;color:#c2410c;line-height:1;">${expiringPts.toLocaleString()}</div>
+        <div style="font-size:11px;color:#9a3412;margin-top:6px;">⚠ ${expireDate} 到期</div>
       </div>
-      <div class="stat-card" style="border-color:#bbf7d0;">
-        <div class="stat-card-label" style="color:#15803d;">下次歸零點數</div>
-        <div class="stat-card-value" style="color:#15803d;">${safePts.toLocaleString()}</div>
+      <div style="flex:1;min-width:120px;background:#fff;border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 18px;">
+        <div style="font-size:13px;color:#15803d;font-weight:600;margin-bottom:8px;">下次歸零點數</div>
+        <div style="font-size:28px;font-weight:800;color:#15803d;line-height:1;">${safePts.toLocaleString()}</div>
       </div>
     </div>`;
 }
