@@ -122,10 +122,8 @@ tr:hover td { background: #f9fafb; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-@media (max-width: 480px) {
-  .stat-cards { flex-direction: column; }
-  .stat-card  { flex: 1 1 auto; }
-  .container  { padding: 16px 8px 40px; }
+@media (max-width: 520px) {
+  #statRow > div { flex-direction: column; }
 }
 </style>
 </head>
@@ -162,7 +160,7 @@ tr:hover td { background: #f9fafb; }
     </div>
 
     <div class="section-header">
-      <div>
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
         <div class="section-title">點數總覽</div>
         <div class="section-sub" id="lastUpdateSub"></div>
       </div>
@@ -283,22 +281,19 @@ function showDataSection(data) {
   if (lastUpdateSub) lastUpdateSub.textContent = lastUpdate ? '最後更新日：' + lastUpdate : '';
 
   document.getElementById('statRow').innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <div style="background:#fff;border:1.5px solid #bfdbfe;border-radius:12px;padding:16px 18px;">
+    <div style="display:flex;gap:12px;">
+      <div style="flex:1;background:#fff;border:1.5px solid #bfdbfe;border-radius:12px;padding:16px 18px;">
         <div style="font-size:13px;color:#1a56db;font-weight:600;margin-bottom:8px;">目前剩餘點數</div>
-        <div style="font-size:36px;font-weight:800;color:#1a56db;line-height:1;">${totalPts.toLocaleString()}</div>
-
+        <div style="font-size:28px;font-weight:800;color:#1a56db;line-height:1;">${totalPts.toLocaleString()}</div>
       </div>
-      <div style="display:flex;gap:12px;">
-        <div style="flex:1;background:#fff;border:1.5px solid #fed7aa;border-radius:12px;padding:16px 18px;">
-          <div style="font-size:13px;color:#c2410c;font-weight:600;margin-bottom:8px;">到期日歸零點數</div>
-          <div style="font-size:28px;font-weight:800;color:#c2410c;line-height:1;">${expiringPts.toLocaleString()}</div>
-          <div style="font-size:11px;color:#9a3412;margin-top:6px;">⚠ ${expireDate} 到期</div>
-        </div>
-        <div style="flex:1;background:#fff;border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 18px;">
-          <div style="font-size:13px;color:#15803d;font-weight:600;margin-bottom:8px;">下次歸零點數</div>
-          <div style="font-size:28px;font-weight:800;color:#15803d;line-height:1;">${safePts.toLocaleString()}</div>
-        </div>
+      <div style="flex:1;background:#fff;border:1.5px solid #fed7aa;border-radius:12px;padding:16px 18px;">
+        <div style="font-size:13px;color:#c2410c;font-weight:600;margin-bottom:8px;">到期日歸零點數</div>
+        <div style="font-size:28px;font-weight:800;color:#c2410c;line-height:1;">${expiringPts.toLocaleString()}</div>
+        <div style="font-size:11px;color:#9a3412;margin-top:6px;">⚠ ${expireDate} 到期</div>
+      </div>
+      <div style="flex:1;background:#fff;border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 18px;">
+        <div style="font-size:13px;color:#15803d;font-weight:600;margin-bottom:8px;">下次歸零點數</div>
+        <div style="font-size:28px;font-weight:800;color:#15803d;line-height:1;">${safePts.toLocaleString()}</div>
       </div>
     </div>`;
 }
