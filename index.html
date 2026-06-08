@@ -85,7 +85,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .logout-btn:hover { color: #111827; }
 
 /* Stats */
-.stat-row { display: flex; gap: 12px; margin-bottom: 20px; }
+.stat-row { display: flex; gap: 10px; margin-bottom: 20px; width: 100%; }
 .stat-box { flex: 1; background: #f0f4ff; border-radius: 10px; padding: 14px 16px; }
 .stat-box.warn { background: #fff7ed; }
 .point-big { font-size: 28px; font-weight: 700; color: #1a56db; line-height: 1; }
@@ -123,7 +123,7 @@ tr:hover td { background: #f9fafb; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 520px) {
-  #statRow > div { flex-direction: column; }
+  #statRow { flex-direction: column; }
 }
 </style>
 </head>
@@ -281,7 +281,6 @@ function showDataSection(data) {
   if (lastUpdateSub) lastUpdateSub.textContent = lastUpdate ? '最後更新日：' + lastUpdate : '';
 
   document.getElementById('statRow').innerHTML = `
-    <div style="display:flex;gap:10px;">
       <div style="flex:1;background:#fff;border:1.5px solid #bfdbfe;border-radius:12px;padding:16px 18px;">
         <div style="font-size:16px;color:#1a56db;font-weight:600;margin-bottom:8px;white-space:nowrap;">目前剩餘點數</div>
         <div style="font-size:28px;font-weight:800;color:#1a56db;line-height:1;">${totalPts.toLocaleString()}</div>
@@ -294,8 +293,7 @@ function showDataSection(data) {
       <div style="flex:1;background:#fff;border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 18px;">
         <div style="font-size:16px;color:#15803d;font-weight:600;margin-bottom:8px;white-space:nowrap;">下次歸零點數</div>
         <div style="font-size:28px;font-weight:800;color:#15803d;line-height:1;">${safePts.toLocaleString()}</div>
-      </div>
-    </div>`;
+      </div>`;
 }
 
 let allUsingData = [];
