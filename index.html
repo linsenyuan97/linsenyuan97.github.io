@@ -156,9 +156,9 @@ tr:hover td { background: #f9fafb; }
   <!-- 點數總覽 -->
   <div class="section" id="dataSection">
     <div class="user-bar">
-      <div>
-        <div class="user-bar-name" id="userBarName"></div>
-        <div class="user-bar-sub"  id="userBarSub"></div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div class="user-bar-name" id="userBarName" style="font-size:16px;"></div>
+        <div class="user-bar-name" id="userBarSub"  style="font-size:16px;color:#1e40af;font-weight:600;"></div>
       </div>
       <button class="logout-btn" onclick="doLogout()">登出</button>
     </div>
@@ -300,12 +300,11 @@ function showDataSection(data) {
         <div style="font-size:28px;font-weight:800;color:#1a56db;line-height:1;">${totalPts.toLocaleString()}</div>
       </div>
       <div style="flex:1;background:#fff;border:1.5px solid #fed7aa;border-radius:12px;padding:16px 18px;">
-        <div style="font-size:16px;color:#c2410c;font-weight:600;margin-bottom:8px;white-space:nowrap;">到期日歸零點數</div>
-        <div style="font-size:28px;font-weight:800;color:#c2410c;line-height:1;">${expiringPts.toLocaleString()}</div>
-        <div style="font-size:11px;color:#9a3412;margin-top:6px;">⚠ ${expireDate} 到期</div>
+        <div style="font-size:14px;color:#c2410c;font-weight:600;margin-bottom:8px;white-space:nowrap;">⚠ \${expireDate} 到期點數</div>
+        <div style="font-size:28px;font-weight:800;color:#c2410c;line-height:1;">\${expiringPts.toLocaleString()}</div>
       </div>
       <div style="flex:1;background:#fff;border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 18px;">
-        <div style="font-size:16px;color:#15803d;font-weight:600;margin-bottom:8px;white-space:nowrap;">下次歸零點數</div>
+        <div style="font-size:14px;color:#15803d;font-weight:600;margin-bottom:8px;white-space:nowrap;">⚠ 2026/08/15 到期點數</div>
         <div style="font-size:28px;font-weight:800;color:#15803d;line-height:1;">${safePts.toLocaleString()}</div>
       </div>`;
 }
