@@ -286,14 +286,11 @@ function showDataSection(data) {
 
   const lastUpdate = data.lastUpdate || '';
 
-  const lastUpdateSub = document.getElementById('lastUpdateSub');
-  if (lastUpdateSub) lastUpdateSub.textContent = lastUpdate ? '最後更新日：' + lastUpdate : '';
-
   document.getElementById('statRow').innerHTML = `
     <div style="width:100%;background:#fff;border:1.5px solid #bfdbfe;border-radius:14px;padding:20px 20px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
       <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
         <div style="font-size:15px;font-weight:700;color:#111827;">點數總覽</div>
-        <div style="font-size:11px;color:#6b7280;" id="lastUpdateSub"></div>
+        <div style="font-size:11px;color:#6b7280;">${lastUpdate ? '最後更新日：' + lastUpdate : ''}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
         <div style="flex:1;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:12px 14px;">
