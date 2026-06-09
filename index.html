@@ -262,7 +262,7 @@ async function doLogin() {
     document.getElementById('account').blur();
     document.getElementById('password').blur();
     showDataSection(json.data);
-    setTimeout(() => window.scrollTo(0, 0), 300);
+    setTimeout(() => window.scrollTo(0, 0), 500);
   } catch(e) {
     showError('連線失敗，請稍後再試');
   } finally {
@@ -274,7 +274,6 @@ async function doLogin() {
 function showDataSection(data) {
   document.getElementById('dataSection').style.display = 'block';
   document.getElementById('usingSection').style.display = 'none';
-  window.scrollTo(0, 0);
 
   document.getElementById('userBarName').textContent = '帳號：' + currentUser.account;
   document.getElementById('userBarSub').textContent  = '戶號：' + currentUser.accountNo;
