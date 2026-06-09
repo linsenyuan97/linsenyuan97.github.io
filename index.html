@@ -295,7 +295,7 @@ function showDataSection(data) {
   if (lastUpdateSub) lastUpdateSub.textContent = lastUpdate ? '最後更新日：' + lastUpdate : '';
 
   document.getElementById('statRow').innerHTML = `
-    <div style="width:100%;background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:20px 20px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+    <div style="width:100%;background:#fff;border:1.5px solid #bfdbfe;border-radius:14px;padding:20px 20px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
         <div style="flex:1;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:12px 14px;">
           <div style="font-size:11px;color:#c2410c;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">⚠ ${expireDate} 到期</div>
@@ -307,7 +307,7 @@ function showDataSection(data) {
           <div style="font-size:24px;font-weight:800;color:#15803d;line-height:1;">${safePts.toLocaleString()}</div>
         </div>
       </div>
-      <div style="border-top:1.5px solid #e5e7eb;padding-top:12px;display:flex;align-items:baseline;justify-content:flex-end;gap:10px;">
+      <div style="border-top:1.5px solid #bfdbfe;padding-top:12px;display:flex;align-items:baseline;justify-content:flex-end;gap:10px;">
         <div style="font-size:14px;color:#1a56db;font-weight:600;">目前剩餘點數</div>
         <div style="font-size:36px;font-weight:800;color:#1a56db;line-height:1;">${totalPts.toLocaleString()}</div>
       </div>
