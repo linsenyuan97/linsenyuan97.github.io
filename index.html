@@ -164,9 +164,8 @@ tr:hover td { background: #f9fafb; }
     </div>
 
     <div class="section-header">
-      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+      <div>
         <div class="section-title">點數總覽</div>
-        <div class="section-sub" id="lastUpdateSub"></div>
       </div>
     </div>
 
@@ -296,6 +295,10 @@ function showDataSection(data) {
 
   document.getElementById('statRow').innerHTML = `
     <div style="width:100%;background:#fff;border:1.5px solid #bfdbfe;border-radius:14px;padding:20px 20px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:15px;font-weight:700;color:#111827;">點數總覽</div>
+        <div style="font-size:11px;color:#6b7280;" id="lastUpdateSub"></div>
+      </div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
         <div style="flex:1;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:12px 14px;">
           <div style="font-size:11px;color:#c2410c;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">⚠ ${expireDate} 到期</div>
