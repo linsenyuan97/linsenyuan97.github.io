@@ -14,7 +14,7 @@ body {
   padding: 20px 16px 60px;
 }
 .container { width: 680px; max-width: 100%; }
-
+ 
 /* Card */
 .card {
   background: #fff; border-radius: 16px;
@@ -38,7 +38,7 @@ input[type="text"], input[type="password"] {
 }
 input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10); }
 .field { margin-bottom: 16px; }
-
+ 
 /* Buttons */
 .btn {
   padding: 10px 20px; background: #1a56db; color: #fff;
@@ -54,13 +54,13 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
   font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
 }
 .btn-outline:hover { background: #eff4ff; }
-
+ 
 .error-msg {
   margin-top: 14px; padding: 10px 14px;
   background: #fef2f2; border: 1.5px solid #fca5a5;
   color: #991b1b; border-radius: 8px; font-size: 13px; font-weight: 600; display: none;
 }
-
+ 
 /* Section */
 .section {
   background: #fff; border-radius: 16px;
@@ -70,7 +70,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .section-title { font-size: 16px; font-weight: 700; color: #111827; }
 .section-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-
+ 
 /* User bar */
 .user-bar {
   display: flex; align-items: center; justify-content: space-between;
@@ -83,7 +83,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
   border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 10px; cursor: pointer;
 }
 .logout-btn:hover { color: #111827; }
-
+ 
 /* Stats */
 .stat-row { display: flex; gap: 10px; margin-bottom: 20px; width: 100%; }
 .stat-box { flex: 1; background: #f0f4ff; border-radius: 10px; padding: 14px 16px; }
@@ -92,7 +92,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .point-big.warn { color: #c2410c; }
 .point-label { font-size: 12px; color: #6b7280; margin-top: 4px; }
 .expire-note { font-size: 11px; color: #c2410c; margin-top: 3px; }
-
+ 
 /* Table */
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th {
@@ -102,18 +102,18 @@ th {
 td { padding: 10px 12px; color: #111827; border-bottom: 1px solid #f3f4f6; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: #f9fafb; }
-
+ 
 .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
 .badge-red    { background: #fee2e2; color: #991b1b; }
 .badge-green  { background: #d1fae5; color: #065f46; }
 .badge-blue   { background: #dbeafe; color: #1e40af; }
 .badge-gray   { background: #f3f4f6; color: #374151; }
-
+ 
 .tx-minus { font-weight: 700; color: #dc2626; }
 .tx-plus  { font-weight: 700; color: #059669; }
-
+ 
 .empty-tip { text-align: center; color: #9ca3af; padding: 24px 0; font-size: 13px; }
-
+ 
 .spinner {
   display: inline-block; width: 14px; height: 14px;
   border: 2px solid #ffffff55; border-top-color: #fff;
@@ -121,7 +121,7 @@ tr:hover td { background: #f9fafb; }
   vertical-align: middle; margin-right: 6px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
+ 
 @media (max-width: 520px) {
   #statRow { flex-direction: column; }
   body { padding: 0 0 40px; align-items: flex-start; }
@@ -133,26 +133,30 @@ tr:hover td { background: #f9fafb; }
 </head>
 <body>
 <div class="container">
-
+ 
   <!-- 登入 -->
   <div class="card" id="loginCard">
     <div class="banner-img" style="margin:-40px -36px 24px -36px;border-radius:16px 16px 0 0;overflow:hidden;height:140px;">
       <img src="https://lh3.googleusercontent.com/gps-cs-s/APNQkAG0rlmSYs04bzg_pdUjwIFbzGD53FRsJ1NFVXGjsZFjI_TF0HNSiWyF3IZtEa6kMXWkjqgmRO1dZyQdxa64rPAQUzQsG7dlrF-wCU1nXdFluek3Bjl02XrHK8HhUCenOy07z4gy=s1360-w1360-h1020-rw" style="width:100%;height:100%;object-fit:cover;object-position:0 80%;" alt="林森苑">
     </div>
     <h1>林森苑公設點數查詢系統</h1>
-    
-    <div class="field">
+ 
+    <div style="text-align:center;padding:24px 0 8px;font-size:16px;font-weight:600;color:#374151;">
+      點數請到智生活APP查詢
+    </div>
+ 
+    <div class="field" style="display:none;">
       <label for="account">帳號</label>
       <input type="text" id="account" placeholder="請輸入帳號" inputmode="numeric" pattern="[0-9]*">
     </div>
-    <div class="field">
+    <div class="field" style="display:none;">
       <label for="password">密碼</label>
       <input type="password" id="password" placeholder="請輸入密碼" inputmode="numeric" pattern="[0-9]*">
     </div>
-    <button class="btn btn-full" id="loginBtn" onclick="doLogin()">登入</button>
+    <button class="btn btn-full" id="loginBtn" onclick="doLogin()" style="display:none;">登入</button>
     <div class="error-msg" id="errorMsg"></div>
   </div>
-
+ 
   <!-- 點數總覽 -->
   <div class="section" id="dataSection">
     <div class="user-bar">
@@ -162,16 +166,16 @@ tr:hover td { background: #f9fafb; }
       </div>
       <button class="logout-btn" onclick="doLogout()">登出</button>
     </div>
-
-
-
+ 
+ 
+ 
     <div class="stat-row" id="statRow"></div>
-
+ 
     <div style="margin-top:4px; text-align:right;">
       <button class="btn-outline" id="usingBtn" onclick="loadUsing()">📋 點數使用查詢</button>
     </div>
   </div>
-
+ 
   <!-- 點數使用紀錄 -->
   <div class="section" id="usingSection">
     <div class="section-header">
@@ -197,13 +201,13 @@ tr:hover td { background: #f9fafb; }
     </table>
     <div class="empty-tip" id="usingEmpty" style="display:none;">無使用紀錄</div>
   </div>
-
+ 
 </div>
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxl72JqnTQczbO9hYw2LoR2i1GymTLmoolZdS3QhAGyqkB9xeviv7ricTZqwBKmzfX9mg/exec';
-
+ 
 let currentUser = null;
-
+ 
 // 日期格式化（前端處理，確保正確顯示）
 function fmtDate(val) {
   if (!val) return '';
@@ -214,7 +218,7 @@ function fmtDate(val) {
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
-
+ 
 function fmtDateTime(val) {
   if (!val) return '';
   // 已經是格式化字串（來自 Apps Script toDateTimeString）
@@ -228,7 +232,7 @@ function fmtDateTime(val) {
   const mi = String(d.getMinutes()).padStart(2, '0');
   return `${y}-${m}-${day} ${h}:${mi}`;
 }
-
+ 
 // 交易類型對應 badge
 function txBadge(type) {
   if (!type) return '';
@@ -236,17 +240,17 @@ function txBadge(type) {
   if (type.includes('回補'))  return `<span class="badge badge-green">${type}</span>`;
   return `<span class="badge badge-gray">${type}</span>`;
 }
-
+ 
 async function doLogin() {
   const account  = document.getElementById('account').value.trim();
   const password = document.getElementById('password').value.trim();
   if (!account || !password) { showError('請填寫帳號與密碼'); return; }
-
+ 
   const btn = document.getElementById('loginBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>驗證中...';
   hideError();
-
+ 
   try {
     const res = await fetch(`${SCRIPT_URL}?action=login&account=${encodeURIComponent(account)}&password=${encodeURIComponent(password)}`);
     const json = await res.json();
@@ -270,21 +274,21 @@ async function doLogin() {
     btn.textContent = '登入';
   }
 }
-
+ 
 function showDataSection(data) {
   document.getElementById('dataSection').style.display = 'block';
   document.getElementById('usingSection').style.display = 'none';
-
+ 
   document.getElementById('userBarName').textContent = '帳號：' + currentUser.account;
   document.getElementById('userBarSub').textContent  = '戶號：' + currentUser.accountNo;
-
+ 
   const totalPts    = Number(data.totalPoints)    || 0;
   const expiringPts = Number(data.expiringPoints) || 0;
   const expireDate  = fmtDate(data.expiringDate).replace(/-/g, '/');
   const safePts     = Number(data.safePoints)     || (totalPts - expiringPts);
-
+ 
   const lastUpdate = data.lastUpdate || '';
-
+ 
   document.getElementById('statRow').innerHTML = `
     <div style="width:100%;background:#fff;border:1.5px solid #bfdbfe;border-radius:14px;padding:20px 20px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05);">
       <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
@@ -308,22 +312,22 @@ function showDataSection(data) {
       </div>
     </div>`;
 }
-
+ 
 let allUsingData = [];
-
+ 
 async function loadUsing() {
   const btn = document.getElementById('usingBtn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner" style="border-top-color:#1a56db;border-color:#1a56db44"></span>載入中...';
-
+ 
   try {
     const res  = await fetch(`${SCRIPT_URL}?action=using&accountNo=${encodeURIComponent(currentUser.accountNo)}`);
     const json = await res.json();
-
+ 
     const sec = document.getElementById('usingSection');
     sec.style.display = 'block';
     sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
+ 
     allUsingData = json.data || [];
     document.getElementById('showZero').checked = false;
     renderUsing();
@@ -334,18 +338,18 @@ async function loadUsing() {
     btn.textContent = '📋 點數使用查詢';
   }
 }
-
+ 
 function renderUsing() {
   const showZero = document.getElementById('showZero').checked;
   const rows = showZero ? allUsingData : allUsingData.filter(r => Number(r.txPoints) !== 0);
-
+ 
   const showCount = rows.length;
   document.getElementById('usingSubtitle').textContent = '共 ' + showCount + ' 筆（依時間遞減）';
-
+ 
   const tbody = document.getElementById('usingBody');
   const empty = document.getElementById('usingEmpty');
   tbody.innerHTML = '';
-
+ 
   if (rows.length === 0) {
     document.getElementById('usingTable').style.display = 'none';
     empty.style.display = 'block';
@@ -369,7 +373,7 @@ function renderUsing() {
     });
   }
 }
-
+ 
 function doLogout() {
   currentUser = null;
   document.getElementById('loginCard').style.cssText = '';
@@ -378,11 +382,11 @@ function doLogout() {
   document.getElementById('usingSection').style.display = 'none';
   hideError();
 }
-
+ 
 function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = msg; el.style.display = 'block'; }
 function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
 document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
+ 
 // 頁面載入時自動帶入上次的帳號密碼
 window.addEventListener('DOMContentLoaded', () => {
   try {
@@ -392,8 +396,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (savedPassword) document.getElementById('password').value = savedPassword;
   } catch(e) {}
 });
-
-
+ 
+ 
 </script>
 </body>
 </html>
