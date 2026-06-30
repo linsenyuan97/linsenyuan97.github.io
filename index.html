@@ -141,7 +141,7 @@ tr:hover td { background: #f9fafb; }
     </div>
     <h1>林森苑公設點數查詢系統</h1>
 
-    <div style="text-align:center;padding:24px 0 8px;font-size:16px;font-weight:600;color:#374151;">
+    <div onclick="openSmartLife()" style="text-align:center;padding:24px 0 8px;font-size:22px;font-weight:700;color:#1a56db;cursor:pointer;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:2px;">
       點數請到智生活APP查詢
     </div>
 
@@ -207,6 +207,25 @@ tr:hover td { background: #f9fafb; }
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxl72JqnTQczbO9hYw2LoR2i1GymTLmoolZdS3QhAGyqkB9xeviv7ricTZqwBKmzfX9mg/exec';
 
 let currentUser = null;
+
+// 點擊「點數請到智生活APP查詢」→ 依手機系統開啟 App 或商店
+function openSmartLife() {
+  const ua = navigator.userAgent || navigator.vendor || '';
+  const isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /android/i.test(ua);
+  const appStore  = 'https://apps.apple.com/tw/app/id1071519372';        // iOS 智生活
+  const playStore = 'https://play.google.com/store/apps/details?id=chk.kingnet.app'; // Android 智生活
+
+  if (isAndroid) {
+    // 已安裝 → 直接喚起 App；未安裝 → 自動導向 Play 商店
+    window.location.href = 'intent://#Intent;package=chk.kingnet.app;scheme=https;S.browser_fallback_url=' + encodeURIComponent(playStore) + ';end';
+  } else if (isIOS) {
+    window.location.href = appStore;
+  } else {
+    // 桌面或其他裝置 → 開 App Store 頁面
+    window.open(appStore, '_blank');
+  }
+}
 
 // 日期格式化（前端處理，確保正確顯示）
 function fmtDate(val) {
