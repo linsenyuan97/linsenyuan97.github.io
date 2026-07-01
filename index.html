@@ -63,37 +63,35 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .topbar { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-bottom: 1px solid #eef0f3; }
 .navbtn { width: 38px; height: 38px; border: 1px solid #e2e5ea; border-radius: 999px; background: #fff; cursor: pointer; font-size: 18px; line-height: 1; color: #374151; display: flex; align-items: center; justify-content: center; }
 .navbtn:hover { background: #f7f8fa; }
-.datebox { display: flex; align-items: center; gap: 10px; position: relative; }
-.datebox .dtext { font-size: 18px; font-weight: 700; color: #111827; letter-spacing: 1px; }
-.calbtn { background: none; border: none; cursor: pointer; color: #4b5563; display: flex; align-items: center; padding: 4px; }
-.calbtn:hover { color: #1a56db; }
+.datebox { display: flex; align-items: center; position: relative; }
+.datebox .dtext { font-size: 18px; font-weight: 700; color: #111827; letter-spacing: 1px; cursor: pointer; padding: 2px 6px; border-radius: 6px; }
+.datebox .dtext:hover { color: #1a56db; background: #f4f7ff; }
 .hiddendate { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
 
-/* 篩選列 */
-.filters { padding: 14px 16px; border-bottom: 1px solid #eef0f3; }
-.tabs { display: flex; gap: 8px; overflow-x: auto; }
-.tab { font-size: 14px; padding: 8px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; border: 1px solid #e2e5ea; background: #fff; color: #6b7280; font-weight: 600; }
-/* 大項列：標籤 + 篩選鈕同一列 */
-.tab.on { border-color: transparent; background: #e6f0ff; color: #1a56db; }
-.filterrow { display: flex; align-items: center; gap: 8px; }
-.filterrow .tabs { flex: 1; min-width: 0; }
+/* 控制列：時間範圍 + 篩選鈕同一列 */
+.controlbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; flex-wrap: wrap; }
+.timerange { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.clockic { font-size: 16px; }
+.timerange select { font-size: 14px; font-weight: 600; color: #111827; padding: 7px 10px; border: 1px solid #e2e5ea; border-radius: 8px; background: #fff; cursor: pointer; }
+.timerange select:focus { outline: none; border-color: #1a56db; }
+.timedash { color: #9ca3af; font-weight: 700; }
 .filterbtn { flex: 0 0 auto; font-size: 13px; font-weight: 700; color: #374151; background: #fff; border: 1px solid #e2e5ea; border-radius: 999px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
 .filterbtn:hover { background: #f7f8fa; }
 .filterbtn.on { border-color: #1a56db; color: #1a56db; background: #eef4ff; }
+
 /* 展開的篩選面板（預設收合，按確認才收合） */
-.filterpanel { display: none; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 12px; padding: 14px 16px; border: 1px solid #eef0f3; border-radius: 12px; background: #fbfcfe; }
+.filterpanel { display: none; flex-direction: column; align-items: flex-start; gap: 12px; padding: 14px 16px; background: #fbfcfe; border-bottom: 1px solid #eef0f3; }
 .filterpanel.open { display: flex; }
 .fchk { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #374151; font-weight: 500; cursor: pointer; user-select: none; }
 .fchk input { width: 16px; height: 16px; accent-color: #1a56db; cursor: pointer; }
 .fconfirm { align-self: flex-end; font-size: 14px; font-weight: 600; color: #fff; background: #1a56db; border: none; border-radius: 8px; padding: 8px 20px; cursor: pointer; }
 .fconfirm:hover { background: #1444b8; }
-/* 時間搜尋列 */
-.timebar { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; flex-wrap: wrap; }
-.timefield { display: flex; align-items: center; gap: 8px; }
-.timefield label { font-size: 13px; color: #6b7280; font-weight: 600; }
-.timefield select { font-size: 14px; font-weight: 600; color: #111827; padding: 7px 12px; border: 1px solid #e2e5ea; border-radius: 8px; background: #fff; cursor: pointer; }
-.timefield select:focus { outline: none; border-color: #1a56db; }
-.timedash { color: #9ca3af; font-weight: 700; }
+
+/* 大項標籤列 */
+.filters { padding: 14px 16px; border-bottom: 1px solid #eef0f3; }
+.tabs { display: flex; gap: 8px; overflow-x: auto; }
+.tab { font-size: 14px; padding: 8px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; border: 1px solid #e2e5ea; background: #fff; color: #6b7280; font-weight: 600; }
+.tab.on { border-color: transparent; background: #e6f0ff; color: #1a56db; }
 
 /* 表格（單一捲動容器 + sticky 凍結表頭與名稱欄） */
 .board-wrap { position: relative; margin: 0 16px; }
@@ -202,31 +200,30 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
     <div class="topbar">
       <button class="navbtn" id="prevDay" aria-label="前一天">‹</button>
       <div class="datebox">
-        <span class="dtext" id="dateText">—</span>
-        <button class="calbtn" id="calBtn" aria-label="選擇日期">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
-        </button>
+        <span class="dtext" id="dateText" role="button" tabindex="0" aria-label="選擇日期">—</span>
         <input type="date" id="datePick" class="hiddendate">
       </div>
       <button class="navbtn" id="nextDay" aria-label="後一天">›</button>
     </div>
 
-    <div class="timebar">
-      <div class="timefield"><label for="startSel">起始時間</label><select id="startSel"></select></div>
-      <span class="timedash">—</span>
-      <div class="timefield"><label for="endSel">結束時間</label><select id="endSel"></select></div>
+    <div class="controlbar">
+      <div class="timerange">
+        <span class="clockic" aria-hidden="true">🕒</span>
+        <select id="startSel" aria-label="起始時間"></select>
+        <span class="timedash">～</span>
+        <select id="endSel" aria-label="結束時間"></select>
+      </div>
+      <button class="filterbtn" id="filterBtn" type="button">⚙️ 篩選 (<span id="filterCount">1</span>)</button>
+    </div>
+
+    <div class="filterpanel" id="filterPanel">
+      <label class="fchk"><input type="checkbox" id="chkAvail"> 只顯示有空位的公設</label>
+      <label class="fchk"><input type="checkbox" id="chkHideClosed" checked> 隱藏未開放公設</label>
+      <button class="fconfirm" id="filterConfirm" type="button">確認</button>
     </div>
 
     <div class="filters">
-      <div class="filterrow">
-        <div class="tabs" id="tabs"></div>
-        <button class="filterbtn" id="filterBtn" type="button">⚙️ 篩選 (<span id="filterCount">1</span>)</button>
-      </div>
-      <div class="filterpanel" id="filterPanel">
-        <label class="fchk"><input type="checkbox" id="chkAvail"> 只顯示有空位的公設</label>
-        <label class="fchk"><input type="checkbox" id="chkHideClosed" checked> 隱藏未開放公設</label>
-        <button class="fconfirm" id="filterConfirm" type="button">確認</button>
-      </div>
+      <div class="tabs" id="tabs"></div>
     </div>
 
     <div class="board-wrap" id="boardWrap" style="display:none;">
@@ -340,12 +337,14 @@ dp.value = toVal(cur);
 dp.min = toVal(new Date());
 function updateDateText(){
   document.getElementById('dateText').textContent =
-    cur.getFullYear() + ' / ' + pad(cur.getMonth()+1) + ' / ' + pad(cur.getDate());
+    cur.getFullYear() + '/' + pad(cur.getMonth()+1) + '/' + pad(cur.getDate());
 }
 updateDateText();
 document.getElementById('prevDay').onclick = () => { cur.setDate(cur.getDate()-1); dp.value = toVal(cur); updateDateText(); resetTimeForDate(); load(); };
 document.getElementById('nextDay').onclick = () => { cur.setDate(cur.getDate()+1); dp.value = toVal(cur); updateDateText(); resetTimeForDate(); load(); };
-document.getElementById('calBtn').onclick = () => { try { dp.showPicker(); } catch(e) { dp.click(); } };
+const openPicker = () => { try { dp.showPicker(); } catch(e) { dp.click(); } };
+document.getElementById('dateText').onclick = openPicker;
+document.getElementById('dateText').onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); } };
 dp.onchange = () => { const v = dp.value.split('-'); cur = new Date(+v[0], +v[1]-1, +v[2]); updateDateText(); resetTimeForDate(); load(); };
 
 // ── 時間搜尋（起訖時數）────────────────────────────────
