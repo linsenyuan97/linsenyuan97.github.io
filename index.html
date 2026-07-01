@@ -79,10 +79,10 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
 .dot.on { background: #7dd3ac; }
 .dot.off { background: #d9dde3; }
-.hint { margin-left: auto; background: #1a56db; color: #fff; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.hint { margin-left: auto; color: #1a56db; text-decoration: underline; font-size: 13px; font-weight: 600; white-space: nowrap; }
 
 /* 表格（單一捲動容器 + sticky 凍結表頭與名稱欄） */
-.board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; padding: 0 16px; }
+.board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; margin: 0 16px; }
 .btable { position: relative; }        /* 寬度由 JS 設定 */
 .brow { display: flex; flex-wrap: nowrap; width: 100%; }
 .bcell { flex: 0 0 auto; display: flex; align-items: center; }
@@ -93,6 +93,12 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
   border-right: 1px solid #eef0f3; white-space: nowrap;
 }
 .bcell.hour { width: var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
+/* 大項外框畫在「凍結名稱欄 + 首/末列」上：圓角固定於左側、單線、不隨捲動 */
+.catbox .frow .bcell.name { border-left: 1.5px solid var(--cc); }                 /* 固定左框 */
+.catlegend + .frow > .bcell { border-top: 1.5px solid var(--cc); }                /* 首列上框（滿版橫線） */
+.catlegend + .frow > .bcell.name { border-top-left-radius: 12px; }                /* 左上圓角（凍結） */
+.catbox .frow:last-child > .bcell { border-bottom: 1.5px solid var(--cc); }       /* 末列下框 */
+.catbox .frow:last-child > .bcell.name { border-bottom-left-radius: 12px; }       /* 左下圓角（凍結） */
 
 .bhead { position: sticky; top: 0; z-index: 4; background: #fff; border-bottom: 1px solid #eef0f3; height: 44px; }
 .bhead .bcell { height: 44px; }
@@ -104,13 +110,13 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 /* 每個大項內的偶數列加淡灰底（含凍結的名稱欄） */
 .frow.alt, .frow.alt .bcell.name { background: #f8f9fb; }
 
-/* 大項以獨立卡片外框呈現，標題壓在上緣框線上（不佔用整列） */
-.catbox { position: relative; width: 100%; border: 1.5px solid var(--cc); border-radius: 12px; background: #fff; margin: 22px 0 18px; }
-.catlegend { position: sticky; left: 0; width: 100%; height: 0; display: flex; justify-content: flex-start; align-items: center; padding-left: 14px; z-index: 3; pointer-events: none; }
+/* 大項容器（外框改由凍結名稱欄與首/末列繪製，見上方規則） */
+.catbox { position: relative; width: 100%; background: #fff; margin: 22px 0 18px; }
+.catlegend { position: sticky; left: 0; width: fit-content; height: 0; display: flex; justify-content: flex-start; align-items: center; padding-left: 14px; z-index: 3; pointer-events: none; }
 .catlegend .dtxt { transform: translateY(-50%); background: #fff; padding: 0 10px; font-size: 18px; font-weight: 700; letter-spacing: 2px; white-space: nowrap; color: var(--tc); margin-top: 18px; }
-.catlegend + .frow { margin-top: 16px; }   /* 第一列與框線間留白，避免與（放大後的）標題重疊 */   /* 第一列與框線間留白，避免與標題重疊 */
+.catlegend + .frow { margin-top: 0; }   /* 標題壓在首列上框（含左上圓角）上 */
 .catbox .frow:last-child { border-bottom: none; }
-.bhead { border-left: 1.5px solid transparent; }   /* 與大項卡片左框對齊，確保欄位不偏移 */
+/* 名稱欄的左框（.catbox .frow .bcell.name）即為大項固定左框，表頭不需再補償 */
 .catbox.sport   { --cc: #bfe3d0; --tc: #1f9d63; }
 .catbox.park    { --cc: #c3d8f8; --tc: #1a56db; }
 .catbox.leisure { --cc: #eec4da; --tc: #be185d; }
@@ -190,7 +196,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
       <div class="legend">
         <span class="lg"><i class="dot on"></i> 可預約</span>
         <span class="lg"><i class="dot off"></i> 不可預約</span>
-        <span class="hint">↔ 左右滑查看更多時間</span>
+        <span class="hint">！左右滑動可查看更多時間</span>
       </div>
     </div>
 
@@ -353,6 +359,21 @@ async function load() {
   if (successCount === 0) {
     throw new Error(authError || '讀取資料失敗，請檢查網路連線');
   }
+
+  scrollToNow();   // 若查詢日為今天，捲動到目前時數（此時之前已無法預約）
+}
+
+// 若選取日期為今天，橫向捲動到目前時數的欄位；否則回到最左
+function scrollToNow(){
+  const b = document.getElementById('board');
+  if (!b) return;
+  if (dp.value === toVal(new Date())) {
+    const nowH = new Date().getHours();
+    const idx = Math.max(0, Math.min(nowH - START, HOURS.length - 1));
+    b.scrollLeft = idx * HOUR_W;
+  } else {
+    b.scrollLeft = 0;
+  }
 }
 
 // ── 資料存取與色階 ────────────────────────────────────
@@ -402,7 +423,7 @@ function rowEl(f, alt){
   row.className = 'brow frow' + (alt ? ' alt' : '');
   const nm = document.createElement('div');
   nm.className = 'bcell name';
-  nm.textContent = f.name;
+  nm.textContent = f.name.replace('臨停車位', '');
   row.appendChild(nm);
   HOURS.forEach(h => {
     const cell = document.createElement('div');
