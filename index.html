@@ -99,6 +99,10 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .catlegend + .frow > .bcell.name { border-top-left-radius: 12px; }                /* 左上圓角（凍結） */
 .catbox .frow:last-child > .bcell { border-bottom: 1.5px solid var(--cc); }       /* 末列下框 */
 .catbox .frow:last-child > .bcell.name { border-bottom-left-radius: 12px; }       /* 左下圓角（凍結） */
+/* 區塊內訊息列（讀取中／無資料）：貼齊可視寬度、固定於左，右側補框與圓角使框完整 */
+.msgcell { width: var(--vw, 300px); min-width: var(--vw, 300px); color: #9ca3af; font-size: 14px; font-weight: 500; border-right: 1.5px solid var(--cc); }
+.catlegend + .frow > .msgcell { border-top-right-radius: 12px; }
+.catbox .frow:last-child > .msgcell { border-bottom-right-radius: 12px; }
 
 .bhead { position: sticky; top: 0; z-index: 4; background: #fff; border-bottom: 1px solid #eef0f3; height: 44px; }
 .bhead .bcell { height: 44px; }
@@ -253,6 +257,7 @@ const CAT_META = {
 let active = '全部';
 let dataset = [];
 let bgLoading = false;
+let catLoaded = { '運動': false, '車位': false, '休閒': false };  // 各大項資料是否已載回
 
 function pad(n){ return String(n).padStart(2,'0'); }
 function toVal(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
@@ -453,38 +458,35 @@ function render(){
   });
   bt.appendChild(head);
 
-  // 依分類過濾 / 排序
-  let list;
-  if (active === '全部') {
-    const rank = c => { const i = CAT_ORDER.indexOf(c); return i === -1 ? 99 : i; };
-    list = dataset.slice().sort((a, b) => rank(a.cat) - rank(b.cat));
-  } else {
-    list = dataset.filter(f => f.cat === active);
-  }
+  // 要顯示的大項：全部 → 三大項（依序）；否則 → 目前選到的那一項
+  const cats = (active === '全部') ? CAT_ORDER.slice() : [active];
 
-  if (list.length === 0) {
-    const ph = document.createElement('div');
-    ph.className = 'brow';
-    ph.style.padding = '22px 18px'; ph.style.color = '#9ca3af'; ph.style.fontSize = '13px';
-    ph.textContent = bgLoading ? '讀取公設預約資料中' : '無此分類之公設資料';
-    bt.appendChild(ph);
-    return;
-  }
+  cats.forEach(cat => {
+    const box = catboxEl(cat);
+    bt.appendChild(box);
 
-  // 依大項分組，每組包成一個獨立卡片區塊
-  let curCat = null;
-  let box = null;
-  let catRow = 0;   // 每個大項內的列序，用於斑馬紋（複數列上灰底）
-  list.forEach(f => {
-    if (f.cat !== curCat) {
-      curCat = f.cat;
-      catRow = 0;
-      box = catboxEl(f.cat);   // 全部/單一分類皆以卡片呈現
-      bt.appendChild(box);
+    if (!catLoaded[cat]) {                       // 尚未載回 → 區塊內顯示載入中
+      box.appendChild(msgRow('讀取公設預約資料中'));
+      return;
     }
-    box.appendChild(rowEl(f, catRow % 2 === 1));
-    catRow++;
+    const items = dataset.filter(f => f.cat === cat);
+    if (items.length === 0) {                    // 已載回但無資料
+      box.appendChild(msgRow('無此分類之公設資料'));
+      return;
+    }
+    items.forEach((f, i) => box.appendChild(rowEl(f, i % 2 === 1)));
   });
+}
+
+// 區塊內的單列訊息（載入中／無資料）：套用大項外框，寬度貼齊可視範圍並固定於左
+function msgRow(text){
+  const row = document.createElement('div');
+  row.className = 'frow msgrow';
+  const cell = document.createElement('div');
+  cell.className = 'bcell name msgcell';
+  cell.textContent = text;
+  row.appendChild(cell);
+  return row;
 }
 
 // ── 分類標籤 ──────────────────────────────────────────
