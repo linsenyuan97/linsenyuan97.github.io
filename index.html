@@ -169,6 +169,8 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .modal-field label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
 .modal-field input { width: 100%; padding: 9px 13px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 15px; color: #111827; outline: none; transition: border-color 0.15s; }
 .modal-field input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10); }
+.modal-field textarea { width: 100%; padding: 10px 13px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111827; outline: none; transition: border-color 0.15s; resize: vertical; min-height: 110px; font-family: inherit; line-height: 1.5; box-sizing: border-box; }
+.modal-field textarea:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10); }
 .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
 .modal-ok { flex: 1; padding: 10px; background: #1a56db; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .modal-ok:hover { background: #1444b8; }
@@ -242,6 +244,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
     </div>
 
     <div class="logout-row">
+      <button class="chpwd-btn" onclick="openFeedback()">建議與回報</button>
       <button class="chpwd-btn" onclick="openCustomPwd()">自訂密碼</button>
       <button class="logout-btn" onclick="doLogout()">登出</button>
     </div>
@@ -259,6 +262,21 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
       <div class="modal-actions">
         <button class="modal-cancel" onclick="closeCustomPwd()">取消</button>
         <button class="modal-ok" id="customPwdOkBtn" onclick="doSetCustomPassword()">確認</button>
+      </div>
+    </div>
+  </div>
+  <!-- 建議與回報 Dialog -->
+  <div class="modal-overlay" id="feedbackModal">
+    <div class="modal-card">
+      <div class="modal-title">💬 建議與回報</div>
+      <div class="modal-field">
+        <label for="feedbackText">請您提供使用上的問題或是建議</label>
+        <textarea id="feedbackText" rows="5" placeholder="請輸入您的問題或建議…"></textarea>
+      </div>
+      <div class="modal-msg" id="feedbackMsg"></div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeFeedback()">取消</button>
+        <button class="modal-ok" id="feedbackOkBtn" onclick="doSendFeedback()">送出</button>
       </div>
     </div>
   </div>
@@ -665,6 +683,50 @@ async function doSetCustomPassword(){
     showCustomMsg('連線失敗，請稍後再試', false);
   } finally {
     okBtn.disabled = false; okBtn.textContent = '確認';
+  }
+}
+
+// ── 建議與回報 ────────────────────────────────────────
+async function openFeedback(){
+  const t = document.getElementById('feedbackText');
+  const m = document.getElementById('feedbackMsg'); m.className = 'modal-msg'; m.textContent = '';
+  t.value = ''; t.placeholder = '讀取中…';
+  document.getElementById('feedbackModal').classList.add('open');
+  // 預設帶入該帳號目前已填的建議內容
+  const account = localStorage.getItem('lsy_account') || '';
+  try {
+    const res = await fetch(EXEC + '?action=getFeedback&account=' + encodeURIComponent(account));
+    const json = await res.json();
+    if (json.ok) t.value = json.feedback || '';
+  } catch(e) { /* 讀取失敗就留空白 */ }
+  t.placeholder = '請輸入您的問題或建議…';
+  setTimeout(() => t.focus(), 50);
+}
+function closeFeedback(){ document.getElementById('feedbackModal').classList.remove('open'); }
+function showFeedbackMsg(text, ok){
+  const m = document.getElementById('feedbackMsg');
+  m.textContent = text; m.className = 'modal-msg ' + (ok ? 'ok' : 'err');
+}
+async function doSendFeedback(){
+  const text = document.getElementById('feedbackText').value;
+  const account = localStorage.getItem('lsy_account') || '';
+  const okBtn = document.getElementById('feedbackOkBtn');
+  okBtn.disabled = true; okBtn.textContent = '送出中…';
+  try {
+    const url = EXEC + '?action=setFeedback&account=' + encodeURIComponent(account)
+      + '&feedback=' + encodeURIComponent(text);
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.ok) {
+      showFeedbackMsg('送出成功', true);
+      setTimeout(closeFeedback, 1200);
+    } else {
+      showFeedbackMsg(json.error || '送出失敗', false);
+    }
+  } catch(e) {
+    showFeedbackMsg('連線失敗，請稍後再試', false);
+  } finally {
+    okBtn.disabled = false; okBtn.textContent = '送出';
   }
 }
 
