@@ -231,6 +231,9 @@ async function load() {
         return;
       }
       
+      // 🔍 DEBUG：印出後端回傳的資料，請在瀏覽器 F12 → Console 中查看
+      console.log('[DEBUG] 分類:', cat, '| 公設數量:', json.data.length, '| 第一筆:', JSON.stringify(json.data[0]));
+      
       // 合併新資料並過濾重複的 pf_id / pfId
       const existingIds = dataset.map(f => String(f.pf_id || f.pfId));
       const newData = json.data.filter(f => !existingIds.includes(String(f.pf_id || f.pfId)));
@@ -287,7 +290,7 @@ function segEl(f, h, m){
   wrap.title = pad(h)+':'+pad(m)+'　'+(ok ? '剩 '+c : '不可預約');
   const box = document.createElement('div');
   box.className = 'box ' + (ok ? 'on' : 'off');
-  if (ok && f.cap > 1) box.textContent = c;
+  if (ok && f.cap >= 1) box.textContent = c;
   wrap.appendChild(box);
   return wrap;
 }
