@@ -199,14 +199,19 @@ async function load(){
   try {
     const account  = encodeURIComponent(localStorage.getItem('lsy_account') || '');
     const password = encodeURIComponent(localStorage.getItem('lsy_password') || '');
+
+    console.log(new Date())
     const res = await fetch(EXEC + '?action=facilities&date=' + dp.value + '&account=' + account + '&password=' + password);
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || '讀取失敗');
     dataset = json.data || [];
     status.style.display = 'none';
     grid.style.display = 'flex';
+    console.log(new Date())
     buildAxis();
+    console.log(new Date())
     render();
+    console.log(new Date())
   } catch (err) {
     status.style.display = 'block';
     status.textContent = '載入失敗：' + err.message;
