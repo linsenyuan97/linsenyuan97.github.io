@@ -8,6 +8,7 @@
 :root{
   --nw: 120px;   /* 名稱欄寬 */
   --hw: 128px;   /* 每個時段欄寬 */
+  --vw: 100%;    /* 表格可視寬度（由 JS 更新，供大項分隔置中用） */
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -100,34 +101,25 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 
 .frow { height: 48px; border-bottom: 1px solid #f4f5f7; }
 .frow .bcell { height: 48px; }
+/* 每個大項內的偶數列加淡灰底（含凍結的名稱欄） */
+.frow.alt, .frow.alt .bcell.name { background: #f8f9fb; }
 
-/* 大項彩色橫幅 */
-.banner { width: 100%; height: 46px; display: flex; align-items: center; }
-.banner .blabel { position: sticky; left: 0; display: inline-flex; align-items: center; gap: 9px; padding: 0 18px; height: 100%; font-size: 15px; font-weight: 700; white-space: nowrap; }
-.banner .bicon { font-size: 17px; line-height: 1; }
-.banner.sport { background: linear-gradient(90deg, #e9f7ef, #f4fbf7); }
-.banner.sport .blabel { color: #1f9d63; }
-.banner.park { background: linear-gradient(90deg, #e8f0fe, #f5f9ff); }
-.banner.park .blabel { color: #1a56db; }
-.banner.leisure { background: linear-gradient(90deg, #fdf2f8, #fdf6fb); }
-.banner.leisure .blabel { color: #be185d; }
+/* 大項以獨立卡片外框呈現，標題壓在上緣框線上（不佔用整列） */
+.catbox { position: relative; width: 100%; border: 1.5px solid var(--cc); border-radius: 12px; background: #fff; margin: 22px 0 18px; }
+.catlegend { position: sticky; left: 0; width: var(--vw, 100%); height: 0; display: flex; justify-content: center; align-items: center; z-index: 3; pointer-events: none; }
+.catlegend .dtxt { transform: translateY(-50%); background: #fff; padding: 0 12px; font-size: 13px; font-weight: 700; letter-spacing: 4px; white-space: nowrap; color: var(--tc); }
+.catlegend + .frow { margin-top: 12px; }   /* 第一列與框線間留白，避免與標題重疊 */
+.catbox .frow:last-child { border-bottom: none; }
+.bhead { border-left: 1.5px solid transparent; }   /* 與大項卡片左框對齊，確保欄位不偏移 */
+.catbox.sport   { --cc: #bfe3d0; --tc: #1f9d63; }
+.catbox.park    { --cc: #c3d8f8; --tc: #1a56db; }
+.catbox.leisure { --cc: #eec4da; --tc: #be185d; }
 
 /* 格子 chip：依剩餘量色階 */
 .chip { flex: 1 1 0; min-width: 0; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
 .chip.full { background: #eaf6f0; border: 1px solid #cfe9dd; color: #2e8b6e; }
-.chip.mid  { background: #fff7ec; border: 1px solid #f6ddb4; color: #c2680c; }
-.chip.low  { background: #fdeeee; border: 1px solid #f6c9c7; color: #dc2626; }
 .chip.zero { background: #f1f3f5; border: 1px solid #e5e7eb; color: #9aa1aa; }
 .chip.off  { background: #f1f3f5; border: 1px solid transparent; color: transparent; }
-
-/* 底部色階圖例 */
-.scale { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; row-gap: 10px; padding: 16px; border-top: 1px solid #eef0f3; font-size: 13px; color: #6b7280; }
-.scale .item { display: inline-flex; align-items: center; gap: 8px; }
-.scale .badge { min-width: 34px; height: 26px; padding: 0 8px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
-.badge.full { background: #eaf6f0; border: 1px solid #cfe9dd; color: #2e8b6e; }
-.badge.mid  { background: #fff7ec; border: 1px solid #f6ddb4; color: #c2680c; }
-.badge.low  { background: #fdeeee; border: 1px solid #f6c9c7; color: #dc2626; }
-.badge.zero { background: #f1f3f5; border: 1px solid #e5e7eb; color: #9aa1aa; }
 
 .status { padding: 28px; text-align: center; color: #9ca3af; font-size: 14px; }
 .logout-row { padding: 12px 16px; border-top: 1px solid #eef0f3; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
@@ -207,15 +199,8 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
       <div class="btable" id="btable"></div>
     </div>
 
-    <div class="scale">
-      <span class="item"><b class="badge full">10</b> 充足</span>
-      <span class="item"><b class="badge mid">3-5</b> 剩餘較少</span>
-      <span class="item"><b class="badge low">1-2</b> 剩餘很少</span>
-      <span class="item"><b class="badge zero">0</b> 已額滿</span>
-    </div>
-
     <div class="logout-row">
-      <button class="chpwd-btn" onclick="openChangePwd()">修改密碼</button>
+      <button class="chpwd-btn" onclick="openChangePwd()" style="display:none;">修改密碼</button>
       <button class="logout-btn" onclick="doLogout()">登出</button>
     </div>
   </div>
@@ -394,19 +379,24 @@ function chipEl(f, h, m){
 }
 
 // ── 渲染表格 ──────────────────────────────────────────
-function bannerEl(cat){
-  const meta = CAT_META[cat] || CAT_META['休閒'];
-  const b = document.createElement('div');
-  b.className = 'banner ' + meta.cls;
-  const lab = document.createElement('div');
-  lab.className = 'blabel';
-  lab.innerHTML = '<span class="bicon">' + meta.icon + '</span>' + cat + '設施';
-  b.appendChild(lab);
-  return b;
+function setVW(){
+  const b = document.getElementById('board');
+  if (b && b.clientWidth) document.documentElement.style.setProperty('--vw', b.clientWidth + 'px');
 }
-function rowEl(f){
+window.addEventListener('resize', setVW);
+function catboxEl(cat){
+  const meta = CAT_META[cat] || CAT_META['休閒'];
+  const box = document.createElement('div');
+  box.className = 'catbox ' + meta.cls;
+  const lg = document.createElement('div');
+  lg.className = 'catlegend';
+  lg.innerHTML = '<span class="dtxt">' + cat + '</span>';
+  box.appendChild(lg);
+  return box;
+}
+function rowEl(f, alt){
   const row = document.createElement('div');
-  row.className = 'brow frow';
+  row.className = 'brow frow' + (alt ? ' alt' : '');
   const nm = document.createElement('div');
   nm.className = 'bcell name';
   nm.textContent = f.name;
@@ -424,6 +414,7 @@ function render(){
   const bt = document.getElementById('btable');
   bt.innerHTML = '';
   bt.style.width = TOTAL_W + 'px';
+  setVW();   // 更新大項分隔置中所需的可視寬度
 
   // 表頭
   const head = document.createElement('div');
@@ -458,13 +449,19 @@ function render(){
     return;
   }
 
+  // 依大項分組，每組包成一個獨立卡片區塊
   let curCat = null;
+  let box = null;
+  let catRow = 0;   // 每個大項內的列序，用於斑馬紋（複數列上灰底）
   list.forEach(f => {
-    if (active === '全部' && f.cat !== curCat) {
+    if (f.cat !== curCat) {
       curCat = f.cat;
-      bt.appendChild(bannerEl(f.cat));
+      catRow = 0;
+      box = catboxEl(f.cat);   // 全部/單一分類皆以卡片呈現
+      bt.appendChild(box);
     }
-    bt.appendChild(rowEl(f));
+    box.appendChild(rowEl(f, catRow % 2 === 1));
+    catRow++;
   });
 }
 
