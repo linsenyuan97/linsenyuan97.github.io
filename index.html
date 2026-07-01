@@ -79,8 +79,36 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .seg .off { background: #f0f2f5; border: 0.5px solid transparent; }
 .hint { margin-left: auto; color: #9ca3af; }
 .status { padding: 24px; text-align: center; color: #9ca3af; font-size: 14px; }
-.logout-row { padding: 10px 14px; border-top: 0.5px solid #e5e7eb; text-align: right; }
+.logout-row { padding: 10px 14px; border-top: 0.5px solid #e5e7eb; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .logout-btn { font-size: 12px; color: #6b7280; background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.chpwd-btn { font-size: 12px; color: #1a56db; background: none; border: 1px solid #c3d6f7; border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+
+/* 修改密碼 Modal */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-card {
+  background: #fff; border-radius: 16px;
+  padding: 28px 28px 24px; width: 90%; max-width: 340px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+.modal-title { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 20px; }
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+.modal-field input { width: 100%; padding: 9px 13px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 15px; color: #111827; outline: none; transition: border-color 0.15s; }
+.modal-field input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10); }
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+.modal-ok { flex: 1; padding: 10px; background: #1a56db; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.modal-ok:hover { background: #1444b8; }
+.modal-ok:disabled { background: #93a8e8; cursor: not-allowed; }
+.modal-cancel { flex: 1; padding: 10px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.modal-cancel:hover { background: #e5e7eb; }
+.modal-msg { margin-top: 12px; font-size: 13px; border-radius: 7px; padding: 9px 12px; display: none; }
+.modal-msg.err { background: #fef2f2; color: #991b1b; border: 1.5px solid #fca5a5; display: block; }
+.modal-msg.ok { background: #f0fdf4; color: #166534; border: 1.5px solid #bbf7d0; display: block; }
 </style>
 </head>
 <body>
@@ -129,7 +157,34 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
         <div class="rows" id="rows"></div>
       </div>
     </div>
-    <div class="logout-row"><button class="logout-btn" onclick="doLogout()">登出</button></div>
+    <div class="logout-row">
+      <button class="chpwd-btn" onclick="openChangePwd()">修改密碼</button>
+      <button class="logout-btn" onclick="doLogout()">登出</button>
+    </div>
+  </div>
+
+  <!-- 修改密碼 Modal -->
+  <div class="modal-overlay" id="changePwdModal">
+    <div class="modal-card">
+      <div class="modal-title">🔑 修改密碼</div>
+      <div class="modal-field">
+        <label for="oldPwd">舊密碼</label>
+        <input type="password" id="oldPwd" placeholder="請輸入目前的密碼">
+      </div>
+      <div class="modal-field">
+        <label for="newPwd">新密碼</label>
+        <input type="password" id="newPwd" placeholder="請輸入新密碼">
+      </div>
+      <div class="modal-field">
+        <label for="confirmPwd">確認新密碼</label>
+        <input type="password" id="confirmPwd" placeholder="再輸入一次新密碼">
+      </div>
+      <div class="modal-msg" id="changePwdMsg"></div>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="changePwdCancelBtn" onclick="closeChangePwd()">取消</button>
+        <button class="modal-ok" id="changePwdOkBtn" onclick="doChangePassword()">確認修改</button>
+      </div>
+    </div>
   </div>
 
 </div>
