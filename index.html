@@ -69,13 +69,13 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .hiddendate { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
 
 /* 控制列：時間範圍 + 篩選鈕同一列 */
-.controlbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; flex-wrap: wrap; }
-.timerange { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.controlbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; }
+.timerange { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: 8px; min-width: 0; }
 .clockic { font-size: 16px; }
 .timerange select { font-size: 14px; font-weight: 600; color: #111827; padding: 7px 10px; border: 1px solid #e2e5ea; border-radius: 8px; background: #fff; cursor: pointer; }
 .timerange select:focus { outline: none; border-color: #1a56db; }
 .timedash { color: #9ca3af; font-weight: 700; }
-.filterbtn { flex: 0 0 auto; font-size: 13px; font-weight: 700; color: #374151; background: #fff; border: 1px solid #e2e5ea; border-radius: 999px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+.filterbtn { grid-column: 3; justify-self: end; flex: 0 0 auto; font-size: 13px; font-weight: 700; color: #374151; background: #fff; border: 1px solid #e2e5ea; border-radius: 999px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
 .filterbtn:hover { background: #f7f8fa; }
 .filterbtn.on { border-color: #1a56db; color: #1a56db; background: #eef4ff; }
 
