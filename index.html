@@ -15,7 +15,7 @@ body {
 
 .card {
   background: #fff; border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+  box-shadow: 0 4px 24 rgba(0,0,0,0.09);
   padding: 40px 36px 36px;
 }
 .banner-img { margin: -40px -36px 24px -36px; border-radius: 16px 16px 0 0; overflow: hidden; height: 140px; }
@@ -142,10 +142,11 @@ const START = 6, END = 24;
 const HOURS = [];
 for (let h = START; h < END; h++) HOURS.push(h);
 const SEG_W = 22, ROW_H = 40, GRP_H = 26;
-const CATS = ['全部', '運動', '休閒', '車位'];
+const CATS = ['全部', '車位', '運動', '休閒'];
 
-let active = '全部';
+let active = '全部'; // 預設顯示全部
 let dataset = [];
+let bgLoading = false; // 是否正在載入中
 
 async function doLogin() {
   const account  = document.getElementById('account').value.trim();
@@ -154,17 +155,24 @@ async function doLogin() {
   const btn = document.getElementById('loginBtn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>驗證中...';
   hideError();
+  
   try {
-    const res = await fetch(EXEC + '?action=login&account=' + encodeURIComponent(account) + '&password=' + encodeURIComponent(password));
-    const json = await res.json();
-    if (!json.ok) { showError('帳號或密碼錯誤'); return; }
-    try { localStorage.setItem('lsy_account', account); localStorage.setItem('lsy_password', password); } catch(e) {}
+    // 暫存帳密至 localStorage，供後續 load() 使用
+    localStorage.setItem('lsy_account', account);
+    localStorage.setItem('lsy_password', password);
+    
+    // 直接調用 load() 載入全部資料與驗證
+    await load();
+    
+    // 載入成功，切換介面
     document.getElementById('loginCard').style.display = 'none';
     document.getElementById('panel').style.display = 'block';
     setTimeout(() => window.scrollTo(0, 0), 200);
-    load();
   } catch(e) {
-    showError('連線失敗，請稍後再試');
+    // 驗證失敗，清除暫存並顯示錯誤
+    localStorage.removeItem('lsy_account');
+    localStorage.removeItem('lsy_password');
+    showError(e.message || '帳號或密碼錯誤');
   } finally {
     btn.disabled = false; btn.textContent = '登入';
   }
@@ -191,30 +199,64 @@ document.getElementById('prevDay').onclick = () => { cur.setDate(cur.getDate()-1
 document.getElementById('nextDay').onclick = () => { cur.setDate(cur.getDate()+1); dp.value = toVal(cur); load(); };
 dp.onchange = () => { const v = dp.value.split('-'); cur = new Date(+v[0], +v[1]-1, +v[2]); load(); };
 
-async function load(){
+// ── 核心載入函數：並行載入所有分類，並實現漸進式渲染 ────────────────
+async function load() {
+  if (bgLoading) return;
+  bgLoading = true;
+
   const status = document.getElementById('status');
   const grid = document.getElementById('grid');
+  
   status.style.display = 'block'; status.textContent = '載入中…';
   grid.style.display = 'none';
-  try {
-    const account  = encodeURIComponent(localStorage.getItem('lsy_account') || '');
-    const password = encodeURIComponent(localStorage.getItem('lsy_password') || '');
-
-    console.log(new Date())
-    const res = await fetch(EXEC + '?action=facilities&date=' + dp.value + '&account=' + account + '&password=' + password);
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '讀取失敗');
-    dataset = json.data || [];
-    status.style.display = 'none';
-    grid.style.display = 'flex';
-    console.log(new Date())
-    buildAxis();
-    console.log(new Date())
-    render();
-    console.log(new Date())
-  } catch (err) {
-    status.style.display = 'block';
-    status.textContent = '載入失敗：' + err.message;
+  
+  const account  = localStorage.getItem('lsy_account') || '';
+  const password = localStorage.getItem('lsy_password') || '';
+  
+  dataset = []; // 重置資料集
+  
+  // 並行載入車位、運動、休閒三個分類
+  const categories = ['車位', '運動', '休閒'];
+  let completedCount = 0;
+  let successCount = 0;
+  let authError = null;
+  
+  const promises = categories.map(async (cat) => {
+    try {
+      const res = await fetch(EXEC + '?action=facilities&date=' + dp.value + '&account=' + encodeURIComponent(account) + '&password=' + encodeURIComponent(password) + '&cat=' + encodeURIComponent(cat));
+      const json = await res.json();
+      
+      if (!json.ok) {
+        authError = json.error || '帳號或密碼錯誤';
+        return;
+      }
+      
+      // 合併新資料並過濾重複的 pf_id / pfId
+      const existingIds = dataset.map(f => String(f.pf_id || f.pfId));
+      const newData = json.data.filter(f => !existingIds.includes(String(f.pf_id || f.pfId)));
+      dataset = dataset.concat(newData);
+      successCount++;
+      
+      // 💡 漸進式渲染：只要第一個請求完成，立刻關閉 Loading 並渲染畫面，讓使用者先看到局部資料！
+      status.style.display = 'none';
+      grid.style.display = 'flex';
+      buildAxis();
+      render();
+      
+    } catch (e) {
+      console.error("載入分類 " + cat + " 失敗:", e);
+    } finally {
+      completedCount++;
+    }
+  });
+  
+  // 等待三項並行請求全部完成
+  await Promise.all(promises);
+  bgLoading = false;
+  
+  // 如果完全沒有成功回傳，且有回傳認證錯誤，則代表帳密錯誤，拋出異常供登入介面補捉
+  if (successCount === 0) {
+    throw new Error(authError || '讀取資料失敗，請檢查網路連線');
   }
 }
 
@@ -254,7 +296,20 @@ function render(){
   const nameCol = document.getElementById('nameCol');
   const rows = document.getElementById('rows');
   nameCol.innerHTML = ''; rows.innerHTML = '';
+  
+  // 過濾當前選定標籤的資料項目
   const list = active === '全部' ? dataset : dataset.filter(f => f.cat === active);
+  
+  if (list.length === 0) {
+    const placeholder = document.createElement('div');
+    placeholder.style.padding = '20px';
+    placeholder.style.color = '#9ca3af';
+    placeholder.style.fontSize = '13px';
+    placeholder.textContent = bgLoading ? '正在載入資料中...' : '無此分類之公設資料';
+    nameCol.appendChild(placeholder);
+    return;
+  }
+  
   let curCat = null;
   list.forEach(f => {
     if (active === '全部' && f.cat !== curCat){
@@ -270,6 +325,7 @@ function render(){
     nm.className = 'nm'; nm.style.height = ROW_H+'px';
     nm.textContent = f.name;
     nameCol.appendChild(nm);
+    
     const row = document.createElement('div');
     row.className = 'row'; row.style.height = ROW_H+'px';
     HOURS.forEach(h => {
