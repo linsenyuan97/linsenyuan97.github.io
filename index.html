@@ -371,7 +371,19 @@ window.addEventListener('DOMContentLoaded', () => {
     if (p) document.getElementById('password').value = p;
   } catch(e) {}
   renderTabs();
+  
+  // 💡 快取預熱：頁面載入後立刻在背景建立 Token、社區ID、公設清單快取
+  // 使用者輸入帳密時，後端快取已就緒，登入後直接省下 ~1.2 秒
+  warmupCache();
 });
+
+async function warmupCache() {
+  try {
+    await fetch(EXEC + '?action=warmup');
+  } catch(e) {
+    // 預熱失敗不影響任何功能，靜默忽略
+  }
+}
 </script>
 </body>
 </html>
