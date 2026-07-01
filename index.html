@@ -83,13 +83,10 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .filterbtn:hover { background: #f7f8fa; }
 .filterbtn.on { border-color: #1a56db; color: #1a56db; background: #eef4ff; }
 
-/* 展開的篩選面板（預設收合，按確認才收合） */
-.filterpanel { display: none; flex-direction: column; align-items: flex-start; gap: 12px; padding: 14px 16px; background: #fbfcfe; border-bottom: 1px solid #eef0f3; }
-.filterpanel.open { display: flex; }
-.fchk { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #374151; font-weight: 500; cursor: pointer; user-select: none; }
-.fchk input { width: 16px; height: 16px; accent-color: #1a56db; cursor: pointer; }
-.fconfirm { align-self: flex-end; font-size: 14px; font-weight: 600; color: #fff; background: #1a56db; border: none; border-radius: 8px; padding: 8px 20px; cursor: pointer; }
-.fconfirm:hover { background: #1444b8; }
+/* 篩選對話框內的勾選選項 */
+.filter-opts { display: flex; flex-direction: column; gap: 14px; margin-bottom: 4px; }
+.fchk { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: #374151; font-weight: 500; cursor: pointer; user-select: none; }
+.fchk input { width: 18px; height: 18px; accent-color: #1a56db; cursor: pointer; }
 
 /* 大項標籤列 */
 .filters { padding: 14px 16px; border-bottom: 1px solid #eef0f3; }
@@ -226,12 +223,6 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
       <button class="filterbtn" id="filterBtn" type="button"><svg class="gearic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>篩選 (<span id="filterCount">1</span>)</button>
     </div>
 
-    <div class="filterpanel" id="filterPanel">
-      <label class="fchk"><input type="checkbox" id="chkAvail"> 只顯示有空位的公設</label>
-      <label class="fchk"><input type="checkbox" id="chkHideClosed" checked> 隱藏未開放公設</label>
-      <button class="fconfirm" id="filterConfirm" type="button">確認</button>
-    </div>
-
     <div class="filters">
       <div class="tabs" id="tabs"></div>
     </div>
@@ -277,6 +268,21 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
       <div class="modal-actions">
         <button class="modal-cancel" onclick="closeFeedback()">取消</button>
         <button class="modal-ok" id="feedbackOkBtn" onclick="doSendFeedback()">送出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 篩選 Dialog -->
+  <div class="modal-overlay" id="filterModal">
+    <div class="modal-card">
+      <div class="modal-title">⚙️ 篩選</div>
+      <div class="filter-opts">
+        <label class="fchk"><input type="checkbox" id="chkAvail"> 只顯示有空位的公設</label>
+        <label class="fchk"><input type="checkbox" id="chkHideClosed" checked> 隱藏未開放公設</label>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeFilter()">取消</button>
+        <button class="modal-ok" id="filterOkBtn" onclick="applyFilter()">確認</button>
       </div>
     </div>
   </div>
@@ -425,24 +431,21 @@ function updateFilterCount(){
   const n = (onlyAvail ? 1 : 0) + (hideClosed ? 1 : 0);   // 目前生效中的篩選數
   document.getElementById('filterCount').textContent = n;
 }
-const filterBtn = document.getElementById('filterBtn');
-const filterPanel = document.getElementById('filterPanel');
-filterBtn.onclick = () => {
-  const open = filterPanel.classList.toggle('open');
-  filterBtn.classList.toggle('on', open);
-  if (open) {   // 開啟時把勾選同步為目前已套用的狀態（未按確認的更動不保留）
-    document.getElementById('chkAvail').checked = onlyAvail;
-    document.getElementById('chkHideClosed').checked = hideClosed;
-  }
-};
-document.getElementById('filterConfirm').onclick = () => {
+function openFilter(){
+  // 開啟時把勾選同步為目前已套用的狀態（未按確認的更動不保留）
+  document.getElementById('chkAvail').checked = onlyAvail;
+  document.getElementById('chkHideClosed').checked = hideClosed;
+  document.getElementById('filterModal').classList.add('open');
+}
+function closeFilter(){ document.getElementById('filterModal').classList.remove('open'); }
+function applyFilter(){
   onlyAvail  = document.getElementById('chkAvail').checked;
   hideClosed = document.getElementById('chkHideClosed').checked;
   updateFilterCount();
   render(); updateFade();
-  filterPanel.classList.remove('open');
-  filterBtn.classList.remove('on');
-};
+  closeFilter();
+}
+document.getElementById('filterBtn').onclick = openFilter;
 
 // ── 核心載入：立即畫出三大項區塊，各分類回來各自填入 ──────
 // 每次載入取一個遞增序號；回應回來時若已非最新序號（代表期間又切換過），即丟棄
