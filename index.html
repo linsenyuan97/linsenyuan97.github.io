@@ -13,8 +13,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
-  background: #f0f2f5; color: #111827;
-  min-height: 100vh; padding: 20px 16px 48px;
+  background: #fff; color: #111827;
+  min-height: 100vh; padding: 14px 10px 40px;
 }
 .container { max-width: 1180px; margin: 0 auto; }
 
@@ -56,7 +56,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 /* ── 主面板 ───────────────────────────────── */
 .panel {
   background: #fff; border: 1px solid #eef0f3; border-radius: 16px;
-  overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.09); display: none;
+  overflow: hidden; display: none;
 }
 
 /* 頂部日期列 */
@@ -82,7 +82,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .hint { margin-left: auto; background: #1a56db; color: #fff; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 
 /* 表格（單一捲動容器 + sticky 凍結表頭與名稱欄） */
-.board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; }
+.board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; padding: 0 16px; }
 .btable { position: relative; }        /* 寬度由 JS 設定 */
 .brow { display: flex; flex-wrap: nowrap; width: 100%; }
 .bcell { flex: 0 0 auto; display: flex; align-items: center; }
@@ -381,7 +381,10 @@ function chipEl(f, h, m){
 // ── 渲染表格 ──────────────────────────────────────────
 function setVW(){
   const b = document.getElementById('board');
-  if (b && b.clientWidth) document.documentElement.style.setProperty('--vw', b.clientWidth + 'px');
+  if (!b || !b.clientWidth) return;
+  const cs = getComputedStyle(b);
+  const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  document.documentElement.style.setProperty('--vw', (b.clientWidth - pad) + 'px');
 }
 window.addEventListener('resize', setVW);
 function catboxEl(cat){
