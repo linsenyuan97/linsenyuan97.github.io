@@ -106,7 +106,8 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
   font-size: 16px; font-weight: 500; color: #111827;
   border-right: 1px solid #eef0f3; white-space: nowrap;
 }
-.bcell.hour { flex: 1 0 var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
+.bcell.hour { width: var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
+.bcell.filler { flex: 1 1 0; min-width: 0; padding: 0; }   /* 右側填充：吃掉剩餘寬度使區塊滿版，時段欄維持原寬 */
 /* 大項外框畫在「凍結名稱欄 + 首/末列」上：圓角固定於左側、單線、不隨捲動 */
 .catbox .frow .bcell.name { border-left: 1.5px solid var(--cc); }                 /* 固定左框 */
 .catlegend + .frow > .bcell { border-top: 1.5px solid var(--cc); }                /* 首列上框（滿版橫線） */
@@ -534,7 +535,14 @@ function rowEl(f, alt){
     if (f.half) cell.appendChild(chipEl(f, h, 30));   // 半小時制 → 兩顆
     row.appendChild(cell);
   });
+  row.appendChild(fillerCell());
   return row;
+}
+// 右側填充格：伸縮吃掉剩餘寬度，使區塊滿版而時段欄不被拉伸
+function fillerCell(){
+  const c = document.createElement('div');
+  c.className = 'bcell filler';
+  return c;
 }
 function render(){
   const bt = document.getElementById('btable');
@@ -557,6 +565,7 @@ function render(){
     c.textContent = pad(h) + ':00';
     head.appendChild(c);
   });
+  head.appendChild(fillerCell());
   bt.appendChild(head);
 
   // 要顯示的大項：全部 → 三大項（依序）；否則 → 目前選到的那一項
