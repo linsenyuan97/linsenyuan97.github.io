@@ -79,10 +79,23 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
 .dot.on { background: #7dd3ac; }
 .dot.off { background: #d9dde3; }
-.hint { margin-left: auto; color: #1a56db; text-decoration: underline; font-size: 13px; font-weight: 500; white-space: nowrap; }
+/* 篩選列（勾選） */
+.filterbar { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.filterttl { font-size: 13px; font-weight: 700; color: #374151; }
+.fchk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #4b5563; font-weight: 500; cursor: pointer; user-select: none; }
+.fchk input { width: 16px; height: 16px; accent-color: #1a56db; cursor: pointer; }
+/* 時間搜尋列 */
+.timebar { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; flex-wrap: wrap; }
+.timefield { display: flex; align-items: center; gap: 8px; }
+.timefield label { font-size: 13px; color: #6b7280; font-weight: 600; }
+.timefield select { font-size: 14px; font-weight: 600; color: #111827; padding: 7px 12px; border: 1px solid #e2e5ea; border-radius: 8px; background: #fff; cursor: pointer; }
+.timefield select:focus { outline: none; border-color: #1a56db; }
+.timedash { color: #9ca3af; font-weight: 700; }
 
 /* 表格（單一捲動容器 + sticky 凍結表頭與名稱欄） */
-.board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; margin: 0 16px; }
+.board-wrap { position: relative; margin: 0 16px; }
+.board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; }
+.fade-right { position: absolute; top: 0; right: 0; bottom: 0; width: 40px; background: linear-gradient(to right, rgba(255,255,255,0), #fff); pointer-events: none; z-index: 5; opacity: 0; transition: opacity .2s; }
 .btable { position: relative; }        /* 寬度由 JS 設定 */
 .brow { display: flex; flex-wrap: nowrap; width: 100%; }
 .bcell { flex: 0 0 auto; display: flex; align-items: center; }
@@ -99,6 +112,10 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .catlegend + .frow > .bcell.name { border-top-left-radius: 12px; }                /* 左上圓角（凍結） */
 .catbox .frow:last-child > .bcell { border-bottom: 1.5px solid var(--cc); }       /* 末列下框 */
 .catbox .frow:last-child > .bcell.name { border-bottom-left-radius: 12px; }       /* 左下圓角（凍結） */
+/* 區塊內訊息列（讀取中／無資料）：貼齊可視寬度、固定於左，右側補框與圓角使框完整 */
+.msgcell { width: var(--vw, 300px); min-width: var(--vw, 300px); color: #9ca3af; font-size: 14px; font-weight: 500; border-right: 1.5px solid var(--cc); }
+.catlegend + .frow > .msgcell { border-top-right-radius: 12px; }
+.catbox .frow:last-child > .msgcell { border-bottom-right-radius: 12px; }
 
 .bhead { position: sticky; top: 0; z-index: 4; background: #fff; border-bottom: 1px solid #eef0f3; height: 44px; }
 .bhead .bcell { height: 44px; }
@@ -191,18 +208,30 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
       <button class="navbtn" id="nextDay" aria-label="後一天">›</button>
     </div>
 
+    <div class="timebar">
+      <div class="timefield"><label for="startSel">起始時間</label><select id="startSel"></select></div>
+      <span class="timedash">—</span>
+      <div class="timefield"><label for="endSel">結束時間</label><select id="endSel"></select></div>
+    </div>
+
     <div class="filters">
       <div class="tabs" id="tabs"></div>
       <div class="legend">
         <span class="lg"><i class="dot on"></i> 可預約</span>
         <span class="lg"><i class="dot off"></i> 不可預約</span>
-        <span class="hint">！左右滑動可查看更多時間</span>
+      </div>
+      <div class="filterbar">
+        <span class="filterttl">⚙️ 篩選 (<span id="filterCount">1</span>)</span>
+        <label class="fchk"><input type="checkbox" id="chkAvail"> 只顯示有空位的公設</label>
+        <label class="fchk"><input type="checkbox" id="chkHideClosed" checked> 隱藏未開放公設</label>
       </div>
     </div>
 
-    <div id="status" class="status">讀取公設預約資料中</div>
-    <div class="board" id="board" style="display:none;">
-      <div class="btable" id="btable"></div>
+    <div class="board-wrap" id="boardWrap" style="display:none;">
+      <div class="board" id="board">
+        <div class="btable" id="btable"></div>
+      </div>
+      <div class="fade-right" id="fadeRight"></div>
     </div>
 
     <div class="logout-row">
@@ -252,7 +281,11 @@ const CAT_META = {
 
 let active = '全部';
 let dataset = [];
-let bgLoading = false;
+let catLoaded = { '運動': false, '車位': false, '休閒': false };  // 各大項資料是否已載回
+let filterStart = START, filterEnd = END - 1;   // 顯示時數範圍（含），預設 06:00 ~ 23:00
+let visHours = HOURS.slice();                    // 目前實際顯示的時數（依範圍過濾）
+let onlyAvail = false;                            // 只顯示有空位的公設（預設不勾）
+let hideClosed = true;                            // 隱藏未開放公設（預設勾）
 
 function pad(n){ return String(n).padStart(2,'0'); }
 function toVal(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
@@ -278,7 +311,8 @@ async function doLogin() {
     document.getElementById('panel').style.display = 'block';
     setTimeout(() => window.scrollTo(0, 0), 200);
 
-    // 3. 非同步於背景載入公設資料（載入期間面板顯示「讀取公設預約資料中」，回來再畫上）
+    // 3. 非同步於背景載入公設資料（載入期間各區塊顯示「讀取公設預約資料中」，回來再畫上）
+    resetTimeForDate();
     load();
   } catch(e) {
     showError(e.message || '帳號或密碼錯誤');
@@ -307,77 +341,130 @@ function updateDateText(){
     cur.getFullYear() + ' / ' + pad(cur.getMonth()+1) + ' / ' + pad(cur.getDate());
 }
 updateDateText();
-document.getElementById('prevDay').onclick = () => { cur.setDate(cur.getDate()-1); dp.value = toVal(cur); updateDateText(); load(); };
-document.getElementById('nextDay').onclick = () => { cur.setDate(cur.getDate()+1); dp.value = toVal(cur); updateDateText(); load(); };
+document.getElementById('prevDay').onclick = () => { cur.setDate(cur.getDate()-1); dp.value = toVal(cur); updateDateText(); resetTimeForDate(); load(); };
+document.getElementById('nextDay').onclick = () => { cur.setDate(cur.getDate()+1); dp.value = toVal(cur); updateDateText(); resetTimeForDate(); load(); };
 document.getElementById('calBtn').onclick = () => { try { dp.showPicker(); } catch(e) { dp.click(); } };
-dp.onchange = () => { const v = dp.value.split('-'); cur = new Date(+v[0], +v[1]-1, +v[2]); updateDateText(); load(); };
+dp.onchange = () => { const v = dp.value.split('-'); cur = new Date(+v[0], +v[1]-1, +v[2]); updateDateText(); resetTimeForDate(); load(); };
 
-// ── 核心載入：並行載入三大分類，漸進式渲染 ──────────────
+// ── 時間搜尋（起訖時數）────────────────────────────────
+const startSel = document.getElementById('startSel');
+const endSel   = document.getElementById('endSel');
+function timeOpts(from){
+  let html = '';
+  for (let h = from; h <= END - 1; h++) html += '<option value="' + h + '">' + pad(h) + ':00</option>';
+  return html;
+}
+function syncTimeSelects(){
+  startSel.innerHTML = timeOpts(START);               // 起始固定 06:00 ~ 23:00
+  startSel.value = String(filterStart);
+  if (filterEnd < filterStart) filterEnd = filterStart;
+  endSel.innerHTML = timeOpts(filterStart);           // 結束只列 ≥ 起始
+  endSel.value = String(filterEnd);
+}
+// 切換日期時重設：預設 06:00~23:00；若為今天，起始改為目前時數（取代原本自動捲動）
+function resetTimeForDate(){
+  filterEnd = END - 1;
+  if (dp.value === toVal(new Date())) {
+    filterStart = Math.max(START, Math.min(new Date().getHours(), END - 1));
+  } else {
+    filterStart = START;
+  }
+  syncTimeSelects();
+}
+startSel.onchange = () => {
+  filterStart = +startSel.value;
+  if (filterEnd < filterStart) filterEnd = filterStart;
+  endSel.innerHTML = timeOpts(filterStart);           // 結束移除比起始小的時間
+  endSel.value = String(filterEnd);
+  render(); updateFade();
+};
+endSel.onchange = () => {
+  filterEnd = +endSel.value;
+  render(); updateFade();
+};
+
+// ── 右緣淡出提示（還能往右捲時才顯示）──────────────────
+function updateFade(){
+  const b = document.getElementById('board');
+  const f = document.getElementById('fadeRight');
+  if (!b || !f) return;
+  const more = (b.scrollWidth - b.clientWidth - b.scrollLeft) > 2;
+  f.style.opacity = more ? '1' : '0';
+}
+document.getElementById('board').addEventListener('scroll', updateFade);
+window.addEventListener('resize', updateFade);
+
+// ── 篩選勾選 ──────────────────────────────────────────
+function updateFilterCount(){
+  const n = (onlyAvail ? 1 : 0) + (hideClosed ? 1 : 0);   // 目前生效中的篩選數
+  document.getElementById('filterCount').textContent = n;
+}
+document.getElementById('chkAvail').onchange = (e) => { onlyAvail = e.target.checked; updateFilterCount(); render(); updateFade(); };
+document.getElementById('chkHideClosed').onchange = (e) => { hideClosed = e.target.checked; updateFilterCount(); render(); updateFade(); };
+
+// ── 核心載入：立即畫出三大項區塊，各分類回來各自填入 ──────
+// 每次載入取一個遞增序號；回應回來時若已非最新序號（代表期間又切換過），即丟棄
+let loadToken = 0;
 async function load() {
-  if (bgLoading) return;
-  bgLoading = true;
+  const myToken = ++loadToken;
 
-  const status = document.getElementById('status');
-  const board = document.getElementById('board');
-  status.style.display = 'block'; status.textContent = '讀取公設預約資料中';
-  board.style.display = 'none';
+  document.getElementById('boardWrap').style.display = 'block';
 
   const account  = localStorage.getItem('lsy_account') || '';
   const password = localStorage.getItem('lsy_password') || '';
+  const dateVal  = dp.value;
 
   dataset = [];
+  catLoaded = { '運動': false, '車位': false, '休閒': false };
+  render();        // 立即畫出三大項區塊，各區塊內顯示「讀取公設預約資料中」
+  updateFade();
 
-  const categories = ['運動', '車位', '休閒'];  // 依大項順序載入
-  let successCount = 0;
-  let authError = null;
-
+  const categories = ['運動', '車位', '休閒'];
   const promises = categories.map(async (cat) => {
+    let data = null;
     try {
-      const res = await fetch(EXEC + '?action=facilities&date=' + dp.value + '&account=' + encodeURIComponent(account) + '&password=' + encodeURIComponent(password) + '&cat=' + encodeURIComponent(cat));
+      const res = await fetch(EXEC + '?action=facilities&date=' + dateVal + '&account=' + encodeURIComponent(account) + '&password=' + encodeURIComponent(password) + '&cat=' + encodeURIComponent(cat));
       const json = await res.json();
-      if (!json.ok) { authError = json.error || '帳號或密碼錯誤'; return; }
-
-      const existingIds = dataset.map(f => String(f.pf_id || f.pfId));
-      const newData = json.data.filter(f => !existingIds.includes(String(f.pf_id || f.pfId)));
-      dataset = dataset.concat(newData);
-      successCount++;
-
-      // 漸進式渲染：第一批回來就先關 Loading 顯示局部資料
-      status.style.display = 'none';
-      board.style.display = 'block';
-      render();
+      if (json.ok && Array.isArray(json.data)) data = json.data;
     } catch (e) {
       console.error('載入分類 ' + cat + ' 失敗:', e);
     }
+    if (myToken !== loadToken) return;   // 已有更新的載入（日期已切換），此回應作廢
+
+    if (data) {
+      const existingIds = dataset.map(f => String(f.pf_id || f.pfId));
+      const newData = data.filter(f => !existingIds.includes(String(f.pf_id || f.pfId)));
+      dataset = dataset.concat(newData);
+    }
+    catLoaded[cat] = true;   // 不論成功或失敗都結束該區塊載入中狀態
+    render();
+    updateFade();
   });
 
   await Promise.all(promises);
-  bgLoading = false;
-
-  if (successCount === 0) {
-    throw new Error(authError || '讀取資料失敗，請檢查網路連線');
-  }
-
-  scrollToNow();   // 若查詢日為今天，捲動到目前時數（此時之前已無法預約）
-}
-
-// 若選取日期為今天，橫向捲動到目前時數的欄位；否則回到最左
-function scrollToNow(){
-  const b = document.getElementById('board');
-  if (!b) return;
-  if (dp.value === toVal(new Date())) {
-    const nowH = new Date().getHours();
-    const idx = Math.max(0, Math.min(nowH - START, HOURS.length - 1));
-    b.scrollLeft = idx * HOUR_W;
-  } else {
-    b.scrollLeft = 0;
-  }
 }
 
 // ── 資料存取與色階 ────────────────────────────────────
 function capAt(f, h, m){
   const key = pad(h) + ':' + pad(m);
   return (key in f.slots) ? f.slots[key] : null;
+}
+// 依目前顯示時數範圍（visHours）判斷公設狀態：
+//   'avail'  有任一格還有空位（>0）
+//   'full'   有開放時段但全被約滿（值存在但無 >0）
+//   'closed' 範圍內完全未開放（全為 null）
+function facStatus(f){
+  let hasOpen = false;
+  for (const h of visHours){
+    const mins = f.half ? [0, 30] : [0];
+    for (const m of mins){
+      const c = capAt(f, h, m);
+      if (c == null) continue;
+      hasOpen = true;
+      if (c > 0) return 'avail';
+    }
+  }
+  return hasOpen ? 'full' : 'closed';
 }
 function chipEl(f, h, m){
   const c = capAt(f, h, m);
@@ -423,7 +510,7 @@ function rowEl(f, alt){
   nm.className = 'bcell name';
   nm.textContent = f.name.replace('臨停車位', '');
   row.appendChild(nm);
-  HOURS.forEach(h => {
+  visHours.forEach(h => {
     const cell = document.createElement('div');
     cell.className = 'bcell hour';
     cell.appendChild(chipEl(f, h, 0));
@@ -435,7 +522,8 @@ function rowEl(f, alt){
 function render(){
   const bt = document.getElementById('btable');
   bt.innerHTML = '';
-  bt.style.width = TOTAL_W + 'px';
+  visHours = HOURS.filter(h => h >= filterStart && h <= filterEnd);   // 依時間範圍過濾欄位
+  bt.style.width = (NAME_W + visHours.length * HOUR_W) + 'px';
   setVW();   // 更新大項分隔置中所需的可視寬度
 
   // 表頭
@@ -445,7 +533,7 @@ function render(){
   corner.className = 'bcell name';
   corner.textContent = '時段';
   head.appendChild(corner);
-  HOURS.forEach(h => {
+  visHours.forEach(h => {
     const c = document.createElement('div');
     c.className = 'bcell hour';
     c.textContent = pad(h) + ':00';
@@ -453,38 +541,46 @@ function render(){
   });
   bt.appendChild(head);
 
-  // 依分類過濾 / 排序
-  let list;
-  if (active === '全部') {
-    const rank = c => { const i = CAT_ORDER.indexOf(c); return i === -1 ? 99 : i; };
-    list = dataset.slice().sort((a, b) => rank(a.cat) - rank(b.cat));
-  } else {
-    list = dataset.filter(f => f.cat === active);
-  }
+  // 要顯示的大項：全部 → 三大項（依序）；否則 → 目前選到的那一項
+  const cats = (active === '全部') ? CAT_ORDER.slice() : [active];
 
-  if (list.length === 0) {
-    const ph = document.createElement('div');
-    ph.className = 'brow';
-    ph.style.padding = '22px 18px'; ph.style.color = '#9ca3af'; ph.style.fontSize = '13px';
-    ph.textContent = bgLoading ? '讀取公設預約資料中' : '無此分類之公設資料';
-    bt.appendChild(ph);
-    return;
-  }
+  cats.forEach(cat => {
+    const box = catboxEl(cat);
+    bt.appendChild(box);
 
-  // 依大項分組，每組包成一個獨立卡片區塊
-  let curCat = null;
-  let box = null;
-  let catRow = 0;   // 每個大項內的列序，用於斑馬紋（複數列上灰底）
-  list.forEach(f => {
-    if (f.cat !== curCat) {
-      curCat = f.cat;
-      catRow = 0;
-      box = catboxEl(f.cat);   // 全部/單一分類皆以卡片呈現
-      bt.appendChild(box);
+    if (!catLoaded[cat]) {                       // 尚未載回 → 區塊內顯示載入中
+      box.appendChild(msgRow('讀取公設預約資料中'));
+      return;
     }
-    box.appendChild(rowEl(f, catRow % 2 === 1));
-    catRow++;
+    const items = dataset.filter(f => f.cat === cat);
+    if (items.length === 0) {                    // 已載回但無資料（防呆）
+      box.appendChild(msgRow('無此分類之公設資料'));
+      return;
+    }
+    // 套用篩選：只顯示有空位 → 非 avail 隱藏；隱藏未開放 → closed 隱藏（皆依 visHours 判斷）
+    const shown = items.filter(f => {
+      const st = facStatus(f);
+      if (onlyAvail && st !== 'avail') return false;
+      if (hideClosed && st === 'closed') return false;
+      return true;
+    });
+    if (shown.length === 0) {                    // 有資料但被篩光
+      box.appendChild(msgRow('本時段無可預約公設'));
+      return;
+    }
+    shown.forEach((f, i) => box.appendChild(rowEl(f, i % 2 === 1)));
   });
+}
+
+// 區塊內的單列訊息（載入中／無資料）：套用大項外框，寬度貼齊可視範圍並固定於左
+function msgRow(text){
+  const row = document.createElement('div');
+  row.className = 'frow msgrow';
+  const cell = document.createElement('div');
+  cell.className = 'bcell name msgcell';
+  cell.textContent = text;
+  row.appendChild(cell);
+  return row;
 }
 
 // ── 分類標籤 ──────────────────────────────────────────
@@ -548,6 +644,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (p) document.getElementById('password').value = p;
   } catch(e) {}
   renderTabs();
+  resetTimeForDate();   // 建立起訖時間下拉並套用預設（今天→起始為目前時數）
+  updateFilterCount();  // 依預設勾選狀態顯示生效中的篩選數
   warmupCache();   // 背景預熱後端快取
 });
 
