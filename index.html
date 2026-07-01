@@ -58,12 +58,12 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .tabs { display: flex; gap: 6px; overflow-x: auto; }
 .tab { font-size: 13px; padding: 6px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; border: 0.5px solid #d1d5db; background: #fff; color: #6b7280; }
 .tab.on { border-color: transparent; background: #e6f0ff; color: #1a56db; }
-.legend { display: flex; align-items: center; gap: 14px; margin-top: 10px; font-size: 12px; color: #6b7280; }
+.legend { display: flex; align-items: center; gap: 14px; margin-top: 10px; font-size: 12px; color: #6b7280; flex-wrap: wrap; row-gap: 6px; }
 .sw { width: 18px; height: 14px; border-radius: 7px; display: inline-block; }
 .sw-on { background: #eaf6f0; border: 0.5px solid #cfe9dd; }
 .sw-off { background: #f0f2f5; }
 .gridbody { display: flex; max-height: 420px; }
-.namecol { flex-shrink: 0; width: 84px; border-right: 0.5px solid #e5e7eb; overflow: hidden; background: #fff; }
+.namecol { flex-shrink: 0; width: 110px; border-right: 0.5px solid #e5e7eb; overflow: hidden; background: #fff; }
 .namehead { height: 31px; border-bottom: 0.5px solid #e5e7eb; }
 .nameview { overflow: hidden; }
 .scroller { flex: 1; overflow: auto; }
@@ -71,7 +71,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .axis .h { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #6b7280; border-left: 0.5px solid #e5e7eb; }
 .rows { width: max-content; }
 .grp { font-size: 12px; color: #9ca3af; display: flex; align-items: flex-end; }
-.nm { display: flex; align-items: center; padding-left: 12px; font-size: 14px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nm { display: flex; align-items: center; padding-left: 12px; padding-right: 8px; font-size: 14px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row { display: flex; }
 .seg { padding: 3px 1px; }
 .seg .box { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #2e8b6e; }
@@ -143,7 +143,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
       <div class="legend">
         <span><span class="sw sw-on"></span> 可預約</span>
         <span><span class="sw sw-off"></span> 不可預約</span>
-        <span class="hint">↔ 左右滑</span>
+        <span class="hint">↔ 左右滑查看更多時間</span>
       </div>
     </div>
     <div id="status" class="status">載入中…</div>
