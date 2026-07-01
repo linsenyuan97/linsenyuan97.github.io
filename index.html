@@ -2,21 +2,26 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>林森苑公設預約查詢</title>
 <style>
+:root{
+  --nw: 120px;   /* 名稱欄寬 */
+  --hw: 128px;   /* 每個時段欄寬 */
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
   background: #f0f2f5; color: #111827;
-  min-height: 100vh; padding: 20px 16px 60px;
+  min-height: 100vh; padding: 20px 16px 48px;
 }
-.container { max-width: 460px; margin: 0 auto; }
+.container { max-width: 1180px; margin: 0 auto; }
 
+/* ── 登入卡片 ─────────────────────────────── */
 .card {
   background: #fff; border-radius: 16px;
-  box-shadow: 0 4px 24 rgba(0,0,0,0.09);
-  padding: 40px 36px 36px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+  padding: 40px 36px 36px; max-width: 430px; margin: 0 auto;
 }
 .banner-img { margin: -40px -36px 24px -36px; border-radius: 16px 16px 0 0; overflow: hidden; height: 140px; }
 .banner-img img { width: 100%; height: 100%; object-fit: cover; object-position: 0 80%; }
@@ -47,54 +52,97 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── 主面板 ───────────────────────────────── */
 .panel {
-  background: #fff; border: 0.5px solid #e5e7eb; border-radius: 16px;
+  background: #fff; border: 1px solid #eef0f3; border-radius: 16px;
   overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.09); display: none;
 }
-.topbar { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 14px; border-bottom: 0.5px solid #e5e7eb; }
-.navbtn { width: 32px; height: 32px; border: 0.5px solid #d1d5db; border-radius: 999px; background: #fff; cursor: pointer; font-size: 16px; line-height: 1; }
-#datePick { border: none; background: transparent; font-size: 15px; font-weight: 600; text-align: center; }
-.filters { padding: 10px 14px; border-bottom: 0.5px solid #e5e7eb; }
-.tabs { display: flex; gap: 6px; overflow-x: auto; }
-.tab { font-size: 13px; padding: 6px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; border: 0.5px solid #d1d5db; background: #fff; color: #6b7280; }
+
+/* 頂部日期列 */
+.topbar { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-bottom: 1px solid #eef0f3; }
+.navbtn { width: 38px; height: 38px; border: 1px solid #e2e5ea; border-radius: 999px; background: #fff; cursor: pointer; font-size: 18px; line-height: 1; color: #374151; display: flex; align-items: center; justify-content: center; }
+.navbtn:hover { background: #f7f8fa; }
+.datebox { display: flex; align-items: center; gap: 10px; position: relative; }
+.datebox .dtext { font-size: 18px; font-weight: 700; color: #111827; letter-spacing: 1px; }
+.calbtn { background: none; border: none; cursor: pointer; color: #4b5563; display: flex; align-items: center; padding: 4px; }
+.calbtn:hover { color: #1a56db; }
+.hiddendate { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+
+/* 篩選列 */
+.filters { padding: 14px 16px; border-bottom: 1px solid #eef0f3; }
+.tabs { display: flex; gap: 8px; overflow-x: auto; }
+.tab { font-size: 14px; padding: 8px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; border: 1px solid #e2e5ea; background: #fff; color: #6b7280; font-weight: 600; }
 .tab.on { border-color: transparent; background: #e6f0ff; color: #1a56db; }
-.legend { display: flex; align-items: center; gap: 14px; margin-top: 10px; font-size: 12px; color: #6b7280; flex-wrap: wrap; row-gap: 6px; }
-.sw { width: 18px; height: 14px; border-radius: 7px; display: inline-block; }
-.sw-on { background: #eaf6f0; border: 0.5px solid #cfe9dd; }
-.sw-off { background: #f0f2f5; }
-.gridbody { display: flex; max-height: 420px; }
-.namecol { flex-shrink: 0; width: 110px; border-right: 0.5px solid #e5e7eb; overflow: hidden; background: #fff; }
-.namehead { height: 31px; border-bottom: 0.5px solid #e5e7eb; }
-.nameview { overflow: hidden; }
-.scroller { flex: 1; overflow: auto; }
-.axis { display: flex; height: 30px; position: sticky; top: 0; z-index: 2; background: #fff; border-bottom: 0.5px solid #e5e7eb; width: max-content; }
-.axis .h { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #6b7280; border-left: 0.5px solid #e5e7eb; }
-.rows { width: max-content; }
-.grp { font-size: 12px; color: #9ca3af; display: flex; align-items: flex-end; }
-.nm { display: flex; align-items: center; padding-left: 12px; padding-right: 8px; font-size: 14px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.row { display: flex; }
-.seg { padding: 3px 1px; }
-.seg .box { height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #2e8b6e; }
-.seg .on { background: #eaf6f0; border: 0.5px solid #cfe9dd; }
-.seg .off { background: #f0f2f5; border: 0.5px solid transparent; }
-.hint { margin-left: auto; color: #9ca3af; }
-.status { padding: 24px; text-align: center; color: #9ca3af; font-size: 14px; }
-.logout-row { padding: 10px 14px; border-top: 0.5px solid #e5e7eb; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.logout-btn { font-size: 12px; color: #6b7280; background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 4px 10px; cursor: pointer; }
-.chpwd-btn { font-size: 12px; color: #1a56db; background: none; border: 1px solid #c3d6f7; border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.legend { display: flex; align-items: center; gap: 18px; margin-top: 14px; font-size: 13px; color: #6b7280; flex-wrap: wrap; row-gap: 8px; }
+.lg { display: inline-flex; align-items: center; gap: 7px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.dot.on { background: #7dd3ac; }
+.dot.off { background: #d9dde3; }
+.hint { margin-left: auto; background: #1a56db; color: #fff; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+
+/* 表格（單一捲動容器 + sticky 凍結表頭與名稱欄） */
+.board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; }
+.btable { position: relative; }        /* 寬度由 JS 設定 */
+.brow { display: flex; flex-wrap: nowrap; width: 100%; }
+.bcell { flex: 0 0 auto; display: flex; align-items: center; }
+.bcell.name {
+  position: sticky; left: 0; z-index: 2; background: #fff;
+  width: var(--nw); min-width: var(--nw); padding-left: 18px;
+  font-size: 14px; font-weight: 700; color: #111827;
+  border-right: 1px solid #eef0f3; white-space: nowrap;
+}
+.bcell.hour { width: var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
+
+.bhead { position: sticky; top: 0; z-index: 4; background: #fff; border-bottom: 1px solid #eef0f3; height: 44px; }
+.bhead .bcell { height: 44px; }
+.bhead .bcell.name { z-index: 6; color: #374151; font-weight: 700; font-size: 13px; }
+.bhead .bcell.hour { color: #6b7280; font-weight: 600; font-size: 13px; }
+
+.frow { height: 48px; border-bottom: 1px solid #f4f5f7; }
+.frow .bcell { height: 48px; }
+
+/* 大項彩色橫幅 */
+.banner { width: 100%; height: 46px; display: flex; align-items: center; }
+.banner .blabel { position: sticky; left: 0; display: inline-flex; align-items: center; gap: 9px; padding: 0 18px; height: 100%; font-size: 15px; font-weight: 700; white-space: nowrap; }
+.banner .bicon { font-size: 17px; line-height: 1; }
+.banner.sport { background: linear-gradient(90deg, #e9f7ef, #f4fbf7); }
+.banner.sport .blabel { color: #1f9d63; }
+.banner.park { background: linear-gradient(90deg, #e8f0fe, #f5f9ff); }
+.banner.park .blabel { color: #1a56db; }
+.banner.leisure { background: linear-gradient(90deg, #fdf2f8, #fdf6fb); }
+.banner.leisure .blabel { color: #be185d; }
+
+/* 格子 chip：依剩餘量色階 */
+.chip { flex: 1 1 0; min-width: 0; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.chip.full { background: #eaf6f0; border: 1px solid #cfe9dd; color: #2e8b6e; }
+.chip.mid  { background: #fff7ec; border: 1px solid #f6ddb4; color: #c2680c; }
+.chip.low  { background: #fdeeee; border: 1px solid #f6c9c7; color: #dc2626; }
+.chip.zero { background: #f1f3f5; border: 1px solid #e5e7eb; color: #9aa1aa; }
+.chip.off  { background: #f1f3f5; border: 1px solid transparent; color: transparent; }
+
+/* 底部色階圖例 */
+.scale { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; row-gap: 10px; padding: 16px; border-top: 1px solid #eef0f3; font-size: 13px; color: #6b7280; }
+.scale .item { display: inline-flex; align-items: center; gap: 8px; }
+.scale .badge { min-width: 34px; height: 26px; padding: 0 8px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
+.badge.full { background: #eaf6f0; border: 1px solid #cfe9dd; color: #2e8b6e; }
+.badge.mid  { background: #fff7ec; border: 1px solid #f6ddb4; color: #c2680c; }
+.badge.low  { background: #fdeeee; border: 1px solid #f6c9c7; color: #dc2626; }
+.badge.zero { background: #f1f3f5; border: 1px solid #e5e7eb; color: #9aa1aa; }
+
+.status { padding: 28px; text-align: center; color: #9ca3af; font-size: 14px; }
+.logout-row { padding: 12px 16px; border-top: 1px solid #eef0f3; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.logout-btn { font-size: 12px; color: #6b7280; background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+.chpwd-btn { font-size: 12px; color: #1a56db; background: none; border: 1px solid #c3d6f7; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+
+/* 無障礙：鍵盤焦點 + 減少動態 */
+.navbtn:focus-visible, .tab:focus-visible, .btn:focus-visible, .calbtn:focus-visible,
+.logout-btn:focus-visible, .chpwd-btn:focus-visible { outline: 2px solid #1a56db; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce){ * { animation-duration: 0.01ms !important; transition: none !important; } }
 
 /* 修改密碼 Modal */
-.modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.45); z-index: 100;
-  align-items: center; justify-content: center;
-}
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
-.modal-card {
-  background: #fff; border-radius: 16px;
-  padding: 28px 28px 24px; width: 90%; max-width: 340px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-}
+.modal-card { background: #fff; border-radius: 16px; padding: 28px 28px 24px; width: 90%; max-width: 340px; box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
 .modal-title { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 20px; }
 .modal-field { margin-bottom: 14px; }
 .modal-field label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
@@ -134,29 +182,38 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 
   <div class="panel" id="panel">
     <div class="topbar">
-      <button class="navbtn" id="prevDay">‹</button>
-      <input type="date" id="datePick">
-      <button class="navbtn" id="nextDay">›</button>
+      <button class="navbtn" id="prevDay" aria-label="前一天">‹</button>
+      <div class="datebox">
+        <span class="dtext" id="dateText">—</span>
+        <button class="calbtn" id="calBtn" aria-label="選擇日期">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+        </button>
+        <input type="date" id="datePick" class="hiddendate">
+      </div>
+      <button class="navbtn" id="nextDay" aria-label="後一天">›</button>
     </div>
+
     <div class="filters">
       <div class="tabs" id="tabs"></div>
       <div class="legend">
-        <span><span class="sw sw-on"></span> 可預約</span>
-        <span><span class="sw sw-off"></span> 不可預約</span>
+        <span class="lg"><i class="dot on"></i> 可預約</span>
+        <span class="lg"><i class="dot off"></i> 不可預約</span>
         <span class="hint">↔ 左右滑查看更多時間</span>
       </div>
     </div>
+
     <div id="status" class="status">載入中…</div>
-    <div class="gridbody" id="grid" style="display:none;">
-      <div class="namecol">
-        <div class="namehead"></div>
-        <div class="nameview"><div id="nameCol"></div></div>
-      </div>
-      <div class="scroller" id="scroller">
-        <div class="axis" id="axis"></div>
-        <div class="rows" id="rows"></div>
-      </div>
+    <div class="board" id="board" style="display:none;">
+      <div class="btable" id="btable"></div>
     </div>
+
+    <div class="scale">
+      <span class="item"><b class="badge full">10</b> 充足</span>
+      <span class="item"><b class="badge mid">3-5</b> 剩餘較少</span>
+      <span class="item"><b class="badge low">1-2</b> 剩餘很少</span>
+      <span class="item"><b class="badge zero">0</b> 已額滿</span>
+    </div>
+
     <div class="logout-row">
       <button class="chpwd-btn" onclick="openChangePwd()">修改密碼</button>
       <button class="logout-btn" onclick="doLogout()">登出</button>
@@ -196,15 +253,28 @@ const EXEC = 'https://script.google.com/macros/s/AKfycbxl72JqnTQczbO9hYw2LoR2i1G
 const START = 6, END = 24;
 const HOURS = [];
 for (let h = START; h < END; h++) HOURS.push(h);
-const SEG_W = 22, ROW_H = 40, GRP_H = 26;
+
+const NAME_W = 120, HOUR_W = 128;              // 需與 CSS 的 --nw / --hw 一致
+const TOTAL_W = NAME_W + HOURS.length * HOUR_W;
+
 // 大項顯示順序：運動 → 車位 → 休閒
 const CAT_ORDER = ['運動', '車位', '休閒'];
 const CATS = ['全部', '運動', '車位', '休閒'];
+// 各大項的橫幅樣式與 icon
+const CAT_META = {
+  '運動': { cls: 'sport',   icon: '🏃' },
+  '車位': { cls: 'park',    icon: '🚗' },
+  '休閒': { cls: 'leisure', icon: '🛋️' }
+};
 
-let active = '全部'; // 預設顯示全部
+let active = '全部';
 let dataset = [];
-let bgLoading = false; // 是否正在載入中
+let bgLoading = false;
 
+function pad(n){ return String(n).padStart(2,'0'); }
+function toVal(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+
+// ── 登入 ──────────────────────────────────────────────
 async function doLogin() {
   const account  = document.getElementById('account').value.trim();
   const password = document.getElementById('password').value.trim();
@@ -212,21 +282,14 @@ async function doLogin() {
   const btn = document.getElementById('loginBtn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>驗證中...';
   hideError();
-  
   try {
-    // 暫存帳密至 localStorage，供後續 load() 使用
     localStorage.setItem('lsy_account', account);
     localStorage.setItem('lsy_password', password);
-    
-    // 直接調用 load() 載入全部資料與驗證
     await load();
-    
-    // 載入成功，切換介面
     document.getElementById('loginCard').style.display = 'none';
     document.getElementById('panel').style.display = 'block';
     setTimeout(() => window.scrollTo(0, 0), 200);
   } catch(e) {
-    // 驗證失敗，清除暫存並顯示錯誤
     localStorage.removeItem('lsy_account');
     localStorage.removeItem('lsy_password');
     showError(e.message || '帳號或密碼錯誤');
@@ -234,7 +297,6 @@ async function doLogin() {
     btn.disabled = false; btn.textContent = '登入';
   }
 }
-
 function doLogout() {
   document.getElementById('panel').style.display = 'none';
   document.getElementById('loginCard').style.display = 'block';
@@ -246,175 +308,167 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('loginCard').style.display !== 'none') doLogin();
 });
 
+// ── 日期列 ────────────────────────────────────────────
 const dp = document.getElementById('datePick');
-function pad(n){ return String(n).padStart(2,'0'); }
-function toVal(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
 let cur = new Date();
 dp.value = toVal(cur);
 dp.min = toVal(new Date());
-document.getElementById('prevDay').onclick = () => { cur.setDate(cur.getDate()-1); dp.value = toVal(cur); load(); };
-document.getElementById('nextDay').onclick = () => { cur.setDate(cur.getDate()+1); dp.value = toVal(cur); load(); };
-dp.onchange = () => { const v = dp.value.split('-'); cur = new Date(+v[0], +v[1]-1, +v[2]); load(); };
+function updateDateText(){
+  document.getElementById('dateText').textContent =
+    cur.getFullYear() + ' / ' + pad(cur.getMonth()+1) + ' / ' + pad(cur.getDate());
+}
+updateDateText();
+document.getElementById('prevDay').onclick = () => { cur.setDate(cur.getDate()-1); dp.value = toVal(cur); updateDateText(); load(); };
+document.getElementById('nextDay').onclick = () => { cur.setDate(cur.getDate()+1); dp.value = toVal(cur); updateDateText(); load(); };
+document.getElementById('calBtn').onclick = () => { try { dp.showPicker(); } catch(e) { dp.click(); } };
+dp.onchange = () => { const v = dp.value.split('-'); cur = new Date(+v[0], +v[1]-1, +v[2]); updateDateText(); load(); };
 
-// ── 核心載入函數：並行載入所有分類，並實現漸進式渲染 ────────────────
+// ── 核心載入：並行載入三大分類，漸進式渲染 ──────────────
 async function load() {
   if (bgLoading) return;
   bgLoading = true;
 
   const status = document.getElementById('status');
-  const grid = document.getElementById('grid');
-  
+  const board = document.getElementById('board');
   status.style.display = 'block'; status.textContent = '載入中…';
-  grid.style.display = 'none';
-  
+  board.style.display = 'none';
+
   const account  = localStorage.getItem('lsy_account') || '';
   const password = localStorage.getItem('lsy_password') || '';
-  
-  dataset = []; // 重置資料集
-  
-  // 並行載入運動、車位、休閒三個分類
-  const categories = ['運動', '車位', '休閒'];
-  let completedCount = 0;
+
+  dataset = [];
+
+  const categories = ['運動', '車位', '休閒'];  // 依大項順序載入
   let successCount = 0;
   let authError = null;
-  
+
   const promises = categories.map(async (cat) => {
     try {
       const res = await fetch(EXEC + '?action=facilities&date=' + dp.value + '&account=' + encodeURIComponent(account) + '&password=' + encodeURIComponent(password) + '&cat=' + encodeURIComponent(cat));
       const json = await res.json();
-      
-      if (!json.ok) {
-        authError = json.error || '帳號或密碼錯誤';
-        return;
-      }
-      
-      // 合併新資料並過濾重複的 pf_id / pfId
+      if (!json.ok) { authError = json.error || '帳號或密碼錯誤'; return; }
+
       const existingIds = dataset.map(f => String(f.pf_id || f.pfId));
       const newData = json.data.filter(f => !existingIds.includes(String(f.pf_id || f.pfId)));
       dataset = dataset.concat(newData);
       successCount++;
-      
-      // 💡 漸進式渲染：只要第一個請求完成，立刻關閉 Loading 並渲染畫面，讓使用者先看到局部資料！
+
+      // 漸進式渲染：第一批回來就先關 Loading 顯示局部資料
       status.style.display = 'none';
-      grid.style.display = 'flex';
-      buildAxis();
+      board.style.display = 'block';
       render();
-      
     } catch (e) {
-      console.error("載入分類 " + cat + " 失敗:", e);
-    } finally {
-      completedCount++;
+      console.error('載入分類 ' + cat + ' 失敗:', e);
     }
   });
-  
-  // 等待三項並行請求全部完成
+
   await Promise.all(promises);
   bgLoading = false;
-  
-  // 如果完全沒有成功回傳，且有回傳認證錯誤，則代表帳密錯誤，拋出異常供登入介面補捉
+
   if (successCount === 0) {
     throw new Error(authError || '讀取資料失敗，請檢查網路連線');
   }
 }
 
-function buildAxis(){
-  const axis = document.getElementById('axis');
-  axis.innerHTML = '';
-  HOURS.forEach(h => {
-    const c = document.createElement('div');
-    c.className = 'h';
-    c.style.width = (SEG_W*2)+'px'; c.style.minWidth = (SEG_W*2)+'px';
-    c.textContent = h;
-    axis.appendChild(c);
-  });
-}
-
+// ── 資料存取與色階 ────────────────────────────────────
 function capAt(f, h, m){
   const key = pad(h) + ':' + pad(m);
   return (key in f.slots) ? f.slots[key] : null;
 }
-
-function segEl(f, h, m){
+function chipEl(f, h, m){
   const c = capAt(f, h, m);
-  const ok = c != null;
-  const wrap = document.createElement('div');
-  wrap.className = 'seg';
-  wrap.style.width = SEG_W+'px'; wrap.style.minWidth = SEG_W+'px';
-  if (m === 0) wrap.style.borderLeft = '0.5px solid #e5e7eb';
-  wrap.title = pad(h)+':'+pad(m)+'　'+(ok ? '剩 '+c : '不可預約');
-  const box = document.createElement('div');
-  box.className = 'box ' + (ok ? 'on' : 'off');
-  if (ok && f.cap >= 1) box.textContent = c;
-  wrap.appendChild(box);
-  return wrap;
+  const chip = document.createElement('div');
+  if (c == null) {                     // 不可預約
+    chip.className = 'chip off';
+    chip.title = pad(h)+':'+pad(m)+'　不可預約';
+  } else if (c <= 0) {                  // 已額滿
+    chip.className = 'chip zero';
+    chip.textContent = 0;
+    chip.title = pad(h)+':'+pad(m)+'　已額滿';
+  } else {                             // 可預約（一律綠色，貼近設計稿）
+    chip.className = 'chip full';
+    chip.textContent = c;
+    chip.title = pad(h)+':'+pad(m)+'　剩 ' + c;
+  }
+  return chip;
 }
 
+// ── 渲染表格 ──────────────────────────────────────────
+function bannerEl(cat){
+  const meta = CAT_META[cat] || CAT_META['休閒'];
+  const b = document.createElement('div');
+  b.className = 'banner ' + meta.cls;
+  const lab = document.createElement('div');
+  lab.className = 'blabel';
+  lab.innerHTML = '<span class="bicon">' + meta.icon + '</span>' + cat + '設施';
+  b.appendChild(lab);
+  return b;
+}
+function rowEl(f){
+  const row = document.createElement('div');
+  row.className = 'brow frow';
+  const nm = document.createElement('div');
+  nm.className = 'bcell name';
+  nm.textContent = f.name;
+  row.appendChild(nm);
+  HOURS.forEach(h => {
+    const cell = document.createElement('div');
+    cell.className = 'bcell hour';
+    cell.appendChild(chipEl(f, h, 0));
+    if (f.half) cell.appendChild(chipEl(f, h, 30));   // 半小時制 → 兩顆
+    row.appendChild(cell);
+  });
+  return row;
+}
 function render(){
-  const nameCol = document.getElementById('nameCol');
-  const rows = document.getElementById('rows');
-  nameCol.innerHTML = ''; rows.innerHTML = '';
-  
-  // 過濾當前選定標籤的資料項目
+  const bt = document.getElementById('btable');
+  bt.innerHTML = '';
+  bt.style.width = TOTAL_W + 'px';
+
+  // 表頭
+  const head = document.createElement('div');
+  head.className = 'brow bhead';
+  const corner = document.createElement('div');
+  corner.className = 'bcell name';
+  corner.textContent = '時段';
+  head.appendChild(corner);
+  HOURS.forEach(h => {
+    const c = document.createElement('div');
+    c.className = 'bcell hour';
+    c.textContent = pad(h) + ':00';
+    head.appendChild(c);
+  });
+  bt.appendChild(head);
+
+  // 依分類過濾 / 排序
   let list;
   if (active === '全部') {
-    // 依大項固定順序（運動 → 車位 → 休閒）排序，同類內維持原始順序
     const rank = c => { const i = CAT_ORDER.indexOf(c); return i === -1 ? 99 : i; };
     list = dataset.slice().sort((a, b) => rank(a.cat) - rank(b.cat));
   } else {
     list = dataset.filter(f => f.cat === active);
   }
-  
+
   if (list.length === 0) {
-    const placeholder = document.createElement('div');
-    placeholder.style.padding = '20px';
-    placeholder.style.color = '#9ca3af';
-    placeholder.style.fontSize = '13px';
-    placeholder.textContent = bgLoading ? '正在載入資料中...' : '無此分類之公設資料';
-    nameCol.appendChild(placeholder);
+    const ph = document.createElement('div');
+    ph.className = 'brow';
+    ph.style.padding = '22px 18px'; ph.style.color = '#9ca3af'; ph.style.fontSize = '13px';
+    ph.textContent = bgLoading ? '正在載入資料中…' : '無此分類之公設資料';
+    bt.appendChild(ph);
     return;
   }
-  
+
   let curCat = null;
   list.forEach(f => {
-    if (active === '全部' && f.cat !== curCat){
+    if (active === '全部' && f.cat !== curCat) {
       curCat = f.cat;
-      const gn = document.createElement('div');
-      gn.className = 'grp';
-      gn.style.height = GRP_H+'px'; gn.style.paddingLeft = '12px'; gn.style.paddingBottom = '4px';
-      gn.textContent = f.cat + '設施';
-      nameCol.appendChild(gn);
-      const gr = document.createElement('div'); gr.style.height = GRP_H+'px'; rows.appendChild(gr);
+      bt.appendChild(bannerEl(f.cat));
     }
-    const nm = document.createElement('div');
-    nm.className = 'nm'; nm.style.height = ROW_H+'px';
-    nm.textContent = f.name;
-    nameCol.appendChild(nm);
-    
-    const row = document.createElement('div');
-    row.className = 'row'; row.style.height = ROW_H+'px';
-    HOURS.forEach(h => {
-      row.appendChild(segEl(f, h, 0));
-      if (f.half) {
-        row.appendChild(segEl(f, h, 30));
-      } else {
-        const c = capAt(f, h, 0); const ok = c != null;
-        const wrap = document.createElement('div');
-        wrap.className = 'seg'; wrap.style.width = SEG_W+'px'; wrap.style.minWidth = SEG_W+'px';
-        const box = document.createElement('div');
-        box.className = 'box ' + (ok ? 'on' : 'off');
-        wrap.appendChild(box);
-        row.appendChild(wrap);
-      }
-    });
-    rows.appendChild(row);
+    bt.appendChild(rowEl(f));
   });
 }
 
-const scroller = document.getElementById('scroller');
-scroller.addEventListener('scroll', () => {
-  document.getElementById('nameCol').style.transform = 'translateY(' + (-scroller.scrollTop) + 'px)';
-});
-
+// ── 分類標籤 ──────────────────────────────────────────
 const tabsEl = document.getElementById('tabs');
 function renderTabs(){
   tabsEl.innerHTML = '';
@@ -427,6 +481,53 @@ function renderTabs(){
   });
 }
 
+// ── 修改密碼 ──────────────────────────────────────────
+function openChangePwd(){
+  document.getElementById('oldPwd').value = '';
+  document.getElementById('newPwd').value = '';
+  document.getElementById('confirmPwd').value = '';
+  const msg = document.getElementById('changePwdMsg');
+  msg.className = 'modal-msg'; msg.textContent = '';
+  document.getElementById('changePwdModal').classList.add('open');
+}
+function closeChangePwd(){ document.getElementById('changePwdModal').classList.remove('open'); }
+function showModalMsg(text, ok){
+  const msg = document.getElementById('changePwdMsg');
+  msg.textContent = text; msg.className = 'modal-msg ' + (ok ? 'ok' : 'err');
+}
+async function doChangePassword(){
+  const oldPwd     = document.getElementById('oldPwd').value.trim();
+  const newPwd     = document.getElementById('newPwd').value.trim();
+  const confirmPwd = document.getElementById('confirmPwd').value.trim();
+  const account    = localStorage.getItem('lsy_account') || '';
+
+  if (!oldPwd || !newPwd || !confirmPwd) { showModalMsg('請完整填寫三個欄位', false); return; }
+  if (newPwd !== confirmPwd) { showModalMsg('兩次輸入的新密碼不一致', false); return; }
+  if (newPwd === oldPwd) { showModalMsg('新密碼不能與舊密碼相同', false); return; }
+
+  const okBtn = document.getElementById('changePwdOkBtn');
+  okBtn.disabled = true; okBtn.textContent = '處理中…';
+  try {
+    const url = EXEC + '?action=changePassword&account=' + encodeURIComponent(account)
+      + '&password=' + encodeURIComponent(oldPwd)
+      + '&newPassword=' + encodeURIComponent(newPwd);
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.ok) {
+      localStorage.setItem('lsy_password', newPwd);  // 同步更新本機暫存密碼
+      showModalMsg('密碼已更新', true);
+      setTimeout(closeChangePwd, 1200);
+    } else {
+      showModalMsg(json.error || '修改失敗', false);
+    }
+  } catch(e) {
+    showModalMsg('連線失敗，請稍後再試', false);
+  } finally {
+    okBtn.disabled = false; okBtn.textContent = '確認修改';
+  }
+}
+
+// ── 啟動 ──────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   try {
     const a = localStorage.getItem('lsy_account');
@@ -435,18 +536,11 @@ window.addEventListener('DOMContentLoaded', () => {
     if (p) document.getElementById('password').value = p;
   } catch(e) {}
   renderTabs();
-  
-  // 💡 快取預熱：頁面載入後立刻在背景建立 Token、社區ID、公設清單快取
-  // 使用者輸入帳密時，後端快取已就緒，登入後直接省下 ~1.2 秒
-  warmupCache();
+  warmupCache();   // 背景預熱後端快取
 });
 
 async function warmupCache() {
-  try {
-    await fetch(EXEC + '?action=warmup');
-  } catch(e) {
-    // 預熱失敗不影響任何功能，靜默忽略
-  }
+  try { await fetch(EXEC + '?action=warmup'); } catch(e) {}
 }
 </script>
 </body>
