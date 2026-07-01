@@ -108,17 +108,17 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
   font-size: 16px; font-weight: 500; color: #111827;
   border-right: 1px solid #eef0f3; white-space: nowrap;
 }
-.bcell.hour { width: var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
+.bcell.hour { flex: 1 0 var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
 /* 大項外框畫在「凍結名稱欄 + 首/末列」上：圓角固定於左側、單線、不隨捲動 */
 .catbox .frow .bcell.name { border-left: 1.5px solid var(--cc); }                 /* 固定左框 */
 .catlegend + .frow > .bcell { border-top: 1.5px solid var(--cc); }                /* 首列上框（滿版橫線） */
 .catlegend + .frow > .bcell.name { border-top-left-radius: 12px; }                /* 左上圓角（凍結） */
 .catbox .frow:last-child > .bcell { border-bottom: 1.5px solid var(--cc); }       /* 末列下框 */
 .catbox .frow:last-child > .bcell.name { border-bottom-left-radius: 12px; }       /* 左下圓角（凍結） */
-/* 區塊內訊息列（讀取中／無資料）：貼齊可視寬度、固定於左，右側補框與圓角使框完整 */
-.msgcell { width: var(--vw, 300px); min-width: var(--vw, 300px); color: #9ca3af; font-size: 14px; font-weight: 500; border-right: 1.5px solid var(--cc); }
-.catlegend + .frow > .msgcell { border-top-right-radius: 12px; }
-.catbox .frow:last-child > .msgcell { border-bottom-right-radius: 12px; }
+/* 區塊內訊息列（讀取中／無資料）：撐滿整列（滿版），文字固定於左側可見，右側補框與圓角使框完整 */
+.bcell.name.msgcell { flex: 1 1 auto; width: auto; min-width: 0; color: #9ca3af; font-size: 14px; font-weight: 500; border-right: 1.5px solid var(--cc); }
+.catlegend + .frow > .bcell.name.msgcell { border-top-right-radius: 12px; }
+.catbox .frow:last-child > .bcell.name.msgcell { border-bottom-right-radius: 12px; }
 
 .bhead { position: sticky; top: 0; z-index: 4; background: #fff; border-bottom: 1px solid #eef0f3; height: 44px; }
 .bhead .bcell { height: 44px; }
@@ -541,7 +541,8 @@ function render(){
   const bt = document.getElementById('btable');
   bt.innerHTML = '';
   visHours = HOURS.filter(h => h >= filterStart && h <= filterEnd);   // 依時間範圍過濾欄位
-  bt.style.width = (NAME_W + visHours.length * HOUR_W) + 'px';
+  bt.style.width = '100%';                                            // 至少滿版（時段少時撐滿）
+  bt.style.minWidth = (NAME_W + visHours.length * HOUR_W) + 'px';     // 內容較寬時才超出 → 橫向捲動
   setVW();   // 更新大項分隔置中所需的可視寬度
 
   // 表頭
