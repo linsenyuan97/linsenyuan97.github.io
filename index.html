@@ -73,17 +73,20 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .filters { padding: 14px 16px; border-bottom: 1px solid #eef0f3; }
 .tabs { display: flex; gap: 8px; overflow-x: auto; }
 .tab { font-size: 14px; padding: 8px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; border: 1px solid #e2e5ea; background: #fff; color: #6b7280; font-weight: 600; }
+/* 大項列：標籤 + 篩選鈕同一列 */
 .tab.on { border-color: transparent; background: #e6f0ff; color: #1a56db; }
-.legend { display: flex; align-items: center; gap: 18px; margin-top: 14px; font-size: 13px; color: #6b7280; flex-wrap: wrap; row-gap: 8px; }
-.lg { display: inline-flex; align-items: center; gap: 7px; }
-.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-.dot.on { background: #7dd3ac; }
-.dot.off { background: #d9dde3; }
-/* 篩選列（勾選） */
-.filterbar { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
-.filterttl { font-size: 13px; font-weight: 700; color: #374151; }
-.fchk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #4b5563; font-weight: 500; cursor: pointer; user-select: none; }
+.filterrow { display: flex; align-items: center; gap: 8px; }
+.filterrow .tabs { flex: 1; min-width: 0; }
+.filterbtn { flex: 0 0 auto; font-size: 13px; font-weight: 700; color: #374151; background: #fff; border: 1px solid #e2e5ea; border-radius: 999px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+.filterbtn:hover { background: #f7f8fa; }
+.filterbtn.on { border-color: #1a56db; color: #1a56db; background: #eef4ff; }
+/* 展開的篩選面板（預設收合，按確認才收合） */
+.filterpanel { display: none; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 12px; padding: 14px 16px; border: 1px solid #eef0f3; border-radius: 12px; background: #fbfcfe; }
+.filterpanel.open { display: flex; }
+.fchk { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #374151; font-weight: 500; cursor: pointer; user-select: none; }
 .fchk input { width: 16px; height: 16px; accent-color: #1a56db; cursor: pointer; }
+.fconfirm { align-self: flex-end; font-size: 14px; font-weight: 600; color: #fff; background: #1a56db; border: none; border-radius: 8px; padding: 8px 20px; cursor: pointer; }
+.fconfirm:hover { background: #1444b8; }
 /* 時間搜尋列 */
 .timebar { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; flex-wrap: wrap; }
 .timefield { display: flex; align-items: center; gap: 8px; }
@@ -215,15 +218,14 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
     </div>
 
     <div class="filters">
-      <div class="tabs" id="tabs"></div>
-      <div class="legend">
-        <span class="lg"><i class="dot on"></i> 可預約</span>
-        <span class="lg"><i class="dot off"></i> 不可預約</span>
+      <div class="filterrow">
+        <div class="tabs" id="tabs"></div>
+        <button class="filterbtn" id="filterBtn" type="button">⚙️ 篩選 (<span id="filterCount">1</span>)</button>
       </div>
-      <div class="filterbar">
-        <span class="filterttl">⚙️ 篩選 (<span id="filterCount">1</span>)</span>
+      <div class="filterpanel" id="filterPanel">
         <label class="fchk"><input type="checkbox" id="chkAvail"> 只顯示有空位的公設</label>
         <label class="fchk"><input type="checkbox" id="chkHideClosed" checked> 隱藏未開放公設</label>
+        <button class="fconfirm" id="filterConfirm" type="button">確認</button>
       </div>
     </div>
 
@@ -394,13 +396,29 @@ function updateFade(){
 document.getElementById('board').addEventListener('scroll', updateFade);
 window.addEventListener('resize', updateFade);
 
-// ── 篩選勾選 ──────────────────────────────────────────
+// ── 篩選面板（展開 → 勾選 → 確認才套用並收合）──────────
 function updateFilterCount(){
   const n = (onlyAvail ? 1 : 0) + (hideClosed ? 1 : 0);   // 目前生效中的篩選數
   document.getElementById('filterCount').textContent = n;
 }
-document.getElementById('chkAvail').onchange = (e) => { onlyAvail = e.target.checked; updateFilterCount(); render(); updateFade(); };
-document.getElementById('chkHideClosed').onchange = (e) => { hideClosed = e.target.checked; updateFilterCount(); render(); updateFade(); };
+const filterBtn = document.getElementById('filterBtn');
+const filterPanel = document.getElementById('filterPanel');
+filterBtn.onclick = () => {
+  const open = filterPanel.classList.toggle('open');
+  filterBtn.classList.toggle('on', open);
+  if (open) {   // 開啟時把勾選同步為目前已套用的狀態（未按確認的更動不保留）
+    document.getElementById('chkAvail').checked = onlyAvail;
+    document.getElementById('chkHideClosed').checked = hideClosed;
+  }
+};
+document.getElementById('filterConfirm').onclick = () => {
+  onlyAvail  = document.getElementById('chkAvail').checked;
+  hideClosed = document.getElementById('chkHideClosed').checked;
+  updateFilterCount();
+  render(); updateFade();
+  filterPanel.classList.remove('open');
+  filterBtn.classList.remove('on');
+};
 
 // ── 核心載入：立即畫出三大項區塊，各分類回來各自填入 ──────
 // 每次載入取一個遞增序號；回應回來時若已非最新序號（代表期間又切換過），即丟棄
