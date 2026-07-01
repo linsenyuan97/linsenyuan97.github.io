@@ -74,11 +74,12 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 /* 控制列：時間範圍 + 篩選鈕同一列 */
 .controlbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; }
 .timerange { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: 8px; min-width: 0; }
-.clockic { font-size: 16px; }
+.clockic { color: #6b7280; flex: 0 0 auto; }
 .timerange select { font-size: 14px; font-weight: 600; color: #111827; padding: 7px 10px; border: 1px solid #e2e5ea; border-radius: 8px; background: #fff; cursor: pointer; }
 .timerange select:focus { outline: none; border-color: #1a56db; }
 .timedash { color: #9ca3af; font-weight: 700; }
-.filterbtn { grid-column: 3; justify-self: end; flex: 0 0 auto; font-size: 13px; font-weight: 700; color: #374151; background: #fff; border: 1px solid #e2e5ea; border-radius: 999px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+.filterbtn { grid-column: 3; justify-self: end; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #374151; background: #fff; border: 1px solid #e2e5ea; border-radius: 999px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+.gearic { flex: 0 0 auto; }
 .filterbtn:hover { background: #f7f8fa; }
 .filterbtn.on { border-color: #1a56db; color: #1a56db; background: #eef4ff; }
 
@@ -215,12 +216,12 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 
     <div class="controlbar">
       <div class="timerange">
-        <span class="clockic" aria-hidden="true">🕒</span>
+        <svg class="clockic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
         <select id="startSel" aria-label="起始時間"></select>
         <span class="timedash">～</span>
         <select id="endSel" aria-label="結束時間"></select>
       </div>
-      <button class="filterbtn" id="filterBtn" type="button">⚙️ 篩選 (<span id="filterCount">1</span>)</button>
+      <button class="filterbtn" id="filterBtn" type="button"><svg class="gearic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>篩選 (<span id="filterCount">1</span>)</button>
     </div>
 
     <div class="filterpanel" id="filterPanel">
