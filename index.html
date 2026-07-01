@@ -197,7 +197,9 @@ const START = 6, END = 24;
 const HOURS = [];
 for (let h = START; h < END; h++) HOURS.push(h);
 const SEG_W = 22, ROW_H = 40, GRP_H = 26;
-const CATS = ['全部', '車位', '運動', '休閒'];
+// 大項顯示順序：運動 → 車位 → 休閒
+const CAT_ORDER = ['運動', '車位', '休閒'];
+const CATS = ['全部', '運動', '車位', '休閒'];
 
 let active = '全部'; // 預設顯示全部
 let dataset = [];
@@ -270,8 +272,8 @@ async function load() {
   
   dataset = []; // 重置資料集
   
-  // 並行載入車位、運動、休閒三個分類
-  const categories = ['車位', '運動', '休閒'];
+  // 並行載入運動、車位、休閒三個分類
+  const categories = ['運動', '車位', '休閒'];
   let completedCount = 0;
   let successCount = 0;
   let authError = null;
@@ -353,7 +355,14 @@ function render(){
   nameCol.innerHTML = ''; rows.innerHTML = '';
   
   // 過濾當前選定標籤的資料項目
-  const list = active === '全部' ? dataset : dataset.filter(f => f.cat === active);
+  let list;
+  if (active === '全部') {
+    // 依大項固定順序（運動 → 車位 → 休閒）排序，同類內維持原始順序
+    const rank = c => { const i = CAT_ORDER.indexOf(c); return i === -1 ? 99 : i; };
+    list = dataset.slice().sort((a, b) => rank(a.cat) - rank(b.cat));
+  } else {
+    list = dataset.filter(f => f.cat === active);
+  }
   
   if (list.length === 0) {
     const placeholder = document.createElement('div');
