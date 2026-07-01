@@ -79,7 +79,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
 .dot.on { background: #7dd3ac; }
 .dot.off { background: #d9dde3; }
-.hint { margin-left: auto; color: #1a56db; text-decoration: underline; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.hint { margin-left: auto; color: #1a56db; text-decoration: underline; font-size: 13px; font-weight: 500; white-space: nowrap; }
 
 /* 表格（單一捲動容器 + sticky 凍結表頭與名稱欄） */
 .board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; margin: 0 16px; }
@@ -89,7 +89,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .bcell.name {
   position: sticky; left: 0; z-index: 2; background: #fff;
   width: var(--nw); min-width: var(--nw); padding-left: 18px;
-  font-size: 14px; font-weight: 700; color: #111827;
+  font-size: 16px; font-weight: 500; color: #111827;
   border-right: 1px solid #eef0f3; white-space: nowrap;
 }
 .bcell.hour { width: var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
@@ -129,7 +129,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 
 .status { padding: 28px; text-align: center; color: #9ca3af; font-size: 14px; }
 .logout-row { padding: 12px 16px; border-top: 1px solid #eef0f3; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.logout-btn { font-size: 12px; color: #6b7280; background: none; border: 1px solid #d1d5db; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+.logout-btn { font-size: 12px; color: #1a56db; background: none; border: 1px solid #1a56db; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
 .chpwd-btn { font-size: 12px; color: #1a56db; background: none; border: 1px solid #c3d6f7; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
 
 /* 無障礙：鍵盤焦點 + 減少動態 */
@@ -206,31 +206,23 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
     </div>
 
     <div class="logout-row">
-      <button class="chpwd-btn" onclick="openChangePwd()" style="display:none;">修改密碼</button>
+      <button class="chpwd-btn" onclick="openCustomPwd()">自訂密碼</button>
       <button class="logout-btn" onclick="doLogout()">登出</button>
     </div>
   </div>
 
-  <!-- 修改密碼 Modal -->
-  <div class="modal-overlay" id="changePwdModal">
+  <!-- 自訂密碼 Dialog -->
+  <div class="modal-overlay" id="customPwdModal">
     <div class="modal-card">
-      <div class="modal-title">🔑 修改密碼</div>
+      <div class="modal-title">🔑 自訂密碼</div>
       <div class="modal-field">
-        <label for="oldPwd">舊密碼</label>
-        <input type="password" id="oldPwd" placeholder="請輸入目前的密碼">
+        <label for="customPwd">新的自訂密碼（僅限數字）</label>
+        <input type="text" id="customPwd" inputmode="numeric" pattern="[0-9]*" placeholder="請輸入數字密碼" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
       </div>
-      <div class="modal-field">
-        <label for="newPwd">新密碼</label>
-        <input type="password" id="newPwd" placeholder="請輸入新密碼">
-      </div>
-      <div class="modal-field">
-        <label for="confirmPwd">確認新密碼</label>
-        <input type="password" id="confirmPwd" placeholder="再輸入一次新密碼">
-      </div>
-      <div class="modal-msg" id="changePwdMsg"></div>
+      <div class="modal-msg" id="customPwdMsg"></div>
       <div class="modal-actions">
-        <button class="modal-cancel" id="changePwdCancelBtn" onclick="closeChangePwd()">取消</button>
-        <button class="modal-ok" id="changePwdOkBtn" onclick="doChangePassword()">確認修改</button>
+        <button class="modal-cancel" onclick="closeCustomPwd()">取消</button>
+        <button class="modal-ok" id="customPwdOkBtn" onclick="doSetCustomPassword()">確認</button>
       </div>
     </div>
   </div>
@@ -502,49 +494,42 @@ function renderTabs(){
   });
 }
 
-// ── 修改密碼 ──────────────────────────────────────────
-function openChangePwd(){
-  document.getElementById('oldPwd').value = '';
-  document.getElementById('newPwd').value = '';
-  document.getElementById('confirmPwd').value = '';
-  const msg = document.getElementById('changePwdMsg');
-  msg.className = 'modal-msg'; msg.textContent = '';
-  document.getElementById('changePwdModal').classList.add('open');
+// ── 自訂密碼 ──────────────────────────────────────────
+function openCustomPwd(){
+  const i = document.getElementById('customPwd'); i.value = '';
+  const m = document.getElementById('customPwdMsg'); m.className = 'modal-msg'; m.textContent = '';
+  document.getElementById('customPwdModal').classList.add('open');
+  setTimeout(() => i.focus(), 50);
 }
-function closeChangePwd(){ document.getElementById('changePwdModal').classList.remove('open'); }
-function showModalMsg(text, ok){
-  const msg = document.getElementById('changePwdMsg');
-  msg.textContent = text; msg.className = 'modal-msg ' + (ok ? 'ok' : 'err');
+function closeCustomPwd(){ document.getElementById('customPwdModal').classList.remove('open'); }
+function showCustomMsg(text, ok){
+  const m = document.getElementById('customPwdMsg');
+  m.textContent = text; m.className = 'modal-msg ' + (ok ? 'ok' : 'err');
 }
-async function doChangePassword(){
-  const oldPwd     = document.getElementById('oldPwd').value.trim();
-  const newPwd     = document.getElementById('newPwd').value.trim();
-  const confirmPwd = document.getElementById('confirmPwd').value.trim();
-  const account    = localStorage.getItem('lsy_account') || '';
+async function doSetCustomPassword(){
+  const val = document.getElementById('customPwd').value.trim();
+  if (!/^[0-9]+$/.test(val)) { showCustomMsg('請輸入數字密碼', false); return; }
+  const account  = localStorage.getItem('lsy_account') || '';
+  const password = localStorage.getItem('lsy_password') || '';
 
-  if (!oldPwd || !newPwd || !confirmPwd) { showModalMsg('請完整填寫三個欄位', false); return; }
-  if (newPwd !== confirmPwd) { showModalMsg('兩次輸入的新密碼不一致', false); return; }
-  if (newPwd === oldPwd) { showModalMsg('新密碼不能與舊密碼相同', false); return; }
-
-  const okBtn = document.getElementById('changePwdOkBtn');
+  const okBtn = document.getElementById('customPwdOkBtn');
   okBtn.disabled = true; okBtn.textContent = '處理中…';
   try {
-    const url = EXEC + '?action=changePassword&account=' + encodeURIComponent(account)
-      + '&password=' + encodeURIComponent(oldPwd)
-      + '&newPassword=' + encodeURIComponent(newPwd);
+    const url = EXEC + '?action=setCustomPassword&account=' + encodeURIComponent(account)
+      + '&password=' + encodeURIComponent(password)
+      + '&customPassword=' + encodeURIComponent(val);
     const res = await fetch(url);
     const json = await res.json();
     if (json.ok) {
-      localStorage.setItem('lsy_password', newPwd);  // 同步更新本機暫存密碼
-      showModalMsg('密碼已更新', true);
-      setTimeout(closeChangePwd, 1200);
+      showCustomMsg('密碼變更成功', true);
+      setTimeout(closeCustomPwd, 1200);
     } else {
-      showModalMsg(json.error || '修改失敗', false);
+      showCustomMsg(json.error || '變更失敗', false);
     }
   } catch(e) {
-    showModalMsg('連線失敗，請稍後再試', false);
+    showCustomMsg('連線失敗，請稍後再試', false);
   } finally {
-    okBtn.disabled = false; okBtn.textContent = '確認修改';
+    okBtn.disabled = false; okBtn.textContent = '確認';
   }
 }
 
