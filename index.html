@@ -112,16 +112,10 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 }
 .bcell.hour { width: var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
 .bcell.filler { flex: 1 1 0; min-width: 0; padding: 0; }   /* 右側填充：吃掉剩餘寬度使區塊滿版，時段欄維持原寬 */
-/* 大項外框畫在「凍結名稱欄 + 首/末列」上：圓角固定於左側、單線、不隨捲動 */
-.catbox .frow .bcell.name { border-left: 1.5px solid var(--cc); }                 /* 固定左框 */
-.catlegend + .frow > .bcell { border-top: 1.5px solid var(--cc); }                /* 首列上框（滿版橫線） */
-.catlegend + .frow > .bcell.name { border-top-left-radius: 12px; }                /* 左上圓角（凍結） */
-.catbox .frow:last-child > .bcell { border-bottom: 1.5px solid var(--cc); }       /* 末列下框 */
-.catbox .frow:last-child > .bcell.name { border-bottom-left-radius: 12px; }       /* 左下圓角（凍結） */
-/* 區塊內訊息列（讀取中／無資料）：撐滿整列（滿版），文字固定於左側可見，右側補框與圓角使框完整 */
-.bcell.name.msgcell { flex: 1 1 auto; width: auto; min-width: 0; color: #9ca3af; font-size: 14px; font-weight: 500; border-right: 1.5px solid var(--cc); }
-.catlegend + .frow > .bcell.name.msgcell { border-top-right-radius: 12px; }
-.catbox .frow:last-child > .bcell.name.msgcell { border-bottom-right-radius: 12px; }
+/* 大項左側色條（僅左緣色條，無上下框線與圓角；滑動時左緣乾淨） */
+.catbox .frow .bcell.name { border-left: 1.5px solid var(--cc); }
+/* 區塊內訊息列（讀取中／無資料）：撐滿整列，文字固定於左側可見 */
+.bcell.name.msgcell { flex: 1 1 auto; width: auto; min-width: 0; color: #9ca3af; font-size: 14px; font-weight: 500; }
 
 .bhead { position: sticky; top: 0; z-index: 4; background: #fff; border-bottom: 1px solid #eef0f3; height: 44px; }
 .bhead .bcell { height: 44px; }
@@ -133,11 +127,11 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 /* 每個大項內的偶數列加淡灰底（含凍結的名稱欄） */
 .frow.alt, .frow.alt .bcell.name { background: #f8f9fb; }
 
-/* 大項容器（外框改由凍結名稱欄與首/末列繪製，見上方規則） */
-.catbox { position: relative; width: 100%; background: #fff; margin: 22px 0 18px; }
-.catlegend { position: sticky; left: 0; width: fit-content; height: 0; display: flex; justify-content: flex-start; align-items: center; padding-left: 14px; z-index: 3; pointer-events: none; }
-.catlegend .dtxt { transform: translateY(-50%); background: #fff; padding: 0 10px; font-size: 18px; font-weight: 700; letter-spacing: 2px; white-space: nowrap; color: var(--tc); margin-top: 18px; }
-.catlegend + .frow { margin-top: 0; }   /* 標題壓在首列上框（含左上圓角）上 */
+/* 大項容器（左側色條見上方規則；標題為區塊上方的分類標頭） */
+.catbox { position: relative; width: 100%; background: #fff; margin: 18px 0 16px; }
+.catlegend { position: sticky; left: 0; width: fit-content; display: flex; align-items: center; padding-left: 14px; margin-bottom: 6px; z-index: 3; pointer-events: none; }
+.catlegend .dtxt { font-size: 18px; font-weight: 700; letter-spacing: 2px; white-space: nowrap; color: var(--tc); }
+.catlegend + .frow { margin-top: 0; }
 .catbox .frow:last-child { border-bottom: none; }
 /* 名稱欄的左框（.catbox .frow .bcell.name）即為大項固定左框，表頭不需再補償 */
 .catbox.sport   { --cc: #bfe3d0; --tc: #1f9d63; }
@@ -642,7 +636,10 @@ function positionNowLine(){
   let line = document.getElementById('nowLine');
   const now = new Date();
   const nowPos = now.getHours() + now.getMinutes() / 60;
-  const inRange = (dp.value === toVal(new Date())) && nowPos >= filterStart && nowPos < filterEnd + 1;
+  // 載入中（目前顯示的大項尚未全部載回）不畫紅線
+  const catsShown = (active === '全部') ? CAT_ORDER : [active];
+  const loading = catsShown.some(c => !catLoaded[c]);
+  const inRange = !loading && (dp.value === toVal(new Date())) && nowPos >= filterStart && nowPos < filterEnd + 1;
   if (!inRange) { nowLineLeft = null; if (line) line.style.display = 'none'; return; }
   if (!line) { line = document.createElement('div'); line.id = 'nowLine'; line.className = 'nowline'; bt.appendChild(line); }
   // 前半 30 分 → 落在第一格內（左→右）；後半 30 分 → 落在第二格內（左→右），中間縫跳過
