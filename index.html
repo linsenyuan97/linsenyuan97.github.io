@@ -99,6 +99,9 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; }
 .fade-right { position: absolute; top: 0; right: 0; bottom: 0; width: 40px; background: linear-gradient(to right, rgba(255,255,255,0), #fff); pointer-events: none; z-index: 5; opacity: 0; transition: opacity .2s; }
 .btable { position: relative; }        /* 寬度由 JS 設定 */
+/* 目前時間紅線（僅今天顯示，位於可捲動的時間軸容器內，隨橫向捲動一起移動） */
+.nowline { position: absolute; top: 0; bottom: 0; width: 2px; background: #ef4444; z-index: 1; pointer-events: none; box-shadow: 0 0 0 0.5px rgba(239,68,68,0.35); }
+.nowline::before { content: ''; position: absolute; top: 0; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
 .brow { display: flex; flex-wrap: nowrap; width: 100%; }
 .bcell { flex: 0 0 auto; display: flex; align-items: center; }
 .bcell.name {
@@ -293,7 +296,8 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 // ====== 換成你的 Apps Script 部署網址 ======
 const EXEC = 'https://script.google.com/macros/s/AKfycbxl72JqnTQczbO9hYw2LoR2i1GymTLmoolZdS3QhAGyqkB9xeviv7ricTZqwBKmzfX9mg/exec';
 
-const START = 0, END = 24;
+const START = 0, END = 24;                     // 時間軸可涵蓋全天 00:00 ~ 23:00（車位可 24h 預約）
+const DEFAULT_START = 0;                        // 預設起始時數（非今天用；今天則用目前時數）
 const HOURS = [];
 for (let h = START; h < END; h++) HOURS.push(h);
 
@@ -313,7 +317,7 @@ const CAT_META = {
 let active = '全部';
 let dataset = [];
 let catLoaded = { '運動': false, '車位': false, '休閒': false };  // 各大項資料是否已載回
-let filterStart = START, filterEnd = END - 1;   // 顯示時數範圍（含），預設 06:00 ~ 23:00
+let filterStart = DEFAULT_START, filterEnd = END - 1;   // 顯示時數範圍（含），預設 06:00 ~ 23:00
 let visHours = HOURS.slice();                    // 目前實際顯示的時數（依範圍過濾）
 let onlyAvail = false;                            // 只顯示有空位的公設（預設不勾）
 let hideClosed = true;                            // 隱藏未開放公設（預設勾）
@@ -399,7 +403,7 @@ function resetTimeForDate(){
   if (dp.value === toVal(new Date())) {
     filterStart = Math.max(START, Math.min(new Date().getHours(), END - 1));
   } else {
-    filterStart = START;
+    filterStart = DEFAULT_START;
   }
   syncTimeSelects();
 }
@@ -624,7 +628,24 @@ function render(){
     }
     shown.forEach((f, i) => box.appendChild(rowEl(f, i % 2 === 1)));
   });
+
+  positionNowLine();   // 畫出／更新目前時間紅線
 }
+
+// 目前時間紅線：只在「今天」且目前時間落在顯示範圍內時出現，依 filterStart 換算位置
+function positionNowLine(){
+  const bt = document.getElementById('btable');
+  if (!bt) return;
+  let line = document.getElementById('nowLine');
+  const now = new Date();
+  const nowPos = now.getHours() + now.getMinutes() / 60;
+  const inRange = (dp.value === toVal(new Date())) && nowPos >= filterStart && nowPos < filterEnd + 1;
+  if (!inRange) { if (line) line.style.display = 'none'; return; }
+  if (!line) { line = document.createElement('div'); line.id = 'nowLine'; line.className = 'nowline'; bt.appendChild(line); }
+  line.style.display = 'block';
+  line.style.left = (NAME_W + (nowPos - filterStart) * HOUR_W) + 'px';   // 對齊時段欄，時段欄固定寬故位置精準
+}
+setInterval(positionNowLine, 60000);   // 每分鐘更新紅線位置
 
 // 區塊內的單列訊息（載入中／無資料）：套用大項外框，寬度貼齊可視範圍並固定於左
 function msgRow(text){
