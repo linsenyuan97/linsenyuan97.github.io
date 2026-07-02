@@ -429,7 +429,7 @@ function updateFade(){
   const more = (b.scrollWidth - b.clientWidth - b.scrollLeft) > 2;
   f.style.opacity = more ? '1' : '0';
 }
-document.getElementById('board').addEventListener('scroll', updateFade);
+document.getElementById('board').addEventListener('scroll', () => { updateFade(); applyNowLineClip(); });
 window.addEventListener('resize', updateFade);
 
 // ── 篩選面板（展開 → 勾選 → 確認才套用並收合）──────────
@@ -635,6 +635,7 @@ function render(){
 }
 
 // 目前時間紅線：只在「今天」且目前時間落在顯示範圍內時出現，依 filterStart 換算位置
+let nowLineLeft = null;   // 紅線在表格內的 x 座標（含名稱欄寬）；null 表示不顯示
 function positionNowLine(){
   const bt = document.getElementById('btable');
   if (!bt) return;
@@ -642,9 +643,8 @@ function positionNowLine(){
   const now = new Date();
   const nowPos = now.getHours() + now.getMinutes() / 60;
   const inRange = (dp.value === toVal(new Date())) && nowPos >= filterStart && nowPos < filterEnd + 1;
-  if (!inRange) { if (line) line.style.display = 'none'; return; }
+  if (!inRange) { nowLineLeft = null; if (line) line.style.display = 'none'; return; }
   if (!line) { line = document.createElement('div'); line.id = 'nowLine'; line.className = 'nowline'; bt.appendChild(line); }
-  line.style.display = 'block';
   // 前半 30 分 → 落在第一格內（左→右）；後半 30 分 → 落在第二格內（左→右），中間縫跳過
   const hourIdx = Math.floor(nowPos) - filterStart;               // 目前在第幾個顯示欄
   const cellLeft = NAME_W + hourIdx * HOUR_W;
@@ -653,7 +653,17 @@ function positionNowLine(){
   const x = (m < 30)
     ? cellLeft + HOUR_PAD + (m / 30) * chipW                              // 第一格內
     : cellLeft + HOUR_PAD + chipW + HOUR_GAP + ((m - 30) / 30) * chipW;   // 第二格內
+  nowLineLeft = x;
   line.style.left = x + 'px';
+  applyNowLineClip();   // 依橫向捲動決定是否露出（捲到名稱欄後方就隱藏）
+}
+// 當紅線捲到凍結名稱欄後方時隱藏，避免從標題列／大項間空隙的左緣露出
+function applyNowLineClip(){
+  const line = document.getElementById('nowLine');
+  const board = document.getElementById('board');
+  if (!line || nowLineLeft === null || !board) return;
+  const screenX = nowLineLeft - board.scrollLeft;    // 相對於捲動容器左緣的位置
+  line.style.display = (screenX >= NAME_W) ? 'block' : 'none';
 }
 setInterval(positionNowLine, 60000);   // 每分鐘更新紅線位置
 
