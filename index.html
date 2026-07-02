@@ -118,8 +118,8 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .catlegend + .frow > .bcell.name { border-top-left-radius: 12px; }                /* 左上圓角（凍結） */
 .catbox .frow:last-child > .bcell { border-bottom: 1.5px solid var(--cc); }       /* 末列下框 */
 .catbox .frow:last-child > .bcell.name { border-bottom-left-radius: 12px; }       /* 左下圓角（凍結） */
-/* 區塊內訊息列（讀取中／無資料）：撐滿整列，右側補框與圓角使框完整 */
-.bcell.name.msgcell { flex: 1 1 auto; width: auto; min-width: 0; color: #9ca3af; font-size: 14px; font-weight: 500; border-right: 1.5px solid var(--cc); }
+/* 區塊內訊息列（讀取中／無資料）：固定為可視寬度並凍結於左，滑動時穩定不跑位；右側補框與圓角使框完整 */
+.bcell.name.msgcell { width: var(--vw, 320px); min-width: var(--vw, 320px); color: #9ca3af; font-size: 14px; font-weight: 500; border-right: 1.5px solid var(--cc); }
 .catlegend + .frow > .bcell.name.msgcell { border-top-right-radius: 12px; }
 .catbox .frow:last-child > .bcell.name.msgcell { border-bottom-right-radius: 12px; }
 
