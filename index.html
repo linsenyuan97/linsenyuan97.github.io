@@ -118,9 +118,9 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .catlegend + .frow > .bcell.name { border-top-left-radius: 12px; }                /* 左上圓角（凍結） */
 .catbox .frow:last-child > .bcell { border-bottom: 1px solid var(--cc); }       /* 末列下框 */
 .catbox .frow:last-child > .bcell.name { border-bottom-left-radius: 12px; }       /* 左下圓角（凍結） */
-/* 無資料／載入中訊息列：結構同資料列（凍結名稱格 + 訊息格），文字 sticky 固定於名稱欄右側可見，捲動穩定 */
-.msgrow .msgtext { flex: 1 1 0; min-width: 0; }
-.msgrow .msgtext > span { position: sticky; left: var(--nw); padding-left: 12px; color: #9ca3af; font-size: 14px; font-weight: 500; white-space: nowrap; }
+/* 無資料／載入中訊息列：文字放凍結名稱格向右溢出、固定於左，捲動穩定不跑位 */
+.msgrow .msgname { border-right: none; overflow: visible; color: #9ca3af; font-size: 14px; font-weight: 500; }
+.msgrow .msgfill { flex: 1 1 0; min-width: 0; }
 
 .bhead { position: sticky; top: 0; z-index: 4; background: #fff; border-bottom: 1px solid #eef0f3; height: 44px; }
 .bhead .bcell { height: 44px; }
@@ -674,14 +674,12 @@ function msgRow(text){
   const row = document.createElement('div');
   row.className = 'frow msgrow';
   const name = document.createElement('div');
-  name.className = 'bcell name';          // 凍結左框格（空白），與資料列同結構
-  const msg = document.createElement('div');
-  msg.className = 'bcell msgtext';
-  const span = document.createElement('span');
-  span.textContent = text;
-  msg.appendChild(span);
+  name.className = 'bcell name msgname';   // 訊息放凍結名稱格，向右溢出顯示、固定於左
+  name.textContent = text;
+  const fill = document.createElement('div');
+  fill.className = 'bcell msgfill';        // 右側填充：提供上/下框線，與資料列同結構
   row.appendChild(name);
-  row.appendChild(msg);
+  row.appendChild(fill);
   return row;
 }
 
