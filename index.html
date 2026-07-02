@@ -113,15 +113,14 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .bcell.hour { width: var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
 .bcell.filler { flex: 1 1 0; min-width: 0; padding: 0; }   /* 右側填充：吃掉剩餘寬度使區塊滿版，時段欄維持原寬 */
 /* 大項外框畫在「凍結名稱欄 + 首/末列」上：圓角固定於左側、單線、不隨捲動 */
-.catbox .frow .bcell.name { border-left: 1.5px solid var(--cc); }                 /* 固定左框 */
-.catlegend + .frow > .bcell { border-top: 1.5px solid var(--cc); }                /* 首列上框（滿版橫線） */
+.catbox .frow .bcell.name { border-left: 1px solid var(--cc); }                 /* 固定左框 */
+.catlegend + .frow > .bcell { border-top: 1px solid var(--cc); }                /* 首列上框（滿版橫線） */
 .catlegend + .frow > .bcell.name { border-top-left-radius: 12px; }                /* 左上圓角（凍結） */
-.catbox .frow:last-child > .bcell { border-bottom: 1.5px solid var(--cc); }       /* 末列下框 */
+.catbox .frow:last-child > .bcell { border-bottom: 1px solid var(--cc); }       /* 末列下框 */
 .catbox .frow:last-child > .bcell.name { border-bottom-left-radius: 12px; }       /* 左下圓角（凍結） */
-/* 區塊內訊息列（讀取中／無資料）：固定為可視寬度並凍結於左，滑動時穩定不跑位；右側補框與圓角使框完整 */
-.bcell.name.msgcell { width: var(--vw, 320px); min-width: var(--vw, 320px); color: #9ca3af; font-size: 14px; font-weight: 500; border-right: 1.5px solid var(--cc); }
-.catlegend + .frow > .bcell.name.msgcell { border-top-right-radius: 12px; }
-.catbox .frow:last-child > .bcell.name.msgcell { border-bottom-right-radius: 12px; }
+/* 無資料／載入中訊息列：結構同資料列（凍結名稱格 + 訊息格），文字 sticky 固定於名稱欄右側可見，捲動穩定 */
+.msgrow .msgtext { flex: 1 1 0; min-width: 0; }
+.msgrow .msgtext > span { position: sticky; left: var(--nw); padding-left: 12px; color: #9ca3af; font-size: 14px; font-weight: 500; white-space: nowrap; }
 
 .bhead { position: sticky; top: 0; z-index: 4; background: #fff; border-bottom: 1px solid #eef0f3; height: 44px; }
 .bhead .bcell { height: 44px; }
@@ -674,10 +673,15 @@ setInterval(positionNowLine, 60000);   // 每分鐘更新紅線位置
 function msgRow(text){
   const row = document.createElement('div');
   row.className = 'frow msgrow';
-  const cell = document.createElement('div');
-  cell.className = 'bcell name msgcell';
-  cell.textContent = text;
-  row.appendChild(cell);
+  const name = document.createElement('div');
+  name.className = 'bcell name';          // 凍結左框格（空白），與資料列同結構
+  const msg = document.createElement('div');
+  msg.className = 'bcell msgtext';
+  const span = document.createElement('span');
+  span.textContent = text;
+  msg.appendChild(span);
+  row.appendChild(name);
+  row.appendChild(msg);
   return row;
 }
 
