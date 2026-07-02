@@ -297,11 +297,13 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 const EXEC = 'https://script.google.com/macros/s/AKfycbxl72JqnTQczbO9hYw2LoR2i1GymTLmoolZdS3QhAGyqkB9xeviv7ricTZqwBKmzfX9mg/exec';
 
 const START = 0, END = 24;                     // 時間軸可涵蓋全天 00:00 ~ 23:00（車位可 24h 預約）
-const DEFAULT_START = 0;                        // 預設起始時數（非今天用；今天則用目前時數）
+const DEFAULT_START = 6;                        // 預設起始時數（非今天用；今天則用目前時數）
 const HOURS = [];
 for (let h = START; h < END; h++) HOURS.push(h);
 
 const NAME_W = 120, HOUR_W = 128;              // 需與 CSS 的 --nw / --hw 一致
+const HOUR_PAD = 8;                            // 需與 .bcell.hour 左右 padding 一致（格子實際內容區）
+const HOUR_GAP = 8;                            // 需與 .bcell.hour 的 gap 一致（兩個半小時格之間的間距）
 const TOTAL_W = NAME_W + HOURS.length * HOUR_W;
 
 // 大項顯示順序：運動 → 車位 → 休閒
@@ -643,7 +645,15 @@ function positionNowLine(){
   if (!inRange) { if (line) line.style.display = 'none'; return; }
   if (!line) { line = document.createElement('div'); line.id = 'nowLine'; line.className = 'nowline'; bt.appendChild(line); }
   line.style.display = 'block';
-  line.style.left = (NAME_W + (nowPos - filterStart) * HOUR_W) + 'px';   // 對齊時段欄，時段欄固定寬故位置精準
+  // 前半 30 分 → 落在第一格內（左→右）；後半 30 分 → 落在第二格內（左→右），中間縫跳過
+  const hourIdx = Math.floor(nowPos) - filterStart;               // 目前在第幾個顯示欄
+  const cellLeft = NAME_W + hourIdx * HOUR_W;
+  const chipW = (HOUR_W - 2 * HOUR_PAD - HOUR_GAP) / 2;           // 每個半小時格的寬度
+  const m = now.getMinutes();
+  const x = (m < 30)
+    ? cellLeft + HOUR_PAD + (m / 30) * chipW                              // 第一格內
+    : cellLeft + HOUR_PAD + chipW + HOUR_GAP + ((m - 30) / 30) * chipW;   // 第二格內
+  line.style.left = x + 'px';
 }
 setInterval(positionNowLine, 60000);   // 每分鐘更新紅線位置
 
