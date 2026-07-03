@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>林森苑公設預約查詢</title>
 <!-- App 圖示：主畫面/捷徑/分頁 -->
-<link rel="apple-touch-icon" href="icons/facility/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/facility/icon-512.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/facility/icon-192.png">
-<link rel="icon" type="image/png" sizes="64x64" href="icons/facility/favicon-64.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
 <meta name="apple-mobile-web-app-title" content="林森苑公設">
 <meta name="theme-color" content="#1d4ed8">
 <style>
@@ -398,8 +398,17 @@ function timeOpts(from){
   for (let h = from; h <= END - 1; h++) html += '<option value="' + h + '">' + pad(h) + ':00</option>';
   return html;
 }
+// 今天：起始選單最早只到「現在整點」（今天已過的時段不列）；其他日期：從 START 全列
+function startMinHour(){
+  if (dp.value === toVal(new Date())) {
+    return Math.max(START, Math.min(new Date().getHours(), END - 1));
+  }
+  return START;
+}
 function syncTimeSelects(){
-  startSel.innerHTML = timeOpts(START);               // 起始固定 06:00 ~ 23:00
+  const minH = startMinHour();
+  if (filterStart < minH) filterStart = minH;         // 起始不早於允許的最早時數
+  startSel.innerHTML = timeOpts(minH);                // 起始選單移除今天已過的時段
   startSel.value = String(filterStart);
   if (filterEnd < filterStart) filterEnd = filterStart;
   endSel.innerHTML = timeOpts(filterStart);           // 結束只列 ≥ 起始
