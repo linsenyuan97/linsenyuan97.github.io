@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>B1 停車場車位查詢系統</title>
+<meta name="description" content="依實際 B1 地下一層平面圖建置的互動車位查詢系統，輸入車位編號即顯示位置與從 1F 進入後的行駛路線">
+<style>
+/* =========================================================
+   車位查詢系統  —  依實際 B1 平面圖框架建置（直向 / 手機優先）
+   ● 版面：上方查詢列 + 全畫面車位圖
+   ● 「!」按鈕：有路線→彈出建議行駛路線；無路線→提示請輸入車號
+   ● 車位「編號」目前為【暫定占位碼】，請依實際編號逐區
+     修改 CLUSTERS 設定中的 ids 陣列即可（見檔案底部說明）。
+   ========================================================= */
+:root{
+  --bg-primary:#0a0f1c; --bg-secondary:#0d1526; --bg-panel:#101d34;
+  --glass-bg:rgba(255,255,255,0.04); --glass-border:rgba(255,255,255,0.09);
+  --accent-cyan:#00d4ff; --accent-blue:#2563eb; --accent-gold:#f59e0b;
+  --accent-green:#10b981; --accent-red:#ef4444;
+  --text-1:#f1f5f9; --text-2:#94a3b8; --text-3:#54637a;
+  --radius:14px; --radius-sm:9px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
+  background:var(--bg-primary);color:var(--text-1);}
+.app{height:100%;display:flex;flex-direction:column;}
+
+/* ---------- TOP BAR ---------- */
+.topbar{flex-shrink:0;padding:10px 12px 12px;background:var(--bg-secondary);
+  border-bottom:1px solid var(--glass-border);box-shadow:0 4px 18px rgba(0,0,0,.35);z-index:20;}
+.titlebar{font-size:.9rem;font-weight:800;color:var(--accent-cyan);letter-spacing:.3px;
+  margin:0 2px 8px;display:flex;align-items:center;gap:6px;}
+.titlebar small{font-weight:400;color:var(--text-3);font-size:.66rem;letter-spacing:0;}
+.search-row{display:flex;gap:8px;align-items:stretch;}
+.search-wrap{position:relative;flex:1;}
+.s-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:.95rem;}
+.search-input{width:100%;padding:12px 38px 12px 36px;background:rgba(255,255,255,.06);
+  border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);color:var(--text-1);
+  font-family:inherit;font-size:1.05rem;font-weight:600;letter-spacing:1px;outline:none;
+  transition:border-color .2s,box-shadow .2s,background .2s;}
+.search-input::placeholder{color:var(--text-3);letter-spacing:0;font-weight:400;}
+.search-input:focus{border-color:var(--accent-cyan);background:rgba(0,212,255,.06);
+  box-shadow:0 0 0 3px rgba(0,212,255,.12);}
+.s-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;
+  border:none;color:var(--text-3);font-size:1rem;cursor:pointer;display:none;}
+.s-clear:hover{color:var(--text-1);}
+
+/* info「!」button */
+.info-btn{flex-shrink:0;width:48px;border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.05);color:var(--text-2);font-size:1.4rem;font-weight:800;
+  cursor:pointer;transition:all .18s;line-height:1;}
+.info-btn:hover{background:rgba(255,255,255,.1);color:var(--text-1);}
+.info-btn.ready{background:linear-gradient(135deg,var(--accent-gold),#d97706);color:#fff;
+  border-color:var(--accent-gold);box-shadow:0 0 0 0 rgba(245,158,11,.5);
+  animation:btn-pulse 1.6s ease-out infinite;}
+@keyframes btn-pulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.5);}70%{box-shadow:0 0 0 10px rgba(245,158,11,0);}100%{box-shadow:0 0 0 0 rgba(245,158,11,0);}}
+
+.suggestions{position:absolute;top:calc(100% + 5px);left:0;right:0;background:var(--bg-panel);
+  border:1px solid var(--glass-border);border-radius:var(--radius-sm);overflow:hidden auto;z-index:100;
+  box-shadow:0 12px 32px rgba(0,0,0,.5);display:none;max-height:46vh;}
+.sug-item{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,.04);}
+.sug-item:last-child{border-bottom:none;}
+.sug-item:active,.sug-item:hover{background:rgba(255,255,255,.07);}
+.sug-id{font-weight:700;font-size:.95rem;letter-spacing:.5px;}
+.sug-badge{font-size:.6rem;font-weight:600;padding:2px 6px;border-radius:4px;}
+.badge-reg{background:rgba(37,99,235,.2);color:#60a5fa;}
+.badge-dis{background:rgba(16,185,129,.2);color:#34d399;}
+.sug-zone{font-size:.68rem;color:var(--text-3);margin-left:auto;}
+
+.err-inline{margin:8px 2px 0;padding:9px 12px;background:rgba(239,68,68,.08);
+  border:1px solid rgba(239,68,68,.25);border-radius:var(--radius-sm);
+  font-size:.8rem;color:#fca5a5;display:none;}
+.err-inline.show{display:block;}
+
+/* ---------- MAP ---------- */
+.map-area{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;
+  padding:14px;background:radial-gradient(ellipse at 50% 26%,#0e1f3d 0%,var(--bg-primary) 62%);
+  -webkit-overflow-scrolling:touch;}
+.map-area::-webkit-scrollbar{width:7px;height:7px;}
+.map-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
+#floorplan{display:block;filter:drop-shadow(0 20px 54px rgba(0,0,0,.6));border-radius:8px;}
+
+.zoom-ctrls{position:fixed;right:14px;bottom:16px;display:flex;flex-direction:column;gap:5px;z-index:50;}
+.zoom-btn{width:44px;height:44px;background:var(--bg-panel);border:1px solid var(--glass-border);
+  border-radius:11px;color:var(--text-1);font-size:1.2rem;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;user-select:none;box-shadow:0 4px 14px rgba(0,0,0,.4);
+  transition:background .15s,border-color .15s;}
+.zoom-btn:hover{background:rgba(0,212,255,.1);border-color:var(--accent-cyan);}
+
+/* ---------- MODAL DIALOG ---------- */
+.modal{position:fixed;inset:0;z-index:200;background:rgba(4,8,16,.72);
+  backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:18px;}
+.modal.show{display:flex;animation:fade .18s ease;}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+.modal-card{position:relative;width:100%;max-width:430px;max-height:86vh;overflow-y:auto;
+  background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:18px;
+  padding:20px 18px 18px;box-shadow:0 24px 70px rgba(0,0,0,.6);animation:pop .2s ease;}
+@keyframes pop{from{transform:translateY(14px) scale(.97);opacity:0;}to{transform:none;opacity:1;}}
+.modal-card::-webkit-scrollbar{width:5px;}
+.modal-card::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
+.modal-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;border-radius:8px;
+  background:rgba(255,255,255,.06);color:var(--text-2);font-size:1rem;cursor:pointer;}
+.modal-x:hover{background:rgba(255,255,255,.12);color:var(--text-1);}
+
+/* dialog: route content */
+.dlg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px;padding-right:34px;}
+.dlg-num-lbl{font-size:.64rem;color:var(--text-3);margin-bottom:2px;}
+.dlg-num{font-size:2.1rem;font-weight:800;color:var(--accent-gold);letter-spacing:1.5px;line-height:1;}
+.type-badge{padding:5px 11px;border-radius:20px;font-size:.7rem;font-weight:700;white-space:nowrap;margin-top:4px;}
+.type-reg{background:rgba(37,99,235,.18);color:#60a5fa;border:1px solid rgba(37,99,235,.3);}
+.type-dis{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.3);}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.info-cell{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:9px 11px;}
+.info-cell-lbl{font-size:.62rem;color:var(--text-3);margin-bottom:2px;}
+.info-cell-val{font-size:.85rem;font-weight:600;}
+.route-hdr{display:flex;align-items:center;gap:7px;font-size:.86rem;font-weight:700;color:var(--accent-green);margin-bottom:14px;}
+.route-step{display:flex;gap:11px;align-items:flex-start;}
+.step-dot{width:23px;height:23px;border-radius:50%;background:var(--accent-green);color:#fff;
+  font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-txt{font-size:.82rem;color:var(--text-2);line-height:1.55;}
+.step-line{width:1.5px;height:11px;background:rgba(16,185,129,.25);margin-left:11px;}
+.dlg-foot{margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border);
+  font-size:.64rem;color:#fbbf24;line-height:1.5;}
+.dlg-empty{text-align:center;padding:22px 8px 10px;}
+.dlg-empty .ico{font-size:3rem;margin-bottom:14px;}
+.dlg-empty h3{font-size:1.05rem;font-weight:700;color:var(--text-1);margin-bottom:8px;}
+.dlg-empty p{font-size:.82rem;color:var(--text-3);line-height:1.7;}
+
+/* ---------- SVG animations ---------- */
+@keyframes space-pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.sp-highlight{animation:space-pulse 1.1s ease-in-out infinite;}
+@keyframes route-dash{from{stroke-dashoffset:520;}to{stroke-dashoffset:0;}}
+.route-animated{stroke-dasharray:14 9;animation:route-dash 2.4s linear infinite;}
+@keyframes ping-expand{0%{r:8;opacity:1;}100%{r:24;opacity:0;}}
+.ping-circle{animation:ping-expand 1.8s ease-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.45;}}
+.blink{animation:blink 2s ease-in-out infinite;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ===== TOP SEARCH BAR ===== -->
+  <header class="topbar">
+    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位</small></div>
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="s-ic">🔎</span>
+        <input id="searchInput" class="search-input" type="text"
+               placeholder="輸入車位編號" autocomplete="off" spellcheck="false"
+               enterkeyhint="search" inputmode="text">
+        <button class="s-clear" id="clearBtn" onclick="clearSearch()">✕</button>
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+      <button class="info-btn" id="infoBtn" onclick="openInfo()" title="建議行駛路線">!</button>
+    </div>
+    <div class="err-inline" id="errMsg">❌ 查無此車位編號，請確認後重試</div>
+  </header>
+
+  <!-- ===== FLOOR PLAN ===== -->
+  <main class="map-area" id="mapArea">
+  <svg id="floorplan" viewBox="0 0 940 1672" width="470" height="836">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0 L0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
+    </pattern>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+      <polygon points="0 0,7 3.5,0 7" fill="#10b981"/></marker>
+    <linearGradient id="rampGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#12233b"/></linearGradient>
+  </defs>
+
+  <!-- background -->
+  <rect width="940" height="1672" fill="#0c1424"/>
+  <rect width="940" height="1672" fill="url(#grid)"/>
+
+  <!-- ===== BUILDING SHELL ===== -->
+  <rect x="126" y="28" width="718" height="1620" rx="4" fill="#182534" stroke="#31506f" stroke-width="8"/>
+  <rect x="142" y="44" width="686" height="1588" rx="2" fill="#17222f"/>
+
+  <!-- ===== DRIVING CIRCUITS (guides) ===== -->
+  <g fill="none" stroke="#0d9488" stroke-width="1.6" stroke-dasharray="13,9" opacity="0.42">
+    <ellipse cx="500" cy="440" rx="250" ry="120"/>
+    <ellipse cx="610" cy="900" rx="245" ry="215"/>
+  </g>
+  <text x="500" y="360" text-anchor="middle" fill="#0d9488" font-size="12" opacity=".55">↻ 單向循環車道</text>
+  <text x="610" y="905" text-anchor="middle" fill="#0d9488" font-size="12" opacity=".5">↻ 單向循環車道</text>
+
+  <!-- ===== ROOMS ===== -->
+  <g font-family="'Microsoft JhengHei',sans-serif">
+    <rect x="312" y="58" width="96" height="92" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="360" y="100" text-anchor="middle" font-size="9" fill="#43607f">垃圾及</text>
+    <text x="360" y="114" text-anchor="middle" font-size="9" fill="#43607f">機房</text>
+    <rect x="506" y="206" width="140" height="60" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="576" y="240" text-anchor="middle" font-size="9" fill="#43607f">排煙室</text>
+    <rect x="142" y="524" width="86" height="162" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="185" y="600" text-anchor="middle" font-size="9" fill="#43607f">飲用純水</text>
+    <text x="185" y="614" text-anchor="middle" font-size="9" fill="#43607f">機房</text>
+    <rect x="150" y="950" width="112" height="88" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="206" y="998" text-anchor="middle" font-size="9" fill="#43607f">儲藏室</text>
+    <rect x="150" y="1092" width="112" height="86" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="206" y="1138" text-anchor="middle" font-size="9" fill="#43607f">儲藏室</text>
+    <rect x="300" y="1000" width="70" height="86" fill="#132433" stroke="#294261" stroke-width="1.5"/>
+    <text x="335" y="1040" text-anchor="middle" font-size="8" fill="#3a5877">消防</text>
+    <text x="335" y="1052" text-anchor="middle" font-size="8" fill="#3a5877">水池</text>
+  </g>
+
+  <!-- ===== BUILDING CORES (電梯/樓梯出入口) ===== -->
+  <!-- A 棟 (top) -->
+  <g font-family="'Microsoft JhengHei',sans-serif">
+    <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
+    <text x="480" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#7aa0c8">A 棟</text>
+    <rect x="452" y="140" width="56" height="52" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
+    <line x1="454" y1="148" x2="506" y2="148" stroke="#345580" stroke-width="1"/>
+    <line x1="454" y1="156" x2="506" y2="156" stroke="#345580" stroke-width="1"/>
+    <line x1="454" y1="164" x2="506" y2="164" stroke="#345580" stroke-width="1"/>
+    <line x1="454" y1="172" x2="506" y2="172" stroke="#345580" stroke-width="1"/>
+    <line x1="454" y1="180" x2="506" y2="180" stroke="#345580" stroke-width="1"/>
+    <rect x="416" y="210" width="48" height="48" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/>
+    <text x="440" y="240" text-anchor="middle" font-size="20" fill="#3b82f6">🛗</text>
+    <rect x="496" y="210" width="48" height="48" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/>
+    <text x="520" y="240" text-anchor="middle" font-size="20" fill="#3b82f6">🛗</text>
+    <text x="480" y="280" text-anchor="middle" font-size="8" fill="#4f6f92">通往 1F～RF</text>
+  </g>
+  <!-- 中央梯廳 (middle) -->
+  <g font-family="'Microsoft JhengHei',sans-serif">
+    <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
+    <text x="401" y="824" text-anchor="middle" font-size="10" font-weight="700" fill="#7aa0c8">中央梯廳</text>
+    <rect x="350" y="832" width="46" height="46" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
+    <line x1="352" y1="840" x2="394" y2="840" stroke="#345580" stroke-width="1"/>
+    <line x1="352" y1="848" x2="394" y2="848" stroke="#345580" stroke-width="1"/>
+    <line x1="352" y1="856" x2="394" y2="856" stroke="#345580" stroke-width="1"/>
+    <line x1="352" y1="864" x2="394" y2="864" stroke="#345580" stroke-width="1"/>
+    <rect x="406" y="832" width="46" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/>
+    <text x="429" y="862" text-anchor="middle" font-size="18" fill="#3b82f6">🛗</text>
+    <rect x="350" y="888" width="102" height="48" rx="2" fill="#122132" stroke="#294261" stroke-width="1.3"/>
+    <text x="401" y="908" text-anchor="middle" font-size="8" fill="#43607f">社區防護樓梯</text>
+    <text x="401" y="922" text-anchor="middle" font-size="8" fill="#43607f">/ 田房</text>
+  </g>
+  <!-- B 棟 (bottom) -->
+  <g font-family="'Microsoft JhengHei',sans-serif">
+    <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
+    <text x="522" y="1564" text-anchor="middle" font-size="12" font-weight="700" fill="#7aa0c8">B 棟</text>
+    <rect x="452" y="1574" width="52" height="46" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
+    <line x1="454" y1="1582" x2="502" y2="1582" stroke="#345580" stroke-width="1"/>
+    <line x1="454" y1="1590" x2="502" y2="1590" stroke="#345580" stroke-width="1"/>
+    <line x1="454" y1="1598" x2="502" y2="1598" stroke="#345580" stroke-width="1"/>
+    <line x1="454" y1="1606" x2="502" y2="1606" stroke="#345580" stroke-width="1"/>
+    <rect x="514" y="1574" width="44" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/>
+    <text x="536" y="1604" text-anchor="middle" font-size="18" fill="#3b82f6">🛗</text>
+    <rect x="566" y="1574" width="30" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/>
+    <text x="581" y="1604" text-anchor="middle" font-size="15" fill="#3b82f6">🛗</text>
+  </g>
+
+  <!-- ===== VEHICLE RAMPS (通往 1F / B1 / B2) ===== -->
+  <g>
+    <rect x="598" y="46" width="132" height="410" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
+    <line x1="664" y1="70" x2="664" y2="430" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrow)" opacity=".7"/>
+    <text x="664" y="150" text-anchor="middle" font-size="14" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道</text>
+    <text x="664" y="176" text-anchor="middle" font-size="15" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 1F</text>
+    <text x="664" y="235" text-anchor="middle" font-size="9" fill="#4f7ba8" font-family="'Microsoft JhengHei'">↑ 上行至地面層</text>
+    <text x="664" y="418" text-anchor="middle" font-size="9" fill="#7fbef5" font-family="'Microsoft JhengHei'">▼ 由此進入 B1</text>
+  </g>
+  <g>
+    <rect x="250" y="878" width="128" height="176" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
+    <line x1="314" y1="900" x2="314" y2="1030" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrow)" opacity=".7"/>
+    <text x="314" y="948" text-anchor="middle" font-size="12" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道</text>
+    <text x="314" y="970" text-anchor="middle" font-size="13" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 B2</text>
+    <text x="314" y="1044" text-anchor="middle" font-size="9" fill="#4f7ba8" font-family="'Microsoft JhengHei'">↓ 下行至地下二層</text>
+  </g>
+  <g>
+    <rect x="256" y="1092" width="480" height="66" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.4" stroke-dasharray="8,6"/>
+    <line x1="290" y1="1125" x2="712" y2="1125" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrow)" opacity=".65"/>
+    <text x="496" y="1120" text-anchor="middle" font-size="12" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道 · 通往 B1（本層匝道）</text>
+  </g>
+
+  <!-- ===== STRUCTURAL PILLARS (JS) ===== -->
+  <g id="pillarLayer" fill="#0a121d" stroke="#213448" stroke-width="1"></g>
+  <!-- ===== PARKING SPACES (JS) ===== -->
+  <g id="spacesLayer"></g>
+  <!-- ===== ROUTE (JS) ===== -->
+  <g id="routeLayer"></g>
+
+  <!-- ===== ENTRY marker ===== -->
+  <g id="entryMarker" class="blink" filter="url(#glow)">
+    <circle cx="664" cy="470" r="19" fill="#16a34a" stroke="#22c55e" stroke-width="2.5"/>
+    <text x="664" y="476" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" font-family="'Microsoft JhengHei'">入</text>
+  </g>
+  <text x="664" y="500" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">1F→B1 進入點</text>
+
+  <!-- floor label + north -->
+  <rect x="142" y="1610" width="140" height="20" rx="2" fill="rgba(0,0,0,.5)"/>
+  <text x="212" y="1624" text-anchor="middle" fill="#3a5877" font-size="9" font-family="'Microsoft JhengHei'">B1 地下一層平面圖</text>
+  <g transform="translate(808,74)">
+    <circle r="18" fill="rgba(0,0,0,.45)" stroke="#294261" stroke-width="1.2"/>
+    <text y="-5" text-anchor="middle" fill="#64748b" font-size="8.5" font-weight="600">N</text>
+    <line x1="0" y1="-12" x2="0" y2="5" stroke="#3b82f6" stroke-width="2"/>
+    <polygon points="0,-12 -4,1 4,1" fill="#3b82f6"/>
+  </g>
+  </svg>
+  </main>
+</div>
+
+<!-- zoom controls -->
+<div class="zoom-ctrls">
+  <button class="zoom-btn" title="放大" onclick="zoomIn()">＋</button>
+  <button class="zoom-btn" title="縮小" onclick="zoomOut()">－</button>
+  <button class="zoom-btn" title="重置" onclick="resetZoom()" style="font-size:.72rem;font-weight:700">↺</button>
+</div>
+
+<!-- ===== MODAL DIALOG ===== -->
+<div class="modal" id="modal" onclick="if(event.target===this)closeInfo()">
+  <div class="modal-card">
+    <button class="modal-x" onclick="closeInfo()">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ①  車位分區設定 CLUSTERS
+   ---------------------------------------------------------------------
+   每一個 cluster = 平面圖上「一排 / 一列」車位。
+     orient  'H'=橫向並排(沿X)、'V'=縱向堆疊(沿Y)
+     face    車頭朝向 'up'|'down'|'left'|'right'
+     x,y     這排「第一格」左上角座標（viewBox 0~940 , 0~1672）
+     n       車位數量   pitch 每格間距
+     type    'reg' 一般 | 'dis' 無障礙
+     ids  ★【要改的地方】此排車位編號，由起點依序排列；
+            例 ids:['A012','A013',...]。留空 [] 則自動產生占位碼。
+   ===================================================================== */
+const SW = 30, SD = 58;
+
+const CLUSTERS = [
+  {zone:'A', name:'A區·頂排左', lift:'A棟', orient:'H', face:'down', x:188, y:46,  n:5, pitch:33, type:'reg', ids:[]},
+  {zone:'A', name:'A區·頂排左', lift:'A棟', orient:'H', face:'down', x:410, y:150, n:3, pitch:33, type:'reg', ids:[]},
+  {zone:'B', name:'B區·頂排右', lift:'A棟', orient:'H', face:'down', x:588, y:46,  n:1, pitch:33, type:'reg', ids:[]},
+  {zone:'B', name:'B區·頂排右', lift:'A棟', orient:'H', face:'down', x:748, y:46,  n:2, pitch:33, type:'reg', ids:[]},
+
+  {zone:'C', name:'C區·左牆縱列', lift:'A棟', orient:'V', face:'right', x:146, y:130,  n:8, pitch:33, type:'reg', ids:[]},
+  {zone:'C', name:'C區·左牆縱列', lift:'中央梯廳', orient:'V', face:'right', x:146, y:700,  n:6, pitch:33, type:'reg', ids:[]},
+  {zone:'C', name:'C區·左牆縱列', lift:'B棟', orient:'V', face:'right', x:146, y:1250, n:9, pitch:33, type:'reg', ids:[]},
+
+  {zone:'D', name:'D區·右牆縱列', lift:'A棟', orient:'V', face:'left', x:768, y:250,  n:7, pitch:33, type:'reg', ids:[]},
+  {zone:'D', name:'D區·右牆縱列', lift:'A棟', orient:'V', face:'left', x:768, y:560,  n:8, pitch:33, type:'reg', ids:[]},
+  {zone:'D', name:'D區·右牆縱列', lift:'中央梯廳', orient:'V', face:'left', x:768, y:892,  n:8, pitch:33, type:'reg', ids:[]},
+  {zone:'D', name:'D區·右牆縱列', lift:'B棟', orient:'V', face:'left', x:768, y:1200, n:7, pitch:33, type:'reg', ids:[]},
+  {zone:'D', name:'D區·右牆縱列', lift:'B棟', orient:'V', face:'left', x:768, y:1450, n:5, pitch:33, type:'reg', ids:[]},
+
+  {zone:'E', name:'E區·中央上排', lift:'A棟', orient:'H', face:'up',   x:498, y:512, n:8, pitch:34, type:'reg', ids:[]},
+  {zone:'E', name:'E區·中央上排', lift:'A棟', orient:'H', face:'down', x:498, y:604, n:8, pitch:34, type:'reg', ids:[]},
+  {zone:'F', name:'F區·中央下排', lift:'中央梯廳', orient:'H', face:'up', x:498, y:690, n:8, pitch:34, type:'reg', ids:[]},
+  {zone:'E', name:'E區·中央左列', lift:'A棟', orient:'V', face:'right', x:430, y:272, n:4, pitch:33, type:'reg', ids:[]},
+  {zone:'F', name:'F區·中央右列', lift:'A棟', orient:'V', face:'left',  x:640, y:272, n:4, pitch:33, type:'reg', ids:[]},
+
+  {zone:'H', name:'H區·下圓環內', lift:'中央梯廳', orient:'H', face:'down', x:522, y:1044, n:5, pitch:34, type:'reg', ids:[]},
+
+  {zone:'G', name:'G區·下中左列', lift:'中央梯廳', orient:'V', face:'right', x:520, y:1192, n:9, pitch:33, type:'reg', ids:[]},
+  {zone:'G', name:'G區·下中右列', lift:'B棟', orient:'V', face:'left',  x:640, y:1192, n:9, pitch:33, type:'reg', ids:[]},
+
+  {zone:'J', name:'J區·底部左①', lift:'中央梯廳', orient:'H', face:'down', x:152, y:1196, n:7, pitch:34, type:'reg', ids:[]},
+  {zone:'J', name:'J區·底部左②', lift:'B棟', orient:'H', face:'down', x:152, y:1346, n:7, pitch:34, type:'reg', ids:[]},
+  {zone:'K', name:'K區·底部左直列', lift:'B棟', orient:'V', face:'right', x:150, y:1440, n:5, pitch:33, type:'reg', ids:[]},
+  {zone:'K', name:'K區·底部左直列', lift:'B棟', orient:'V', face:'right', x:300, y:1440, n:5, pitch:33, type:'reg', ids:[]},
+
+  {zone:'P', name:'無障礙·A棟旁', lift:'A棟', orient:'H', face:'down', x:730, y:296, n:2, pitch:40, type:'dis', ids:[]},
+  {zone:'P', name:'無障礙·B棟旁', lift:'B棟', orient:'V', face:'left',  x:686, y:1440, n:2, pitch:40, type:'dis', ids:[]},
+];
+
+/* ②  由 CLUSTERS 產生所有車位 */
+const SPACES = [];
+const zoneCounter = {};
+CLUSTERS.forEach(cl => {
+  const isDis = cl.type === 'dis';
+  const w0 = isDis ? 38 : SW, d0 = isDis ? 66 : SD;
+  for (let i = 0; i < cl.n; i++) {
+    let x, y, w, h;
+    if (cl.orient === 'H') { x = cl.x + i*cl.pitch; y = cl.y; w = w0; h = d0; }
+    else                   { x = cl.x; y = cl.y + i*cl.pitch; w = d0; h = w0; }
+    let ax, ay;
+    if (cl.face === 'down')      { ax = x + w/2; ay = y + h; }
+    else if (cl.face === 'up')   { ax = x + w/2; ay = y; }
+    else if (cl.face === 'right'){ ax = x + w;   ay = y + h/2; }
+    else                         { ax = x;       ay = y + h/2; }
+    let id;
+    if (cl.ids && cl.ids[i]) id = String(cl.ids[i]).toUpperCase();
+    else { zoneCounter[cl.zone] = (zoneCounter[cl.zone]||0)+1;
+           id = cl.zone + String(zoneCounter[cl.zone]).padStart(2,'0'); }
+    SPACES.push({ id, x, y, w, h, ax, ay, face:cl.face,
+                  type:cl.type, zone:cl.zone, zoneName:cl.name, lift:cl.lift,
+                  provisional: !(cl.ids && cl.ids[i]) });
+  }
+});
+const spaceMap = {};
+SPACES.forEach(s => spaceMap[s.id] = s);
+
+/* ③  結構柱 */
+const PILLARS = [];
+const PILL_X = [160, 300, 466, 632, 748];
+const PILL_Y = [235, 372, 512, 700, 866, 940, 1088, 1246, 1388, 1524];
+PILL_X.forEach(px => PILL_Y.forEach(py => {
+  const inCore =
+    (px>=398&&px<=562&&py>=90&&py<=290) ||
+    (px>=338&&px<=464&&py>=800&&py<=946) ||
+    (px>=438&&px<=606&&py>=1540) ||
+    (px>=598&&px<=730&&py<=456) ||
+    (px>=250&&px<=378&&py>=878&&py<=1054);
+  if (!inCore) PILLARS.push({x:px, y:py});
+}));
+[372,700,1088,1388].forEach(py=>{ PILLARS.push({x:150,y:py}); PILLARS.push({x:826,y:py}); });
+
+/* ④  繪製 */
+function renderPillars(){
+  document.getElementById('pillarLayer').innerHTML =
+    PILLARS.map(p=>`<rect x="${p.x-7}" y="${p.y-7}" width="14" height="14" rx="1"/>`).join('');
+}
+function renderSpaces(){
+  let html='';
+  SPACES.forEach(sp=>{
+    const isDis = sp.type==='dis';
+    const fill = isDis?'#0f4a3a':'#1a3a6a', stroke=isDis?'#059669':'#2563eb';
+    const hatch = isDis?'rgba(5,150,105,.22)':'rgba(37,99,235,.2)';
+    const cx=sp.x+sp.w/2, cy=sp.y+sp.h/2;
+    const fs = Math.min(sp.w,sp.h)>=30?7.5:6.2;
+    const label = (sp.w>=sp.h)
+      ? `<text x="${cx}" y="${cy+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(190,205,225,.92)" font-family="monospace" font-weight="700">${sp.id}</text>`
+      : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="rgba(190,205,225,.92)" font-family="monospace" font-weight="700" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`;
+    const sym = isDis?`<text x="${cx}" y="${cy-sp.h*0.14}" text-anchor="middle" font-size="${Math.min(sp.w,sp.h)*0.5}" fill="#34d399" opacity=".8">♿</text>`:'';
+    html += `<g class="sp" id="sp-${sp.id}" style="cursor:pointer" onclick="selectSpace('${sp.id}')">
+      <rect x="${sp.x}" y="${sp.y}" width="${sp.w}" height="${sp.h}" rx="2" fill="${fill}" stroke="${stroke}" stroke-width="1.2"/>
+      <line x1="${sp.x}" y1="${sp.y+sp.h}" x2="${sp.x+sp.w}" y2="${sp.y}" stroke="${hatch}" stroke-width="1"/>
+      ${sym}${label}</g>`;
+  });
+  document.getElementById('spacesLayer').innerHTML = html;
+}
+
+/* ---- 路線：正交折線（進入點 → 主幹道 → 車位）---- */
+const ENTRY = {x:664, y:470};
+const TRUNK_X = [300, 500, 610, 745];
+const ENTRY_LANE_Y = 470;
+function nearest(arr,v){ return arr.reduce((a,b)=>Math.abs(b-v)<Math.abs(a-v)?b:a); }
+function buildPath(sp){
+  const tx = nearest(TRUNK_X, sp.ax);
+  return {pts:[[ENTRY.x,ENTRY.y],[tx,ENTRY_LANE_Y],[tx,sp.ay],[sp.ax,sp.ay]], trunkX:tx};
+}
+function drawRoute(sp){
+  const {pts}=buildPath(sp);
+  const d='M '+pts.map(p=>p[0]+' '+p[1]).join(' L ');
+  const sx=sp.x+sp.w/2, sy=sp.y+sp.h/2;
+  document.getElementById('routeLayer').innerHTML = `
+    <path d="${d}" fill="none" stroke="#10b981" stroke-width="3.4" class="route-animated"
+          marker-end="url(#arrow)" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
+    <circle cx="${ENTRY.x}" cy="${ENTRY.y}" r="6" fill="#22c55e" stroke="#fff" stroke-width="2"/>
+    <circle cx="${sx}" cy="${sy}" r="8" fill="none" stroke="#f59e0b" stroke-width="2" class="ping-circle"/>
+    <circle cx="${sx}" cy="${sy}" r="8" fill="none" stroke="#f59e0b" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
+    <circle cx="${sx}" cy="${sy}" r="6.5" fill="#f59e0b" stroke="#fff" stroke-width="2"/>`;
+}
+function routeSteps(sp){
+  const {trunkX}=buildPath(sp);
+  const side = trunkX<=300?'左側':trunkX>=700?'右側':'中央';
+  const goDown = sp.ay > ENTRY_LANE_Y;
+  const faceTxt = {up:'車頭朝內（上）',down:'車頭朝外（下）',left:'靠左側',right:'靠右側'}[sp.face]||'';
+  const dis = sp.type==='dis'?'（無障礙車位）':'';
+  const steps=[
+    {i:'⬇️',t:'自「通往 1F」匝道下行進入 B1，於進入點保持右側行駛'},
+    {i:'🔄',t:'進入場內單向循環車道（逆時針）'},
+  ];
+  if(side==='右側') steps.push({i:'➡️',t:'靠右行駛，沿右側主車道前進'});
+  else if(side==='左側') steps.push({i:'⬅️',t:'繞行至左側主車道'});
+  else steps.push({i:'↕️',t:'行駛至中央車道'});
+  steps.push({i:goDown?'⬇️':'⬆️',t:`沿車道${goDown?'向下':'向上'}行駛至 ${sp.zoneName} 區域`});
+  steps.push({i:'🅿',t:`找到車位 ${sp.id}${dis}，${faceTxt}停入。鄰近電梯：${sp.lift}`});
+  return steps;
+}
+
+/* =====================================================================
+   ⑤  查詢 / 選取
+   ===================================================================== */
+let currentId = null;
+
+function doSearch(){
+  const raw=document.getElementById('searchInput').value.trim().toUpperCase();
+  closeSug(); clearError();
+  if(!raw) return;
+  if(!spaceMap[raw]){ showError(); clearSelection(); return; }
+  selectSpace(raw);
+}
+function selectSpace(id){
+  const sp=spaceMap[id]; if(!sp) return;
+  document.getElementById('searchInput').value=id;
+  document.getElementById('clearBtn').style.display='block';
+  clearError(); closeSug();
+  if(currentId){
+    const prev=document.getElementById('sp-'+currentId);
+    if(prev){ const p=spaceMap[currentId]; const r=prev.querySelector('rect');
+      r.setAttribute('fill',p.type==='dis'?'#0f4a3a':'#1a3a6a');
+      r.setAttribute('stroke',p.type==='dis'?'#059669':'#2563eb');
+      prev.classList.remove('sp-highlight'); }
+  }
+  currentId=id;
+  const el=document.getElementById('sp-'+id);
+  if(el){ const r=el.querySelector('rect');
+    r.setAttribute('fill','#92400e'); r.setAttribute('stroke','#f59e0b');
+    el.classList.add('sp-highlight'); }
+  drawRoute(sp);
+  setInfoReady(true);          // 「!」按鈕亮起提示：有路線可看
+  scrollToSpace(sp);
+  searchEl.blur();
+}
+function clearSelection(){
+  if(currentId){
+    const el=document.getElementById('sp-'+currentId);
+    if(el){ const p=spaceMap[currentId]; const r=el.querySelector('rect');
+      r.setAttribute('fill',p.type==='dis'?'#0f4a3a':'#1a3a6a');
+      r.setAttribute('stroke',p.type==='dis'?'#059669':'#2563eb');
+      el.classList.remove('sp-highlight'); }
+    currentId=null;
+  }
+  document.getElementById('routeLayer').innerHTML='';
+  setInfoReady(false);
+}
+function clearSearch(){
+  document.getElementById('searchInput').value='';
+  document.getElementById('clearBtn').style.display='none';
+  clearSelection(); clearError(); closeSug();
+}
+function showError(){document.getElementById('errMsg').classList.add('show');}
+function clearError(){document.getElementById('errMsg').classList.remove('show');}
+function setInfoReady(on){ document.getElementById('infoBtn').classList.toggle('ready', on); }
+
+/* =====================================================================
+   ⑥  「!」彈出對話框
+   ===================================================================== */
+function openInfo(){
+  const body=document.getElementById('modalBody');
+  if(currentId && spaceMap[currentId]){
+    const sp=spaceMap[currentId];
+    const badge = sp.type==='dis'
+      ? '<span class="type-badge type-dis">♿ 無障礙</span>'
+      : '<span class="type-badge type-reg">🚗 一般車位</span>';
+    const steps = routeSteps(sp).map((s,i)=>`
+      ${i>0?'<div class="step-line"></div>':''}
+      <div class="route-step"><div class="step-dot">${i+1}</div>
+      <div class="step-txt">${s.i} ${s.t}</div></div>`).join('');
+    body.innerHTML = `
+      <div class="dlg-head">
+        <div><div class="dlg-num-lbl">查詢車位</div>
+             <div class="dlg-num">${sp.id}${sp.provisional?' <span style="font-size:.8rem;color:#fbbf24">※暫定</span>':''}</div></div>
+        ${badge}
+      </div>
+      <div class="info-grid">
+        <div class="info-cell"><div class="info-cell-lbl">樓層</div><div class="info-cell-val">B1 地下一層</div></div>
+        <div class="info-cell"><div class="info-cell-lbl">所在區域</div><div class="info-cell-val">${sp.zoneName}</div></div>
+        <div class="info-cell"><div class="info-cell-lbl">進入方式</div><div class="info-cell-val">由 1F 匝道下行</div></div>
+        <div class="info-cell"><div class="info-cell-lbl">鄰近電梯</div><div class="info-cell-val">${sp.lift}</div></div>
+      </div>
+      <div class="route-hdr">🛣️ 建議行駛路線（自 1F 匝道進入 B1）</div>
+      ${steps}
+      ${sp.provisional?'<div class="dlg-foot">※ 此編號為暫定占位碼，請依實際車位編號修正。</div>':''}`;
+  } else {
+    body.innerHTML = `
+      <div class="dlg-empty">
+        <div class="ico">🅿</div>
+        <h3>請輸入查詢車號</h3>
+        <p>於上方欄位輸入車位編號後查詢，<br>系統會在平面圖標示位置，<br>並於此顯示「建議行駛路線」。</p>
+      </div>`;
+  }
+  document.getElementById('modal').classList.add('show');
+}
+function closeInfo(){ document.getElementById('modal').classList.remove('show'); }
+
+/* =====================================================================
+   ⑦  自動完成
+   ===================================================================== */
+const searchEl=document.getElementById('searchInput');
+const sugEl=document.getElementById('suggestions');
+searchEl.addEventListener('input',()=>{
+  const v=searchEl.value.trim().toUpperCase();
+  document.getElementById('clearBtn').style.display=v?'block':'none';
+  if(!v){closeSug();return;}
+  const m=SPACES.filter(s=>s.id.startsWith(v)).slice(0,12);
+  if(!m.length){closeSug();return;}
+  sugEl.innerHTML=m.map(s=>`<div class="sug-item" onclick="selectSpace('${s.id}')">
+    <span class="sug-id">${s.id}</span>
+    <span class="sug-badge ${s.type==='dis'?'badge-dis':'badge-reg'}">${s.type==='dis'?'障':'一般'}</span>
+    <span class="sug-zone">${s.zoneName}</span></div>`).join('');
+  sugEl.style.display='block';
+});
+searchEl.addEventListener('keydown',e=>{ if(e.key==='Enter'){closeSug();doSearch();} if(e.key==='Escape')closeSug(); });
+document.addEventListener('click',e=>{ if(!e.target.closest('.search-wrap'))closeSug(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeInfo(); });
+function closeSug(){sugEl.style.display='none';}
+
+/* ---- 捲動至車位 ---- */
+function scrollToSpace(sp){
+  const map=document.getElementById('mapArea'), svg=document.getElementById('floorplan');
+  const sx=svg.clientWidth/940, sy=svg.clientHeight/1672;
+  map.scrollTo({ left:(sp.x+sp.w/2)*sx - map.clientWidth/2,
+                 top:(sp.y+sp.h/2)*sy - map.clientHeight/2, behavior:'smooth'});
+}
+
+/* ---- 縮放（直向，載入時自動配合寬度）---- */
+let zoom=1; const MINZ=0.55,MAXZ=3.2,STEP=1.22;
+const VB_W=940, VB_H=1672;
+function baseSize(){
+  const map=document.getElementById('mapArea');
+  let w=Math.max(300, map.clientWidth-28);
+  w=Math.min(w, 640);
+  return {w, h:w*(VB_H/VB_W)};
+}
+function applyView(){
+  const s=document.getElementById('floorplan');
+  const {w,h}=baseSize();
+  s.setAttribute('width', Math.round(w*zoom));
+  s.setAttribute('height',Math.round(h*zoom));
+}
+function zoomIn(){zoom=Math.min(MAXZ,zoom*STEP);applyView();}
+function zoomOut(){zoom=Math.max(MINZ,zoom/STEP);applyView();}
+function resetZoom(){zoom=1;applyView();}
+let rz; window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(applyView,120); });
+
+/* ---- init ---- */
+function init(){
+  renderPillars(); renderSpaces(); applyView();
+  // 版面完成後再精準配合地圖寬度（避免載入時寬度尚未定案）
+  requestAnimationFrame(applyView);
+  window.addEventListener('load', applyView);
+  if(window.ResizeObserver){
+    let first=true;
+    new ResizeObserver(()=>{ if(first){first=false;return;} applyView(); })
+      .observe(document.getElementById('mapArea'));
+  }
+}
+init();
+</script>
+</body>
+</html>
