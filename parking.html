@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>B1 停車場車位查詢系統</title>
+<meta name="description" content="依實際 B1 地下一層平面圖建置的互動車位查詢系統，含車位校正模式">
+<style>
+:root{
+  --bg-primary:#0a0f1c; --bg-secondary:#0d1526; --bg-panel:#101d34;
+  --glass-bg:rgba(255,255,255,0.04); --glass-border:rgba(255,255,255,0.09);
+  --accent-cyan:#00d4ff; --accent-blue:#2563eb; --accent-gold:#f59e0b;
+  --accent-green:#10b981; --accent-red:#ef4444;
+  --text-1:#f1f5f9; --text-2:#94a3b8; --text-3:#54637a;
+  --radius:14px; --radius-sm:9px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
+  background:var(--bg-primary);color:var(--text-1);}
+.app{height:100%;display:flex;flex-direction:column;}
+
+/* ---------- TOP BAR ---------- */
+.topbar{flex-shrink:0;padding:10px 12px 12px;background:var(--bg-secondary);
+  border-bottom:1px solid var(--glass-border);box-shadow:0 4px 18px rgba(0,0,0,.35);z-index:30;}
+.titlebar{font-size:.9rem;font-weight:800;color:var(--accent-cyan);letter-spacing:.3px;
+  margin:0 2px 8px;display:flex;align-items:center;gap:6px;}
+.titlebar small{font-weight:400;color:var(--text-3);font-size:.66rem;letter-spacing:0;}
+.mini-btn{margin-left:auto;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);
+  color:var(--text-2);font-family:inherit;font-size:.72rem;font-weight:600;padding:5px 10px;
+  border-radius:7px;cursor:pointer;transition:all .15s;}
+.mini-btn:hover{background:rgba(255,255,255,.1);color:var(--text-1);}
+.mini-btn.on{background:linear-gradient(135deg,var(--accent-gold),#d97706);color:#fff;border-color:var(--accent-gold);}
+.search-row{display:flex;gap:8px;align-items:stretch;}
+.search-wrap{position:relative;flex:1;}
+.s-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:.95rem;}
+.search-input{width:100%;padding:12px 38px 12px 36px;background:rgba(255,255,255,.06);
+  border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);color:var(--text-1);
+  font-family:inherit;font-size:1.05rem;font-weight:600;letter-spacing:1px;outline:none;
+  transition:border-color .2s,box-shadow .2s,background .2s;}
+.search-input::placeholder{color:var(--text-3);letter-spacing:0;font-weight:400;}
+.search-input:focus{border-color:var(--accent-cyan);background:rgba(0,212,255,.06);box-shadow:0 0 0 3px rgba(0,212,255,.12);}
+.s-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);font-size:1rem;cursor:pointer;display:none;}
+.s-clear:hover{color:var(--text-1);}
+.info-btn{flex-shrink:0;width:48px;border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.05);color:var(--text-2);font-size:1.4rem;font-weight:800;cursor:pointer;transition:all .18s;line-height:1;}
+.info-btn:hover{background:rgba(255,255,255,.1);color:var(--text-1);}
+.info-btn.ready{background:linear-gradient(135deg,var(--accent-gold),#d97706);color:#fff;border-color:var(--accent-gold);animation:btn-pulse 1.6s ease-out infinite;}
+@keyframes btn-pulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.5);}70%{box-shadow:0 0 0 10px rgba(245,158,11,0);}100%{box-shadow:0 0 0 0 rgba(245,158,11,0);}}
+
+.suggestions{position:absolute;top:calc(100% + 5px);left:0;right:0;background:var(--bg-panel);
+  border:1px solid var(--glass-border);border-radius:var(--radius-sm);overflow:hidden auto;z-index:100;
+  box-shadow:0 12px 32px rgba(0,0,0,.5);display:none;max-height:46vh;}
+.sug-item{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);}
+.sug-item:last-child{border-bottom:none;}
+.sug-item:active,.sug-item:hover{background:rgba(255,255,255,.07);}
+.sug-id{font-weight:700;font-size:.95rem;letter-spacing:.5px;}
+.sug-badge{font-size:.6rem;font-weight:600;padding:2px 6px;border-radius:4px;}
+.badge-reg{background:rgba(37,99,235,.2);color:#60a5fa;}
+.badge-dis{background:rgba(16,185,129,.2);color:#34d399;}
+.sug-zone{font-size:.68rem;color:var(--text-3);margin-left:auto;}
+.err-inline{margin:8px 2px 0;padding:9px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
+  border-radius:var(--radius-sm);font-size:.8rem;color:#fca5a5;display:none;}
+.err-inline.show{display:block;}
+
+/* 導引方向切換（同列、精簡）*/
+.dir-toggle{flex-shrink:0;display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:var(--radius-sm);
+  color:var(--text-1);font-family:inherit;font-size:.82rem;font-weight:700;padding:0 11px;cursor:pointer;transition:background .15s;}
+.dir-toggle:hover{background:rgba(255,255,255,.1);}
+.dir-toggle.in{border-color:rgba(16,185,129,.45);}
+.dir-toggle.out{border-color:rgba(37,99,235,.5);}
+.dir-toggle .d-label{white-space:nowrap;}
+.dir-toggle.in .d-label{color:#34d399;}
+.dir-toggle.out .d-label{color:#60a5fa;}
+.dir-toggle .d-swap{font-size:.95rem;color:var(--accent-cyan);}
+
+/* ---------- EDIT BAR ---------- */
+.edit-bar{display:none;flex-wrap:wrap;gap:7px;align-items:center;margin-top:9px;padding-top:9px;border-top:1px dashed var(--glass-border);}
+body.editing .edit-bar{display:flex;}
+.edit-bar button,.edit-bar .eb-file{background:rgba(255,255,255,.06);border:1px solid var(--glass-border);color:var(--text-1);
+  font-family:inherit;font-size:.72rem;font-weight:600;padding:6px 9px;border-radius:7px;cursor:pointer;}
+.edit-bar button:hover,.edit-bar .eb-file:hover{background:rgba(255,255,255,.12);}
+.edit-bar .eb-chk{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-2);}
+.edit-bar input[type=range]{width:82px;}
+
+/* ---------- MAP ---------- */
+.map-area{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:14px;
+  background:radial-gradient(ellipse at 50% 26%,#0e1f3d 0%,var(--bg-primary) 62%);-webkit-overflow-scrolling:touch;}
+.map-area::-webkit-scrollbar{width:7px;height:7px;}
+.map-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
+#floorplan{display:block;filter:drop-shadow(0 20px 54px rgba(0,0,0,.6));border-radius:8px;}
+body.editing #floorplan{touch-action:none;}  /* 校正時可拖曳；查詢模式保留手機捏放縮放 */
+body.editing .sp{cursor:move;}
+
+.zoom-ctrls{position:fixed;right:14px;bottom:16px;display:flex;flex-direction:column;gap:5px;z-index:50;}
+.zoom-btn{width:44px;height:44px;background:var(--bg-panel);border:1px solid var(--glass-border);border-radius:11px;
+  color:var(--text-1);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  user-select:none;box-shadow:0 4px 14px rgba(0,0,0,.4);transition:background .15s,border-color .15s;}
+.zoom-btn:hover{background:rgba(0,212,255,.1);border-color:var(--accent-cyan);}
+
+/* ---------- EDIT PANEL (selected space) ---------- */
+.edit-panel{position:fixed;left:14px;bottom:16px;width:236px;background:var(--bg-panel);
+  border:1px solid var(--accent-gold);border-radius:14px;padding:13px;z-index:60;display:none;
+  box-shadow:0 12px 40px rgba(0,0,0,.55);}
+.edit-panel.show{display:block;}
+.ep-title{font-size:.72rem;font-weight:700;color:var(--accent-gold);margin-bottom:9px;}
+.ep-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.ep-row span{font-size:.7rem;color:var(--text-3);width:44px;flex-shrink:0;}
+.ep-row input,.ep-row select{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--glass-border);
+  color:var(--text-1);font-family:inherit;font-size:.82rem;padding:6px 8px;border-radius:6px;outline:none;}
+.ep-row input:focus,.ep-row select:focus{border-color:var(--accent-cyan);}
+.ep-actions{display:flex;gap:6px;margin-top:9px;}
+.ep-actions button{flex:1;background:var(--accent-blue);border:none;color:#fff;font-family:inherit;
+  font-size:.74rem;font-weight:700;padding:8px 4px;border-radius:7px;cursor:pointer;}
+.ep-actions button.danger{background:var(--accent-red);}
+.ep-actions button.ghost{background:rgba(255,255,255,.08);}
+.ep-hint{font-size:.62rem;color:var(--text-3);margin-top:9px;line-height:1.5;}
+
+/* ---------- MODAL ---------- */
+.modal{position:fixed;inset:0;z-index:200;background:rgba(4,8,16,.72);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:18px;}
+.modal.show{display:flex;animation:fade .18s ease;}
+@keyframes fade{from{opacity:0;}to{opacity:1;}}
+.modal-card{position:relative;width:100%;max-width:430px;max-height:86vh;overflow-y:auto;background:var(--bg-secondary);
+  border:1px solid var(--glass-border);border-radius:18px;padding:20px 18px 18px;box-shadow:0 24px 70px rgba(0,0,0,.6);animation:pop .2s ease;}
+@keyframes pop{from{transform:translateY(14px) scale(.97);opacity:0;}to{transform:none;opacity:1;}}
+.modal-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;border-radius:8px;background:rgba(255,255,255,.06);color:var(--text-2);font-size:1rem;cursor:pointer;}
+.modal-x:hover{background:rgba(255,255,255,.12);color:var(--text-1);}
+.dlg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px;padding-right:34px;}
+.dlg-num-lbl{font-size:.64rem;color:var(--text-3);margin-bottom:2px;}
+.dlg-num{font-size:2.1rem;font-weight:800;color:var(--accent-gold);letter-spacing:1.5px;line-height:1;}
+.type-badge{padding:5px 11px;border-radius:20px;font-size:.7rem;font-weight:700;white-space:nowrap;margin-top:4px;}
+.type-reg{background:rgba(37,99,235,.18);color:#60a5fa;border:1px solid rgba(37,99,235,.3);}
+.type-dis{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.3);}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.info-cell{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:9px 11px;}
+.info-cell-lbl{font-size:.62rem;color:var(--text-3);margin-bottom:2px;}
+.info-cell-val{font-size:.85rem;font-weight:600;}
+.route-hdr{display:flex;align-items:center;gap:7px;font-size:.86rem;font-weight:700;color:var(--accent-green);margin-bottom:14px;}
+.route-step{display:flex;gap:11px;align-items:flex-start;}
+.step-dot{width:23px;height:23px;border-radius:50%;background:var(--accent-green);color:#fff;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-txt{font-size:.82rem;color:var(--text-2);line-height:1.55;}
+.step-line{width:1.5px;height:11px;background:rgba(16,185,129,.25);margin-left:11px;}
+.dlg-foot{margin-top:16px;padding-top:12px;border-top:1px solid var(--glass-border);font-size:.64rem;color:#fbbf24;line-height:1.5;}
+.dlg-empty{text-align:center;padding:22px 8px 10px;}
+.dlg-empty .ico{font-size:3rem;margin-bottom:14px;}
+.dlg-empty h3{font-size:1.05rem;font-weight:700;color:var(--text-1);margin-bottom:8px;}
+.dlg-empty p{font-size:.82rem;color:var(--text-3);line-height:1.7;}
+
+@keyframes space-pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.sp-highlight{animation:space-pulse 1.1s ease-in-out infinite;}
+@keyframes route-dash{from{stroke-dashoffset:520;}to{stroke-dashoffset:0;}}
+.route-animated{stroke-dasharray:14 9;animation:route-dash 2.4s linear infinite;}
+@keyframes ping-expand{0%{r:8;opacity:1;}100%{r:24;opacity:0;}}
+.ping-circle{animation:ping-expand 1.8s ease-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.45;}}
+.blink{animation:blink 2s ease-in-out infinite;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位</small>
+      <button class="mini-btn" id="editToggle" onclick="toggleEdit()">✏️ 校正</button>
+    </div>
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="s-ic">🔎</span>
+        <input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號"
+               autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="text">
+        <button class="s-clear" id="clearBtn" onclick="clearSearch()">✕</button>
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+      <button class="dir-toggle" id="dirToggle" onclick="toggleDir()" title="切換導引方向"></button>
+      <button class="info-btn" id="infoBtn" onclick="openInfo()" title="建議行駛路線">!</button>
+    </div>
+    <div class="err-inline" id="errMsg">❌ 查無此車位編號，請確認後重試</div>
+
+    <!-- 校正工具列 -->
+    <div class="edit-bar" id="editBar">
+      <label class="eb-chk"><input type="checkbox" id="refToggle" onchange="toggleRef()"> 參考底圖</label>
+      <input type="range" id="refOpacity" min="0" max="100" value="55" oninput="setRefOpacity()" title="底圖透明度">
+      <button onclick="addSpace()">➕ 新增車位</button>
+      <button onclick="exportJSON()">💾 匯出</button>
+      <label class="eb-file">📂 匯入<input type="file" id="importFile" accept="application/json,.json" onchange="importJSON(event)" hidden></label>
+      <button onclick="resetData()">♻ 還原初始</button>
+    </div>
+  </header>
+
+  <main class="map-area" id="mapArea">
+  <svg id="floorplan" viewBox="0 0 940 1672" width="470" height="836">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0 L0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
+    </pattern>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#10b981"/></marker>
+    <linearGradient id="rampGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#12233b"/></linearGradient>
+  </defs>
+
+  <rect width="940" height="1672" fill="#0c1424"/>
+  <rect width="940" height="1672" fill="url(#grid)"/>
+
+  <rect x="126" y="28" width="718" height="1620" rx="4" fill="#182534" stroke="#31506f" stroke-width="8"/>
+  <rect x="142" y="44" width="686" height="1588" rx="2" fill="#17222f"/>
+
+  <g fill="none" stroke="#0d9488" stroke-width="1.6" stroke-dasharray="13,9" opacity="0.42">
+    <ellipse cx="500" cy="440" rx="250" ry="120"/><ellipse cx="610" cy="900" rx="245" ry="215"/>
+  </g>
+  <text x="500" y="360" text-anchor="middle" fill="#0d9488" font-size="12" opacity=".55">↻ 單向循環車道</text>
+  <text x="610" y="905" text-anchor="middle" fill="#0d9488" font-size="12" opacity=".5">↻ 單向循環車道</text>
+
+  <g font-family="'Microsoft JhengHei',sans-serif">
+    <rect x="312" y="58" width="96" height="92" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="360" y="100" text-anchor="middle" font-size="9" fill="#43607f">垃圾及</text><text x="360" y="114" text-anchor="middle" font-size="9" fill="#43607f">機房</text>
+    <rect x="506" y="206" width="140" height="60" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="576" y="240" text-anchor="middle" font-size="9" fill="#43607f">排煙室</text>
+    <rect x="142" y="524" width="86" height="162" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="185" y="600" text-anchor="middle" font-size="9" fill="#43607f">飲用純水</text><text x="185" y="614" text-anchor="middle" font-size="9" fill="#43607f">機房</text>
+    <rect x="150" y="950" width="112" height="88" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="206" y="998" text-anchor="middle" font-size="9" fill="#43607f">儲藏室</text>
+    <rect x="150" y="1092" width="112" height="86" fill="#152232" stroke="#294261" stroke-width="1.5"/>
+    <text x="206" y="1138" text-anchor="middle" font-size="9" fill="#43607f">儲藏室</text>
+    <rect x="300" y="1000" width="70" height="86" fill="#132433" stroke="#294261" stroke-width="1.5"/>
+    <text x="335" y="1040" text-anchor="middle" font-size="8" fill="#3a5877">消防</text><text x="335" y="1052" text-anchor="middle" font-size="8" fill="#3a5877">水池</text>
+  </g>
+
+  <g font-family="'Microsoft JhengHei',sans-serif">
+    <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
+    <text x="480" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#7aa0c8">A 棟</text>
+    <rect x="452" y="140" width="56" height="52" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
+    <line x1="454" y1="148" x2="506" y2="148" stroke="#345580" stroke-width="1"/><line x1="454" y1="156" x2="506" y2="156" stroke="#345580" stroke-width="1"/>
+    <line x1="454" y1="164" x2="506" y2="164" stroke="#345580" stroke-width="1"/><line x1="454" y1="172" x2="506" y2="172" stroke="#345580" stroke-width="1"/><line x1="454" y1="180" x2="506" y2="180" stroke="#345580" stroke-width="1"/>
+    <rect x="416" y="210" width="48" height="48" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="440" y="240" text-anchor="middle" font-size="20" fill="#3b82f6">🛗</text>
+    <rect x="496" y="210" width="48" height="48" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="520" y="240" text-anchor="middle" font-size="20" fill="#3b82f6">🛗</text>
+    <text x="480" y="280" text-anchor="middle" font-size="8" fill="#4f6f92">通往 1F～RF</text>
+  </g>
+  <g font-family="'Microsoft JhengHei',sans-serif">
+    <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
+    <text x="401" y="824" text-anchor="middle" font-size="10" font-weight="700" fill="#7aa0c8">中央梯廳</text>
+    <rect x="350" y="832" width="46" height="46" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
+    <line x1="352" y1="840" x2="394" y2="840" stroke="#345580" stroke-width="1"/><line x1="352" y1="848" x2="394" y2="848" stroke="#345580" stroke-width="1"/>
+    <line x1="352" y1="856" x2="394" y2="856" stroke="#345580" stroke-width="1"/><line x1="352" y1="864" x2="394" y2="864" stroke="#345580" stroke-width="1"/>
+    <rect x="406" y="832" width="46" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="429" y="862" text-anchor="middle" font-size="18" fill="#3b82f6">🛗</text>
+    <rect x="350" y="888" width="102" height="48" rx="2" fill="#122132" stroke="#294261" stroke-width="1.3"/>
+    <text x="401" y="908" text-anchor="middle" font-size="8" fill="#43607f">社區防護樓梯</text><text x="401" y="922" text-anchor="middle" font-size="8" fill="#43607f">/ 田房</text>
+  </g>
+  <g font-family="'Microsoft JhengHei',sans-serif">
+    <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
+    <text x="522" y="1564" text-anchor="middle" font-size="12" font-weight="700" fill="#7aa0c8">B 棟</text>
+    <rect x="452" y="1574" width="52" height="46" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
+    <line x1="454" y1="1582" x2="502" y2="1582" stroke="#345580" stroke-width="1"/><line x1="454" y1="1590" x2="502" y2="1590" stroke="#345580" stroke-width="1"/>
+    <line x1="454" y1="1598" x2="502" y2="1598" stroke="#345580" stroke-width="1"/><line x1="454" y1="1606" x2="502" y2="1606" stroke="#345580" stroke-width="1"/>
+    <rect x="514" y="1574" width="44" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="536" y="1604" text-anchor="middle" font-size="18" fill="#3b82f6">🛗</text>
+    <rect x="566" y="1574" width="30" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="581" y="1604" text-anchor="middle" font-size="15" fill="#3b82f6">🛗</text>
+  </g>
+
+  <g>
+    <rect x="598" y="46" width="132" height="410" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
+    <line x1="664" y1="70" x2="664" y2="430" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrow)" opacity=".7"/>
+    <text x="664" y="150" text-anchor="middle" font-size="14" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道</text>
+    <text x="664" y="176" text-anchor="middle" font-size="15" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 1F</text>
+    <text x="664" y="235" text-anchor="middle" font-size="9" fill="#4f7ba8" font-family="'Microsoft JhengHei'">↑ 上行至地面層</text>
+    <text x="664" y="418" text-anchor="middle" font-size="9" fill="#7fbef5" font-family="'Microsoft JhengHei'">▼ 由此進入 B1</text>
+  </g>
+  <g>
+    <rect x="250" y="878" width="128" height="176" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
+    <line x1="314" y1="900" x2="314" y2="1030" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrow)" opacity=".7"/>
+    <text x="314" y="948" text-anchor="middle" font-size="12" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道</text>
+    <text x="314" y="970" text-anchor="middle" font-size="13" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 B2</text>
+    <text x="314" y="1044" text-anchor="middle" font-size="9" fill="#4f7ba8" font-family="'Microsoft JhengHei'">↓ 下行至地下二層</text>
+  </g>
+  <g>
+    <rect x="256" y="1092" width="480" height="66" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.4" stroke-dasharray="8,6"/>
+    <line x1="290" y1="1125" x2="712" y2="1125" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrow)" opacity=".65"/>
+    <text x="496" y="1120" text-anchor="middle" font-size="12" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道 · 通往 B1（本層匝道）</text>
+  </g>
+
+  <!-- 參考底圖（校正用；預設隱藏） -->
+  <image id="refImg" href="車位編號.jpg" x="0" y="0" width="940" height="1672"
+         preserveAspectRatio="none" opacity="0" style="display:none" pointer-events="none"/>
+
+  <g id="pillarLayer" fill="#0a121d" stroke="#213448" stroke-width="1"></g>
+  <g id="spacesLayer"></g>
+  <g id="routeLayer"></g>
+
+  <!-- 出口：通往 1F（藍色圓，寫「出」）-->
+  <g filter="url(#glow)">
+    <circle cx="664" cy="470" r="19" fill="#1d4ed8" stroke="#3b82f6" stroke-width="2.5"/>
+    <text x="664" y="476" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" font-family="'Microsoft JhengHei'">出</text>
+  </g>
+  <text x="664" y="500" text-anchor="middle" fill="#3b82f6" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">出口 · B1→1F</text>
+
+  <!-- 入口：通往 B1（綠色圓，不寫字）-->
+  <g id="entryMarker" class="blink" filter="url(#glow)">
+    <circle cx="700" cy="1125" r="18" fill="#16a34a" stroke="#22c55e" stroke-width="2.5"/>
+  </g>
+  <text x="700" y="1100" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">入口 · 1F→B1</text>
+
+  <rect x="142" y="1610" width="140" height="20" rx="2" fill="rgba(0,0,0,.5)"/>
+  <text x="212" y="1624" text-anchor="middle" fill="#3a5877" font-size="9" font-family="'Microsoft JhengHei'">B1 地下一層平面圖</text>
+  <g transform="translate(808,74)">
+    <circle r="18" fill="rgba(0,0,0,.45)" stroke="#294261" stroke-width="1.2"/>
+    <text y="-5" text-anchor="middle" fill="#64748b" font-size="8.5" font-weight="600">N</text>
+    <line x1="0" y1="-12" x2="0" y2="5" stroke="#3b82f6" stroke-width="2"/><polygon points="0,-12 -4,1 4,1" fill="#3b82f6"/>
+  </g>
+  </svg>
+  </main>
+</div>
+
+<!-- 校正：選取車位編輯面板 -->
+<div class="edit-panel" id="editPanel">
+  <div class="ep-title">✏️ 編輯車位</div>
+  <div class="ep-row"><span>編號</span><input id="epId" spellcheck="false"></div>
+  <div class="ep-row"><span>類型</span><select id="epType"><option value="reg">一般</option><option value="dis">無障礙</option></select></div>
+  <div class="ep-row"><span>車頭</span><select id="epFace"><option value="up">朝上</option><option value="down">朝下</option><option value="left">朝左</option><option value="right">朝右</option></select></div>
+  <div class="ep-row"><span>區域名</span><input id="epZoneName" spellcheck="false"></div>
+  <div class="ep-row"><span>電梯</span><input id="epLift" spellcheck="false"></div>
+  <div class="ep-actions">
+    <button onclick="applyEdit()">套用</button>
+    <button class="ghost" onclick="dupSpace()">複製</button>
+    <button class="danger" onclick="delSpace()">刪除</button>
+  </div>
+  <div class="ep-hint">拖曳車格＝移動位置；方向鍵微調(按住 Shift ×10)。改完按「套用」，變更會自動存檔。</div>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeInfo()">
+  <div class="modal-card"><button class="modal-x" onclick="closeInfo()">✕</button><div id="modalBody"></div></div>
+</div>
+
+<script>
+/* =====================================================================
+   ①  初始車位分區設定 CLUSTERS（第一次載入用；之後以校正存檔為準）
+   ===================================================================== */
+const SW = 30, SD = 58;
+const CLUSTERS = [
+  {zone:'A', name:'A區·頂排左', lift:'A棟', orient:'H', face:'down', x:188, y:46,  n:5, pitch:33, type:'reg'},
+  {zone:'A', name:'A區·頂排左', lift:'A棟', orient:'H', face:'down', x:410, y:150, n:3, pitch:33, type:'reg'},
+  {zone:'B', name:'B區·頂排右', lift:'A棟', orient:'H', face:'down', x:588, y:46,  n:1, pitch:33, type:'reg'},
+  {zone:'B', name:'B區·頂排右', lift:'A棟', orient:'H', face:'down', x:748, y:46,  n:2, pitch:33, type:'reg'},
+  {zone:'C', name:'C區·左牆縱列', lift:'A棟', orient:'V', face:'right', x:146, y:130,  n:8, pitch:33, type:'reg'},
+  {zone:'C', name:'C區·左牆縱列', lift:'中央梯廳', orient:'V', face:'right', x:146, y:700,  n:6, pitch:33, type:'reg'},
+  {zone:'C', name:'C區·左牆縱列', lift:'B棟', orient:'V', face:'right', x:146, y:1250, n:9, pitch:33, type:'reg'},
+  {zone:'D', name:'D區·右牆縱列', lift:'A棟', orient:'V', face:'left', x:768, y:250,  n:7, pitch:33, type:'reg'},
+  {zone:'D', name:'D區·右牆縱列', lift:'A棟', orient:'V', face:'left', x:768, y:560,  n:8, pitch:33, type:'reg'},
+  {zone:'D', name:'D區·右牆縱列', lift:'中央梯廳', orient:'V', face:'left', x:768, y:892,  n:8, pitch:33, type:'reg'},
+  {zone:'D', name:'D區·右牆縱列', lift:'B棟', orient:'V', face:'left', x:768, y:1200, n:7, pitch:33, type:'reg'},
+  {zone:'D', name:'D區·右牆縱列', lift:'B棟', orient:'V', face:'left', x:768, y:1450, n:5, pitch:33, type:'reg'},
+  {zone:'E', name:'E區·中央上排', lift:'A棟', orient:'H', face:'up',   x:498, y:512, n:8, pitch:34, type:'reg'},
+  {zone:'E', name:'E區·中央上排', lift:'A棟', orient:'H', face:'down', x:498, y:604, n:8, pitch:34, type:'reg'},
+  {zone:'F', name:'F區·中央下排', lift:'中央梯廳', orient:'H', face:'up', x:498, y:690, n:8, pitch:34, type:'reg'},
+  {zone:'E', name:'E區·中央左列', lift:'A棟', orient:'V', face:'right', x:430, y:272, n:4, pitch:33, type:'reg'},
+  {zone:'F', name:'F區·中央右列', lift:'A棟', orient:'V', face:'left',  x:640, y:272, n:4, pitch:33, type:'reg'},
+  {zone:'H', name:'H區·下圓環內', lift:'中央梯廳', orient:'H', face:'down', x:522, y:1044, n:5, pitch:34, type:'reg'},
+  {zone:'G', name:'G區·下中左列', lift:'中央梯廳', orient:'V', face:'right', x:520, y:1192, n:9, pitch:33, type:'reg'},
+  {zone:'G', name:'G區·下中右列', lift:'B棟', orient:'V', face:'left',  x:640, y:1192, n:9, pitch:33, type:'reg'},
+  {zone:'J', name:'J區·底部左①', lift:'中央梯廳', orient:'H', face:'down', x:152, y:1196, n:7, pitch:34, type:'reg'},
+  {zone:'J', name:'J區·底部左②', lift:'B棟', orient:'H', face:'down', x:152, y:1346, n:7, pitch:34, type:'reg'},
+  {zone:'K', name:'K區·底部左直列', lift:'B棟', orient:'V', face:'right', x:150, y:1440, n:5, pitch:33, type:'reg'},
+  {zone:'K', name:'K區·底部左直列', lift:'B棟', orient:'V', face:'right', x:300, y:1440, n:5, pitch:33, type:'reg'},
+  {zone:'P', name:'無障礙·A棟旁', lift:'A棟', orient:'H', face:'down', x:730, y:296, n:2, pitch:40, type:'dis'},
+  {zone:'P', name:'無障礙·B棟旁', lift:'B棟', orient:'V', face:'left',  x:686, y:1440, n:2, pitch:40, type:'dis'},
+];
+const STORAGE_KEY = 'b1park_spaces_v1';
+
+/* 由 CLUSTERS 產生初始車位 */
+function genFromClusters(){
+  const arr=[]; const zc={};
+  CLUSTERS.forEach(cl=>{
+    const isDis=cl.type==='dis'; const w0=isDis?38:SW, d0=isDis?66:SD;
+    for(let i=0;i<cl.n;i++){
+      let x,y,w,h;
+      if(cl.orient==='H'){x=cl.x+i*cl.pitch;y=cl.y;w=w0;h=d0;}
+      else{x=cl.x;y=cl.y+i*cl.pitch;w=d0;h=w0;}
+      zc[cl.zone]=(zc[cl.zone]||0)+1;
+      arr.push({id:cl.zone+String(zc[cl.zone]).padStart(2,'0'),
+        x,y,w,h,face:cl.face,type:cl.type,zone:cl.zone,zoneName:cl.name,lift:cl.lift,provisional:true});
+    }
+  });
+  return arr;
+}
+function loadSaved(){ try{const j=localStorage.getItem(STORAGE_KEY);
+  if(j){const d=JSON.parse(j); if(Array.isArray(d)&&d.length) return d;}}catch(e){} return null; }
+function saveLocal(){ try{localStorage.setItem(STORAGE_KEY, JSON.stringify(SPACES));}catch(e){} }
+
+let SPACES = loadSaved() || genFromClusters();
+let spaceMap = {};
+function rebuildMap(){ spaceMap={}; SPACES.forEach(s=>spaceMap[s.id]=s); }
+rebuildMap();
+
+/* 車位「進入點」依目前位置與車頭方向即時計算 */
+function accessOf(sp){
+  if(sp.face==='down')  return [sp.x+sp.w/2, sp.y+sp.h];
+  if(sp.face==='up')    return [sp.x+sp.w/2, sp.y];
+  if(sp.face==='right') return [sp.x+sp.w,   sp.y+sp.h/2];
+  return [sp.x, sp.y+sp.h/2];
+}
+
+/* ②  結構柱 */
+const PILLARS=[];
+[160,300,466,632,748].forEach(px=>[235,372,512,700,866,940,1088,1246,1388,1524].forEach(py=>{
+  const inCore=(px>=398&&px<=562&&py>=90&&py<=290)||(px>=338&&px<=464&&py>=800&&py<=946)||
+    (px>=438&&px<=606&&py>=1540)||(px>=598&&px<=730&&py<=456)||(px>=250&&px<=378&&py>=878&&py<=1054);
+  if(!inCore) PILLARS.push({x:px,y:py});
+}));
+[372,700,1088,1388].forEach(py=>{PILLARS.push({x:150,y:py});PILLARS.push({x:826,y:py});});
+function renderPillars(){document.getElementById('pillarLayer').innerHTML=
+  PILLARS.map(p=>`<rect x="${p.x-7}" y="${p.y-7}" width="14" height="14" rx="1"/>`).join('');}
+
+/* ③  繪製車位 */
+function spaceInner(sp){
+  const isDis=sp.type==='dis';
+  const fill=isDis?'#0f4a3a':'#1a3a6a', stroke=isDis?'#059669':'#2563eb';
+  const hatch=isDis?'rgba(5,150,105,.22)':'rgba(37,99,235,.2)';
+  const cx=sp.x+sp.w/2, cy=sp.y+sp.h/2;
+  const fs=Math.min(sp.w,sp.h)>=30?7.5:6.2;
+  const label=(sp.w>=sp.h)
+    ? `<text x="${cx}" y="${cy+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(190,205,225,.92)" font-family="monospace" font-weight="700">${sp.id}</text>`
+    : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="rgba(190,205,225,.92)" font-family="monospace" font-weight="700" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`;
+  const sym=isDis?`<text x="${cx}" y="${cy-sp.h*0.14}" text-anchor="middle" font-size="${Math.min(sp.w,sp.h)*0.5}" fill="#34d399" opacity=".8">♿</text>`:'';
+  const selRing=(editMode&&sp.id===selEdit)
+    ? `<rect x="${sp.x-3}" y="${sp.y-3}" width="${sp.w+6}" height="${sp.h+6}" rx="3" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/>`:'';
+  return `<rect x="${sp.x}" y="${sp.y}" width="${sp.w}" height="${sp.h}" rx="2" fill="${fill}" stroke="${stroke}" stroke-width="1.2"/>
+    <line x1="${sp.x}" y1="${sp.y+sp.h}" x2="${sp.x+sp.w}" y2="${sp.y}" stroke="${hatch}" stroke-width="1"/>${sym}${label}${selRing}`;
+}
+function renderSpaces(){
+  document.getElementById('spacesLayer').innerHTML = SPACES.map(sp=>
+    `<g class="sp" id="sp-${cssId(sp.id)}" data-id="${sp.id}" style="cursor:${editMode?'move':'pointer'}" onclick="onSpaceClick('${jsStr(sp.id)}')">${spaceInner(sp)}</g>`
+  ).join('');
+}
+function updateSpaceEl(sp){ const el=document.getElementById('sp-'+cssId(sp.id)); if(el) el.innerHTML=spaceInner(sp); }
+function cssId(id){ return String(id).replace(/[^A-Za-z0-9_-]/g,'_'); }
+function jsStr(id){ return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+/* ---- 路線（可雙向：入口→車位 / 車位→出口）---- */
+const ENTRY={x:700,y:1125}, EXIT={x:664,y:470}, TRUNK_X=[300,500,610,745], ENTRY_LANE_Y=1125;
+let routeDir='in';   // 'in' = 入口→車位（停車）; 'out' = 車位→出口（離場）
+function nearest(a,v){return a.reduce((p,c)=>Math.abs(c-v)<Math.abs(p-v)?c:p);}
+function buildPathIn(sp){ const [ax,ay]=accessOf(sp); const tx=nearest(TRUNK_X,ax);
+  return {pts:[[ENTRY.x,ENTRY.y],[tx,ENTRY_LANE_Y],[tx,ay],[ax,ay]], trunkX:tx, ay,
+    startPt:[ENTRY.x,ENTRY.y], startColor:'#22c55e', destPt:[sp.x+sp.w/2,sp.y+sp.h/2], destColor:'#f59e0b'}; }
+function buildPathOut(sp){ const [ax,ay]=accessOf(sp); const tx=nearest(TRUNK_X,ax);
+  return {pts:[[ax,ay],[tx,ay],[tx,EXIT.y],[EXIT.x,EXIT.y]], trunkX:tx, ay,
+    startPt:[sp.x+sp.w/2,sp.y+sp.h/2], startColor:'#f59e0b', destPt:[EXIT.x,EXIT.y], destColor:'#3b82f6'}; }
+function pathOf(sp){ return routeDir==='in'?buildPathIn(sp):buildPathOut(sp); }
+function drawRoute(sp){
+  const P=pathOf(sp); const d='M '+P.pts.map(p=>p[0]+' '+p[1]).join(' L ');
+  const [dx,dy]=P.destPt, [s0x,s0y]=P.startPt;
+  document.getElementById('routeLayer').innerHTML=`
+    <path d="${d}" fill="none" stroke="#10b981" stroke-width="3.4" class="route-animated" marker-end="url(#arrow)" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
+    <circle cx="${s0x}" cy="${s0y}" r="6" fill="${P.startColor}" stroke="#fff" stroke-width="2"/>
+    <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="2" class="ping-circle"/>
+    <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
+    <circle cx="${dx}" cy="${dy}" r="6.5" fill="${P.destColor}" stroke="#fff" stroke-width="2"/>`;
+}
+function routeSteps(sp){ return routeDir==='in'?stepsIn(sp):stepsOut(sp); }
+function stepsIn(sp){
+  const {trunkX,ay}=buildPathIn(sp);
+  const side=trunkX<=300?'左側':trunkX>=700?'右側':'中央';
+  const goDown=ay>ENTRY_LANE_Y;
+  const faceTxt={up:'車頭朝內（上）',down:'車頭朝外（下）',left:'靠左側',right:'靠右側'}[sp.face]||'';
+  const dis=sp.type==='dis'?'（無障礙車位）':'';
+  const steps=[{i:'🟢',t:'自「通往 B1」入口進入本層（1F 下行至 B1），保持右側行駛'},{i:'🔄',t:'進入場內單向循環車道（逆時針）'}];
+  if(side==='右側')steps.push({i:'➡️',t:'靠右行駛，沿右側主車道前進'});
+  else if(side==='左側')steps.push({i:'⬅️',t:'繞行至左側主車道'});
+  else steps.push({i:'↕️',t:'行駛至中央車道'});
+  steps.push({i:goDown?'⬇️':'⬆️',t:`沿車道${goDown?'向下':'向上'}行駛至 ${sp.zoneName} 區域`});
+  steps.push({i:'🅿',t:`找到車位 ${sp.id}${dis}，${faceTxt}停入。鄰近電梯：${sp.lift||'—'}`});
+  return steps;
+}
+function stepsOut(sp){
+  const {trunkX,ay}=buildPathOut(sp);
+  const side=trunkX<=300?'左側':trunkX>=700?'右側':'中央';
+  const goUp=ay>EXIT.y;
+  const dis=sp.type==='dis'?'（無障礙車位）':'';
+  const steps=[
+    {i:'🅿',t:`由車位 ${sp.id}${dis} 倒車出庫，車頭朝${side}主車道`},
+    {i:'🔄',t:`匯入${side}主車道，依單向循環方向行駛`},
+    {i:goUp?'⬆️':'⬇️',t:`往${goUp?'上':'下'}行駛，前往場區上方出口`},
+    {i:'🔵',t:'抵達「通往 1F」出口（藍色圓），沿匝道上行離場至 1F'},
+  ];
+  return steps;
+}
+/* 方向切換 UI */
+function updateDirUI(){
+  const el=document.getElementById('dirToggle');
+  el.classList.toggle('in', routeDir==='in');
+  el.classList.toggle('out', routeDir==='out');
+  el.innerHTML = (routeDir==='in')
+    ? `<span class="d-label">入口 →</span><span class="d-swap">⇄</span>`
+    : `<span class="d-label">→ 出口</span><span class="d-swap">⇄</span>`;
+  el.title = routeDir==='in'
+    ? '目前：入口 → 車位（點我切換為 車位 → 出口）'
+    : '目前：車位 → 出口（點我切換為 入口 → 車位）';
+}
+function toggleDir(){
+  routeDir = routeDir==='in'?'out':'in';
+  updateDirUI();
+  if(currentId){ drawRoute(spaceMap[currentId]);
+    if(document.getElementById('modal').classList.contains('show')) openInfo(); }
+}
+
+/* =====================================================================
+   ④  查詢模式
+   ===================================================================== */
+let currentId=null;
+function onSpaceClick(id){ if(editMode) selectForEdit(id); else selectSpace(id); }
+function doSearch(){
+  const raw=document.getElementById('searchInput').value.trim().toUpperCase();
+  closeSug(); clearError(); if(!raw)return;
+  if(!spaceMap[raw]){showError();clearSelection();return;}
+  selectSpace(raw);
+}
+function selectSpace(id){
+  const sp=spaceMap[id]; if(!sp)return;
+  document.getElementById('searchInput').value=id;
+  document.getElementById('clearBtn').style.display='block';
+  clearError(); closeSug();
+  if(currentId){const prev=document.getElementById('sp-'+cssId(currentId));
+    if(prev)prev.classList.remove('sp-highlight');}
+  currentId=id;
+  const el=document.getElementById('sp-'+cssId(id));
+  if(el){const r=el.querySelector('rect'); r.setAttribute('fill','#92400e'); r.setAttribute('stroke','#f59e0b'); el.classList.add('sp-highlight');}
+  updateDirUI(); drawRoute(sp); setInfoReady(true); scrollToSpace(sp); searchEl.blur();
+}
+function clearSelection(){
+  if(currentId){const el=document.getElementById('sp-'+cssId(currentId));
+    if(el){const p=spaceMap[currentId];const r=el.querySelector('rect');
+      if(p&&r){r.setAttribute('fill',p.type==='dis'?'#0f4a3a':'#1a3a6a');r.setAttribute('stroke',p.type==='dis'?'#059669':'#2563eb');}
+      el.classList.remove('sp-highlight');}
+    currentId=null;}
+  document.getElementById('routeLayer').innerHTML=''; setInfoReady(false); updateDirUI();
+}
+function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('clearBtn').style.display='none';clearSelection();clearError();closeSug();}
+function showError(){document.getElementById('errMsg').classList.add('show');}
+function clearError(){document.getElementById('errMsg').classList.remove('show');}
+function setInfoReady(on){document.getElementById('infoBtn').classList.toggle('ready',on);}
+
+/* ⑤  「!」對話框 */
+function openInfo(){
+  const body=document.getElementById('modalBody');
+  if(currentId&&spaceMap[currentId]){
+    const sp=spaceMap[currentId];
+    const dirTxt = routeDir==='in' ? '入口 → 車位' : '車位 → 出口';
+    const dirCellLbl = routeDir==='in' ? '進入方式' : '離場方式';
+    const dirCellVal = routeDir==='in' ? '由「通往B1」入口進場' : '由「通往1F」匝道離場';
+    const badge=sp.type==='dis'?'<span class="type-badge type-dis">♿ 無障礙</span>':'<span class="type-badge type-reg">🚗 一般車位</span>';
+    const steps=routeSteps(sp).map((s,i)=>`${i>0?'<div class="step-line"></div>':''}<div class="route-step"><div class="step-dot">${i+1}</div><div class="step-txt">${s.i} ${s.t}</div></div>`).join('');
+    body.innerHTML=`<div class="dlg-head"><div><div class="dlg-num-lbl">查詢車位</div>
+      <div class="dlg-num">${sp.id}${sp.provisional?' <span style="font-size:.8rem;color:#fbbf24">※暫定</span>':''}</div></div>${badge}</div>
+      <div class="info-grid">
+        <div class="info-cell"><div class="info-cell-lbl">樓層</div><div class="info-cell-val">B1 地下一層</div></div>
+        <div class="info-cell"><div class="info-cell-lbl">所在區域</div><div class="info-cell-val">${sp.zoneName}</div></div>
+        <div class="info-cell"><div class="info-cell-lbl">${dirCellLbl}</div><div class="info-cell-val">${dirCellVal}</div></div>
+        <div class="info-cell"><div class="info-cell-lbl">鄰近電梯</div><div class="info-cell-val">${sp.lift||'—'}</div></div></div>
+      <div class="route-hdr">🛣️ 建議行駛路線（${dirTxt}）</div>${steps}
+      ${sp.provisional?'<div class="dlg-foot">※ 此編號為暫定占位碼，請於「校正」模式改為實際編號。</div>':''}`;
+  } else {
+    body.innerHTML=`<div class="dlg-empty"><div class="ico">🅿</div><h3>請輸入查詢車號</h3>
+      <p>於上方欄位輸入車位編號後查詢，<br>系統會在平面圖標示位置，<br>並於此顯示「建議行駛路線」。</p></div>`;
+  }
+  document.getElementById('modal').classList.add('show');
+}
+function closeInfo(){document.getElementById('modal').classList.remove('show');}
+
+/* ⑥  自動完成 */
+const searchEl=document.getElementById('searchInput');
+const sugEl=document.getElementById('suggestions');
+searchEl.addEventListener('input',()=>{
+  const v=searchEl.value.trim().toUpperCase();
+  document.getElementById('clearBtn').style.display=v?'block':'none';
+  if(!v){closeSug();return;}
+  const m=SPACES.filter(s=>s.id.toUpperCase().startsWith(v)).slice(0,12);
+  if(!m.length){closeSug();return;}
+  sugEl.innerHTML=m.map(s=>`<div class="sug-item" onclick="selectSpace('${jsStr(s.id)}')">
+    <span class="sug-id">${s.id}</span><span class="sug-badge ${s.type==='dis'?'badge-dis':'badge-reg'}">${s.type==='dis'?'障':'一般'}</span>
+    <span class="sug-zone">${s.zoneName}</span></div>`).join('');
+  sugEl.style.display='block';
+});
+searchEl.addEventListener('keydown',e=>{if(e.key==='Enter'){closeSug();doSearch();}if(e.key==='Escape')closeSug();});
+document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))closeSug();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInfo();});
+function closeSug(){sugEl.style.display='none';}
+
+function scrollToSpace(sp){
+  const map=document.getElementById('mapArea'),svg=document.getElementById('floorplan');
+  const sx=svg.clientWidth/940, sy=svg.clientHeight/1672;
+  map.scrollTo({left:(sp.x+sp.w/2)*sx-map.clientWidth/2, top:(sp.y+sp.h/2)*sy-map.clientHeight/2, behavior:'smooth'});
+}
+
+/* ⑦  版面配合寬度（放大縮小交給手機捏放 / 桌機瀏覽器縮放）*/
+const VB_W=940,VB_H=1672;
+function baseSize(){const map=document.getElementById('mapArea');let w=Math.max(300,map.clientWidth-28);w=Math.min(w,700);return{w,h:w*(VB_H/VB_W)};}
+function applyView(){const s=document.getElementById('floorplan');const{w,h}=baseSize();s.setAttribute('width',Math.round(w));s.setAttribute('height',Math.round(h));}
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(applyView,120);});
+
+/* =====================================================================
+   ⑧  校正模式
+   ===================================================================== */
+let editMode=false, selEdit=null, dragging=null;
+
+function toggleEdit(){
+  editMode=!editMode;
+  document.body.classList.toggle('editing',editMode);
+  document.getElementById('editToggle').classList.toggle('on',editMode);
+  document.getElementById('editToggle').textContent=editMode?'✓ 完成校正':'✏️ 校正';
+  if(!editMode){ selEdit=null; document.getElementById('editPanel').classList.remove('show'); }
+  else { clearSelection(); clearSearch(); }
+  renderSpaces();
+}
+
+/* 參考底圖 */
+function toggleRef(){
+  const on=document.getElementById('refToggle').checked;
+  const img=document.getElementById('refImg');
+  img.style.display=on?'block':'none';
+  setRefOpacity();
+}
+function setRefOpacity(){
+  document.getElementById('refImg').setAttribute('opacity',
+    (document.getElementById('refToggle').checked ? document.getElementById('refOpacity').value/100 : 0));
+}
+
+/* 座標換算：螢幕 → SVG */
+function svgPoint(evt){
+  const svg=document.getElementById('floorplan');
+  const pt=svg.createSVGPoint(); pt.x=evt.clientX; pt.y=evt.clientY;
+  const m=svg.getScreenCTM(); if(!m)return[0,0];
+  const p=pt.matrixTransform(m.inverse()); return [p.x,p.y];
+}
+
+/* 拖曳移動 */
+const spacesLayerEl=document.getElementById('spacesLayer');
+spacesLayerEl.addEventListener('pointerdown',e=>{
+  if(!editMode)return;
+  const g=e.target.closest('.sp'); if(!g)return;
+  e.preventDefault();
+  const id=g.getAttribute('data-id');
+  selectForEdit(id);
+  const sp=spaceMap[id]; const [mx,my]=svgPoint(e);
+  dragging={sp,dx:mx-sp.x,dy:my-sp.y};
+  try{g.setPointerCapture(e.pointerId);}catch(_){}
+});
+spacesLayerEl.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  const [mx,my]=svgPoint(e);
+  dragging.sp.x=Math.round(mx-dragging.dx);
+  dragging.sp.y=Math.round(my-dragging.dy);
+  updateSpaceEl(dragging.sp);
+});
+function endDrag(){ if(dragging){ saveLocal(); dragging=null; } }
+spacesLayerEl.addEventListener('pointerup',endDrag);
+spacesLayerEl.addEventListener('pointercancel',endDrag);
+
+/* 選取並開啟編輯面板 */
+function selectForEdit(id){
+  const prev=selEdit; selEdit=id;
+  if(prev&&spaceMap[prev])updateSpaceEl(spaceMap[prev]);
+  const sp=spaceMap[id]; if(!sp)return;
+  updateSpaceEl(sp);
+  document.getElementById('epId').value=sp.id;
+  document.getElementById('epType').value=sp.type;
+  document.getElementById('epFace').value=sp.face;
+  document.getElementById('epZoneName').value=sp.zoneName||'';
+  document.getElementById('epLift').value=sp.lift||'';
+  document.getElementById('editPanel').classList.add('show');
+}
+
+/* 套用面板變更（含改號碼） */
+function applyEdit(){
+  if(!selEdit||!spaceMap[selEdit])return;
+  const sp=spaceMap[selEdit];
+  const newId=document.getElementById('epId').value.trim();
+  if(!newId){alert('編號不可空白');return;}
+  if(newId!==sp.id && spaceMap[newId]){alert('編號「'+newId+'」已存在，請換一個');return;}
+  const oldId=sp.id;
+  sp.id=newId;
+  sp.type=document.getElementById('epType').value;
+  sp.face=document.getElementById('epFace').value;
+  sp.zoneName=document.getElementById('epZoneName').value.trim();
+  sp.lift=document.getElementById('epLift').value.trim();
+  sp.provisional=false;   // 手動改過即視為正式
+  if(newId!==oldId) selEdit=newId;
+  rebuildMap(); renderSpaces(); saveLocal();
+}
+
+/* 新增 / 複製 / 刪除 */
+function uniqueId(base){ let n=1,id; do{ id=base+String(n).padStart(2,'0'); n++; }while(spaceMap[id]); return id; }
+function addSpace(){
+  const map=document.getElementById('mapArea'),svg=document.getElementById('floorplan');
+  const cx=(map.scrollLeft+map.clientWidth/2)/(svg.clientWidth/940);
+  const cy=(map.scrollTop+map.clientHeight/2)/(svg.clientHeight/1672);
+  const sp={id:uniqueId('N'),x:Math.round(cx-15),y:Math.round(cy-29),w:30,h:58,
+    face:'down',type:'reg',zone:'N',zoneName:'新增區',lift:'',provisional:false};
+  SPACES.push(sp); rebuildMap(); renderSpaces(); saveLocal(); selectForEdit(sp.id);
+}
+function dupSpace(){
+  if(!selEdit||!spaceMap[selEdit])return;
+  const s=spaceMap[selEdit];
+  const sp={...s,id:uniqueId(s.zone||'N'),x:s.x+s.w+6,y:s.y};
+  SPACES.push(sp); rebuildMap(); renderSpaces(); saveLocal(); selectForEdit(sp.id);
+}
+function delSpace(){
+  if(!selEdit)return;
+  if(!confirm('確定刪除車位「'+selEdit+'」？'))return;
+  SPACES=SPACES.filter(s=>s.id!==selEdit);
+  selEdit=null; document.getElementById('editPanel').classList.remove('show');
+  rebuildMap(); renderSpaces(); saveLocal();
+}
+
+/* 方向鍵微調 */
+document.addEventListener('keydown',e=>{
+  if(!editMode||!selEdit)return;
+  const t=e.target.tagName; if(t==='INPUT'||t==='SELECT'||t==='TEXTAREA')return;
+  const step=e.shiftKey?10:1; let d=null;
+  if(e.key==='ArrowLeft')d=[-step,0]; else if(e.key==='ArrowRight')d=[step,0];
+  else if(e.key==='ArrowUp')d=[0,-step]; else if(e.key==='ArrowDown')d=[0,step];
+  if(!d)return; e.preventDefault();
+  const sp=spaceMap[selEdit]; sp.x+=d[0]; sp.y+=d[1]; updateSpaceEl(sp);
+  clearTimeout(window.__nudgeSave); window.__nudgeSave=setTimeout(saveLocal,300);
+});
+
+/* 匯出 / 匯入 / 還原 */
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(SPACES,null,1)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='B1車位資料.json'; document.body.appendChild(a); a.click(); a.remove();
+}
+function importJSON(evt){
+  const f=evt.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+    const d=JSON.parse(r.result);
+    if(!Array.isArray(d)||!d.length)throw new Error('格式錯誤');
+    SPACES=d.map(s=>({id:String(s.id),x:+s.x,y:+s.y,w:+s.w||30,h:+s.h||58,
+      face:s.face||'down',type:s.type==='dis'?'dis':'reg',zone:s.zone||'',
+      zoneName:s.zoneName||'',lift:s.lift||'',provisional:!!s.provisional}));
+    selEdit=null; document.getElementById('editPanel').classList.remove('show');
+    rebuildMap(); renderSpaces(); saveLocal(); alert('已匯入 '+SPACES.length+' 個車位');
+  }catch(err){alert('匯入失敗：'+err.message);} };
+  r.readAsText(f); evt.target.value='';
+}
+function resetData(){
+  if(!confirm('還原成初始車位配置？（會清除你目前的校正存檔）'))return;
+  try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+  SPACES=genFromClusters(); selEdit=null;
+  document.getElementById('editPanel').classList.remove('show');
+  rebuildMap(); renderSpaces(); saveLocal();
+}
+
+/* ⑨  init */
+function init(){
+  renderPillars(); renderSpaces(); applyView(); updateDirUI();
+  requestAnimationFrame(applyView);
+  window.addEventListener('load',applyView);
+  if(window.ResizeObserver){let first=true;
+    new ResizeObserver(()=>{if(first){first=false;return;}applyView();}).observe(document.getElementById('mapArea'));}
+}
+init();
+</script>
+</body>
+</html>
