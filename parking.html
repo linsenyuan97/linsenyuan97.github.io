@@ -199,7 +199,8 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
 <div class="app">
   <header class="topbar">
-    <div class="titlebar">🅿 B1 停車場車位查詢
+    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位 (v2.0 - 2026/07/18 22:00)</small>
+      <button class="mini-btn" id="editToggle" onclick="toggleEdit()" title="校正">✏️</button>
     </div>
     <div class="search-row">
       <div class="search-wrap">
@@ -367,7 +368,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 /* =====================================================================
    ①  初始車位分區設定 CLUSTERS（第一次載入用；之後以校正存檔為準）
    ===================================================================== */
-const STORAGE_KEY = 'b1park_spaces_v4';   // v4: 1078-1084 車頭改朝上 + 底部 y=1218 真實車道
+const STORAGE_KEY = 'b1park_spaces_v5';   // v4: 1078-1084 車頭改朝上 + 底部 y=1218 真實車道
 
 /* =====================================================================
    汽車位資料 CAR_SPACES（依 b1.jpg 實際平面圖建置，僅 10xx 汽車位）
@@ -508,8 +509,8 @@ function loadSaved(){ try{const j=localStorage.getItem(STORAGE_KEY);
 function saveLocal(){ try{localStorage.setItem(STORAGE_KEY, JSON.stringify(SPACES));}catch(e){} }
 
 let SPACES = loadSaved() || genFromClusters();
-// 自動校正：強制所有直向車位（w < h，即 1071~1084）車頭朝下 ('down')，確保從下方車道駛入時箭頭朝上
-SPACES.forEach(sp => { if (sp.w < sp.h) sp.face = 'down'; });
+// （已移除）舊版有一段「強制所有直向車位改成 face:'down'」的自動校正，
+//  會蓋掉資料裡的 face 值；現在改成尊重每格自己的 face 設定。
 let spaceMap = {};
 function rebuildMap(){ spaceMap={}; SPACES.forEach(s=>spaceMap[s.id]=s); }
 rebuildMap();
@@ -705,7 +706,26 @@ function getLaneX(x) {
 
 function connectPoint(nodeName, pt, nodes, edges) {
   const laneX = getLaneX(pt[0]);
-  
+
+  // ★ 底部真實車道 y=1218 特殊處理：
+  //    目標若落在 1071~1084 排範圍（x∈[200,500], y∈[1200,1235]），
+  //    強制路線先走到 y=1218 車道，再沿車道橫向、再上/下進入車位。
+  //    否則 dijkstra 會挑「直接由 CL_mid 垂直下切」的最短路徑，
+  //    而那條線會跑到車位的下邊界 (y=1210) 沿邊走，視覺不佳。
+  const inBottomAisleBand = pt[0] >= 200 && pt[0] <= 500 && pt[1] >= 1200 && pt[1] <= 1235;
+  if (inBottomAisleBand) {
+    const aisleY = 1218;
+    const aisleNodeName = (laneX === 300) ? 'L_ba' : 'CL_ba';
+    const aisleAnchor = nodes[aisleNodeName];
+    const aisleProjName = nodeName + '_AISLE';
+    nodes[aisleProjName] = { x: pt[0], y: aisleY };
+    // 車道橫向段：沿 y=1218 從最近車道節點走到目標 x
+    edges.push({ a: aisleNodeName, b: aisleProjName, dist: Math.abs(pt[0] - aisleAnchor.x) });
+    // 進入車位：垂直短段，從車道 y=1218 到車位進出點 y
+    edges.push({ a: aisleProjName, b: nodeName, dist: Math.abs(pt[1] - aisleY) });
+    return;
+  }
+
   // 建立投影在直向車道上的臨時節點，確保車輛會沿著直向車道直行到對齊車位的高度才轉彎，避免切西瓜穿過鄰近車位
   const projNodeName = nodeName + '_PROJ';
   nodes[projNodeName] = { x: laneX, y: pt[1] };
