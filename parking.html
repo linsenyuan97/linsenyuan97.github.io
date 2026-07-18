@@ -1025,20 +1025,33 @@ function openInfo(){
 }
 function closeInfo(){document.getElementById('modal').classList.remove('show');}
 
-/* ⑥  自動完成 */
+/* ⑥  自動完成 + 打完 4 碼自動搜尋（200ms debounce）*/
 const searchEl=document.getElementById('searchInput');
 const sugEl=document.getElementById('suggestions');
+let autoSearchTimer=null;
 searchEl.addEventListener('input',()=>{
   const v=searchEl.value.trim().toUpperCase();
   document.getElementById('clearBtn').style.display=v?'block':'none';
+
+  /* 每次輸入都把上一次的計時器取消（backspace/貼上/糾錯不會多觸發搜尋）*/
+  clearTimeout(autoSearchTimer);
+
   if(!v){closeSug();return;}
   const m=SPACES.filter(s=>s.id.toUpperCase().startsWith(v)).slice(0,12);
   if(!m.length){closeSug();return;}
   sugEl.innerHTML=m.map(s=>`<div class="sug-item" onclick="selectSpace('${jsStr(s.id)}')">
     <span class="sug-id">${s.id}</span>${s.type==='dis'?'':`<span class="sug-badge badge-reg">鄰近${s.lift||'—'}</span>`}</div>`).join('');
   sugEl.style.display='block';
+
+  /* 車位編號都是 4 碼；輸入剛好 4 碼且存在此車位 → 200ms 後自動送出 */
+  if(v.length===4 && spaceMap[v]){
+    autoSearchTimer=setTimeout(()=>{ closeSug(); doSearch(); }, 200);
+  }
 });
-searchEl.addEventListener('keydown',e=>{if(e.key==='Enter'){closeSug();doSearch();}if(e.key==='Escape')closeSug();});
+searchEl.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){ clearTimeout(autoSearchTimer); closeSug(); doSearch(); }
+  if(e.key==='Escape'){ clearTimeout(autoSearchTimer); closeSug(); }
+});
 document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))closeSug();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInfo();});
 function closeSug(){sugEl.style.display='none';}
