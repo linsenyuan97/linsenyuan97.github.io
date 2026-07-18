@@ -100,6 +100,12 @@ body.editing .sp{cursor:move;}
 body.editing .ov{cursor:grab;}
 body.editing .ov:hover{filter:drop-shadow(0 0 6px #f59e0b);}
 body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
+/* 縮放控制點 */
+.rh{pointer-events:auto;}
+.rh[data-dir="w"]{cursor:ew-resize;}
+.rh[data-dir="h"]{cursor:ns-resize;}
+.rh[data-dir="wh"]{cursor:nwse-resize;}
+.rh:hover{filter:brightness(1.25);}
 
 .zoom-ctrls{position:fixed;right:14px;bottom:16px;display:flex;flex-direction:column;gap:5px;z-index:50;}
 .zoom-btn{width:44px;height:44px;background:var(--bg-panel);border:1px solid var(--glass-border);border-radius:11px;
@@ -155,8 +161,16 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 .dlg-empty h3{font-size:1.05rem;font-weight:700;color:var(--text-1);margin-bottom:8px;}
 .dlg-empty p{font-size:.82rem;color:var(--text-3);line-height:1.7;}
 
-@keyframes space-pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-.sp-highlight{animation:space-pulse 1.1s ease-in-out infinite;}
+/* 呼吸式脈動：100% → 108% → 100%，1 秒一循環 */
+@keyframes space-pulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.08);}
+}
+.sp-highlight{
+  animation:space-pulse 1s ease-in-out infinite;
+  transform-box:fill-box;
+  transform-origin:center;
+}
 @keyframes route-dash{from{stroke-dashoffset:520;}to{stroke-dashoffset:0;}}
 .route-animated{stroke-dasharray:14 9;animation:route-dash 2.4s linear infinite;}
 @keyframes ping-expand{0%{r:8;opacity:1;}100%{r:24;opacity:0;}}
@@ -226,32 +240,26 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
   <!-- 循環車道視覺與周邊機房/儲藏室等非停車相關資訊已移除 -->
 
+  <!-- A 棟：2 部電梯（左右並排、置中） -->
   <g class="ov" data-key="A" font-family="'Microsoft JhengHei',sans-serif">
     <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
-    <text x="480" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#7aa0c8">A 棟</text>
-    <rect x="452" y="140" width="56" height="52" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
-    <line x1="454" y1="148" x2="506" y2="148" stroke="#345580" stroke-width="1"/><line x1="454" y1="156" x2="506" y2="156" stroke="#345580" stroke-width="1"/>
-    <line x1="454" y1="164" x2="506" y2="164" stroke="#345580" stroke-width="1"/><line x1="454" y1="172" x2="506" y2="172" stroke="#345580" stroke-width="1"/><line x1="454" y1="180" x2="506" y2="180" stroke="#345580" stroke-width="1"/>
-    <rect x="416" y="210" width="48" height="48" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="440" y="240" text-anchor="middle" font-size="20" fill="#3b82f6">🛗</text>
-    <rect x="496" y="210" width="48" height="48" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="520" y="240" text-anchor="middle" font-size="20" fill="#3b82f6">🛗</text>
-    <text x="480" y="280" text-anchor="middle" font-size="8" fill="#4f6f92">通往 1F～RF</text>
+    <text x="480" y="140" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">A 棟</text>
+    <rect x="424" y="180" width="48" height="52" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="448" y="216" text-anchor="middle" font-size="24" fill="#3b82f6">🛗</text>
+    <rect x="488" y="180" width="48" height="52" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="512" y="216" text-anchor="middle" font-size="24" fill="#3b82f6">🛗</text>
+    <text x="480" y="270" text-anchor="middle" font-size="10" fill="#4f6f92">通往 1F～RF</text>
   </g>
+  <!-- B 棟：1 部電梯（置中） -->
   <g class="ov" data-key="B" font-family="'Microsoft JhengHei',sans-serif">
     <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
-    <text x="401" y="824" text-anchor="middle" font-size="10" font-weight="700" fill="#7aa0c8">B棟</text>
-    <rect x="350" y="832" width="46" height="46" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
-    <line x1="352" y1="840" x2="394" y2="840" stroke="#345580" stroke-width="1"/><line x1="352" y1="848" x2="394" y2="848" stroke="#345580" stroke-width="1"/>
-    <line x1="352" y1="856" x2="394" y2="856" stroke="#345580" stroke-width="1"/><line x1="352" y1="864" x2="394" y2="864" stroke="#345580" stroke-width="1"/>
-    <rect x="406" y="832" width="46" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="429" y="862" text-anchor="middle" font-size="18" fill="#3b82f6">🛗</text>
+    <text x="401" y="838" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">B 棟</text>
+    <rect x="378" y="860" width="46" height="50" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="401" y="895" text-anchor="middle" font-size="22" fill="#3b82f6">🛗</text>
   </g>
+  <!-- C 棟：2 部電梯（並排、置中於建築上方） -->
   <g class="ov" data-key="C" font-family="'Microsoft JhengHei',sans-serif">
     <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
-    <text x="522" y="1564" text-anchor="middle" font-size="12" font-weight="700" fill="#7aa0c8">C 棟</text>
-    <rect x="452" y="1574" width="52" height="46" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
-    <line x1="454" y1="1582" x2="502" y2="1582" stroke="#345580" stroke-width="1"/><line x1="454" y1="1590" x2="502" y2="1590" stroke="#345580" stroke-width="1"/>
-    <line x1="454" y1="1598" x2="502" y2="1598" stroke="#345580" stroke-width="1"/><line x1="454" y1="1606" x2="502" y2="1606" stroke="#345580" stroke-width="1"/>
-    <rect x="514" y="1574" width="44" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="536" y="1604" text-anchor="middle" font-size="18" fill="#3b82f6">🛗</text>
-    <rect x="566" y="1574" width="30" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="581" y="1604" text-anchor="middle" font-size="15" fill="#3b82f6">🛗</text>
+    <text x="522" y="1576" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">C 棟</text>
+    <rect x="474" y="1594" width="44" height="50" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="496" y="1628" text-anchor="middle" font-size="22" fill="#3b82f6">🛗</text>
+    <rect x="526" y="1594" width="44" height="50" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="548" y="1628" text-anchor="middle" font-size="22" fill="#3b82f6">🛗</text>
   </g>
 
   <g class="ov" data-key="ramp1F">
@@ -307,6 +315,8 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
     <text y="-5" text-anchor="middle" fill="#64748b" font-size="8.5" font-weight="600">N</text>
     <line x1="0" y1="-12" x2="0" y2="5" stroke="#3b82f6" stroke-width="2"/><polygon points="0,-12 -4,1 4,1" fill="#3b82f6"/>
   </g>
+  <!-- 校正模式：縮放控制點層（僅編輯時渲染） -->
+  <g id="resizeHandleLayer"></g>
   </svg>
   </main>
 </div>
@@ -335,7 +345,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 /* =====================================================================
    ①  初始車位分區設定 CLUSTERS（第一次載入用；之後以校正存檔為準）
    ===================================================================== */
-const STORAGE_KEY = 'b1park_spaces_v2';   // 依 b1.jpg 重建汽車位(10xx)→ 換版本以重新載入
+const STORAGE_KEY = 'b1park_spaces_v3';   // 每次烤 JSON 進 HTML 都會版號 +1，讓舊 localStorage 失效以強制使用新資料
 
 /* =====================================================================
    汽車位資料 CAR_SPACES（依 b1.jpg 實際平面圖建置，僅 10xx 汽車位）
@@ -345,122 +355,126 @@ const STORAGE_KEY = 'b1park_spaces_v2';   // 依 b1.jpg 重建汽車位(10xx)→
    ● 位置為初版，可用上方「校正」模式拖曳微調（底圖已設 b1.jpg）
    ===================================================================== */
 const CAR_SPACES=[
-  {id:"1001",x:754.3,y:278.3,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1002",x:754.3,y:311.3,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1003",x:754.3,y:344.2,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1007",x:754.3,y:413.7,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1008",x:754.3,y:446.3,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1009",x:754.3,y:479.0,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1010",x:754.3,y:511.7,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1011",x:569.2,y:393.9,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1012",x:569.2,y:356.5,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1013",x:569.2,y:319.1,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1014",x:569.2,y:281.7,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1015",x:469.0,y:391.9,w:44,h:38,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1016",x:469.0,y:343.8,w:44,h:38,face:"left",type:"dis",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1017",x:469.0,y:295.7,w:44,h:38,face:"left",type:"dis",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1018",x:371.9,y:393.9,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1019",x:371.9,y:356.5,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1020",x:371.9,y:319.1,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1021",x:371.9,y:281.7,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1022",x:276.3,y:424.2,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1023",x:276.3,y:386.8,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1024",x:276.3,y:349.4,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1025",x:276.3,y:312.0,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1026",x:276.3,y:274.6,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1027",x:276.3,y:237.2,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1028",x:276.3,y:199.8,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1029",x:276.3,y:162.4,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1031",x:563.1,y:578.3,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"A棟"},
-  {id:"1032",x:563.1,y:613.0,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1033",x:563.1,y:647.6,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1034",x:563.1,y:682.3,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1035",x:563.1,y:716.9,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1036",x:563.1,y:751.6,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1037",x:563.1,y:786.2,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1038",x:563.1,y:820.9,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1039",x:563.1,y:855.5,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1040",x:563.1,y:890.2,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1041",x:563.1,y:924.8,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1042",x:563.1,y:959.5,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1043",x:666.3,y:959.5,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1044",x:666.3,y:924.8,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1045",x:666.3,y:890.2,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1046",x:666.3,y:855.5,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1047",x:666.3,y:820.9,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1048",x:666.3,y:786.2,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1049",x:666.3,y:751.6,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1050",x:666.3,y:716.9,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1051",x:666.3,y:682.3,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1052",x:666.3,y:647.6,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1053",x:666.3,y:613.0,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1054",x:666.3,y:578.3,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"A棟"},
-  {id:"1055",x:754.3,y:569.4,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1056",x:754.3,y:604.6,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1057",x:754.3,y:639.7,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1058",x:754.3,y:674.8,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1059",x:754.3,y:710.0,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1060",x:754.3,y:745.1,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1061",x:754.3,y:780.2,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1062",x:754.3,y:815.4,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1063",x:754.3,y:850.5,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1064",x:754.3,y:885.6,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1065",x:754.3,y:920.8,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1066",x:754.3,y:955.9,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1067",x:754.3,y:991.0,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1068",x:754.3,y:1026.6,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1069",x:754.3,y:1062.3,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1070",x:754.3,y:1097.9,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1071",x:465.9,y:1158.0,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1072",x:436.5,y:1158.0,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1073",x:407.2,y:1158.0,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1074",x:377.9,y:1158.0,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1075",x:348.5,y:1158.0,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1076",x:319.2,y:1158.0,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1077",x:289.9,y:1158.0,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1078",x:289.9,y:1261.3,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1079",x:319.2,y:1261.3,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1080",x:348.5,y:1261.3,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1081",x:377.9,y:1261.3,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1082",x:407.2,y:1261.3,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1083",x:436.5,y:1261.3,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1084",x:465.9,y:1261.3,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1085",x:478.1,y:1328.9,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1086",x:478.1,y:1393.0,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1087",x:563.1,y:1429.6,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1088",x:563.1,y:1390.4,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1089",x:563.1,y:1351.2,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1090",x:563.1,y:1312.0,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1091",x:563.1,y:1272.9,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1092",x:563.1,y:1233.7,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"B棟"},
-  {id:"1093",x:563.1,y:1194.5,w:44,h:36,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1094",x:563.1,y:1155.3,w:44,h:36,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1095",x:666.3,y:1158.3,w:44,h:30,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1096",x:666.3,y:1191.4,w:44,h:30,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1097",x:666.3,y:1224.6,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"B棟"},
-  {id:"1098",x:666.3,y:1257.7,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1099",x:666.3,y:1290.8,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1100",x:666.3,y:1323.9,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1101",x:666.3,y:1357.1,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1102",x:666.3,y:1390.2,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1103",x:666.3,y:1423.3,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1104",x:666.3,y:1456.5,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1105",x:666.3,y:1489.6,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1106",x:666.3,y:1522.7,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1107",x:666.3,y:1555.8,w:44,h:30,face:"right",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1108",x:769.5,y:1240.8,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1109",x:769.5,y:1268.3,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1110",x:769.5,y:1295.8,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1111",x:769.5,y:1323.4,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1112",x:769.5,y:1350.9,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1113",x:769.5,y:1378.4,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1114",x:769.5,y:1405.9,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1115",x:769.5,y:1433.5,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1116",x:769.5,y:1461.0,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1117",x:769.5,y:1488.5,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1118",x:769.5,y:1516.0,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1119",x:769.5,y:1543.6,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1120",x:769.5,y:1571.1,w:44,h:25,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1001",x:789,y:257,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
+  {id:"1002",x:789,y:290,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
+  {id:"1003",x:790,y:323,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
+  {id:"1007",x:789,y:388,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
+  {id:"1008",x:789,y:421,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
+  {id:"1009",x:789,y:455,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
+  {id:"1010",x:789,y:488,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
+  {id:"1011",x:563,y:372,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1012",x:562,y:331,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1013",x:562,y:295,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1014",x:562,y:259,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1015",x:430,y:372,w:44,h:38,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1016",x:429,y:321,w:44,h:38,face:"left",type:"dis",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1017",x:430,y:278,w:44,h:38,face:"left",type:"dis",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1018",x:327,y:374,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1019",x:321,y:326,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1020",x:321,y:289,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1021",x:321,y:253,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1022",x:195,y:406,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1023",x:195,y:369,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1024",x:195,y:328,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1025",x:195,y:291,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1026",x:195,y:254,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1027",x:195,y:210,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1028",x:195,y:174,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1029",x:195,y:138,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1031",x:552,y:541,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"A棟"},
+  {id:"1032",x:552,y:578,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1033",x:552,y:615,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1034",x:557,y:664,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1035",x:557,y:699,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1036",x:557,y:733,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1037",x:557,y:775,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1038",x:557,y:809,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1039",x:557,y:843,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1040",x:557,y:881,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1041",x:557,y:915,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1042",x:557,y:949,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1043",x:654,y:947,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1044",x:654,y:913,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1045",x:654,y:879,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1046",x:654,y:842,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1047",x:654,y:808,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1048",x:654,y:774,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1049",x:654,y:734,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1050",x:654,y:700,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1051",x:654,y:666,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1052",x:655,y:620,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1053",x:655,y:585,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1054",x:655,y:550,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"A棟"},
+  {id:"1055",x:789,y:547,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
+  {id:"1056",x:789,y:583,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1057",x:789,y:619,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1058",x:789,y:662,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1059",x:789,y:698,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1060",x:789,y:733,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1061",x:789,y:774,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1062",x:789,y:808,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1063",x:789,y:842,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1064",x:790,y:880,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1065",x:790,y:914,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1066",x:790,y:948,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1067",x:791,y:989,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1068",x:792,y:1025,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1069",x:792,y:1061,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1070",x:792,y:1096,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
+  {id:"1071",x:432,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1072",x:400,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1073",x:369,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1074",x:324,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1075",x:291,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1076",x:258,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1077",x:215,y:1088,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1078",x:213,y:1226,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1079",x:245,y:1226,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1080",x:338,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1081",x:309,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1082",x:371,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1083",x:401,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1084",x:431,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1085",x:434,y:1297,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1086",x:433,y:1341,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1087",x:557,y:1386,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1088",x:557,y:1347,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1089",x:557,y:1308,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1090",x:557,y:1267,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1091",x:557,y:1228,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1092",x:556,y:1190,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"B棟"},
+  {id:"1093",x:556,y:1152,w:44,h:36,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1094",x:555,y:1103,w:44,h:36,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1004",x:665,y:254,w:44,h:32,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1005",x:665,y:289,w:44,h:32,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1006",x:665,y:324,w:44,h:32,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
+  {id:"1030",x:436,y:883,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1108",x:792,y:1145,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1109",x:792,y:1180,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1110",x:792,y:1215,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1111",x:792,y:1250,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1112",x:792,y:1292,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1113",x:792,y:1327,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1114",x:792,y:1362,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1115",x:792,y:1406,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1116",x:792,y:1441,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1117",x:792,y:1477,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1119",x:793,y:1563,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1118",x:793,y:1528,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1120",x:793,y:1598,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
+  {id:"1095",x:653,y:1107,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1096",x:653,y:1152,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1097",x:653,y:1186,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1098",x:653,y:1220,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1099",x:653,y:1254,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1100",x:653,y:1296,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1101",x:653,y:1331,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1102",x:653,y:1365,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1103",x:653,y:1406,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1104",x:653,y:1467,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1105",x:653,y:1517,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1106",x:653,y:1551,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1107",x:653,y:1587,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
 ];
 
 /* 初始車位（第一次載入用；之後以校正存檔為準）*/
@@ -722,6 +736,7 @@ function toggleEdit(){
   if(!editMode){ selEdit=null; document.getElementById('editPanel').classList.remove('show'); }
   else { clearSelection(); clearSearch(); }
   renderSpaces();
+  renderResizeHandles();
 }
 
 /* 參考底圖 */
@@ -768,62 +783,153 @@ spacesLayerEl.addEventListener('pointerup',endDrag);
 spacesLayerEl.addEventListener('pointercancel',endDrag);
 
 /* =====================================================================
-   ⑧-b  校正：拖曳「棟 / 車道 / 入口 / 出口」等覆蓋物
+   ⑧-b  校正：拖曳/縮放「棟 / 車道 / 入口 / 出口」等覆蓋物
+   ---------------------------------------------------------------------
+   OV_OFFSETS[key] = { dx, dy, sx, sy }
+     dx / dy : 平移量
+     sx / sy : 縮放倍率（以該群組原始 bbox 左上為中心）
+   縮放範圍限制：0.4 ~ 3.0
    ===================================================================== */
-const OV_KEY='b1park_overlays_v1';
-let OV_OFFSETS = (()=>{ try{const j=localStorage.getItem(OV_KEY); if(j) return JSON.parse(j);}catch(e){} return {}; })();
+const OV_KEY='b1park_overlays_v2';   // 版號隨烤入 JSON 遞增，強制舊 localStorage 失效
+const OV_SCALE_MIN=0.4, OV_SCALE_MAX=3.0;
+const OV_DEFAULT={"ramp1F":{"dx":115,"dy":-24,"sx":0.626,"sy":0.455},"exit":{"dx":90,"dy":-263,"sx":1,"sy":1},"A":{"dx":63,"dy":28,"sx":0.786,"sy":0.674},"rampB2":{"dx":13,"dy":-39,"sx":0.575,"sy":0.637},"B":{"dx":10,"dy":-41,"sx":0.965,"sy":0.762},"C":{"dx":37,"dy":-113,"sx":0.702,"sy":1.057},"rampB1":{"dx":7,"dy":-82,"sx":0.4,"sy":1},"entry":{"dx":41,"dy":-84,"sx":1,"sy":1}};
+let OV_OFFSETS = (()=>{ try{const j=localStorage.getItem(OV_KEY); if(j) return JSON.parse(j);}catch(e){} return JSON.parse(JSON.stringify(OV_DEFAULT)); })();
 function saveOverlays(){ try{ localStorage.setItem(OV_KEY, JSON.stringify(OV_OFFSETS)); }catch(e){} }
+function ovOf(k){
+  const o=OV_OFFSETS[k]||{};
+  return {dx:o.dx||0, dy:o.dy||0, sx:o.sx||1, sy:o.sy||1};
+}
+// 快取每個 overlay 的「原始 bbox」（在任何 transform 之前）
+const OV_BBOX={};
+function computeOvBBoxes(){
+  document.querySelectorAll('#floorplan .ov').forEach(g=>{
+    const k=g.getAttribute('data-key');
+    const t=g.getAttribute('transform');
+    if(t) g.removeAttribute('transform');
+    const b=g.getBBox();
+    if(t) g.setAttribute('transform',t);
+    OV_BBOX[k]={x:b.x, y:b.y, w:b.width, h:b.height};
+  });
+}
+function transformFor(o, bb){
+  if(!bb) return `translate(${o.dx},${o.dy})`;
+  if(o.sx===1 && o.sy===1) return `translate(${o.dx},${o.dy})`;
+  return `translate(${o.dx},${o.dy}) translate(${bb.x},${bb.y}) scale(${o.sx},${o.sy}) translate(${-bb.x},${-bb.y})`;
+}
 function applyOverlayTransforms(){
   document.querySelectorAll('#floorplan .ov').forEach(g=>{
     const k=g.getAttribute('data-key');
-    const o=OV_OFFSETS[k]||{dx:0,dy:0};
-    g.setAttribute('transform',`translate(${o.dx},${o.dy})`);
+    g.setAttribute('transform', transformFor(ovOf(k), OV_BBOX[k]));
   });
   refreshRouting();
+  renderResizeHandles();
 }
 function refreshRouting(){
-  const eo=OV_OFFSETS.entry||{dx:0,dy:0}, xo=OV_OFFSETS.exit||{dx:0,dy:0};
+  const eo=ovOf('entry'), xo=ovOf('exit');
   ENTRY.x=ENTRY_BASE.x+eo.dx; ENTRY.y=ENTRY_BASE.y+eo.dy; ENTRY_LANE_Y=ENTRY.y;
   EXIT.x=EXIT_BASE.x+xo.dx;   EXIT.y=EXIT_BASE.y+xo.dy;
 }
 
-let ovDrag=null;
+/* ---------- 縮放控制點 ---------- */
+function renderResizeHandles(){
+  const layer=document.getElementById('resizeHandleLayer');
+  if(!layer) return;
+  if(!editMode){ layer.innerHTML=''; return; }
+  let html='';
+  document.querySelectorAll('#floorplan .ov').forEach(g=>{
+    const k=g.getAttribute('data-key');
+    const bb=OV_BBOX[k]; if(!bb) return;
+    const o=ovOf(k);
+    // 群組在畫面上的實際邊界
+    const x0=bb.x + o.dx;
+    const y0=bb.y + o.dy;
+    const w =bb.w * o.sx;
+    const h =bb.h * o.sy;
+    const rx=x0+w, ry=y0+h;
+    const midY=y0+h/2, midX=x0+w/2;
+    // 右邊(改寬)、下面(改長)、右下角(同時改)
+    html += `<circle class="rh" data-k="${k}" data-dir="w" cx="${rx}" cy="${midY}" r="4.5" fill="#fbbf24" stroke="#0a0f1c" stroke-width="1.2"/>`;
+    html += `<circle class="rh" data-k="${k}" data-dir="h" cx="${midX}" cy="${ry}" r="4.5" fill="#fbbf24" stroke="#0a0f1c" stroke-width="1.2"/>`;
+    html += `<rect   class="rh" data-k="${k}" data-dir="wh" x="${rx-5}" y="${ry-5}" width="10" height="10" rx="1.5" fill="#f97316" stroke="#0a0f1c" stroke-width="1.2"/>`;
+  });
+  layer.innerHTML = html;
+}
+
+let ovDrag=null;   // 用來 handle 移動 (translate)
+let ovResize=null; // 用來 handle 縮放 (scale)
 const fpEl=document.getElementById('floorplan');
 fpEl.addEventListener('pointerdown',e=>{
   if(!editMode) return;
   if(e.target.closest('.sp')) return;   // 車位另有處理
+
+  // 縮放控制點優先
+  const handle=e.target.closest('.rh');
+  if(handle){
+    e.preventDefault();
+    const k=handle.getAttribute('data-k');
+    const dir=handle.getAttribute('data-dir');   // 'w' | 'h' | 'wh'
+    const [mx,my]=svgPoint(e);
+    const cur=ovOf(k);
+    ovResize={key:k, dir, startMx:mx, startMy:my, startSx:cur.sx, startSy:cur.sy, bb:OV_BBOX[k]};
+    try{handle.setPointerCapture(e.pointerId);}catch(_){}
+    return;
+  }
+  // 沒點到控制點 → 拖曳整組
   const ov=e.target.closest('.ov');
   if(!ov) return;
   e.preventDefault();
   const key=ov.getAttribute('data-key');
   const [mx,my]=svgPoint(e);
-  const cur=OV_OFFSETS[key]||{dx:0,dy:0};
+  const cur=ovOf(key);
   ovDrag={key, ov, startMx:mx, startMy:my, startDx:cur.dx, startDy:cur.dy};
   ov.classList.add('dragging');
   try{ov.setPointerCapture(e.pointerId);}catch(_){}
 });
 fpEl.addEventListener('pointermove',e=>{
-  if(!ovDrag) return;
   const [mx,my]=svgPoint(e);
-  const dx=Math.round(ovDrag.startDx + mx - ovDrag.startMx);
-  const dy=Math.round(ovDrag.startDy + my - ovDrag.startMy);
-  OV_OFFSETS[ovDrag.key]={dx,dy};
-  ovDrag.ov.setAttribute('transform',`translate(${dx},${dy})`);
+  if(ovResize){
+    const {key, dir, startMx, startMy, startSx, startSy, bb}=ovResize;
+    let sx=startSx, sy=startSy;
+    if(dir==='w' || dir==='wh'){
+      sx = startSx + (mx-startMx)/bb.w;
+      sx = Math.max(OV_SCALE_MIN, Math.min(OV_SCALE_MAX, sx));
+    }
+    if(dir==='h' || dir==='wh'){
+      sy = startSy + (my-startMy)/bb.h;
+      sy = Math.max(OV_SCALE_MIN, Math.min(OV_SCALE_MAX, sy));
+    }
+    const cur=ovOf(key);
+    OV_OFFSETS[key]={dx:cur.dx, dy:cur.dy, sx:+sx.toFixed(3), sy:+sy.toFixed(3)};
+    const g=document.querySelector(`#floorplan .ov[data-key="${key}"]`);
+    if(g) g.setAttribute('transform', transformFor(OV_OFFSETS[key], bb));
+    renderResizeHandles();
+    return;
+  }
+  if(ovDrag){
+    const dx=Math.round(ovDrag.startDx + mx - ovDrag.startMx);
+    const dy=Math.round(ovDrag.startDy + my - ovDrag.startMy);
+    const cur=ovOf(ovDrag.key);
+    OV_OFFSETS[ovDrag.key]={dx, dy, sx:cur.sx, sy:cur.sy};
+    ovDrag.ov.setAttribute('transform', transformFor(OV_OFFSETS[ovDrag.key], OV_BBOX[ovDrag.key]));
+    renderResizeHandles();
+  }
 });
 function endOvDrag(){
-  if(!ovDrag) return;
-  ovDrag.ov.classList.remove('dragging');
-  ovDrag=null;
-  refreshRouting();
-  saveOverlays();
-  if(currentId) drawRoute(spaceMap[currentId]);   // 入口/出口位移後即時重畫路線
+  const wasResizing=!!ovResize, wasDragging=!!ovDrag;
+  if(ovDrag){ ovDrag.ov.classList.remove('dragging'); ovDrag=null; }
+  if(ovResize){ ovResize=null; }
+  if(wasResizing || wasDragging){
+    refreshRouting();
+    saveOverlays();
+    if(currentId) drawRoute(spaceMap[currentId]);
+  }
 }
 fpEl.addEventListener('pointerup',endOvDrag);
 fpEl.addEventListener('pointercancel',endOvDrag);
 
 function resetOverlays(){
-  if(!confirm('還原棟／車道／入口／出口的位置？（車位不受影響）')) return;
-  OV_OFFSETS={}; saveOverlays(); applyOverlayTransforms();
+  if(!confirm('還原棟／車道／入口／出口的位置與大小？（車位不受影響）')) return;
+  OV_OFFSETS=JSON.parse(JSON.stringify(OV_DEFAULT)); saveOverlays(); applyOverlayTransforms();
   if(currentId) drawRoute(spaceMap[currentId]);
 }
 
@@ -941,7 +1047,7 @@ function resetData(){
 
 /* ⑨  init */
 function init(){
-  renderPillars(); renderSpaces(); applyOverlayTransforms(); applyView(); updateDirUI();
+  renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); applyView(); updateDirUI();
   requestAnimationFrame(applyView);
   window.addEventListener('load',applyView);
   if(window.ResizeObserver){let first=true;
