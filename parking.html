@@ -32,7 +32,7 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
 .mini-btn:hover{background:rgba(255,255,255,.1);color:var(--text-1);}
 .mini-btn.on{background:linear-gradient(135deg,var(--accent-gold),#d97706);color:#fff;border-color:var(--accent-gold);}
 .search-row{display:flex;gap:8px;align-items:stretch;}
-.search-wrap{position:relative;flex:1;}
+.search-wrap{position:relative;flex:1;margin:0;}   /* .search-wrap 也可能是 <form>，把預設 margin 歸零 */
 .s-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:.95rem;}
 .search-input{width:100%;padding:9px 34px 9px 32px;background:rgba(255,255,255,.06);
   border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);color:var(--text-1);
@@ -203,13 +203,16 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
     <div class="titlebar">🅿 B1 停車場車位查詢
     </div>
     <div class="search-row">
-      <div class="search-wrap">
+      <!-- 用 <form> 包起來，iOS 才會把它視為「可送出的搜尋表單」，
+           虛擬鍵盤的 Return 鍵才會改成藍色「搜尋」；同時桌機 Enter 也走 submit。 -->
+      <form class="search-wrap" id="searchForm" onsubmit="event.preventDefault(); doSearch();" autocomplete="off" role="search">
         <span class="s-ic">🔎</span>
-        <input id="searchInput" class="search-input" type="tel" placeholder="輸入車位編號 (如 1056)"
-               autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="numeric">
-        <button class="s-clear" id="clearBtn" onclick="clearSearch()">✕</button>
+        <input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號 (如 1056)"
+               autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="numeric"
+               name="q" maxlength="6">
+        <button type="button" class="s-clear" id="clearBtn" onclick="clearSearch()" aria-label="清除">✕</button>
         <div class="suggestions" id="suggestions"></div>
-      </div>
+      </form>
       <button class="info-i-btn" id="infoBtn" onclick="openInfo()" title="顯示行駛路線提示" aria-label="說明">i</button>
     </div>
     <div class="mode-row">
