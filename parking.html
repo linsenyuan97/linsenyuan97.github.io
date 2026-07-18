@@ -205,8 +205,8 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
     <div class="search-row">
       <div class="search-wrap">
         <span class="s-ic">🔎</span>
-        <input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號 (如 1056)"
-               autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="text">
+        <input id="searchInput" class="search-input" type="tel" placeholder="輸入車位編號 (如 1056)"
+               autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="numeric">
         <button class="s-clear" id="clearBtn" onclick="clearSearch()">✕</button>
         <div class="suggestions" id="suggestions"></div>
       </div>
@@ -368,7 +368,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 /* =====================================================================
    ①  初始車位分區設定 CLUSTERS（第一次載入用；之後以校正存檔為準）
    ===================================================================== */
-const STORAGE_KEY = 'b1park_spaces_v3';   // 每次烤 JSON 進 HTML 都會版號 +1，讓舊 localStorage 失效以強制使用新資料
+const STORAGE_KEY = 'b1park_spaces_v4';   // v4: 1078-1084 車頭改朝上 + 底部 y=1218 真實車道
 
 /* =====================================================================
    汽車位資料 CAR_SPACES（依 b1.jpg 實際平面圖建置，僅 10xx 汽車位）
@@ -451,13 +451,13 @@ const CAR_SPACES=[
   {id:"1075",x:291,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
   {id:"1076",x:258,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
   {id:"1077",x:215,y:1088,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1078",x:213,y:1226,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1079",x:245,y:1226,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1080",x:338,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1081",x:309,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1082",x:371,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1083",x:401,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1084",x:431,y:1225,w:26,h:52,face:"down",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1078",x:213,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1079",x:245,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1080",x:338,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1081",x:309,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1082",x:371,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1083",x:401,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1084",x:431,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
   {id:"1085",x:434,y:1297,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟"},
   {id:"1086",x:433,y:1341,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟"},
   {id:"1087",x:557,y:1386,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
@@ -509,6 +509,8 @@ function loadSaved(){ try{const j=localStorage.getItem(STORAGE_KEY);
 function saveLocal(){ try{localStorage.setItem(STORAGE_KEY, JSON.stringify(SPACES));}catch(e){} }
 
 let SPACES = loadSaved() || genFromClusters();
+// 自動校正：強制所有直向車位（w < h，即 1071~1084）車頭朝下 ('down')，確保從下方車道駛入時箭頭朝上
+SPACES.forEach(sp => { if (sp.w < sp.h) sp.face = 'down'; });
 let spaceMap = {};
 function rebuildMap(){ spaceMap={}; SPACES.forEach(s=>spaceMap[s.id]=s); }
 rebuildMap();
@@ -583,22 +585,28 @@ const EDGES = [
   // 左側縱向通道 (切斷 L3-L4 避開 B2 坡道；切斷 L4-L_ramp 和 L_ramp-L_mid 避開 1075 車位)
   { a: 'L1', b: 'L2' },
   { a: 'L2', b: 'L3' },
-  { a: 'L_mid', b: 'L5' },
+  // L_mid → L5 拆成兩段，經過 y=1218 真實車道
+  { a: 'L_mid', b: 'L_ba' },
+  { a: 'L_ba',  b: 'L5' },
 
   // 中左縱向通道 (CL4 -> CL_ramp 設為單向向下，禁止從入口直接左轉北上)
   { a: 'CL1', b: 'CL2' },
   { a: 'CL2', b: 'CL3' },
   { a: 'CL3', b: 'CL4' },
-  { a: 'CL4', b: 'CL_ramp', dir: 'forward' }, 
-  { a: 'CL_ramp', b: 'CL_mid' },
-  { a: 'CL_mid', b: 'CL5' },
+  { a: 'CL4', b: 'CL_ramp', dir: 'forward' },
+  { a: 'CL_ramp', b: 'CL_mid' },  // 雙向：入口南轉到 1085~1096；離場北上到匝道。2x CL 懲罰確保 1112 等遠端車位走右車道
+  // CL_mid → CL5 拆兩段
+  { a: 'CL_mid', b: 'CL_ba' },
+  { a: 'CL_ba',  b: 'CL5' },
 
   // 右側縱向通道
   { a: 'R1', b: 'R2' },
   { a: 'R2', b: 'R3' },
   { a: 'R3', b: 'R_ramp' },
   { a: 'R_ramp', b: 'R_mid' },
-  { a: 'R_mid', b: 'R4' },
+  // R_mid → R4 拆兩段
+  { a: 'R_mid', b: 'R_ba' },
+  { a: 'R_ba',  b: 'R4' },
   { a: 'R4', b: 'R5' },
 
   // 上方橫向通道 (y = 500)
@@ -618,9 +626,13 @@ const EDGES = [
   { a: 'entry', b: 'CL_ramp', dir: 'forward' },
   { a: 'CL_ramp', b: 'R_ramp', dir: 'forward' },
 
-  // 中下車位間橫向通道 (y = 1180)
-  { a: 'L_mid', b: 'CL_mid' },
-  { a: 'CL_mid', b: 'R_mid' },
+  // 中下橫向通道 (y = 1180) — 實際會穿過 1071-1077 車位，加高懲罰讓路徑優先走 y=1218 真實車道
+  { a: 'L_mid', b: 'CL_mid', penalty: 3 },
+  { a: 'CL_mid', b: 'R_mid', penalty: 3 },
+
+  // ★ 底部真實車道 (y = 1218)：1071-1077 (face=down) 與 1078-1084 (face=up) 之間的實體通道
+  { a: 'L_ba',  b: 'CL_ba' },
+  { a: 'CL_ba', b: 'R_ba'  },
 
   // 下方橫向通道 (y = 1260)
   { a: 'L5', b: 'CL5' },
@@ -718,16 +730,18 @@ function connectPoint(nodeName, pt, nodes, edges) {
     }
   }
   
+  const mult = (laneX === 500) ? 2.0 : 1.0;
+  
   if (above) {
-    const dist = Math.abs(nodes[projNodeName].y - nodes[above.name].y);
+    const dist = Math.abs(nodes[projNodeName].y - nodes[above.name].y) * mult;
     edges.push({ a: projNodeName, b: above.name, dist });
   }
   if (below) {
-    const dist = Math.abs(nodes[below.name].y - nodes[projNodeName].y);
+    const dist = Math.abs(nodes[below.name].y - nodes[projNodeName].y) * mult;
     edges.push({ a: projNodeName, b: below.name, dist });
   }
   if (!above && !below && laneNodes.length > 0) {
-    const dist = Math.hypot(nodes[projNodeName].x - nodes[laneNodes[0].name].x, nodes[projNodeName].y - nodes[laneNodes[0].name].y);
+    const dist = Math.hypot(nodes[projNodeName].x - nodes[laneNodes[0].name].x, nodes[projNodeName].y - nodes[laneNodes[0].name].y) * mult;
     edges.push({ a: projNodeName, b: laneNodes[0].name, dist });
   }
   
@@ -765,6 +779,11 @@ function findShortestPath(startPt, endPt) {
     R4: { x: 745, y: 1260 },
     R5: { x: 745, y: 1500 },
 
+    // ★ 底部真實車道節點 (y = 1218)：1071-1077 與 1078-1084 兩排之間的實體通道
+    L_ba:  { x: 300, y: 1218 },
+    CL_ba: { x: 500, y: 1218 },
+    R_ba:  { x: 745, y: 1218 },
+
     // 出口車道連通點 (動態對齊 exit 的 X 座標，確保 exit→E2 為垂直線段)
     E2: { x: EXIT.x, y: 500 }
   };
@@ -777,7 +796,13 @@ function findShortestPath(startPt, endPt) {
   
   const edges = [];
   for (const edge of EDGES) {
-    const dist = Math.hypot(nodes[edge.a].x - nodes[edge.b].x, nodes[edge.a].y - nodes[edge.b].y);
+    let dist = Math.hypot(nodes[edge.a].x - nodes[edge.b].x, nodes[edge.a].y - nodes[edge.b].y);
+    // 懲罰中通道的直向行駛，使其傾向於走兩側主車道（L/R）
+    if (nodes[edge.a].x === 500 && nodes[edge.b].x === 500) {
+      dist *= 2.0;
+    }
+    // 邊自訂懲罰（例如 y=1180 橫向會穿過 1071-1077 車位，讓其被 y=1218 真實車道取代）
+    if (edge.penalty) dist *= edge.penalty;
     edges.push({ a: edge.a, b: edge.b, dist, dir: edge.dir });
   }
   
@@ -808,6 +833,8 @@ function buildPathIn(sp){
     debugMsg = `ERROR: ${e.message}`;
   }
   const pts = dijkstraResult || [[ENTRY.x, ENTRY.y], [tx, ENTRY_LANE_Y], [tx, ay], [ax, ay]];
+  // 路線末端延伸到車位中心，箭頭指向車位內部（直向車位箭頭朝上）
+  pts.push([sp.x+sp.w/2, sp.y+sp.h/2]);
   const smallEl = document.querySelector('.titlebar small');
   if (smallEl) {
     smallEl.innerHTML = `· [${sp.id}] dijkstra=${debugMsg} access=(${Math.round(ax)},${Math.round(ay)}) ENTRY=(${Math.round(ENTRY.x)},${Math.round(ENTRY.y)})`;
@@ -829,6 +856,8 @@ function buildPathOut(sp){
     debugMsg = `ERROR: ${e.message}`;
   }
   const pts = dijkstraResult || [[ax, ay], [tx, ay], [tx, EXIT.y], [EXIT.x, EXIT.y]];
+  // 路線起點從車位中心開始，表示車輛從車格內出發
+  pts.unshift([sp.x+sp.w/2, sp.y+sp.h/2]);
   const smallEl = document.querySelector('.titlebar small');
   if (smallEl) {
     smallEl.innerHTML = `· [${sp.id}] 出口 dijkstra=${debugMsg} access=(${Math.round(ax)},${Math.round(ay)}) EXIT=(${Math.round(EXIT.x)},${Math.round(EXIT.y)})`;
