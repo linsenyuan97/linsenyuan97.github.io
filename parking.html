@@ -183,7 +183,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
 <div class="app">
   <header class="topbar">
-    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位 (v1.4 - 2026/07/18 18:28)</small>
+    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位 (v1.5 - 2026/07/18 18:42)</small>
       <button class="mini-btn" id="editToggle" onclick="toggleEdit()">✏️ 校正</button>
     </div>
     <div class="search-row">
@@ -212,7 +212,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
   </header>
 
   <main class="map-area" id="mapArea">
-  <svg id="floorplan" viewBox="0 0 940 1672" width="470" height="836">
+  <svg id="floorplan" viewBox="0 0 940 1672" width="940" height="1672">
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
       <path d="M40 0 L0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
@@ -772,7 +772,9 @@ function findShortestPath(startPt, endPt) {
 function buildPathIn(sp){
   const [ax,ay]=accessOf(sp);
   const tx=nearest(TRUNK_X,ax);
-  const pts = findShortestPath([ENTRY.x, ENTRY.y], [ax, ay]) || [[ENTRY.x, ENTRY.y], [tx, ENTRY_LANE_Y], [tx, ay], [ax, ay]];
+  const dijkstraResult = findShortestPath([ENTRY.x, ENTRY.y], [ax, ay]);
+  const pts = dijkstraResult || [[ENTRY.x, ENTRY.y], [tx, ENTRY_LANE_Y], [tx, ay], [ax, ay]];
+  console.log(`[Route] space=${sp.id}, access=(${ax},${ay}), dijkstra=${dijkstraResult ? 'OK('+dijkstraResult.length+'pts)' : 'NULL→fallback'}, path=`, JSON.stringify(pts));
   return {pts, trunkX:tx, ay,
     startPt:[ENTRY.x,ENTRY.y], startColor:'#22c55e', destPt:[sp.x+sp.w/2,sp.y+sp.h/2], destColor:'#f59e0b'};
 }
