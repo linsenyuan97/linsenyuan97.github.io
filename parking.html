@@ -20,23 +20,23 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
   background:var(--bg-primary);color:var(--text-1);}
 .app{height:100%;display:flex;flex-direction:column;}
 
-/* ---------- TOP BAR ---------- */
-.topbar{flex-shrink:0;padding:10px 12px 12px;background:var(--bg-secondary);
+/* ---------- TOP BAR （精簡：讓地圖獲得更多垂直空間）---------- */
+.topbar{flex-shrink:0;padding:6px 10px 7px;background:var(--bg-secondary);
   border-bottom:1px solid var(--glass-border);box-shadow:0 4px 18px rgba(0,0,0,.35);z-index:30;}
-.titlebar{font-size:.9rem;font-weight:800;color:#4f93d6;letter-spacing:.3px;
-  margin:0 2px 8px;display:flex;align-items:center;gap:6px;}
+.titlebar{font-size:1rem;font-weight:800;color:#4f93d6;letter-spacing:.4px;
+  margin:0 2px 5px;display:flex;align-items:center;gap:6px;}
 .titlebar small{font-weight:400;color:var(--text-3);font-size:.66rem;letter-spacing:0;}
 .mini-btn{margin-left:auto;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);
-  color:var(--text-2);font-family:inherit;font-size:.72rem;font-weight:600;padding:5px 10px;
-  border-radius:7px;cursor:pointer;transition:all .15s;}
+  color:var(--text-2);font-family:inherit;font-size:.9rem;font-weight:600;padding:4px 9px;
+  border-radius:7px;cursor:pointer;transition:all .15s;line-height:1.1;}
 .mini-btn:hover{background:rgba(255,255,255,.1);color:var(--text-1);}
 .mini-btn.on{background:linear-gradient(135deg,var(--accent-gold),#d97706);color:#fff;border-color:var(--accent-gold);}
 .search-row{display:flex;gap:8px;align-items:stretch;}
 .search-wrap{position:relative;flex:1;}
 .s-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:.95rem;}
-.search-input{width:100%;padding:12px 38px 12px 36px;background:rgba(255,255,255,.06);
+.search-input{width:100%;padding:9px 34px 9px 32px;background:rgba(255,255,255,.06);
   border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);color:var(--text-1);
-  font-family:inherit;font-size:1.05rem;font-weight:600;letter-spacing:1px;outline:none;
+  font-family:inherit;font-size:1rem;font-weight:600;letter-spacing:1px;outline:none;
   transition:border-color .2s,box-shadow .2s,background .2s;}
 .search-input::placeholder{color:var(--text-3);letter-spacing:0;font-weight:400;}
 .search-input:focus{border-color:var(--accent-cyan);background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.18);}
@@ -47,6 +47,11 @@ body.dir-out .search-input{border-color:rgba(249,115,22,.55);}
 body.dir-out .search-input:focus{border-color:#f97316;background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.20);}
 .s-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);font-size:1rem;cursor:pointer;display:none;}
 .s-clear:hover{color:var(--text-1);}
+/* 「i」提示按鈕：顯示路線對話框（有車位→路線；沒車位→請輸入提示） */
+.info-i-btn{flex-shrink:0;width:38px;border:1.5px solid var(--glass-border);border-radius:50%;
+  background:rgba(255,255,255,.05);color:var(--text-2);font-family:'Georgia',serif;font-size:1.05rem;font-weight:700;font-style:italic;
+  cursor:pointer;transition:all .18s;line-height:1;padding:0;}
+.info-i-btn:hover{background:rgba(79,147,214,.15);color:#4f93d6;border-color:#4f93d6;}
 .info-btn{flex-shrink:0;width:48px;border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);
   background:rgba(255,255,255,.05);color:var(--text-2);font-size:1.4rem;font-weight:800;cursor:pointer;transition:all .18s;line-height:1;}
 .info-btn:hover{background:rgba(255,255,255,.1);color:var(--text-1);}
@@ -64,8 +69,19 @@ body.dir-out .search-input:focus{border-color:#f97316;background:rgba(249,115,22
 .badge-reg{background:rgba(37,99,235,.2);color:#60a5fa;}
 .badge-dis{background:rgba(16,185,129,.2);color:#34d399;}
 .sug-zone{font-size:.68rem;color:var(--text-3);margin-left:auto;}
-.err-inline{margin:8px 2px 0;padding:9px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
-  border-radius:var(--radius-sm);font-size:.8rem;color:#fca5a5;display:none;}
+/* 找車位 / 找出口 兩顆大按鈕（同時是方向切換 + 開啟路線對話框）*/
+.mode-row{display:flex;gap:6px;margin-top:6px;}
+.mode-btn{flex:1;padding:8px 6px;border-radius:var(--radius-sm);
+  border:2px solid var(--glass-border);background:rgba(255,255,255,.04);
+  color:var(--text-2);font-family:inherit;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:.5px;}
+.mode-btn:hover{background:rgba(255,255,255,.09);color:var(--text-1);}
+.mode-btn .mode-ic{font-size:1.05rem;line-height:1;}
+.mode-btn.active.mode-in{border-color:#22c55e;background:rgba(34,197,94,.16);color:#4ade80;box-shadow:0 0 0 3px rgba(34,197,94,.22);}
+.mode-btn.active.mode-out{border-color:#f97316;background:rgba(249,115,22,.16);color:#fb923c;box-shadow:0 0 0 3px rgba(249,115,22,.22);}
+
+.err-inline{margin:6px 2px 0;padding:6px 10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
+  border-radius:var(--radius-sm);font-size:.76rem;color:#fca5a5;display:none;}
 .err-inline.show{display:block;}
 
 /* 導引方向切換（同列、精簡）*/
@@ -90,7 +106,7 @@ body.editing .edit-bar{display:flex;}
 .edit-bar input[type=range]{width:82px;}
 
 /* ---------- MAP ---------- */
-.map-area{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:14px;
+.map-area{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;
   background:radial-gradient(ellipse at 50% 26%,#0e1f3d 0%,var(--bg-primary) 62%);-webkit-overflow-scrolling:touch;}
 .map-area::-webkit-scrollbar{width:7px;height:7px;}
 .map-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
@@ -183,19 +199,26 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
 <div class="app">
   <header class="topbar">
-    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位 (v1.9 - 2026/07/18 18:57)</small>
-      <button class="mini-btn" id="editToggle" onclick="toggleEdit()">✏️ 校正</button>
+    <div class="titlebar">B1 地下停車場
+      <button class="mini-btn" id="editToggle" onclick="toggleEdit()" title="校正">✏️</button>
     </div>
     <div class="search-row">
       <div class="search-wrap">
         <span class="s-ic">🔎</span>
-        <input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號"
+        <input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號 (如 1056)"
                autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="text">
         <button class="s-clear" id="clearBtn" onclick="clearSearch()">✕</button>
         <div class="suggestions" id="suggestions"></div>
       </div>
-      <button class="dir-toggle" id="dirToggle" onclick="toggleDir()" title="切換導引方向"></button>
-      <button class="info-btn" id="infoBtn" onclick="openInfo()" title="建議行駛路線">!</button>
+      <button class="info-i-btn" id="infoBtn" onclick="openInfo()" title="顯示行駛路線提示" aria-label="說明">i</button>
+    </div>
+    <div class="mode-row">
+      <button class="mode-btn mode-in" id="modeInBtn" onclick="setMode('in')">
+        <span class="mode-ic">🚗</span><span>找車位</span>
+      </button>
+      <button class="mode-btn mode-out" id="modeOutBtn" onclick="setMode('out')">
+        <span class="mode-ic">🚪</span><span>找出口</span>
+      </button>
     </div>
     <div class="err-inline" id="errMsg">❌ 查無此車位編號，請確認後重試</div>
 
@@ -844,24 +867,24 @@ function stepsOut(sp){
   return steps;
 }
 /* 方向切換 UI */
+/* 更新兩顆模式按鈕的 active 狀態，並在 body 上標記 dir-in / dir-out（維持搜尋框邊框動態上色） */
 function updateDirUI(){
-  const el=document.getElementById('dirToggle');
-  el.classList.toggle('in', routeDir==='in');
-  el.classList.toggle('out', routeDir==='out');
+  const inBtn=document.getElementById('modeInBtn');
+  const outBtn=document.getElementById('modeOutBtn');
+  if(inBtn) inBtn.classList.toggle('active', routeDir==='in');
+  if(outBtn) outBtn.classList.toggle('active', routeDir==='out');
   document.body.classList.toggle('dir-in',  routeDir==='in');
   document.body.classList.toggle('dir-out', routeDir==='out');
-  el.innerHTML = (routeDir==='in')
-    ? `<span class="d-label">入口→車位</span><span class="d-swap">⇅</span>`
-    : `<span class="d-label">車位→出口</span><span class="d-swap">⇅</span>`;
-  el.title = routeDir==='in'
-    ? '目前：入口 → 車位（點我切換為 車位 → 出口）'
-    : '目前：車位 → 出口（點我切換為 入口 → 車位）';
 }
-function toggleDir(){
-  routeDir = routeDir==='in'?'out':'in';
+/* 點「找車位 / 找出口」：只切換方向 + 重畫地圖上的路線；不彈出對話框 */
+function setMode(dir){
+  routeDir = dir;
   updateDirUI();
-  if(currentId){ drawRoute(spaceMap[currentId]);
-    if(document.getElementById('modal').classList.contains('show')) openInfo(); }
+  if(currentId) drawRoute(spaceMap[currentId]);
+}
+/* 舊 API 相容：仍保留 toggleDir 讓程式其他呼叫不炸 */
+function toggleDir(){
+  setMode(routeDir==='in'?'out':'in');
 }
 
 /* =====================================================================
@@ -906,7 +929,7 @@ function clearSelection(){
 function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('clearBtn').style.display='none';clearSelection();clearError();closeSug();}
 function showError(){document.getElementById('errMsg').classList.add('show');}
 function clearError(){document.getElementById('errMsg').classList.remove('show');}
-function setInfoReady(on){document.getElementById('infoBtn').classList.toggle('ready',on);}
+function setInfoReady(on){ /* 舊版是讓「!」按鈕發光；新版由兩顆模式按鈕本身表達狀態，這裡留空當 no-op */ }
 
 /* ⑤  「!」對話框 */
 function openInfo(){
@@ -962,7 +985,7 @@ function scrollToSpace(sp){
 
 /* ⑦  版面配合寬度（放大縮小交給手機捏放 / 桌機瀏覽器縮放）*/
 const VB_W=940,VB_H=1672;
-function baseSize(){const map=document.getElementById('mapArea');let w=Math.max(300,map.clientWidth-28);w=Math.min(w,700);return{w,h:w*(VB_H/VB_W)};}
+function baseSize(){const map=document.getElementById('mapArea');let w=Math.max(300,map.clientWidth-16);w=Math.min(w,700);return{w,h:w*(VB_H/VB_W)};}
 function applyView(){const s=document.getElementById('floorplan');const{w,h}=baseSize();s.setAttribute('width',Math.round(w));s.setAttribute('height',Math.round(h));}
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(applyView,120);});
 
