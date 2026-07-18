@@ -199,7 +199,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
 <div class="app">
   <header class="topbar">
-    <div class="titlebar">B1 地下停車場
+    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位 (v2.0 - 2026/07/18 22:00)</small>
       <button class="mini-btn" id="editToggle" onclick="toggleEdit()" title="校正">✏️</button>
     </div>
     <div class="search-row">
@@ -235,7 +235,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
   </header>
 
   <main class="map-area" id="mapArea">
-  <svg id="floorplan" viewBox="0 0 940 1672" width="940" height="1672">
+  <svg id="floorplan" viewBox="120 20 720 1640" width="940" height="1672">
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
       <path d="M40 0 L0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
@@ -603,7 +603,7 @@ const EDGES = [
 
   // 上方橫向通道 (y = 500)
   { a: 'L2', b: 'CL2' },
-  { a: 'CL2', b: 'E2' },
+  { a: 'CL2', b: 'R2' },
   { a: 'E2', b: 'R2' },
 
   // 中上橫向通道 (y = 750，僅連通左與中左)
@@ -627,7 +627,8 @@ const EDGES = [
   { a: 'CL5', b: 'R4' },
 
   // 出口連通性
-  { a: 'exit', b: 'E2' }
+  { a: 'exit', b: 'E2' },
+  { a: 'exit', b: 'R1' }
 ];
 
 function dijkstra(startNode, endNode, nodes, edges) {
@@ -764,8 +765,8 @@ function findShortestPath(startPt, endPt) {
     R4: { x: 745, y: 1260 },
     R5: { x: 745, y: 1500 },
 
-    // 出口車道連通點 (與 exit 對齊)
-    E2: { x: 664, y: 500 }
+    // 出口車道連通點 (動態對齊 exit 的 X 座標，確保 exit→E2 為垂直線段)
+    E2: { x: EXIT.x, y: 500 }
   };
   
   nodes['entry'] = { x: ENTRY.x, y: ENTRY.y };
@@ -819,7 +820,20 @@ function buildPathIn(sp){
 function buildPathOut(sp){
   const [ax,ay]=accessOf(sp);
   const tx=nearest(TRUNK_X,ax);
-  const pts = findShortestPath([ax, ay], [EXIT.x, EXIT.y]) || [[ax, ay], [tx, ay], [tx, EXIT.y], [EXIT.x, EXIT.y]];
+  let dijkstraResult = null;
+  let debugMsg = '';
+  try {
+    dijkstraResult = findShortestPath([ax, ay], [EXIT.x, EXIT.y]);
+    debugMsg = dijkstraResult ? `OK(${dijkstraResult.length}pts)` : 'NULL';
+  } catch(e) {
+    debugMsg = `ERROR: ${e.message}`;
+  }
+  const pts = dijkstraResult || [[ax, ay], [tx, ay], [tx, EXIT.y], [EXIT.x, EXIT.y]];
+  const smallEl = document.querySelector('.titlebar small');
+  if (smallEl) {
+    smallEl.innerHTML = `· [${sp.id}] 出口 dijkstra=${debugMsg} access=(${Math.round(ax)},${Math.round(ay)}) EXIT=(${Math.round(EXIT.x)},${Math.round(EXIT.y)})`;
+  }
+  console.log(`[RouteOut] space=${sp.id}, access=(${ax},${ay}), dijkstra=${debugMsg}, path=`, JSON.stringify(pts));
   return {pts, trunkX:tx, ay,
     startPt:[sp.x+sp.w/2,sp.y+sp.h/2], startColor:'#f59e0b', destPt:[EXIT.x,EXIT.y], destColor:'#f97316'};
 }
@@ -979,12 +993,14 @@ function closeSug(){sugEl.style.display='none';}
 
 function scrollToSpace(sp){
   const map=document.getElementById('mapArea'),svg=document.getElementById('floorplan');
-  const sx=svg.clientWidth/940, sy=svg.clientHeight/1672;
-  map.scrollTo({left:(sp.x+sp.w/2)*sx-map.clientWidth/2, top:(sp.y+sp.h/2)*sy-map.clientHeight/2, behavior:'smooth'});
+  // viewBox 已改為 "120 20 720 1640"，換算時要扣掉起始偏移並用 VB_W/VB_H
+  const sx=svg.clientWidth/VB_W, sy=svg.clientHeight/VB_H;
+  const px=(sp.x+sp.w/2-120)*sx, py=(sp.y+sp.h/2-20)*sy;
+  map.scrollTo({left:px-map.clientWidth/2, top:py-map.clientHeight/2, behavior:'smooth'});
 }
 
 /* ⑦  版面配合寬度（放大縮小交給手機捏放 / 桌機瀏覽器縮放）*/
-const VB_W=940,VB_H=1672;
+const VB_W=720,VB_H=1640;   // 已裁掉平面圖左右各 ~110px 空白（原為 940×1672）
 function baseSize(){const map=document.getElementById('mapArea');let w=Math.max(300,map.clientWidth-16);w=Math.min(w,700);return{w,h:w*(VB_H/VB_W)};}
 function applyView(){const s=document.getElementById('floorplan');const{w,h}=baseSize();s.setAttribute('width',Math.round(w));s.setAttribute('height',Math.round(h));}
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(applyView,120);});
@@ -1235,8 +1251,9 @@ function applyEdit(){
 function uniqueId(base){ let n=1,id; do{ id=base+String(n).padStart(2,'0'); n++; }while(spaceMap[id]); return id; }
 function addSpace(){
   const map=document.getElementById('mapArea'),svg=document.getElementById('floorplan');
-  const cx=(map.scrollLeft+map.clientWidth/2)/(svg.clientWidth/940);
-  const cy=(map.scrollTop+map.clientHeight/2)/(svg.clientHeight/1672);
+  // 由畫面中心的螢幕座標反推 viewBox 座標（要加回起始偏移 120/20）
+  const cx=(map.scrollLeft+map.clientWidth/2)/(svg.clientWidth/VB_W) + 120;
+  const cy=(map.scrollTop+map.clientHeight/2)/(svg.clientHeight/VB_H) + 20;
   const sp={id:uniqueId('N'),x:Math.round(cx-15),y:Math.round(cy-29),w:30,h:58,
     face:'down',type:'reg',zone:'N',zoneName:'新增區',lift:'',provisional:false};
   SPACES.push(sp); rebuildMap(); renderSpaces(); saveLocal(); selectForEdit(sp.id);
