@@ -188,7 +188,8 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
   transform-origin:center;
 }
 @keyframes route-dash{from{stroke-dashoffset:520;}to{stroke-dashoffset:0;}}
-.route-animated{stroke-dasharray:14 9;animation:route-dash 2.4s linear infinite;}
+.route-in-animated{stroke-dasharray:14 9;animation:route-dash 2.4s linear infinite;}
+.route-out-animated{stroke-dasharray:6 5;animation:route-dash 1.4s linear infinite;}
 @keyframes ping-expand{0%{r:8;opacity:1;}100%{r:24;opacity:0;}}
 .ping-circle{animation:ping-expand 1.8s ease-out infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.45;}}
@@ -199,7 +200,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
 <div class="app">
   <header class="topbar">
-    <div class="titlebar">
+    <div class="titlebar">🅿 B1 停車場車位查詢
     </div>
     <div class="search-row">
       <div class="search-wrap">
@@ -266,22 +267,22 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
   <g class="ov" data-key="A" font-family="'Microsoft JhengHei',sans-serif">
     <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
     <text x="480" y="140" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">A 棟</text>
-    <rect x="424" y="180" width="48" height="52" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="448" y="216" text-anchor="middle" font-size="24" fill="#3b82f6">🛗</text>
-    <rect x="488" y="180" width="48" height="52" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="512" y="216" text-anchor="middle" font-size="24" fill="#3b82f6">🛗</text>
+    <rect x="424" y="180" width="48" height="52" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="448" y="216" text-anchor="middle" font-size="24">🛗</text>
+    <rect x="488" y="180" width="48" height="52" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="512" y="216" text-anchor="middle" font-size="24">🛗</text>
     <text x="480" y="270" text-anchor="middle" font-size="10" fill="#4f6f92">通往 1F～RF</text>
   </g>
   <!-- B 棟：1 部電梯（置中） -->
   <g class="ov" data-key="B" font-family="'Microsoft JhengHei',sans-serif">
     <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
     <text x="401" y="838" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">B 棟</text>
-    <rect x="378" y="860" width="46" height="50" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="401" y="895" text-anchor="middle" font-size="22" fill="#3b82f6">🛗</text>
+    <rect x="378" y="860" width="46" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="401" y="895" text-anchor="middle" font-size="22">🛗</text>
   </g>
   <!-- C 棟：2 部電梯（並排、置中於建築上方） -->
   <g class="ov" data-key="C" font-family="'Microsoft JhengHei',sans-serif">
     <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
     <text x="522" y="1576" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">C 棟</text>
-    <rect x="474" y="1594" width="44" height="50" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="496" y="1628" text-anchor="middle" font-size="22" fill="#3b82f6">🛗</text>
-    <rect x="526" y="1594" width="44" height="50" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="548" y="1628" text-anchor="middle" font-size="22" fill="#3b82f6">🛗</text>
+    <rect x="474" y="1594" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="496" y="1628" text-anchor="middle" font-size="22">🛗</text>
+    <rect x="526" y="1594" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="548" y="1628" text-anchor="middle" font-size="22">🛗</text>
   </g>
 
   <g class="ov" data-key="ramp1F">
@@ -537,8 +538,8 @@ function renderPillars(){document.getElementById('pillarLayer').innerHTML=
 /* 預約車位（白底紅字）— 可在此增減編號 */
 const RESERVED_IDS = new Set(['1068','1069','1070','1085','1087','1088']);
 function isReserved(sp){ return sp.reserved || RESERVED_IDS.has(sp.id); }
-function fillOf(sp){ return isReserved(sp)?'#eef2f7':'#1a3a6a'; }
-function strokeOf(sp){ return isReserved(sp)?'#dc2626':'#2563eb'; }
+function fillOf(sp){ return isReserved(sp)?'#2b1318':'#1a3a6a'; }
+function strokeOf(sp){ return isReserved(sp)?'#ef4444':'#2563eb'; }
 
 function spaceInner(sp){
   const dis=sp.type==='dis', rsv=isReserved(sp);
@@ -547,14 +548,14 @@ function spaceInner(sp){
   const cx=sp.x+sp.w/2, cy=sp.y+sp.h/2;
   let content='';
   if(rsv){
-    // 白底 + 紅字「預約車位」（含編號）
-    content = `<text x="${cx}" y="${cy-2.5}" text-anchor="middle" font-size="7" fill="#dc2626" font-family="monospace" font-weight="700">${sp.id}</text>`
-            + `<text x="${cx}" y="${cy+6.5}" text-anchor="middle" font-size="6.4" fill="#dc2626" font-family="'Microsoft JhengHei'" font-weight="700">預約車位</text>`;
+    // 暗紅底 + 亮粉/紅字「預約車位」（含編號）
+    content = `<text x="${cx}" y="${cy-2.5}" text-anchor="middle" font-size="7" fill="#f87171" font-family="monospace" font-weight="700">${sp.id}</text>`
+            + `<text x="${cx}" y="${cy+6.5}" text-anchor="middle" font-size="6.4" fill="#ef4444" font-family="'Microsoft JhengHei'" font-weight="700">預約車位</text>`;
   } else {
     const fs=Math.min(sp.w,sp.h)>=30?7.5:6.2;
     content = (sp.w>=sp.h)
-      ? `<text x="${cx}" y="${cy+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(190,205,225,.92)" font-family="monospace" font-weight="700">${sp.id}</text>`
-      : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="rgba(190,205,225,.92)" font-family="monospace" font-weight="700" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`;
+      ? `<text x="${cx}" y="${cy+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(241,245,249,.95)" font-family="monospace" font-weight="700">${sp.id}</text>`
+      : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="rgba(241,245,249,.95)" font-family="monospace" font-weight="700" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`;
   }
   const selRing=(editMode&&sp.id===selEdit)
     ? `<rect x="${sp.x-3}" y="${sp.y-3}" width="${sp.w+6}" height="${sp.h+6}" rx="3" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/>`:'';
@@ -892,8 +893,9 @@ function drawRoute(sp){
   // 入口→車位 = 綠色（配合綠色入口）；車位→出口 = 橘色（配合橘色出口）
   const lineColor = routeDir==='in' ? '#22c55e' : '#f97316';
   const arrowMk   = routeDir==='in' ? 'arrowGreen' : 'arrow';
+  const routeClass = routeDir==='in' ? 'route-in-animated' : 'route-out-animated';
   document.getElementById('routeLayer').innerHTML=`
-    <path d="${d}" fill="none" stroke="${lineColor}" stroke-width="3.4" class="route-animated" marker-end="url(#${arrowMk})" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
+    <path d="${d}" fill="none" stroke="${lineColor}" stroke-width="3.4" class="${routeClass}" marker-end="url(#${arrowMk})" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
     <circle cx="${s0x}" cy="${s0y}" r="6" fill="${P.startColor}" stroke="#fff" stroke-width="2"/>
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="2" class="ping-circle"/>
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
