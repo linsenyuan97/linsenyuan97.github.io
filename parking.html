@@ -9,7 +9,7 @@
 :root{
   --bg-primary:#0a0f1c; --bg-secondary:#0d1526; --bg-panel:#101d34;
   --glass-bg:rgba(255,255,255,0.04); --glass-border:rgba(255,255,255,0.09);
-  --accent-cyan:#00d4ff; --accent-blue:#2563eb; --accent-gold:#f59e0b;
+  --accent-cyan:#f97316; --accent-blue:#2563eb; --accent-gold:#f59e0b;   /* --accent-cyan 已改為橘色主題 */
   --accent-green:#10b981; --accent-red:#ef4444;
   --text-1:#f1f5f9; --text-2:#94a3b8; --text-3:#54637a;
   --radius:14px; --radius-sm:9px;
@@ -23,7 +23,7 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
 /* ---------- TOP BAR ---------- */
 .topbar{flex-shrink:0;padding:10px 12px 12px;background:var(--bg-secondary);
   border-bottom:1px solid var(--glass-border);box-shadow:0 4px 18px rgba(0,0,0,.35);z-index:30;}
-.titlebar{font-size:.9rem;font-weight:800;color:var(--accent-cyan);letter-spacing:.3px;
+.titlebar{font-size:.9rem;font-weight:800;color:#4f93d6;letter-spacing:.3px;
   margin:0 2px 8px;display:flex;align-items:center;gap:6px;}
 .titlebar small{font-weight:400;color:var(--text-3);font-size:.66rem;letter-spacing:0;}
 .mini-btn{margin-left:auto;background:rgba(255,255,255,.05);border:1px solid var(--glass-border);
@@ -39,7 +39,12 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
   font-family:inherit;font-size:1.05rem;font-weight:600;letter-spacing:1px;outline:none;
   transition:border-color .2s,box-shadow .2s,background .2s;}
 .search-input::placeholder{color:var(--text-3);letter-spacing:0;font-weight:400;}
-.search-input:focus{border-color:var(--accent-cyan);background:rgba(0,212,255,.06);box-shadow:0 0 0 3px rgba(0,212,255,.12);}
+.search-input:focus{border-color:var(--accent-cyan);background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.18);}
+/* 依方向切換動態上色：入口模式=綠、出口模式=橘 */
+body.dir-in .search-input{border-color:rgba(34,197,94,.55);}
+body.dir-in .search-input:focus{border-color:#22c55e;background:rgba(34,197,94,.08);box-shadow:0 0 0 3px rgba(34,197,94,.20);}
+body.dir-out .search-input{border-color:rgba(249,115,22,.55);}
+body.dir-out .search-input:focus{border-color:#f97316;background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.20);}
 .s-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);font-size:1rem;cursor:pointer;display:none;}
 .s-clear:hover{color:var(--text-1);}
 .info-btn{flex-shrink:0;width:48px;border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);
@@ -69,11 +74,11 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
   color:var(--text-1);font-family:inherit;font-size:.82rem;font-weight:700;padding:0 11px;cursor:pointer;transition:background .15s;}
 .dir-toggle:hover{background:rgba(255,255,255,.1);}
 .dir-toggle.in{border-color:rgba(16,185,129,.45);}
-.dir-toggle.out{border-color:rgba(37,99,235,.5);}
+.dir-toggle.out{border-color:rgba(249,115,22,.55);}
 .dir-toggle .d-label{white-space:nowrap;}
 .dir-toggle.in .d-label{color:#34d399;}
-.dir-toggle.out .d-label{color:#60a5fa;}
-.dir-toggle .d-swap{font-size:.95rem;color:var(--accent-cyan);}
+.dir-toggle.out .d-label{color:#f97316;}
+.dir-toggle .d-swap{font-size:.95rem;color:#4f93d6;}
 
 /* ---------- EDIT BAR ---------- */
 .edit-bar{display:none;flex-wrap:wrap;gap:7px;align-items:center;margin-top:9px;padding-top:9px;border-top:1px dashed var(--glass-border);}
@@ -92,12 +97,15 @@ body.editing .edit-bar{display:flex;}
 #floorplan{display:block;filter:drop-shadow(0 20px 54px rgba(0,0,0,.6));border-radius:8px;}
 body.editing #floorplan{touch-action:none;}  /* 校正時可拖曳；查詢模式保留手機捏放縮放 */
 body.editing .sp{cursor:move;}
+body.editing .ov{cursor:grab;}
+body.editing .ov:hover{filter:drop-shadow(0 0 6px #f59e0b);}
+body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
 .zoom-ctrls{position:fixed;right:14px;bottom:16px;display:flex;flex-direction:column;gap:5px;z-index:50;}
 .zoom-btn{width:44px;height:44px;background:var(--bg-panel);border:1px solid var(--glass-border);border-radius:11px;
   color:var(--text-1);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
   user-select:none;box-shadow:0 4px 14px rgba(0,0,0,.4);transition:background .15s,border-color .15s;}
-.zoom-btn:hover{background:rgba(0,212,255,.1);border-color:var(--accent-cyan);}
+.zoom-btn:hover{background:rgba(249,115,22,.12);border-color:var(--accent-cyan);}
 
 /* ---------- EDIT PANEL (selected space) ---------- */
 .edit-panel{position:fixed;left:14px;bottom:16px;width:236px;background:var(--bg-panel);
@@ -136,7 +144,7 @@ body.editing .sp{cursor:move;}
 .info-cell{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:9px 11px;}
 .info-cell-lbl{font-size:.62rem;color:var(--text-3);margin-bottom:2px;}
 .info-cell-val{font-size:.85rem;font-weight:600;}
-.route-hdr{display:flex;align-items:center;gap:7px;font-size:.86rem;font-weight:700;color:var(--accent-green);margin-bottom:14px;}
+.route-hdr{display:flex;align-items:center;gap:7px;font-size:.86rem;font-weight:700;color:var(--accent-cyan);margin-bottom:14px;}
 .route-step{display:flex;gap:11px;align-items:flex-start;}
 .step-dot{width:23px;height:23px;border-radius:50%;background:var(--accent-green);color:#fff;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
 .step-txt{font-size:.82rem;color:var(--text-2);line-height:1.55;}
@@ -185,6 +193,7 @@ body.editing .sp{cursor:move;}
       <button onclick="exportJSON()">💾 匯出</button>
       <label class="eb-file">📂 匯入<input type="file" id="importFile" accept="application/json,.json" onchange="importJSON(event)" hidden></label>
       <button onclick="resetData()">♻ 還原初始</button>
+      <button onclick="resetOverlays()" title="還原棟／車道／入口／出口的位置">↩ 還原棟/通道</button>
     </div>
   </header>
 
@@ -197,7 +206,15 @@ body.editing .sp{cursor:move;}
     <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
       <feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
-    <marker id="arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#10b981"/></marker>
+    <filter id="glowYellow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="4.5" result="b"/>
+      <feFlood flood-color="#FFD400" flood-opacity="0.95" result="c"/>
+      <feComposite in="c" in2="b" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#f97316"/></marker>
+    <marker id="arrowGreen" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#22c55e"/></marker>
+    <marker id="arrowBlue" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#4f93d6"/></marker>
     <linearGradient id="rampGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#12233b"/></linearGradient>
   </defs>
 
@@ -207,28 +224,9 @@ body.editing .sp{cursor:move;}
   <rect x="126" y="28" width="718" height="1620" rx="4" fill="#182534" stroke="#31506f" stroke-width="8"/>
   <rect x="142" y="44" width="686" height="1588" rx="2" fill="#17222f"/>
 
-  <g fill="none" stroke="#0d9488" stroke-width="1.6" stroke-dasharray="13,9" opacity="0.42">
-    <ellipse cx="500" cy="440" rx="250" ry="120"/><ellipse cx="610" cy="900" rx="245" ry="215"/>
-  </g>
-  <text x="500" y="360" text-anchor="middle" fill="#0d9488" font-size="12" opacity=".55">↻ 單向循環車道</text>
-  <text x="610" y="905" text-anchor="middle" fill="#0d9488" font-size="12" opacity=".5">↻ 單向循環車道</text>
+  <!-- 循環車道視覺與周邊機房/儲藏室等非停車相關資訊已移除 -->
 
-  <g font-family="'Microsoft JhengHei',sans-serif">
-    <rect x="312" y="58" width="96" height="92" fill="#152232" stroke="#294261" stroke-width="1.5"/>
-    <text x="360" y="100" text-anchor="middle" font-size="9" fill="#43607f">垃圾及</text><text x="360" y="114" text-anchor="middle" font-size="9" fill="#43607f">機房</text>
-    <rect x="506" y="206" width="140" height="60" fill="#152232" stroke="#294261" stroke-width="1.5"/>
-    <text x="576" y="240" text-anchor="middle" font-size="9" fill="#43607f">排煙室</text>
-    <rect x="142" y="524" width="86" height="162" fill="#152232" stroke="#294261" stroke-width="1.5"/>
-    <text x="185" y="600" text-anchor="middle" font-size="9" fill="#43607f">飲用純水</text><text x="185" y="614" text-anchor="middle" font-size="9" fill="#43607f">機房</text>
-    <rect x="150" y="950" width="112" height="88" fill="#152232" stroke="#294261" stroke-width="1.5"/>
-    <text x="206" y="998" text-anchor="middle" font-size="9" fill="#43607f">儲藏室</text>
-    <rect x="150" y="1092" width="112" height="86" fill="#152232" stroke="#294261" stroke-width="1.5"/>
-    <text x="206" y="1138" text-anchor="middle" font-size="9" fill="#43607f">儲藏室</text>
-    <rect x="300" y="1000" width="70" height="86" fill="#132433" stroke="#294261" stroke-width="1.5"/>
-    <text x="335" y="1040" text-anchor="middle" font-size="8" fill="#3a5877">消防</text><text x="335" y="1052" text-anchor="middle" font-size="8" fill="#3a5877">水池</text>
-  </g>
-
-  <g font-family="'Microsoft JhengHei',sans-serif">
+  <g class="ov" data-key="A" font-family="'Microsoft JhengHei',sans-serif">
     <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
     <text x="480" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#7aa0c8">A 棟</text>
     <rect x="452" y="140" width="56" height="52" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
@@ -238,19 +236,17 @@ body.editing .sp{cursor:move;}
     <rect x="496" y="210" width="48" height="48" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="520" y="240" text-anchor="middle" font-size="20" fill="#3b82f6">🛗</text>
     <text x="480" y="280" text-anchor="middle" font-size="8" fill="#4f6f92">通往 1F～RF</text>
   </g>
-  <g font-family="'Microsoft JhengHei',sans-serif">
+  <g class="ov" data-key="B" font-family="'Microsoft JhengHei',sans-serif">
     <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
     <text x="401" y="824" text-anchor="middle" font-size="10" font-weight="700" fill="#7aa0c8">B棟</text>
     <rect x="350" y="832" width="46" height="46" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
     <line x1="352" y1="840" x2="394" y2="840" stroke="#345580" stroke-width="1"/><line x1="352" y1="848" x2="394" y2="848" stroke="#345580" stroke-width="1"/>
     <line x1="352" y1="856" x2="394" y2="856" stroke="#345580" stroke-width="1"/><line x1="352" y1="864" x2="394" y2="864" stroke="#345580" stroke-width="1"/>
     <rect x="406" y="832" width="46" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="429" y="862" text-anchor="middle" font-size="18" fill="#3b82f6">🛗</text>
-    <rect x="350" y="888" width="102" height="48" rx="2" fill="#122132" stroke="#294261" stroke-width="1.3"/>
-    <text x="401" y="908" text-anchor="middle" font-size="8" fill="#43607f">社區防護樓梯</text><text x="401" y="922" text-anchor="middle" font-size="8" fill="#43607f">/ 田房</text>
   </g>
-  <g font-family="'Microsoft JhengHei',sans-serif">
+  <g class="ov" data-key="C" font-family="'Microsoft JhengHei',sans-serif">
     <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
-    <text x="522" y="1564" text-anchor="middle" font-size="12" font-weight="700" fill="#7aa0c8">B 棟</text>
+    <text x="522" y="1564" text-anchor="middle" font-size="12" font-weight="700" fill="#7aa0c8">C 棟</text>
     <rect x="452" y="1574" width="52" height="46" rx="2" fill="#122132" stroke="#345580" stroke-width="1.3"/>
     <line x1="454" y1="1582" x2="502" y2="1582" stroke="#345580" stroke-width="1"/><line x1="454" y1="1590" x2="502" y2="1590" stroke="#345580" stroke-width="1"/>
     <line x1="454" y1="1598" x2="502" y2="1598" stroke="#345580" stroke-width="1"/><line x1="454" y1="1606" x2="502" y2="1606" stroke="#345580" stroke-width="1"/>
@@ -258,24 +254,24 @@ body.editing .sp{cursor:move;}
     <rect x="566" y="1574" width="30" height="46" rx="3" fill="#173357" stroke="#2f7fe0" stroke-width="1.6"/><text x="581" y="1604" text-anchor="middle" font-size="15" fill="#3b82f6">🛗</text>
   </g>
 
-  <g>
+  <g class="ov" data-key="ramp1F">
     <rect x="598" y="46" width="132" height="410" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
-    <line x1="664" y1="430" x2="664" y2="66" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrow)" opacity=".7"/>
+    <line x1="664" y1="430" x2="664" y2="66" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrowBlue)" opacity=".7"/>
     <text x="664" y="150" text-anchor="middle" font-size="14" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道</text>
     <text x="664" y="176" text-anchor="middle" font-size="15" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 1F</text>
     <text x="664" y="235" text-anchor="middle" font-size="9" fill="#4f7ba8" font-family="'Microsoft JhengHei'">↑ 上行至地面層</text>
     <text x="664" y="418" text-anchor="middle" font-size="9" fill="#7fbef5" font-family="'Microsoft JhengHei'">▲ 車輛由此上行離場</text>
   </g>
-  <g>
+  <g class="ov" data-key="rampB2">
     <rect x="250" y="878" width="128" height="176" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
-    <line x1="314" y1="900" x2="314" y2="1030" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrow)" opacity=".7"/>
+    <line x1="314" y1="900" x2="314" y2="1030" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrowBlue)" opacity=".7"/>
     <text x="314" y="948" text-anchor="middle" font-size="12" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道</text>
     <text x="314" y="970" text-anchor="middle" font-size="13" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 B2</text>
     <text x="314" y="1044" text-anchor="middle" font-size="9" fill="#4f7ba8" font-family="'Microsoft JhengHei'">↓ 下行至地下二層</text>
   </g>
-  <g>
+  <g class="ov" data-key="rampB1">
     <rect x="256" y="1092" width="480" height="66" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.4" stroke-dasharray="8,6"/>
-    <line x1="290" y1="1125" x2="712" y2="1125" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrow)" opacity=".65"/>
+    <line x1="290" y1="1125" x2="712" y2="1125" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrowBlue)" opacity=".65"/>
     <text x="496" y="1120" text-anchor="middle" font-size="12" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道 · 通往 B1（本層匝道）</text>
   </g>
 
@@ -287,18 +283,22 @@ body.editing .sp{cursor:move;}
   <g id="spacesLayer"></g>
   <g id="routeLayer"></g>
 
-  <!-- 出口：通往 1F（藍色圓，寫「出」）-->
-  <g filter="url(#glow)">
-    <circle cx="664" cy="470" r="19" fill="#1d4ed8" stroke="#3b82f6" stroke-width="2.5"/>
-    <text x="664" y="476" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" font-family="'Microsoft JhengHei'">出</text>
+  <!-- 出口：通往 1F（橘色圓，寫「出」）-->
+  <g class="ov" data-key="exit">
+    <g filter="url(#glow)">
+      <circle cx="664" cy="470" r="19" fill="#ea580c" stroke="#f97316" stroke-width="2.5"/>
+      <text x="664" y="476" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" font-family="'Microsoft JhengHei'">出</text>
+    </g>
+    <text x="664" y="500" text-anchor="middle" fill="#f97316" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">出口 · B1→1F</text>
   </g>
-  <text x="664" y="500" text-anchor="middle" fill="#3b82f6" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">出口 · B1→1F</text>
 
   <!-- 入口：通往 B1（綠色圓，不寫字）-->
-  <g id="entryMarker" class="blink" filter="url(#glow)">
-    <circle cx="405" cy="1125" r="18" fill="#16a34a" stroke="#22c55e" stroke-width="2.5"/>
+  <g class="ov" data-key="entry">
+    <g id="entryMarker" class="blink" filter="url(#glow)">
+      <circle cx="405" cy="1125" r="18" fill="#16a34a" stroke="#22c55e" stroke-width="2.5"/>
+    </g>
+    <text x="405" y="1100" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">入口 · 1F→B1</text>
   </g>
-  <text x="405" y="1100" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">入口 · 1F→B1</text>
 
   <rect x="142" y="1610" width="140" height="20" rx="2" fill="rgba(0,0,0,.5)"/>
   <text x="212" y="1624" text-anchor="middle" fill="#3a5877" font-size="9" font-family="'Microsoft JhengHei'">B1 地下一層平面圖</text>
@@ -499,13 +499,13 @@ function renderPillars(){document.getElementById('pillarLayer').innerHTML=
 /* 預約車位（白底紅字）— 可在此增減編號 */
 const RESERVED_IDS = new Set(['1068','1069','1070','1085','1087','1088']);
 function isReserved(sp){ return sp.reserved || RESERVED_IDS.has(sp.id); }
-function fillOf(sp){ return isReserved(sp)?'#eef2f7':(sp.type==='dis'?'#0f4a3a':'#1a3a6a'); }
-function strokeOf(sp){ return isReserved(sp)?'#dc2626':(sp.type==='dis'?'#059669':'#2563eb'); }
+function fillOf(sp){ return isReserved(sp)?'#eef2f7':'#1a3a6a'; }
+function strokeOf(sp){ return isReserved(sp)?'#dc2626':'#2563eb'; }
 
 function spaceInner(sp){
   const dis=sp.type==='dis', rsv=isReserved(sp);
   const fill=fillOf(sp), stroke=strokeOf(sp);
-  const hatch=rsv?'rgba(220,38,38,.16)':(dis?'rgba(5,150,105,.22)':'rgba(37,99,235,.2)');
+  const hatch=rsv?'rgba(220,38,38,.16)':'rgba(37,99,235,.2)';
   const cx=sp.x+sp.w/2, cy=sp.y+sp.h/2;
   let content='';
   if(rsv){
@@ -517,7 +517,6 @@ function spaceInner(sp){
     content = (sp.w>=sp.h)
       ? `<text x="${cx}" y="${cy+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(190,205,225,.92)" font-family="monospace" font-weight="700">${sp.id}</text>`
       : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="rgba(190,205,225,.92)" font-family="monospace" font-weight="700" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`;
-    if(dis) content = `<text x="${cx}" y="${cy-sp.h*0.14}" text-anchor="middle" font-size="${Math.min(sp.w,sp.h)*0.5}" fill="#34d399" opacity=".8">♿</text>`+content;
   }
   const selRing=(editMode&&sp.id===selEdit)
     ? `<rect x="${sp.x-3}" y="${sp.y-3}" width="${sp.w+6}" height="${sp.h+6}" rx="3" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/>`:'';
@@ -534,7 +533,9 @@ function cssId(id){ return String(id).replace(/[^A-Za-z0-9_-]/g,'_'); }
 function jsStr(id){ return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
 /* ---- 路線（可雙向：入口→車位 / 車位→出口）---- */
-const ENTRY={x:405,y:1125}, EXIT={x:664,y:470}, TRUNK_X=[300,500,610,745], ENTRY_LANE_Y=1125;
+const ENTRY_BASE={x:405,y:1125}, EXIT_BASE={x:664,y:470};
+let ENTRY={...ENTRY_BASE}, EXIT={...EXIT_BASE}, ENTRY_LANE_Y=ENTRY.y;
+const TRUNK_X=[300,500,610,745];
 let routeDir='in';   // 'in' = 入口→車位（停車）; 'out' = 車位→出口（離場）
 function nearest(a,v){return a.reduce((p,c)=>Math.abs(c-v)<Math.abs(p-v)?c:p);}
 function buildPathIn(sp){ const [ax,ay]=accessOf(sp); const tx=nearest(TRUNK_X,ax);
@@ -542,13 +543,16 @@ function buildPathIn(sp){ const [ax,ay]=accessOf(sp); const tx=nearest(TRUNK_X,a
     startPt:[ENTRY.x,ENTRY.y], startColor:'#22c55e', destPt:[sp.x+sp.w/2,sp.y+sp.h/2], destColor:'#f59e0b'}; }
 function buildPathOut(sp){ const [ax,ay]=accessOf(sp); const tx=nearest(TRUNK_X,ax);
   return {pts:[[ax,ay],[tx,ay],[tx,EXIT.y],[EXIT.x,EXIT.y]], trunkX:tx, ay,
-    startPt:[sp.x+sp.w/2,sp.y+sp.h/2], startColor:'#f59e0b', destPt:[EXIT.x,EXIT.y], destColor:'#3b82f6'}; }
+    startPt:[sp.x+sp.w/2,sp.y+sp.h/2], startColor:'#f59e0b', destPt:[EXIT.x,EXIT.y], destColor:'#f97316'}; }
 function pathOf(sp){ return routeDir==='in'?buildPathIn(sp):buildPathOut(sp); }
 function drawRoute(sp){
   const P=pathOf(sp); const d='M '+P.pts.map(p=>p[0]+' '+p[1]).join(' L ');
   const [dx,dy]=P.destPt, [s0x,s0y]=P.startPt;
+  // 入口→車位 = 綠色（配合綠色入口）；車位→出口 = 橘色（配合橘色出口）
+  const lineColor = routeDir==='in' ? '#22c55e' : '#f97316';
+  const arrowMk   = routeDir==='in' ? 'arrowGreen' : 'arrow';
   document.getElementById('routeLayer').innerHTML=`
-    <path d="${d}" fill="none" stroke="#10b981" stroke-width="3.4" class="route-animated" marker-end="url(#arrow)" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
+    <path d="${d}" fill="none" stroke="${lineColor}" stroke-width="3.4" class="route-animated" marker-end="url(#${arrowMk})" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
     <circle cx="${s0x}" cy="${s0y}" r="6" fill="${P.startColor}" stroke="#fff" stroke-width="2"/>
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="2" class="ping-circle"/>
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
@@ -561,7 +565,7 @@ function stepsIn(sp){
   const goDown=ay>ENTRY_LANE_Y;
   const faceTxt={up:'車頭朝內（上）',down:'車頭朝外（下）',left:'靠左側',right:'靠右側'}[sp.face]||'';
   const dis=sp.type==='dis'?'（無障礙車位）':'';
-  const steps=[{i:'🟢',t:'自「通往 B1」入口進入本層（1F 下行至 B1），保持右側行駛'},{i:'🔄',t:'進入場內單向循環車道（逆時針）'}];
+  const steps=[{i:'🟢',t:'自「通往 B1」入口進入本層（1F 下行至 B1），保持右側行駛'}];
   if(side==='右側')steps.push({i:'➡️',t:'靠右行駛，沿右側主車道前進'});
   else if(side==='左側')steps.push({i:'⬅️',t:'繞行至左側主車道'});
   else steps.push({i:'↕️',t:'行駛至中央車道'});
@@ -576,9 +580,9 @@ function stepsOut(sp){
   const dis=sp.type==='dis'?'（無障礙車位）':'';
   const steps=[
     {i:'🅿',t:`由車位 ${sp.id}${dis} 倒車出庫，車頭朝${side}主車道`},
-    {i:'🔄',t:`匯入${side}主車道，依單向循環方向行駛`},
+    {i:'🔄',t:`匯入${side}主車道`},
     {i:goUp?'⬆️':'⬇️',t:`往${goUp?'上':'下'}行駛，前往場區上方出口`},
-    {i:'🔵',t:'抵達「通往 1F」出口（藍色圓），沿匝道上行離場至 1F'},
+    {i:'🟠',t:'抵達「通往 1F」出口（橘色圓），沿匝道上行離場至 1F'},
   ];
   return steps;
 }
@@ -587,9 +591,11 @@ function updateDirUI(){
   const el=document.getElementById('dirToggle');
   el.classList.toggle('in', routeDir==='in');
   el.classList.toggle('out', routeDir==='out');
+  document.body.classList.toggle('dir-in',  routeDir==='in');
+  document.body.classList.toggle('dir-out', routeDir==='out');
   el.innerHTML = (routeDir==='in')
-    ? `<span class="d-label">入口 →</span><span class="d-swap">⇄</span>`
-    : `<span class="d-label">→ 出口</span><span class="d-swap">⇄</span>`;
+    ? `<span class="d-label">入口→車位</span><span class="d-swap">⇅</span>`
+    : `<span class="d-label">車位→出口</span><span class="d-swap">⇅</span>`;
   el.title = routeDir==='in'
     ? '目前：入口 → 車位（點我切換為 車位 → 出口）'
     : '目前：車位 → 出口（點我切換為 入口 → 車位）';
@@ -619,20 +625,23 @@ function selectSpace(id){
   clearError(); closeSug();
   if(currentId){const prev=document.getElementById('sp-'+cssId(currentId));
     if(prev){const pp=spaceMap[currentId], pr=prev.querySelector('rect');
-      if(pp&&pr){pr.setAttribute('fill',fillOf(pp));pr.setAttribute('stroke',strokeOf(pp));}
+      if(pp&&pr){pr.setAttribute('fill',fillOf(pp));pr.setAttribute('stroke',strokeOf(pp));pr.setAttribute('stroke-width','1.2');}
+      prev.removeAttribute('filter');
       prev.classList.remove('sp-highlight');}}
   currentId=id;
   const el=document.getElementById('sp-'+cssId(id));
   if(el){const r=el.querySelector('rect');
-    if(isReserved(sp)){ r.setAttribute('fill','#fde68a'); r.setAttribute('stroke','#f59e0b'); }
-    else { r.setAttribute('fill','#92400e'); r.setAttribute('stroke','#f59e0b'); }
+    // 查詢車位：白底 + 黃框(#FFD400) + 黃色外圍發光
+    r.setAttribute('fill','#ffffff'); r.setAttribute('stroke','#FFD400'); r.setAttribute('stroke-width','2');
+    el.setAttribute('filter','url(#glowYellow)');
     el.classList.add('sp-highlight');}
   updateDirUI(); drawRoute(sp); setInfoReady(true); scrollToSpace(sp); searchEl.blur();
 }
 function clearSelection(){
   if(currentId){const el=document.getElementById('sp-'+cssId(currentId));
     if(el){const p=spaceMap[currentId];const r=el.querySelector('rect');
-      if(p&&r){r.setAttribute('fill',fillOf(p));r.setAttribute('stroke',strokeOf(p));}
+      if(p&&r){r.setAttribute('fill',fillOf(p));r.setAttribute('stroke',strokeOf(p));r.setAttribute('stroke-width','1.2');}
+      el.removeAttribute('filter');
       el.classList.remove('sp-highlight');}
     currentId=null;}
   document.getElementById('routeLayer').innerHTML=''; setInfoReady(false); updateDirUI();
@@ -651,7 +660,7 @@ function openInfo(){
     const dirCellLbl = routeDir==='in' ? '進入方式' : '離場方式';
     const dirCellVal = routeDir==='in' ? '由「通往B1」入口進場' : '由「通往1F」匝道離場';
     const badge=isReserved(sp)?'<span class="type-badge" style="background:rgba(220,38,38,.15);color:#f87171;border:1px solid rgba(220,38,38,.4)">🔒 預約車位</span>'
-      :(sp.type==='dis'?'<span class="type-badge type-dis">♿ 無障礙</span>':'<span class="type-badge type-reg">🚗 一般車位</span>');
+      :'<span class="type-badge type-reg">🚗 一般車位</span>';
     const steps=routeSteps(sp).map((s,i)=>`${i>0?'<div class="step-line"></div>':''}<div class="route-step"><div class="step-dot">${i+1}</div><div class="step-txt">${s.i} ${s.t}</div></div>`).join('');
     body.innerHTML=`<div class="dlg-head"><div><div class="dlg-num-lbl">查詢車位</div>
       <div class="dlg-num">${sp.id}${sp.provisional?' <span style="font-size:.8rem;color:#fbbf24">※暫定</span>':''}</div></div>${badge}</div>
@@ -680,8 +689,7 @@ searchEl.addEventListener('input',()=>{
   const m=SPACES.filter(s=>s.id.toUpperCase().startsWith(v)).slice(0,12);
   if(!m.length){closeSug();return;}
   sugEl.innerHTML=m.map(s=>`<div class="sug-item" onclick="selectSpace('${jsStr(s.id)}')">
-    <span class="sug-id">${s.id}</span><span class="sug-badge ${s.type==='dis'?'badge-dis':'badge-reg'}">${s.type==='dis'?'障':'一般'}</span>
-    <span class="sug-zone">${s.zoneName}</span></div>`).join('');
+    <span class="sug-id">${s.id}</span>${s.type==='dis'?'':`<span class="sug-badge badge-reg">鄰近${s.lift||'—'}</span>`}</div>`).join('');
   sugEl.style.display='block';
 });
 searchEl.addEventListener('keydown',e=>{if(e.key==='Enter'){closeSug();doSearch();}if(e.key==='Escape')closeSug();});
@@ -759,6 +767,66 @@ function endDrag(){ if(dragging){ saveLocal(); dragging=null; } }
 spacesLayerEl.addEventListener('pointerup',endDrag);
 spacesLayerEl.addEventListener('pointercancel',endDrag);
 
+/* =====================================================================
+   ⑧-b  校正：拖曳「棟 / 車道 / 入口 / 出口」等覆蓋物
+   ===================================================================== */
+const OV_KEY='b1park_overlays_v1';
+let OV_OFFSETS = (()=>{ try{const j=localStorage.getItem(OV_KEY); if(j) return JSON.parse(j);}catch(e){} return {}; })();
+function saveOverlays(){ try{ localStorage.setItem(OV_KEY, JSON.stringify(OV_OFFSETS)); }catch(e){} }
+function applyOverlayTransforms(){
+  document.querySelectorAll('#floorplan .ov').forEach(g=>{
+    const k=g.getAttribute('data-key');
+    const o=OV_OFFSETS[k]||{dx:0,dy:0};
+    g.setAttribute('transform',`translate(${o.dx},${o.dy})`);
+  });
+  refreshRouting();
+}
+function refreshRouting(){
+  const eo=OV_OFFSETS.entry||{dx:0,dy:0}, xo=OV_OFFSETS.exit||{dx:0,dy:0};
+  ENTRY.x=ENTRY_BASE.x+eo.dx; ENTRY.y=ENTRY_BASE.y+eo.dy; ENTRY_LANE_Y=ENTRY.y;
+  EXIT.x=EXIT_BASE.x+xo.dx;   EXIT.y=EXIT_BASE.y+xo.dy;
+}
+
+let ovDrag=null;
+const fpEl=document.getElementById('floorplan');
+fpEl.addEventListener('pointerdown',e=>{
+  if(!editMode) return;
+  if(e.target.closest('.sp')) return;   // 車位另有處理
+  const ov=e.target.closest('.ov');
+  if(!ov) return;
+  e.preventDefault();
+  const key=ov.getAttribute('data-key');
+  const [mx,my]=svgPoint(e);
+  const cur=OV_OFFSETS[key]||{dx:0,dy:0};
+  ovDrag={key, ov, startMx:mx, startMy:my, startDx:cur.dx, startDy:cur.dy};
+  ov.classList.add('dragging');
+  try{ov.setPointerCapture(e.pointerId);}catch(_){}
+});
+fpEl.addEventListener('pointermove',e=>{
+  if(!ovDrag) return;
+  const [mx,my]=svgPoint(e);
+  const dx=Math.round(ovDrag.startDx + mx - ovDrag.startMx);
+  const dy=Math.round(ovDrag.startDy + my - ovDrag.startMy);
+  OV_OFFSETS[ovDrag.key]={dx,dy};
+  ovDrag.ov.setAttribute('transform',`translate(${dx},${dy})`);
+});
+function endOvDrag(){
+  if(!ovDrag) return;
+  ovDrag.ov.classList.remove('dragging');
+  ovDrag=null;
+  refreshRouting();
+  saveOverlays();
+  if(currentId) drawRoute(spaceMap[currentId]);   // 入口/出口位移後即時重畫路線
+}
+fpEl.addEventListener('pointerup',endOvDrag);
+fpEl.addEventListener('pointercancel',endOvDrag);
+
+function resetOverlays(){
+  if(!confirm('還原棟／車道／入口／出口的位置？（車位不受影響）')) return;
+  OV_OFFSETS={}; saveOverlays(); applyOverlayTransforms();
+  if(currentId) drawRoute(spaceMap[currentId]);
+}
+
 /* 選取並開啟編輯面板 */
 function selectForEdit(id){
   const prev=selEdit; selEdit=id;
@@ -829,7 +897,13 @@ document.addEventListener('keydown',e=>{
 
 /* 匯出 / 匯入 / 還原 */
 function exportJSON(){
-  const blob=new Blob([JSON.stringify(SPACES,null,1)],{type:'application/json'});
+  const payload={
+    version:2,
+    exportedAt:new Date().toISOString(),
+    spaces:SPACES,
+    overlays:OV_OFFSETS,
+  };
+  const blob=new Blob([JSON.stringify(payload,null,1)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='B1車位資料.json'; document.body.appendChild(a); a.click(); a.remove();
 }
@@ -838,12 +912,22 @@ function importJSON(evt){
   const r=new FileReader();
   r.onload=()=>{ try{
     const d=JSON.parse(r.result);
-    if(!Array.isArray(d)||!d.length)throw new Error('格式錯誤');
-    SPACES=d.map(s=>({id:String(s.id),x:+s.x,y:+s.y,w:+s.w||30,h:+s.h||58,
+    // 相容兩種格式：舊版 = 陣列；新版 = {spaces:[...], overlays:{...}}
+    const spaces = Array.isArray(d) ? d : d.spaces;
+    const overlays = Array.isArray(d) ? null : d.overlays;
+    if(!Array.isArray(spaces)||!spaces.length)throw new Error('格式錯誤（找不到 spaces）');
+    SPACES=spaces.map(s=>({id:String(s.id),x:+s.x,y:+s.y,w:+s.w||30,h:+s.h||58,
       face:s.face||'down',type:s.type==='dis'?'dis':'reg',zone:s.zone||'',
-      zoneName:s.zoneName||'',lift:s.lift||'',provisional:!!s.provisional}));
+      zoneName:s.zoneName||'',lift:s.lift||'',provisional:!!s.provisional,
+      reserved:!!s.reserved}));
+    let ovMsg='';
+    if(overlays && typeof overlays==='object'){
+      OV_OFFSETS=overlays; saveOverlays(); applyOverlayTransforms();
+      ovMsg='，含 '+Object.keys(overlays).length+' 個棟/通道位置';
+    }
     selEdit=null; document.getElementById('editPanel').classList.remove('show');
-    rebuildMap(); renderSpaces(); saveLocal(); alert('已匯入 '+SPACES.length+' 個車位');
+    rebuildMap(); renderSpaces(); saveLocal();
+    alert('已匯入 '+SPACES.length+' 個車位'+ovMsg);
   }catch(err){alert('匯入失敗：'+err.message);} };
   r.readAsText(f); evt.target.value='';
 }
@@ -857,7 +941,7 @@ function resetData(){
 
 /* ⑨  init */
 function init(){
-  renderPillars(); renderSpaces(); applyView(); updateDirUI();
+  renderPillars(); renderSpaces(); applyOverlayTransforms(); applyView(); updateDirUI();
   requestAnimationFrame(applyView);
   window.addEventListener('load',applyView);
   if(window.ResizeObserver){let first=true;
