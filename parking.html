@@ -183,7 +183,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
 <div class="app">
   <header class="topbar">
-    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位 (v1.7 - 2026/07/18 18:50)</small>
+    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位 (v1.9 - 2026/07/18 18:57)</small>
       <button class="mini-btn" id="editToggle" onclick="toggleEdit()">✏️ 校正</button>
     </div>
     <div class="search-row">
@@ -580,7 +580,8 @@ const EDGES = [
 
   // 上方橫向通道 (y = 500)
   { a: 'L2', b: 'CL2' },
-  { a: 'CL2', b: 'R2' },
+  { a: 'CL2', b: 'E2' },
+  { a: 'E2', b: 'R2' },
 
   // 中上橫向通道 (y = 750，僅連通左與中左)
   { a: 'L3', b: 'CL3' },
@@ -603,8 +604,7 @@ const EDGES = [
   { a: 'CL5', b: 'R4' },
 
   // 出口連通性
-  { a: 'exit', b: 'CL2' },
-  { a: 'exit', b: 'R2' }
+  { a: 'exit', b: 'E2' }
 ];
 
 function dijkstra(startNode, endNode, nodes, edges) {
@@ -739,7 +739,10 @@ function findShortestPath(startPt, endPt) {
     R_ramp: { x: 745, y: ENTRY_LANE_Y },
     R_mid: { x: 745, y: 1180 },
     R4: { x: 745, y: 1260 },
-    R5: { x: 745, y: 1500 }
+    R5: { x: 745, y: 1500 },
+
+    // 出口車道連通點 (與 exit 對齊)
+    E2: { x: 664, y: 500 }
   };
   
   nodes['entry'] = { x: ENTRY.x, y: ENTRY.y };
