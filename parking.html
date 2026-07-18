@@ -183,7 +183,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
 <div class="app">
   <header class="topbar">
-    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位</small>
+    <div class="titlebar">🅿 B1 停車場車位查詢 <small>· 輸入車號 → 圖上定位 (v1.4 - 2026/07/18 18:28)</small>
       <button class="mini-btn" id="editToggle" onclick="toggleEdit()">✏️ 校正</button>
     </div>
     <div class="search-row">
@@ -549,15 +549,242 @@ function jsStr(id){ return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 /* ---- 路線（可雙向：入口→車位 / 車位→出口）---- */
 const ENTRY_BASE={x:405,y:1125}, EXIT_BASE={x:664,y:470};
 let ENTRY={...ENTRY_BASE}, EXIT={...EXIT_BASE}, ENTRY_LANE_Y=ENTRY.y;
-const TRUNK_X=[300,500,610,745];
+const TRUNK_X=[300,500,745];
 let routeDir='in';   // 'in' = 入口→車位（停車）; 'out' = 車位→出口（離場）
 function nearest(a,v){return a.reduce((p,c)=>Math.abs(c-v)<Math.abs(p-v)?c:p);}
-function buildPathIn(sp){ const [ax,ay]=accessOf(sp); const tx=nearest(TRUNK_X,ax);
-  return {pts:[[ENTRY.x,ENTRY.y],[tx,ENTRY_LANE_Y],[tx,ay],[ax,ay]], trunkX:tx, ay,
-    startPt:[ENTRY.x,ENTRY.y], startColor:'#22c55e', destPt:[sp.x+sp.w/2,sp.y+sp.h/2], destColor:'#f59e0b'}; }
-function buildPathOut(sp){ const [ax,ay]=accessOf(sp); const tx=nearest(TRUNK_X,ax);
-  return {pts:[[ax,ay],[tx,ay],[tx,EXIT.y],[EXIT.x,EXIT.y]], trunkX:tx, ay,
-    startPt:[sp.x+sp.w/2,sp.y+sp.h/2], startColor:'#f59e0b', destPt:[EXIT.x,EXIT.y], destColor:'#f97316'}; }
+
+/* ---- 路網與最短路徑演算法 (Dijkstra) ---- */
+
+
+const EDGES = [
+  // 左側縱向通道 (切斷 L3-L4 避開 B2 坡道；切斷 L4-L_ramp 和 L_ramp-L_mid 避開 1075 車位)
+  { a: 'L1', b: 'L2' },
+  { a: 'L2', b: 'L3' },
+  { a: 'L_mid', b: 'L5' },
+
+  // 中左縱向通道 (CL4 -> CL_ramp 設為單向向下，禁止從入口直接左轉北上)
+  { a: 'CL1', b: 'CL2' },
+  { a: 'CL2', b: 'CL3' },
+  { a: 'CL3', b: 'CL4' },
+  { a: 'CL4', b: 'CL_ramp', dir: 'forward' }, 
+  { a: 'CL_ramp', b: 'CL_mid' },
+  { a: 'CL_mid', b: 'CL5' },
+
+  // 右側縱向通道
+  { a: 'R1', b: 'R2' },
+  { a: 'R2', b: 'R3' },
+  { a: 'R3', b: 'R_ramp' },
+  { a: 'R_ramp', b: 'R_mid' },
+  { a: 'R_mid', b: 'R4' },
+  { a: 'R4', b: 'R5' },
+
+  // 上方橫向通道 (y = 500)
+  { a: 'L2', b: 'CL2' },
+  { a: 'CL2', b: 'R2' },
+
+  // 中上橫向通道 (y = 750，僅連通左與中左)
+  { a: 'L3', b: 'CL3' },
+
+  // 中下橫向通道 (y = 1070) - 設為單向向東
+  { a: 'L4', b: 'CL4', dir: 'forward' },
+  { a: 'CL4', b: 'R3', dir: 'forward' },
+
+  // 入口匝道橫向通道 (y = ENTRY_LANE_Y) - 強制單向向東行駛，禁止逆向向西行駛
+  { a: 'L_ramp', b: 'entry', dir: 'forward' },
+  { a: 'entry', b: 'CL_ramp', dir: 'forward' },
+  { a: 'CL_ramp', b: 'R_ramp', dir: 'forward' },
+
+  // 中下車位間橫向通道 (y = 1180)
+  { a: 'L_mid', b: 'CL_mid' },
+  { a: 'CL_mid', b: 'R_mid' },
+
+  // 下方橫向通道 (y = 1260)
+  { a: 'L5', b: 'CL5' },
+  { a: 'CL5', b: 'R4' },
+
+  // 出口連通性
+  { a: 'exit', b: 'CL2' },
+  { a: 'exit', b: 'R2' }
+];
+
+function dijkstra(startNode, endNode, nodes, edges) {
+  const dist = {};
+  const prev = {};
+  const queue = new Set();
+  
+  for (const name in nodes) {
+    dist[name] = Infinity;
+    prev[name] = null;
+    queue.add(name);
+  }
+  dist[startNode] = 0;
+  
+  const adj = {};
+  for (const name in nodes) adj[name] = [];
+  for (const edge of edges) {
+    if (!edge.dir || edge.dir === 'forward') {
+      adj[edge.a].push({ to: edge.b, dist: edge.dist });
+    }
+    if (!edge.dir || edge.dir === 'backward') {
+      adj[edge.b].push({ to: edge.a, dist: edge.dist });
+    }
+  }
+  
+  while (queue.size > 0) {
+    let u = null;
+    let minDist = Infinity;
+    for (const name of queue) {
+      if (dist[name] < minDist) {
+        minDist = dist[name];
+        u = name;
+      }
+    }
+    if (u === null || u === endNode) break;
+    queue.delete(u);
+    
+    for (const neighbor of adj[u]) {
+      if (!queue.has(neighbor.to)) continue;
+      const alt = dist[u] + neighbor.dist;
+      if (alt < dist[neighbor.to]) {
+        dist[neighbor.to] = alt;
+        prev[neighbor.to] = u;
+      }
+    }
+  }
+  
+  if (dist[endNode] === Infinity) return null;
+  
+  const path = [];
+  let curr = endNode;
+  while (curr !== null) {
+    path.unshift(curr);
+    curr = prev[curr];
+  }
+  return path.map(name => [nodes[name].x, nodes[name].y]);
+}
+
+function getLaneX(x) {
+  const lanes = [300, 500, 745];
+  return lanes.reduce((prev, curr) => Math.abs(curr - x) < Math.abs(prev - x) ? curr : prev);
+}
+
+function connectPoint(nodeName, pt, nodes, edges) {
+  const laneX = getLaneX(pt[0]);
+  
+  // 建立投影在直向車道上的臨時節點，確保車輛會沿著直向車道直行到對齊車位的高度才轉彎，避免切西瓜穿過鄰近車位
+  const projNodeName = nodeName + '_PROJ';
+  nodes[projNodeName] = { x: laneX, y: pt[1] };
+  
+  const laneNodes = [];
+  for (const name in nodes) {
+    if (nodes[name].x === laneX && name !== 'START' && name !== 'END' && name !== 'START_PROJ' && name !== 'END_PROJ' && name !== projNodeName) {
+      laneNodes.push({ name, y: nodes[name].y });
+    }
+  }
+  laneNodes.sort((a, b) => a.y - b.y);
+  
+  let above = null;
+  let below = null;
+  for (let i = 0; i < laneNodes.length; i++) {
+    if (laneNodes[i].y <= pt[1]) {
+      above = laneNodes[i];
+    }
+    if (laneNodes[i].y >= pt[1] && below === null) {
+      below = laneNodes[i];
+    }
+  }
+  
+  if (above) {
+    const dist = Math.abs(nodes[projNodeName].y - nodes[above.name].y);
+    edges.push({ a: projNodeName, b: above.name, dist });
+  }
+  if (below) {
+    const dist = Math.abs(nodes[below.name].y - nodes[projNodeName].y);
+    edges.push({ a: projNodeName, b: below.name, dist });
+  }
+  if (!above && !below && laneNodes.length > 0) {
+    const dist = Math.hypot(nodes[projNodeName].x - nodes[laneNodes[0].name].x, nodes[projNodeName].y - nodes[laneNodes[0].name].y);
+    edges.push({ a: projNodeName, b: laneNodes[0].name, dist });
+  }
+  
+  // 橫向連接：從直向車道投影點水平拉進車格的進出點
+  const hDist = Math.abs(pt[0] - laneX);
+  edges.push({ a: nodeName, b: projNodeName, dist: hDist });
+}
+
+function findShortestPath(startPt, endPt) {
+  const nodes = {
+    // 左縱向車道 (x = 300)
+    L1: { x: 300, y: 200 },
+    L2: { x: 300, y: 500 },
+    L3: { x: 300, y: 750 },
+    L4: { x: 300, y: 1070 },
+    L_ramp: { x: 300, y: ENTRY_LANE_Y },
+    L_mid: { x: 300, y: 1180 },
+    L5: { x: 300, y: 1260 },
+
+    // 中左縱向車道 (x = 500)
+    CL1: { x: 500, y: 350 },
+    CL2: { x: 500, y: 500 },
+    CL3: { x: 500, y: 750 },
+    CL4: { x: 500, y: 1070 },
+    CL_ramp: { x: 500, y: ENTRY_LANE_Y },
+    CL_mid: { x: 500, y: 1180 },
+    CL5: { x: 500, y: 1260 },
+
+    // 右縱向車道 (x = 745)
+    R1: { x: 745, y: 200 },
+    R2: { x: 745, y: 500 },
+    R3: { x: 745, y: 1070 },
+    R_ramp: { x: 745, y: ENTRY_LANE_Y },
+    R_mid: { x: 745, y: 1180 },
+    R4: { x: 745, y: 1260 },
+    R5: { x: 745, y: 1500 }
+  };
+  
+  nodes['entry'] = { x: ENTRY.x, y: ENTRY.y };
+  nodes['exit']  = { x: EXIT.x,  y: EXIT.y  };
+  
+  nodes['START'] = { x: startPt[0], y: startPt[1] };
+  nodes['END'] = { x: endPt[0], y: endPt[1] };
+  
+  const edges = [];
+  for (const edge of EDGES) {
+    const dist = Math.hypot(nodes[edge.a].x - nodes[edge.b].x, nodes[edge.a].y - nodes[edge.b].y);
+    edges.push({ a: edge.a, b: edge.b, dist, dir: edge.dir });
+  }
+  
+  if (Math.hypot(startPt[0] - ENTRY.x, startPt[1] - ENTRY.y) < 1) {
+    edges.push({ a: 'START', b: 'entry', dist: 0 });
+  } else {
+    connectPoint('START', startPt, nodes, edges);
+  }
+  
+  if (Math.hypot(endPt[0] - EXIT.x, endPt[1] - EXIT.y) < 1) {
+    edges.push({ a: 'END', b: 'exit', dist: 0 });
+  } else {
+    connectPoint('END', endPt, nodes, edges);
+  }
+  
+  return dijkstra('START', 'END', nodes, edges);
+}
+
+function buildPathIn(sp){
+  const [ax,ay]=accessOf(sp);
+  const tx=nearest(TRUNK_X,ax);
+  const pts = findShortestPath([ENTRY.x, ENTRY.y], [ax, ay]) || [[ENTRY.x, ENTRY.y], [tx, ENTRY_LANE_Y], [tx, ay], [ax, ay]];
+  return {pts, trunkX:tx, ay,
+    startPt:[ENTRY.x,ENTRY.y], startColor:'#22c55e', destPt:[sp.x+sp.w/2,sp.y+sp.h/2], destColor:'#f59e0b'};
+}
+
+function buildPathOut(sp){
+  const [ax,ay]=accessOf(sp);
+  const tx=nearest(TRUNK_X,ax);
+  const pts = findShortestPath([ax, ay], [EXIT.x, EXIT.y]) || [[ax, ay], [tx, ay], [tx, EXIT.y], [EXIT.x, EXIT.y]];
+  return {pts, trunkX:tx, ay,
+    startPt:[sp.x+sp.w/2,sp.y+sp.h/2], startColor:'#f59e0b', destPt:[EXIT.x,EXIT.y], destColor:'#f97316'};
+}
+
 function pathOf(sp){ return routeDir==='in'?buildPathIn(sp):buildPathOut(sp); }
 function drawRoute(sp){
   const P=pathOf(sp); const d='M '+P.pts.map(p=>p[0]+' '+p[1]).join(' L ');
