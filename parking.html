@@ -311,26 +311,26 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
   <!-- 循環車道視覺與周邊機房/儲藏室等非停車相關資訊已移除 -->
 
-  <!-- A 棟：2 部電梯（左右並排、置中） -->
+  <!-- A 棟：2 部電梯（左右並排、置中，無「通往 1F～RF」文字） -->
   <g class="ov" data-key="A" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
     <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
-    <text x="480" y="140" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">A 棟</text>
+    <text x="480" y="140" text-anchor="middle" font-size="36" font-weight="800" fill="#9dc0e4">A 棟</text>
     <rect x="424" y="180" width="48" height="52" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="448" y="216" text-anchor="middle" font-size="24">🛗</text>
     <rect x="488" y="180" width="48" height="52" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="512" y="216" text-anchor="middle" font-size="24">🛗</text>
-    <text x="480" y="270" text-anchor="middle" font-size="10" fill="#4f6f92">通往 1F～RF</text>
   </g>
-  <!-- B 棟：1 部電梯（置中） -->
+  <!-- B 棟：2 部電梯（左右並排、置中，文字在上、電梯在下，與 A 棟同款） -->
   <g class="ov" data-key="B" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
     <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
-    <text x="401" y="838" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">B 棟</text>
-    <rect x="378" y="860" width="46" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="401" y="895" text-anchor="middle" font-size="22">🛗</text>
+    <text x="401" y="838" text-anchor="middle" font-size="30" font-weight="800" fill="#9dc0e4">B 棟</text>
+    <rect x="354" y="860" width="40" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="374" y="895" text-anchor="middle" font-size="22">🛗</text>
+    <rect x="408" y="860" width="40" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="428" y="895" text-anchor="middle" font-size="22">🛗</text>
   </g>
-  <!-- C 棟：2 部電梯（並排、置中於建築上方） -->
+  <!-- C 棟：2 部電梯（並排，電梯在上、文字在下，與 A/B 棟上下順序相反） -->
   <g class="ov" data-key="C" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
     <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
-    <text x="522" y="1576" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">C 棟</text>
-    <rect x="474" y="1594" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="496" y="1628" text-anchor="middle" font-size="22">🛗</text>
-    <rect x="526" y="1594" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="548" y="1628" text-anchor="middle" font-size="22">🛗</text>
+    <rect x="474" y="1552" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="496" y="1586" text-anchor="middle" font-size="22">🛗</text>
+    <rect x="526" y="1552" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="548" y="1586" text-anchor="middle" font-size="22">🛗</text>
+    <text x="522" y="1638" text-anchor="middle" font-size="30" font-weight="800" fill="#9dc0e4">C 棟</text>
   </g>
 
   <g class="ov" data-key="ramp1F">
@@ -662,6 +662,11 @@ const EDGES = [
   { a: 'R1', b: 'R2' },
   { a: 'R2', b: 'R3' },
   { a: 'R3', b: 'R_ramp' },
+  // R_ramp（入口匝道接右車道處）目前實際 y 座標（ENTRY_LANE_Y）已經比 R3(y=1070) 更靠北，
+  // 但舊寫法只能靠 R2→R3→R_ramp 這條路徑往北走，導致從 R_ramp 要去 R2/CL2 方向的車位
+  // (例如 1039) 必須先往南繞到 R3 附近（正好經過 1068 車位）才能折返往北，多繞一段冤枉路。
+  // 直接補一條 R_ramp↔R2 的邊，讓 dijkstra 可以直接往北走最短路徑，不必先往下繞。
+  { a: 'R_ramp', b: 'R2' },
   { a: 'R_ramp', b: 'R_mid' },
   // R_mid → R4 拆兩段
   { a: 'R_mid', b: 'R_ba' },
