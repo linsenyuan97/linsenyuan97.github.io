@@ -12,7 +12,7 @@
 <title>B1 停車場車位查詢系統</title>
 <style>
 :root{
-  --bg-primary:#0a0f1c; --bg-secondary:#0d1526; --bg-panel:#101d34;
+  --bg-primary:#0A0D14; --bg-secondary:#0B0F18; --bg-panel:#0F1420;
   --glass-bg:rgba(255,255,255,0.04); --glass-border:rgba(255,255,255,0.09);
   --accent-cyan:#f97316; --accent-blue:#2563eb; --accent-gold:#f59e0b;   /* --accent-cyan 已改為橘色主題 */
   --accent-green:#10b981; --accent-red:#ef4444;
@@ -26,8 +26,9 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
 .app{height:100%;display:flex;flex-direction:column;}
 
 /* ---------- TOP BAR （精簡：讓地圖獲得更多垂直空間）---------- */
-.topbar{flex-shrink:0;padding:6px 10px 7px;background:var(--bg-secondary);
-  border-bottom:1px solid var(--glass-border);box-shadow:0 4px 18px rgba(0,0,0,.35);z-index:30;}
+.topbar{flex-shrink:0;padding:6px 10px 7px;background:rgba(15,20,32,.75);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.05);box-shadow:0 4px 18px rgba(0,0,0,.35);z-index:30;}
 .titlebar{font-size:1rem;font-weight:800;color:#4f93d6;letter-spacing:.4px;
   margin:0 2px 5px;display:flex;align-items:center;gap:6px;}
 .titlebar small{font-weight:400;color:var(--text-3);font-size:.66rem;letter-spacing:0;}
@@ -39,17 +40,24 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
 .search-row{display:flex;gap:8px;align-items:stretch;}
 .search-wrap{position:relative;flex:1;margin:0;}   /* .search-wrap 也可能是 <form>，把預設 margin 歸零 */
 .s-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:.95rem;}
-.search-input{width:100%;padding:9px 34px 9px 32px;background:rgba(255,255,255,.06);
-  border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);color:var(--text-1);
+.search-input{width:100%;height:42px;padding:0 34px 0 32px;background:rgba(255,255,255,.06);
+  border:none;border-radius:18px;color:var(--text-1);
   font-family:inherit;font-size:1rem;font-weight:600;letter-spacing:1px;outline:none;
-  transition:border-color .2s,box-shadow .2s,background .2s;}
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+  transition:box-shadow .2s,background .2s;}
 .search-input::placeholder{color:var(--text-3);letter-spacing:0;font-weight:400;}
-.search-input:focus{border-color:var(--accent-cyan);background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.18);}
-/* 依方向切換動態上色：入口模式=綠、出口模式=橘 */
-body.dir-in .search-input{border-color:rgba(34,197,94,.55);}
-body.dir-in .search-input:focus{border-color:#22c55e;background:rgba(34,197,94,.08);box-shadow:0 0 0 3px rgba(34,197,94,.20);}
-body.dir-out .search-input{border-color:rgba(249,115,22,.55);}
-body.dir-out .search-input:focus{border-color:#f97316;background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.20);}
+.search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.18);}
+/* 依方向切換動態上色：入口模式=綠、出口模式=橘（改用內陰影取代粗邊框） */
+body.dir-in .search-input{box-shadow:inset 0 0 0 1px rgba(34,197,94,.4);}
+body.dir-in .search-input:focus{background:rgba(34,197,94,.08);box-shadow:0 0 0 3px rgba(34,197,94,.20);}
+body.dir-out .search-input{box-shadow:inset 0 0 0 1px rgba(249,115,22,.4);}
+body.dir-out .search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.20);}
+/* 找出口模式：地圖上不需要顯示入口(綠)標記；找車位模式：不需要顯示出口(橘)標記 */
+body.dir-out .ov[data-key="entry"]{display:none;}
+body.dir-in .ov[data-key="exit"]{display:none;}
+/* 校正模式下兩者都要能被看到、拖曳校正，不受查詢方向影響 */
+body.editing .ov[data-key="entry"],
+body.editing .ov[data-key="exit"]{display:block!important;}
 .s-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);font-size:1rem;cursor:pointer;display:none;}
 .s-clear:hover{color:var(--text-1);}
 /* 「i」提示按鈕：顯示路線對話框（有車位→路線；沒車位→請輸入提示） */
@@ -63,8 +71,9 @@ body.dir-out .search-input:focus{border-color:#f97316;background:rgba(249,115,22
 .info-btn.ready{background:linear-gradient(135deg,var(--accent-gold),#d97706);color:#fff;border-color:var(--accent-gold);animation:btn-pulse 1.6s ease-out infinite;}
 @keyframes btn-pulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.5);}70%{box-shadow:0 0 0 10px rgba(245,158,11,0);}100%{box-shadow:0 0 0 0 rgba(245,158,11,0);}}
 
-.suggestions{position:absolute;top:calc(100% + 5px);left:0;right:0;background:var(--bg-panel);
-  border:1px solid var(--glass-border);border-radius:var(--radius-sm);overflow:hidden auto;z-index:100;
+.suggestions{position:absolute;top:calc(100% + 5px);left:0;right:0;background:rgba(15,20,32,.75);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.05);border-radius:var(--radius-sm);overflow:hidden auto;z-index:100;
   box-shadow:0 12px 32px rgba(0,0,0,.5);display:none;max-height:46vh;}
 .sug-item{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);}
 .sug-item:last-child{border-bottom:none;}
@@ -76,14 +85,14 @@ body.dir-out .search-input:focus{border-color:#f97316;background:rgba(249,115,22
 .sug-zone{font-size:.68rem;color:var(--text-3);margin-left:auto;}
 /* 找車位 / 找出口 兩顆大按鈕（同時是方向切換 + 開啟路線對話框）*/
 .mode-row{display:flex;gap:6px;margin-top:6px;}
-.mode-btn{flex:1;padding:8px 6px;border-radius:var(--radius-sm);
-  border:2px solid var(--glass-border);background:rgba(255,255,255,.04);
+.mode-btn{flex:1;height:46px;padding:0 6px;border-radius:var(--radius-sm);
+  border:none;background:rgba(255,255,255,.04);
   color:var(--text-2);font-family:inherit;font-size:.88rem;font-weight:700;
   cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:.5px;}
 .mode-btn:hover{background:rgba(255,255,255,.09);color:var(--text-1);}
 .mode-btn .mode-ic{font-size:1.05rem;line-height:1;}
-.mode-btn.active.mode-in{border-color:#22c55e;background:rgba(34,197,94,.16);color:#4ade80;box-shadow:0 0 0 3px rgba(34,197,94,.22);}
-.mode-btn.active.mode-out{border-color:#f97316;background:rgba(249,115,22,.16);color:#fb923c;box-shadow:0 0 0 3px rgba(249,115,22,.22);}
+.mode-btn.active.mode-in{background:rgba(34,197,94,.15);color:#4ade80;}
+.mode-btn.active.mode-out{background:rgba(242,108,33,.15);color:#fb923c;}
 
 .err-inline{margin:6px 2px 0;padding:6px 10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
   border-radius:var(--radius-sm);font-size:.76rem;color:#fca5a5;display:none;}
@@ -192,9 +201,27 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
   transform-box:fill-box;
   transform-origin:center;
 }
+/* 車位被查詢命中時的一次性彈跳動畫（Parking Bounce），與呼吸脈動疊加使用 */
+@keyframes parking-bounce{
+  0%{transform:scale(.7);}
+  55%{transform:scale(1.18);}
+  75%{transform:scale(.94);}
+  100%{transform:scale(1);}
+}
+.sp-bounce{
+  animation:parking-bounce .5s cubic-bezier(.34,1.56,.64,1) 1;
+  transform-box:fill-box;
+  transform-origin:center;
+}
 @keyframes route-dash{from{stroke-dashoffset:520;}to{stroke-dashoffset:0;}}
-.route-in-animated{stroke-dasharray:14 9;animation:route-dash 2.4s linear infinite;}
-.route-out-animated{stroke-dasharray:6 5;animation:route-dash 1.4s linear infinite;}
+/* 找車位（綠色）導航線：雙層疊加 —— 下層是模糊發光的光暈，上層是近白的純淨核心線，
+   兩層都用 screen（濾色）混合模式疊在灰色車道上，看起來就像真的有一道光投影在地面上 */
+.route-in-glow{stroke-dasharray:10 6;animation:route-dash 2.2s linear infinite;
+  filter:blur(4px);opacity:.6;mix-blend-mode:screen;}
+.route-in-core{stroke-dasharray:10 6;animation:route-dash 2.2s linear infinite;
+  mix-blend-mode:screen;}
+.route-out-animated{stroke-dasharray:9 5;animation:route-dash 1.3s linear infinite;
+  filter:drop-shadow(0 0 6px rgba(242,108,33,.8));}
 @keyframes ping-expand{0%{r:8;opacity:1;}100%{r:24;opacity:0;}}
 .ping-circle{animation:ping-expand 1.8s ease-out infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.45;}}
@@ -205,7 +232,8 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 
 <div class="app">
   <header class="topbar">
-    <div class="titlebar">🅿 B1 停車場車位查詢
+    <div class="titlebar">🅿 B1 停車場車位查詢 <small style="display:none">· 輸入車號 → 圖上定位 (v2.0 - 2026/07/18 22:00)</small>
+      <button class="mini-btn" id="editToggle" onclick="toggleEdit()" title="校正" style="display:none">✏️</button>
     </div>
     <div class="search-row">
       <!-- 用 <form> 包起來，iOS 才會把它視為「可送出的搜尋表單」，
@@ -253,9 +281,18 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
     </filter>
     <filter id="glowYellow" x="-80%" y="-80%" width="260%" height="260%">
       <feGaussianBlur stdDeviation="4.5" result="b"/>
-      <feFlood flood-color="#FFD400" flood-opacity="0.95" result="c"/>
+      <feFlood flood-color="#FFD400" flood-opacity="0.75" result="c"/>
       <feComposite in="c" in2="b" operator="in" result="glow"/>
-      <feMerge><feMergeNode in="glow"/><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="insetShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feFlood flood-color="#000000" flood-opacity="0.5" result="shadowColor"/>
+      <feComposite in="shadowColor" in2="SourceGraphic" operator="out" result="inverse"/>
+      <feGaussianBlur in="inverse" stdDeviation="5" result="blurred"/>
+      <feComposite in="blurred" in2="SourceGraphic" operator="atop"/>
+    </filter>
+    <filter id="buildingShadow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="5" stdDeviation="9" flood-color="#000000" flood-opacity="0.5"/>
     </filter>
     <marker id="arrow" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#f97316"/></marker>
     <marker id="arrowGreen" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#22c55e"/></marker>
@@ -263,31 +300,34 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
     <linearGradient id="rampGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#12233b"/></linearGradient>
   </defs>
 
-  <rect width="940" height="1672" fill="#0c1424"/>
+  <rect width="940" height="1672" fill="#0A0D14"/>
   <rect width="940" height="1672" fill="url(#grid)"/>
 
-  <rect x="126" y="28" width="718" height="1620" rx="4" fill="#182534" stroke="#31506f" stroke-width="8"/>
-  <rect x="142" y="44" width="686" height="1588" rx="2" fill="#17222f"/>
+  <rect x="126" y="28" width="718" height="1620" rx="4" fill="#111927" stroke="#31506f" stroke-width="8"/>
+  <rect x="142" y="44" width="686" height="1588" rx="2" fill="#0D1420"/>
+
+  <!-- 灰色車道層（由路網 EDGES 自動繪製，見 renderRoads()）-->
+  <g id="roadLayer"></g>
 
   <!-- 循環車道視覺與周邊機房/儲藏室等非停車相關資訊已移除 -->
 
   <!-- A 棟：2 部電梯（左右並排、置中） -->
-  <g class="ov" data-key="A" font-family="'Microsoft JhengHei',sans-serif">
-    <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
+  <g class="ov" data-key="A" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
+    <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
     <text x="480" y="140" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">A 棟</text>
     <rect x="424" y="180" width="48" height="52" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="448" y="216" text-anchor="middle" font-size="24">🛗</text>
     <rect x="488" y="180" width="48" height="52" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="512" y="216" text-anchor="middle" font-size="24">🛗</text>
     <text x="480" y="270" text-anchor="middle" font-size="10" fill="#4f6f92">通往 1F～RF</text>
   </g>
   <!-- B 棟：1 部電梯（置中） -->
-  <g class="ov" data-key="B" font-family="'Microsoft JhengHei',sans-serif">
-    <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
+  <g class="ov" data-key="B" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
+    <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
     <text x="401" y="838" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">B 棟</text>
     <rect x="378" y="860" width="46" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="401" y="895" text-anchor="middle" font-size="22">🛗</text>
   </g>
   <!-- C 棟：2 部電梯（並排、置中於建築上方） -->
-  <g class="ov" data-key="C" font-family="'Microsoft JhengHei',sans-serif">
-    <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="#345580" stroke-width="2"/>
+  <g class="ov" data-key="C" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
+    <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
     <text x="522" y="1576" text-anchor="middle" font-size="20" font-weight="800" fill="#9dc0e4">C 棟</text>
     <rect x="474" y="1594" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="496" y="1628" text-anchor="middle" font-size="22">🛗</text>
     <rect x="526" y="1594" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="548" y="1628" text-anchor="middle" font-size="22">🛗</text>
@@ -325,7 +365,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
   <!-- 出口：通往 1F（橘色圓，寫「出」）-->
   <g class="ov" data-key="exit">
     <g filter="url(#glow)">
-      <circle cx="664" cy="470" r="19" fill="#ea580c" stroke="#f97316" stroke-width="2.5"/>
+      <circle cx="664" cy="470" r="14" fill="#ea580c" stroke="#f97316" stroke-width="2.5"/>
       <text x="664" y="476" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" font-family="'Microsoft JhengHei'">出</text>
     </g>
     <text x="664" y="500" text-anchor="middle" fill="#f97316" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">出口 · B1→1F</text>
@@ -334,7 +374,7 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
   <!-- 入口：通往 B1（綠色圓，不寫字）-->
   <g class="ov" data-key="entry">
     <g id="entryMarker" class="blink" filter="url(#glow)">
-      <circle cx="405" cy="1125" r="18" fill="#16a34a" stroke="#22c55e" stroke-width="2.5"/>
+      <circle cx="405" cy="1125" r="14" fill="#16a34a" stroke="#22c55e" stroke-width="2.5"/>
     </g>
     <text x="405" y="1100" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">入口 · 1F→B1</text>
   </g>
@@ -461,8 +501,8 @@ const CAR_SPACES=[
   {id:"1077",x:215,y:1088,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
   {id:"1078",x:213,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
   {id:"1079",x:245,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1080",x:338,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1081",x:309,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1080",x:309,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
+  {id:"1081",x:338,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
   {id:"1082",x:371,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
   {id:"1083",x:401,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
   {id:"1084",x:431,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
@@ -546,29 +586,39 @@ function renderPillars(){document.getElementById('pillarLayer').innerHTML=
 /* 預約車位（白底紅字）— 可在此增減編號 */
 const RESERVED_IDS = new Set(['1068','1069','1070','1085','1087','1088']);
 function isReserved(sp){ return sp.reserved || RESERVED_IDS.has(sp.id); }
-function fillOf(sp){ return isReserved(sp)?'#2b1318':'#1a3a6a'; }
-function strokeOf(sp){ return isReserved(sp)?'#ef4444':'#2563eb'; }
+/* 一般（藍色）車位：selected=true 為目前查詢命中的車位，維持原本亮色；
+   selected=false（未被查到）則背景與邊框都調降不透明度，讓整體退為背景 */
+function fillOf(sp, selected){ if(isReserved(sp)) return 'rgba(43,19,24,.65)'; return selected?'rgba(26,58,106,.55)':'rgba(26,58,106,.22)'; }
+function strokeOf(sp, selected){ if(isReserved(sp)) return 'rgba(239,68,68,.55)'; return selected?'rgba(37,99,235,.45)':'rgba(37,99,235,.18)'; }
 
 function spaceInner(sp){
   const dis=sp.type==='dis', rsv=isReserved(sp);
-  const fill=fillOf(sp), stroke=strokeOf(sp);
-  const hatch=rsv?'rgba(220,38,38,.16)':'rgba(37,99,235,.2)';
+  const selected = sp.id===currentId;
+  const fill=fillOf(sp, selected), stroke=strokeOf(sp, selected);
+  const hatch=rsv?'rgba(220,38,38,.16)':(selected?'rgba(37,99,235,.2)':'rgba(37,99,235,.08)');
   const cx=sp.x+sp.w/2, cy=sp.y+sp.h/2;
+  // 車位視覺尺寸：放大為 112%（由中心點等比放大，不影響座標資料本身）
+  const SIZE_SCALE=1.12, GAP_SCALE=1.08;
+  const rw=sp.w*SIZE_SCALE, rh=sp.h*SIZE_SCALE;
+  const rx0=cx-rw/2, ry0=cy-rh/2;
   let content='';
   if(rsv){
     // 暗紅底 + 亮粉/紅字「預約車位」（含編號）
-    content = `<text x="${cx}" y="${cy-2.5}" text-anchor="middle" font-size="7" fill="#f87171" font-family="monospace" font-weight="700">${sp.id}</text>`
-            + `<text x="${cx}" y="${cy+6.5}" text-anchor="middle" font-size="6.4" fill="#ef4444" font-family="'Microsoft JhengHei'" font-weight="700">預約車位</text>`;
+    content = `<text x="${cx}" y="${cy-2.5}" text-anchor="middle" font-size="8.6" fill="#f87171" font-family="monospace" font-weight="700">${sp.id}</text>`
+            + `<text x="${cx}" y="${cy+6.5}" text-anchor="middle" font-size="7.8" fill="#ef4444" font-family="'Microsoft JhengHei'" font-weight="700">預約車位</text>`;
   } else {
-    const fs=Math.min(sp.w,sp.h)>=30?7.5:6.2;
+    const fs=Math.min(sp.w,sp.h)>=30?11:9;
+    // 未被搜尋到的（未選中）車位號碼：改為細體、半透明灰藍字，讓主體（橘色導航線＋目標車位）更突出
+    const textFill = selected ? 'rgba(241,245,249,.95)' : 'rgba(255,255,255,.3)';
+    const textWeight = selected ? '700' : '300';
     content = (sp.w>=sp.h)
-      ? `<text x="${cx}" y="${cy+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(241,245,249,.95)" font-family="monospace" font-weight="700">${sp.id}</text>`
-      : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="rgba(241,245,249,.95)" font-family="monospace" font-weight="700" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`;
+      ? `<text x="${cx}" y="${cy+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="${textFill}" font-family="monospace" font-weight="${textWeight}">${sp.id}</text>`
+      : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="${textFill}" font-family="monospace" font-weight="${textWeight}" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`;
   }
   const selRing=(editMode&&sp.id===selEdit)
-    ? `<rect x="${sp.x-3}" y="${sp.y-3}" width="${sp.w+6}" height="${sp.h+6}" rx="3" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/>`:'';
-  return `<rect x="${sp.x}" y="${sp.y}" width="${sp.w}" height="${sp.h}" rx="2" fill="${fill}" stroke="${stroke}" stroke-width="1.2"/>
-    <line x1="${sp.x}" y1="${sp.y+sp.h}" x2="${sp.x+sp.w}" y2="${sp.y}" stroke="${hatch}" stroke-width="1"/>${content}${selRing}`;
+    ? `<rect x="${sp.x-3}" y="${sp.y-3}" width="${sp.w+6}" height="${sp.h+6}" rx="3" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3" filter="url(#glowYellow)"/>`:'';
+  return `<rect x="${rx0}" y="${ry0}" width="${rw}" height="${rh}" rx="${2*GAP_SCALE}" fill="${fill}" stroke="${stroke}" stroke-width="${1.2*GAP_SCALE}"/>
+    <line x1="${rx0}" y1="${ry0+rh}" x2="${rx0+rw}" y2="${ry0}" stroke="${hatch}" stroke-width="${1*GAP_SCALE}"/>${content}${selRing}`;
 }
 function renderSpaces(){
   document.getElementById('spacesLayer').innerHTML = SPACES.map(sp=>
@@ -593,19 +643,20 @@ const EDGES = [
   // 左側縱向通道 (切斷 L3-L4 避開 B2 坡道；切斷 L4-L_ramp 和 L_ramp-L_mid 避開 1075 車位)
   { a: 'L1', b: 'L2' },
   { a: 'L2', b: 'L3' },
-  // L_mid → L5 拆成兩段，經過 y=1218 真實車道
+  // L_mid → L_ba，銜接 y=1182 真實車道（此車道現為 1071-1084 之間唯一貫通通道，見下方 ★ 區塊）
   { a: 'L_mid', b: 'L_ba' },
-  { a: 'L_ba',  b: 'L5' },
 
   // 中左縱向通道 (CL4 -> CL_ramp 設為單向向下，禁止從入口直接左轉北上)
+  // CL2→CL3→CL4（緊鄰 1031-1042 的中央縱向道）為單向向南，禁止逆向北上（見白色箭頭方向）
   { a: 'CL1', b: 'CL2' },
-  { a: 'CL2', b: 'CL3' },
-  { a: 'CL3', b: 'CL4' },
+  { a: 'CL2', b: 'CL3', dir: 'forward', noCenterPenalty: true },
+  { a: 'CL3', b: 'CL4', dir: 'forward', noCenterPenalty: true },
   { a: 'CL4', b: 'CL_ramp', dir: 'forward' },
   { a: 'CL_ramp', b: 'CL_mid' },  // 雙向：入口南轉到 1085~1096；離場北上到匝道。2x CL 懲罰確保 1112 等遠端車位走右車道
   // CL_mid → CL5 拆兩段
   { a: 'CL_mid', b: 'CL_ba' },
   { a: 'CL_ba',  b: 'CL5' },
+  { a: 'CL5',    b: 'CL6' },   // 西側車道延伸段：服務 1087-1089（C棟前收尾）
 
   // 右側縱向通道
   { a: 'R1', b: 'R2' },
@@ -616,17 +667,22 @@ const EDGES = [
   { a: 'R_mid', b: 'R_ba' },
   { a: 'R_ba',  b: 'R4' },
   { a: 'R4', b: 'R5' },
+  { a: 'R5', b: 'R6' },  // 右側車道再往下延伸，完整覆蓋 1118-1120（原本只到 R5 附近，覆蓋不到 1119、1120）
 
   // 上方橫向通道 (y = 500)
   { a: 'L2', b: 'CL2' },
   { a: 'CL2', b: 'R2' },
   { a: 'E2', b: 'R2' },
 
-  // 中上橫向通道 (y = 750，僅連通左與中左)
-  { a: 'L3', b: 'CL3' },
+  // 中上橫向通道 (y = 750) — 實際會直接穿過 B 棟正上方，該處無實體車道，改為高懲罰的虛擬備援路徑（不繪製）
+  { a: 'L3', b: 'CL3', penalty: 3 },
+
+  // 左側車道向下延伸，銜接「通往 B2」匝道入口（僅到匝道方塊上緣，避免疊在匝道圖示上）
+  { a: 'L3', b: 'L_b2' },
 
   // 中下橫向通道 (y = 1070) - 設為單向向東
-  { a: 'L4', b: 'CL4', dir: 'forward' },
+  // L4-CL4 段實際會穿過 1071-1076 車位正上方，該處無實體車道，改為高懲罰的虛擬備援路徑（不繪製）
+  { a: 'L4', b: 'CL4', dir: 'forward', penalty: 3 },
   { a: 'CL4', b: 'R3', dir: 'forward' },
 
   // 入口匝道橫向通道 (y = ENTRY_LANE_Y) - 強制單向向東行駛，禁止逆向向西行駛
@@ -634,17 +690,20 @@ const EDGES = [
   { a: 'entry', b: 'CL_ramp', dir: 'forward' },
   { a: 'CL_ramp', b: 'R_ramp', dir: 'forward' },
 
-  // 中下橫向通道 (y = 1180) — 實際會穿過 1071-1077 車位，加高懲罰讓路徑優先走 y=1218 真實車道
+  // 中下橫向通道 (y = 1180) — 實際會穿過 1071-1077 車位，加高懲罰讓路徑優先走 y=1182 真實車道
+  // （僅保留西半段；1090-1092 與 1097-1099 中間沒有車道，東半段已移除）
   { a: 'L_mid', b: 'CL_mid', penalty: 3 },
-  { a: 'CL_mid', b: 'R_mid', penalty: 3 },
 
-  // ★ 底部真實車道 (y = 1218)：1071-1077 (face=down) 與 1078-1084 (face=up) 之間的實體通道
-  { a: 'L_ba',  b: 'CL_ba' },
-  { a: 'CL_ba', b: 'R_ba'  },
+  // ★ 底部真實車道 (y = 1182，置中於兩排車位之間)：1071-1077 (face=down) 與 1078-1084 (face=up) 之間的實體通道
+  //   現場確認：此車道從 L_ba0 到 CL_ba 是一整條連續直線、中間沒有中斷。
+  //   1079/1081 中間的結構柱只會擋住「從這裡直接切入 1081」的動線，不會截斷車道本身，故整段皆正常繪製。
+  { a: 'L_ba0', b: 'L_ba_w' },
+  { a: 'L_ba_w', b: 'L_ba' },
+  { a: 'L_ba',   b: 'L_ba_e' },
+  { a: 'L_ba_e', b: 'CL_ba' },
 
-  // 下方橫向通道 (y = 1260)
-  { a: 'L5', b: 'CL5' },
-  { a: 'CL5', b: 'R4' },
+  // 服務 1087-1089的路徑：CL_ba 沿 x=500 直接往下接 CL5（見下方「中左縱向通道」區塊），
+  // 原本經 L5 拉一段 y=1260 橫向車道會直接穿過 1081-1084 車位，已移除該節點與邊。
 
   // 出口連通性
   { a: 'exit', b: 'E2' },
@@ -704,7 +763,17 @@ function dijkstra(startNode, endNode, nodes, edges) {
     path.unshift(curr);
     curr = prev[curr];
   }
-  return path.map(name => [nodes[name].x, nodes[name].y]);
+  const coords = path.map(name => [nodes[name].x, nodes[name].y]);
+  // 移除相鄰且座標幾乎重合的點（例如起點剛好落在 entry、終點剛好落在 exit 時，
+  // START/entry 或 END/exit 會產生座標完全相同的兩點）。
+  // 這種長度為 0 的線段會讓路線末端的箭頭（marker-end="auto"）方向計算錯誤，
+  // 導致出口處的箭頭指向不正確或位置偏移。
+  const dedup = [];
+  for (const p of coords) {
+    const last = dedup[dedup.length - 1];
+    if (!last || Math.hypot(p[0] - last[0], p[1] - last[1]) > 0.5) dedup.push(p);
+  }
+  return dedup;
 }
 
 function getLaneX(x) {
@@ -715,21 +784,33 @@ function getLaneX(x) {
 function connectPoint(nodeName, pt, nodes, edges) {
   const laneX = getLaneX(pt[0]);
 
-  // ★ 底部真實車道 y=1218 特殊處理：
-  //    目標若落在 1071~1084 排範圍（x∈[200,500], y∈[1200,1235]），
-  //    強制路線先走到 y=1218 車道，再沿車道橫向、再上/下進入車位。
-  //    否則 dijkstra 會挑「直接由 CL_mid 垂直下切」的最短路徑，
-  //    而那條線會跑到車位的下邊界 (y=1210) 沿邊走，視覺不佳。
-  const inBottomAisleBand = pt[0] >= 200 && pt[0] <= 500 && pt[1] >= 1200 && pt[1] <= 1235;
+  // ★ 底部真實車道 y=1182 特殊處理：
+  //    目標若落在 1071~1077 排（face=down，進出點在車位下緣 y≈1139）
+  //    或 1078~1084 排（face=up，進出點在車位上緣 y≈1225）範圍內（x∈[200,500]），
+  //    強制路線先走到 y=1182 車道、沿車道橫向對齊到目標「自己的」x，再垂直上/下切入車位。
+  //    否則 dijkstra 會挑「直接由通用縱向車道（x=300/500）垂直下切」的最短路徑，
+  //    那條路徑最後一段的水平位移是切到「最近的縱向車道」而非「目標車位本身」，
+  //    當目標不是剛好落在 x=300/500 上時，這段水平線會貼著/切過隔壁車位的邊角，
+  //    看起來就像「先繞去隔壁車位，再左右轉」。
+  const inBottomAisleBand = pt[0] >= 200 && pt[0] <= 500 &&
+    ((pt[1] >= 1130 && pt[1] <= 1145) || (pt[1] >= 1200 && pt[1] <= 1235));
   if (inBottomAisleBand) {
-    const aisleY = 1218;
-    const aisleNodeName = (laneX === 300) ? 'L_ba' : 'CL_ba';
-    const aisleAnchor = nodes[aisleNodeName];
+    const aisleY = 1182;
     const aisleProjName = nodeName + '_AISLE';
     nodes[aisleProjName] = { x: pt[0], y: aisleY };
-    // 車道橫向段：沿 y=1218 從最近車道節點走到目標 x
-    edges.push({ a: aisleNodeName, b: aisleProjName, dist: Math.abs(pt[0] - aisleAnchor.x) });
-    // 進入車位：垂直短段，從車道 y=1218 到車位進出點 y
+    // 車道橫向段：y=1182 這條車道（L_ba0→L_ba_w→L_ba→L_ba_e→CL_ba）全線連續，
+    // 應接到目標 x 左右「實際最近」的車道節點，而不是死板地只接固定的 L_ba(x=300) 或 CL_ba(x=500)。
+    // 舊寫法會讓車輛被迫先繞去 x=300，再折返往東走，等於平白穿越沿途所有車位的正前方。
+    const aisleChain = ['L_ba0', 'L_ba_w', 'L_ba', 'L_ba_e', 'CL_ba']
+      .filter(n => nodes[n]).map(n => ({ name: n, x: nodes[n].x })).sort((a, b) => a.x - b.x);
+    let west = null, east = null;
+    for (const n of aisleChain) {
+      if (n.x <= pt[0]) west = n;
+      if (n.x >= pt[0] && east === null) east = n;
+    }
+    if (west) edges.push({ a: aisleProjName, b: west.name, dist: Math.abs(pt[0] - west.x) });
+    if (east && (!west || east.name !== west.name)) edges.push({ a: aisleProjName, b: east.name, dist: Math.abs(pt[0] - east.x) });
+    // 進入車位：垂直短段，從車道 y=1182 到車位進出點 y
     edges.push({ a: aisleProjName, b: nodeName, dist: Math.abs(pt[1] - aisleY) });
     return;
   }
@@ -740,7 +821,7 @@ function connectPoint(nodeName, pt, nodes, edges) {
   
   const laneNodes = [];
   for (const name in nodes) {
-    if (nodes[name].x === laneX && name !== 'START' && name !== 'END' && name !== 'START_PROJ' && name !== 'END_PROJ' && name !== projNodeName && !name.endsWith('_ramp')) {
+    if (nodes[name].x === laneX && name !== 'START' && name !== 'END' && name !== 'START_PROJ' && name !== 'END_PROJ' && name !== projNodeName) {
       laneNodes.push({ name, y: nodes[name].y });
     }
   }
@@ -757,15 +838,22 @@ function connectPoint(nodeName, pt, nodes, edges) {
     }
   }
   
-  const mult = (laneX === 500) ? 2.0 : 1.0;
-  
+  // CL2→CL4 之間（緊鄰 1031-1042）是單向南下車道；車位連接到車道的路段也必須遵守同一限制，
+  // 否則演算法仍可能直接從車位切上車道、逆向北上再繞路，等同於「找出口」時逆向行駛
+  const oneWaySouth = laneX === 500 && pt[1] >= 500 && pt[1] <= 1070;
+  // 這段車道是 1031-1042 唯一的實體車道，沒有替代路線，不套用「避開中央車道」的雙倍懲罰，
+  // 否則演算法會為了避開中央車道，寧可繞去穿越 B 棟的虛擬備援路徑（L3-CL3）
+  const mult = (laneX === 500 && !oneWaySouth) ? 2.0 : 1.0;
+
   if (above) {
     const dist = Math.abs(nodes[projNodeName].y - nodes[above.name].y) * mult;
-    edges.push({ a: projNodeName, b: above.name, dist });
+    // above 在北側（y 較小）：南下時只能「above → proj」，禁止「proj → above」（北上）
+    edges.push({ a: projNodeName, b: above.name, dist, dir: oneWaySouth ? 'backward' : undefined });
   }
   if (below) {
     const dist = Math.abs(nodes[below.name].y - nodes[projNodeName].y) * mult;
-    edges.push({ a: projNodeName, b: below.name, dist });
+    // below 在南側（y 較大）：南下時只能「proj → below」，禁止「below → proj」（北上）
+    edges.push({ a: projNodeName, b: below.name, dist, dir: oneWaySouth ? 'forward' : undefined });
   }
   if (!above && !below && laneNodes.length > 0) {
     const dist = Math.hypot(nodes[projNodeName].x - nodes[laneNodes[0].name].x, nodes[projNodeName].y - nodes[laneNodes[0].name].y) * mult;
@@ -777,25 +865,27 @@ function connectPoint(nodeName, pt, nodes, edges) {
   edges.push({ a: nodeName, b: projNodeName, dist: hDist });
 }
 
-function findShortestPath(startPt, endPt) {
+/* 車道節點座標（路線演算法與灰色車道渲染共用，保證視覺與導航一致）*/
+function buildLaneNodes() {
   const nodes = {
     // 左縱向車道 (x = 300)
-    L1: { x: 300, y: 200 },
+    L1: { x: 300, y: 158 },
     L2: { x: 300, y: 500 },
     L3: { x: 300, y: 750 },
+    L_b2: { x: 300, y: 878 },  // 左車道向下延伸至「通往 B2」匝道方塊上緣，銜接視覺車道
     L4: { x: 300, y: 1070 },
     L_ramp: { x: 300, y: ENTRY_LANE_Y },
     L_mid: { x: 300, y: 1180 },
-    L5: { x: 300, y: 1260 },
 
     // 中左縱向車道 (x = 500)
-    CL1: { x: 500, y: 350 },
+    CL1: { x: 500, y: 260 },
     CL2: { x: 500, y: 500 },
     CL3: { x: 500, y: 750 },
     CL4: { x: 500, y: 1070 },
     CL_ramp: { x: 500, y: ENTRY_LANE_Y },
     CL_mid: { x: 500, y: 1180 },
     CL5: { x: 500, y: 1260 },
+    CL6: { x: 500, y: 1400 },   // 延伸到 1087-1089 旁（C棟上緣 y≈1427 之前收尾）
 
     // 右縱向車道 (x = 745)
     R1: { x: 745, y: 200 },
@@ -805,30 +895,65 @@ function findShortestPath(startPt, endPt) {
     R_mid: { x: 745, y: 1180 },
     R4: { x: 745, y: 1260 },
     R5: { x: 745, y: 1500 },
+    R6: { x: 745, y: 1620 },  // 延伸覆蓋 1118-1120（1120 中心約 y=1614）
 
-    // ★ 底部真實車道節點 (y = 1218)：1071-1077 與 1078-1084 兩排之間的實體通道
-    L_ba:  { x: 300, y: 1218 },
-    CL_ba: { x: 500, y: 1218 },
+    // ★ 底部真實車道節點 (y = 1182，置中於 1071-1077 底邊 y=1139 與 1078-1084 頂邊 y=1225 之間)
+    L_ba0: { x: 205, y: 1182 },  // 車道西側延伸端，確保完整覆蓋到 1077（原本只到 1076 附近）
+    L_ba_w: { x: 248, y: 1182 }, // 車道在 1079/1081 中間空隙前的西側收尾（該處無實體車道，非結構柱不可通行）
+    L_ba:  { x: 300, y: 1182 },  // 僅作為左側縱向主幹（往 L5）與路徑演算法的錨點，不直接繪製水平車道
+    L_ba_e: { x: 332, y: 1182 }, // 車道在 1079/1081 中間空隙後的東側起頭
+    CL_ba: { x: 500, y: 1182 },
     R_ba:  { x: 745, y: 1218 },
 
     // 出口車道連通點 (動態對齊 exit 的 X 座標，確保 exit→E2 為垂直線段)
     E2: { x: EXIT.x, y: 500 }
   };
-  
   nodes['entry'] = { x: ENTRY.x, y: ENTRY.y };
   nodes['exit']  = { x: EXIT.x,  y: EXIT.y  };
-  
+  return nodes;
+}
+
+/* 灰色車道渲染：把 EDGES 每一段畫成有寬度的灰色帶；
+   單行道（B棟與 1031-1042 之間的中央縱向道）加白色箭頭指向行駛方向（南向）。 */
+function renderRoads(){
+  const g=document.getElementById('roadLayer');
+  if(!g) return;
+  const nodes=buildLaneNodes();
+  const W=46;                       // 車道視覺寬度
+  const ROAD='#3B4C63';             // 車道灰（調亮，與深色背景拉開對比）
+  const ROAD_EDGE='rgba(148,168,196,0.35)'; // 車道邊緣：極淡灰藍色實線，勾勒物理輪廓
+  let borderHtml='', fillHtml='';
+  for(const e of EDGES){
+    if(e.penalty) continue;   // penalty 邊是「會穿過車位的虛擬後備通道」，不畫成實體車道
+    const a=nodes[e.a], b=nodes[e.b];
+    if(!a||!b) continue;
+    // 先畫較寬的邊緣線（露出 1~1.5px 的淡色輪廓），再疊上車道本體色，形成清楚的道路邊界
+    borderHtml+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${ROAD_EDGE}" stroke-width="${W+2}" stroke-linecap="round"/>`;
+    fillHtml+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${ROAD}" stroke-width="${W}" stroke-linecap="round"/>`;
+  }
+  let html = borderHtml + fillHtml;
+  // 單行道白色箭頭：x=500 中央縱向道（CL2 y=500 → CL4 y=1070），行駛方向向下（南）
+  for(let y=560; y<=1030; y+=130){
+    html+=`<polyline points="491,${y-8} 500,${y+8} 509,${y-8}" fill="none" stroke="#dfe8f2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".25"/>`;
+  }
+  g.innerHTML=html;
+}
+
+function findShortestPath(startPt, endPt) {
+  const nodes = buildLaneNodes();
   nodes['START'] = { x: startPt[0], y: startPt[1] };
   nodes['END'] = { x: endPt[0], y: endPt[1] };
   
   const edges = [];
   for (const edge of EDGES) {
     let dist = Math.hypot(nodes[edge.a].x - nodes[edge.b].x, nodes[edge.a].y - nodes[edge.b].y);
-    // 懲罰中通道的直向行駛，使其傾向於走兩側主車道（L/R）
-    if (nodes[edge.a].x === 500 && nodes[edge.b].x === 500) {
+    // 懲罰中通道的直向行駛，使其傾向於走兩側主車道（L/R）；
+    // 但 CL2→CL3→CL4（緊鄰 1031-1042 的單行道）是這段唯一實體車道、沒有替代路線，
+    // 不應被這個「避開中央」的懲罰誤導去繞遠路（甚至繞去穿過 B 棟的虛擬備援路徑）
+    if (nodes[edge.a].x === 500 && nodes[edge.b].x === 500 && !edge.noCenterPenalty) {
       dist *= 2.0;
     }
-    // 邊自訂懲罰（例如 y=1180 橫向會穿過 1071-1077 車位，讓其被 y=1218 真實車道取代）
+    // 邊自訂懲罰（例如 y=1180 橫向會穿過 1071-1077 車位，讓其被 y=1182 真實車道取代）
     if (edge.penalty) dist *= edge.penalty;
     edges.push({ a: edge.a, b: edge.b, dist, dir: edge.dir });
   }
@@ -902,12 +1027,24 @@ function drawRoute(sp){
   const lineColor = routeDir==='in' ? '#22c55e' : '#f97316';
   const arrowMk   = routeDir==='in' ? 'arrowGreen' : 'arrow';
   const routeClass = routeDir==='in' ? 'route-in-animated' : 'route-out-animated';
-  document.getElementById('routeLayer').innerHTML=`
-    <path d="${d}" fill="none" stroke="${lineColor}" stroke-width="3.4" class="${routeClass}" marker-end="url(#${arrowMk})" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
-    <circle cx="${s0x}" cy="${s0y}" r="6" fill="${P.startColor}" stroke="#fff" stroke-width="2"/>
+  // 導航線兩端若剛好落在「車位」本身（1015 這類目標車位），就不畫額外的圓點／箭頭圖示，
+  // 讓線條的圓角端點直接優雅地延伸進車位中央，改由車位本身的高亮發光來標示目標。
+  const spaceCX=sp.x+sp.w/2, spaceCY=sp.y+sp.h/2;
+  const isSpaceStart = Math.hypot(s0x-spaceCX, s0y-spaceCY) < 1;
+  const isSpaceDest   = Math.hypot(dx-spaceCX, dy-spaceCY) < 1;
+  const startDot = isSpaceStart ? '' : `<circle cx="${s0x}" cy="${s0y}" r="6" fill="${P.startColor}" stroke="#fff" stroke-width="2"/>`;
+  const destDots = isSpaceDest ? '' : `
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="2" class="ping-circle"/>
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
     <circle cx="${dx}" cy="${dy}" r="6.5" fill="${P.destColor}" stroke="#fff" stroke-width="2"/>`;
+  const arrowAttr = isSpaceDest ? '' : `marker-end="url(#${arrowMk})"`;
+  const pathHtml = routeDir==='in'
+    ? `<path d="${d}" fill="none" stroke="#22c55e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="route-in-glow"/>
+       <path d="${d}" fill="none" stroke="#E0F7FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="route-in-core" ${arrowAttr}/>`
+    : `<path d="${d}" fill="none" stroke="${lineColor}" stroke-width="3" class="${routeClass}" ${arrowAttr} stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>`;
+  document.getElementById('routeLayer').innerHTML=`
+    ${pathHtml}
+    ${startDot}${destDots}`;
 }
 function routeSteps(sp){ return routeDir==='in'?stepsIn(sp):stepsOut(sp); }
 function stepsIn(sp){
@@ -974,27 +1111,39 @@ function selectSpace(id){
   document.getElementById('searchInput').value=id;
   document.getElementById('clearBtn').style.display='block';
   clearError(); closeSug();
-  if(currentId){const prev=document.getElementById('sp-'+cssId(currentId));
-    if(prev){const pp=spaceMap[currentId], pr=prev.querySelector('rect');
-      if(pp&&pr){pr.setAttribute('fill',fillOf(pp));pr.setAttribute('stroke',strokeOf(pp));pr.setAttribute('stroke-width','1.2');}
+  const spacesLayer=document.getElementById('spacesLayer');
+  const prevId=currentId;
+  currentId=id;   // 先切換 currentId，讓下方重繪都能依最新選取狀態判斷淡化與否
+  if(prevId && prevId!==id){const prev=document.getElementById('sp-'+cssId(prevId));
+    if(prev){const pp=spaceMap[prevId];
+      if(pp) prev.innerHTML=spaceInner(pp);   // 依 currentId 重繪，未選中的號碼會自動變細體、淡化
       prev.removeAttribute('filter');
-      prev.classList.remove('sp-highlight');}}
-  currentId=id;
+      prev.classList.remove('sp-highlight'); prev.classList.remove('sp-bounce');
+      spacesLayer.appendChild(prev);   // 還原回原本圖層順序
+    }}
   const el=document.getElementById('sp-'+cssId(id));
-  if(el){const r=el.querySelector('rect');
-    // 查詢車位：白底 + 黃框(#FFD400) + 黃色外圍發光
-    r.setAttribute('fill','#ffffff'); r.setAttribute('stroke','#FFD400'); r.setAttribute('stroke-width','2');
+  if(el){el.innerHTML=spaceInner(sp);   // 先依選中狀態重繪（亮色粗體），再疊加查詢高亮效果
+    const r=el.querySelector('rect');
+    // 查詢車位：半透明黃底 + 細金框，改用外圍發光呈現高亮，不遮擋原本的車位號碼
+    r.setAttribute('fill','rgba(255,212,0,.16)'); r.setAttribute('stroke','#FFD400'); r.setAttribute('stroke-width','1.5');
     el.setAttribute('filter','url(#glowYellow)');
-    el.classList.add('sp-highlight');}
+    el.classList.add('sp-highlight');
+    el.classList.add('sp-bounce');
+    el.addEventListener('animationend',()=>el.classList.remove('sp-bounce'),{once:true});
+    document.getElementById('floorplan').appendChild(el);   // 移到最上層，確保車位號碼不被導航線蓋住
+  }
   updateDirUI(); drawRoute(sp); setInfoReady(true); scrollToSpace(sp); searchEl.blur();
 }
 function clearSelection(){
-  if(currentId){const el=document.getElementById('sp-'+cssId(currentId));
-    if(el){const p=spaceMap[currentId];const r=el.querySelector('rect');
-      if(p&&r){r.setAttribute('fill',fillOf(p));r.setAttribute('stroke',strokeOf(p));r.setAttribute('stroke-width','1.2');}
+  if(currentId){const prevId=currentId; currentId=null;   // 先清空 currentId，重繪時會自動套用未選中的淡化樣式
+    const el=document.getElementById('sp-'+cssId(prevId));
+    if(el){const p=spaceMap[prevId];
+      if(p) el.innerHTML=spaceInner(p);
       el.removeAttribute('filter');
-      el.classList.remove('sp-highlight');}
-    currentId=null;}
+      el.classList.remove('sp-highlight'); el.classList.remove('sp-bounce');
+      document.getElementById('spacesLayer').appendChild(el);   // 還原回原本圖層順序
+    }
+  }
   document.getElementById('routeLayer').innerHTML=''; setInfoReady(false); updateDirUI();
 }
 function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('clearBtn').style.display='none';clearSelection();clearError();closeSug();}
@@ -1071,7 +1220,8 @@ function scrollToSpace(sp){
 
 /* ⑦  版面配合寬度（放大縮小交給手機捏放 / 桌機瀏覽器縮放）*/
 const VB_W=720,VB_H=1640;   // 已裁掉平面圖左右各 ~110px 空白（原為 940×1672）
-function baseSize(){const map=document.getElementById('mapArea');let w=Math.max(300,map.clientWidth-16);w=Math.min(w,700);return{w,h:w*(VB_H/VB_W)};}
+const DEFAULT_ZOOM=0.82;    // 地圖預設縮放：從 1.0 調整為 0.82，讓使用者一開始能看到更完整的樓層
+function baseSize(){const map=document.getElementById('mapArea');let w=Math.max(300,map.clientWidth-16);w=Math.min(w,700)*DEFAULT_ZOOM;return{w,h:w*(VB_H/VB_W)};}
 function applyView(){const s=document.getElementById('floorplan');const{w,h}=baseSize();s.setAttribute('width',Math.round(w));s.setAttribute('height',Math.round(h));}
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(applyView,120);});
 
@@ -1174,6 +1324,7 @@ function applyOverlayTransforms(){
     g.setAttribute('transform', transformFor(ovOf(k), OV_BBOX[k]));
   });
   refreshRouting();
+  renderRoads();       // 入口/出口移動會連動匝道車道位置，重畫灰色車道
   renderResizeHandles();
 }
 function refreshRouting(){
@@ -1400,7 +1551,7 @@ function resetData(){
 
 /* ⑨  init */
 function init(){
-  renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); applyView(); updateDirUI();
+  renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); renderRoads(); applyView(); updateDirUI();
   requestAnimationFrame(applyView);
   window.addEventListener('load',applyView);
   if(window.ResizeObserver){let first=true;
