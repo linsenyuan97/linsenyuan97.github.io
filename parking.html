@@ -357,7 +357,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   <rect width="940" height="1672" fill="#0A0D14"/>
   <rect width="940" height="1672" fill="url(#grid)"/>
 
-  <rect x="126" y="28" width="718" height="1620" rx="4" fill="#111927" stroke="#31506f" stroke-width="8"/>
+  <rect x="126" y="28" width="718" height="1620" rx="4" stroke-width="8"/>
   <rect x="142" y="44" width="686" height="1588" rx="2" fill="#0D1420"/>
 
   <!-- 「通往 B2」匝道標籤：刻意放在 roadLayer 之前（z-index 較低），
@@ -1120,8 +1120,14 @@ function renderRoads(){
   //   十字/丁字路口內部因為多段車道重疊、alpha 連續無邊界，完全不會有藍色線條穿過——
   //   路口內部保持乾淨暢通。因此不再需要舊版的「逐段外框發光 + 內側柔光 + 路口清潔方塊」那一整套補救疊層。
   //   road-border 仍保留(畫在 base 之下)，替路面補一圈細緻的深色結構邊，內部接縫會被 base 蓋掉、不外露。
+  const BASE_FLAT='#343f50';   // 車道純色底（介於漸層兩端之間）：負責產生輪廓發光；可見表面由下方統一漸層覆蓋
   let html = `<g class="road-border" fill="${BORDER}">${borderShapes}</g>`
-           + `<g class="road-base" fill="url(#roadSurfaceGrad)" filter="url(#roadUnionGlow)">${baseShapes}</g>`
+           + `<g class="road-base" fill="${BASE_FLAT}" filter="url(#roadUnionGlow)">${baseShapes}</g>`
+           // 全畫面統一垂直漸層：一整片跨整個樓層的漸層矩形，剪裁進車道範圍。
+           // 漸層固定在畫面座標(userSpaceOnUse)、矩形本身不旋轉 → 所有車道(不分橫向/縱向)
+           // 在同一 Y 高度都是同一顏色，T字/十字路口不再出現方向不一致的色差。
+           + `<clipPath id="roadClip">${baseShapes}</clipPath>`
+           + `<rect x="0" y="0" width="940" height="1672" fill="url(#roadSurfaceGrad)" clip-path="url(#roadClip)"/>`
            + `<g class="road-highlight" fill="#ffffff" opacity="0.08">${baseShapes}</g>`
            + `<g class="road-shadow" fill="#000000" opacity="0.12">${baseShapes}</g>`;
 
@@ -1469,8 +1475,9 @@ function scrollToSpace(sp){
 
 /* ⑦  版面配合寬度（放大縮小交給手機捏放 / 桌機瀏覽器縮放）*/
 const VB_W=720,VB_H=1640;   // 已裁掉平面圖左右各 ~110px 空白（原為 940×1672）
-const DEFAULT_ZOOM=0.82;    // 地圖預設縮放：從 1.0 調整為 0.82，讓使用者一開始能看到更完整的樓層
-function baseSize(){const map=document.getElementById('mapArea');let w=Math.max(300,map.clientWidth-16);w=Math.min(w,700)*DEFAULT_ZOOM;return{w,h:w*(VB_H/VB_W)};}
+// 一開始即「滿版」：平面圖寬度直接填滿 mapArea 可用寬度（扣掉左右 padding），不再套用縮小係數與 700px 上限，
+// 左右不留空白。放大縮小仍交給手機捏放 / 桌機瀏覽器縮放。
+function baseSize(){const map=document.getElementById('mapArea');const w=Math.max(300,map.clientWidth-16);return{w,h:w*(VB_H/VB_W)};}
 function applyView(){const s=document.getElementById('floorplan');const{w,h}=baseSize();s.setAttribute('width',Math.round(w));s.setAttribute('height',Math.round(h));}
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(applyView,120);});
 
