@@ -86,7 +86,10 @@ body.editing .ov[data-key="exit"]{display:block!important;}
 /* 找車位 / 找出口 兩顆大按鈕（同時是方向切換 + 開啟路線對話框）*/
 .mode-row{display:flex;gap:6px;margin-top:6px;}
 .mode-btn{flex:1;height:46px;padding:0 6px;border-radius:var(--radius-sm);
-  border:none;background:rgba(255,255,255,.04);
+  /* UIUX 優化 1：不要用 none！加上一圈低調、半透明的灰色細邊框，勾勒出按鈕的可點擊形狀 */
+  border: 1px solid rgba(255, 255, 255, 0.12); 
+  /* 微調底色，使其更內斂 */
+  background: rgba(255, 255, 255, .03);   
   color:var(--text-2);font-family:inherit;font-size:.88rem;font-weight:700;
   cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:.5px;}
 .mode-btn:hover{background:rgba(255,255,255,.09);color:var(--text-1);}
@@ -233,6 +236,8 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   filter:blur(6px);opacity:.85;mix-blend-mode:screen;}
 .route-out-core{stroke-dasharray:12 7;animation:route-dash 2s linear infinite;
   filter:drop-shadow(0 0 4px rgba(249,115,22,.9));mix-blend-mode:screen;}
+/* 導航線實線底：連續不中斷，填補上層流動虛線的縫隙，避免線條看起來「沒接起來」 */
+.route-under{opacity:.8;mix-blend-mode:screen;}
 @keyframes ping-expand{0%{r:8;opacity:1;}100%{r:24;opacity:0;}}
 .ping-circle{animation:ping-expand 1.8s ease-out infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.45;}}
@@ -428,31 +433,45 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   </g>
 
   <!-- 循環車道視覺與周邊機房/儲藏室等非停車相關資訊已移除 -->
-  <!-- A 棟：2 部電梯（左右並排、置中，無「通往 1F～RF」文字） -->
-  <g class="ov" data-key="A" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
+  
+  <!-- ==================== A 棟：文字絕對完美置中（已移除電梯） ==================== -->
+  <g class="ov" data-key="A" filter="url(#buildingShadow)">
     <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
-    <text x="480" y="140" text-anchor="middle" font-size="36" font-weight="800" fill="#9dc0e4">A 棟</text>
-    <rect x="424" y="180" width="48" height="52" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="448" y="216" text-anchor="middle" font-size="24">🛗</text>
-    <rect x="488" y="180" width="48" height="52" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="512" y="216" text-anchor="middle" font-size="24">🛗</text>
+    <!-- 水平置中：398 + (164 / 2) = 480 -->
+    <!-- 垂直置中：90 + (200 / 2) + (34 * 0.35) = 202 -->
+    <text x="480" y="202" text-anchor="middle" font-size="46" font-weight="900" fill="#9dc0e4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">A 棟</text>
+     <!-- 電梯 1 
+    <rect x="424" y="172" width="48" height="52" rx="6" fill="#142337" stroke="#2a4566" stroke-width="1.5"/>
+    <text x="448" y="206" text-anchor="middle" font-size="22" font-family="-apple-system, sans-serif">🛗</text>-->
   </g>
-  <!-- B 棟：2 部電梯（左右並排、置中，文字在上、電梯在下，與 A 棟同款） -->
-  <g class="ov" data-key="B" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
+
+  <!-- ==================== B 棟：文字絕對完美置中（已移除電梯） ==================== -->
+  <g class="ov" data-key="B" filter="url(#buildingShadow)">
     <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
-    <text x="401" y="838" text-anchor="middle" font-size="30" font-weight="800" fill="#9dc0e4">B 棟</text>
-    <rect x="354" y="860" width="40" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="374" y="895" text-anchor="middle" font-size="22">🛗</text>
-    <rect x="408" y="860" width="40" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="428" y="895" text-anchor="middle" font-size="22">🛗</text>
+    <!-- 水平置中：338 + (126 / 2) = 401 -->
+    <!-- 垂直置中：800 + (146 / 2) + (28 * 0.35) = 883 -->
+    <text x="401" y="883" text-anchor="middle" font-size="36" font-weight="900" fill="#9dc0e4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">B 棟</text>
+     <!-- 電梯 1 
+    <rect x="424" y="172" width="48" height="52" rx="6" fill="#142337" stroke="#2a4566" stroke-width="1.5"/>
+    <text x="448" y="206" text-anchor="middle" font-size="22" font-family="-apple-system, sans-serif">🛗</text>-->
   </g>
-  <!-- C 棟：2 部電梯（並排，電梯在上、文字在下，與 A/B 棟上下順序相反） -->
-  <g class="ov" data-key="C" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
+
+  <!-- ==================== C 棟：文字絕對完美置中（已移除電梯） ==================== -->
+  <g class="ov" data-key="C" filter="url(#buildingShadow)">
     <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
-    <rect x="474" y="1552" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="496" y="1586" text-anchor="middle" font-size="22">🛗</text>
-    <rect x="526" y="1552" width="44" height="50" rx="3" fill="#1b2f49" stroke="#345580" stroke-width="1.6"/><text x="548" y="1586" text-anchor="middle" font-size="22">🛗</text>
-    <text x="522" y="1638" text-anchor="middle" font-size="30" font-weight="800" fill="#9dc0e4">C 棟</text>
+     <!-- 電梯 1 
+    <rect x="424" y="172" width="48" height="52" rx="6" fill="#142337" stroke="#2a4566" stroke-width="1.5"/>
+    <text x="448" y="206" text-anchor="middle" font-size="22" font-family="-apple-system, sans-serif">🛗</text>-->
+	<!-- 水平置中：438 + (168 / 2) = 522 -->
+    <!-- 垂直置中：1540 + (120 / 2) + (28 * 0.35) = 1610 -->
+    <text x="522" y="1610" text-anchor="middle" font-size="40" font-weight="900" fill="#9dc0e4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">C 棟</text>
   </g>
+  
+  
 
   <g class="ov" data-key="rampB1">
     <rect x="260" y="1082" width="480" height="80" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.4" stroke-dasharray="8,6"/>
-    <line x1="280" y1="1125" x2="660" y2="1125" stroke="#4f93d6" stroke-width="3" marker-end="url(#arrowBlue)" opacity=".65"/>
+    <line x1="280" y1="1125" x2="655" y2="1125" stroke="#4f93d6" stroke-width="3" marker-end="url(#arrowBlue)" opacity=".65"/>
     <text x="496" y="1120" text-anchor="middle" font-size="18" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 B1</text>
   </g>
 
@@ -737,16 +756,29 @@ function renderPillars(){document.getElementById('pillarLayer').innerHTML='';}
 /* 預約車位（白底紅字）— 可在此增減編號 */
 const RESERVED_IDS = new Set(['1068','1069','1070','1085','1087','1088']);
 function isReserved(sp){ return sp.reserved || RESERVED_IDS.has(sp.id); }
-/* 一般（藍色）車位：selected=true 為目前查詢命中的車位，維持原本亮色；
-   selected=false（未被查到）則背景與邊框都調降不透明度，讓整體退為背景 */
-function fillOf(sp, selected){ if(isReserved(sp)) return 'rgba(43,19,24,.65)'; return selected?'rgba(26,58,106,.55)':'rgba(26,58,106,.22)'; }
-function strokeOf(sp, selected){ if(isReserved(sp)) return 'rgba(239,68,68,.55)'; return selected?'rgba(37,99,235,.45)':'rgba(37,99,235,.18)'; }
+/* UIUX 優化版顏色管理器：
+   1. 預約車位改用「高級科技紫」：底色柔和深邃、邊框亮眼有霓虹感
+   2. 完美避開代表「禁止/停滿」的紅色警告語意
+   3. 與找車位的「螢光綠」和找出口的「橘黃色」徹底分流，維持全局視覺和諧 */
+function fillOf(sp, selected){ 
+  if(isReserved(sp)) return 'rgba(124, 58, 237, 0.45)'; /* 優化：改用半透明科技紫底色，低調中帶亮點 */
+  return selected ? 'rgba(26,58,106,.55)' : 'rgba(26,58,106,.22)'; 
+}
+
+function strokeOf(sp, selected){ 
+  if(isReserved(sp)) return 'rgba(167, 139, 250, 0.75)'; /* 優化：改用高亮薰衣草紫邊框，在地圖中極度清晰 */
+  return selected ? 'rgba(37,99,235,.45)' : 'rgba(37,99,235,.18)'; 
+}
 
 function spaceInner(sp){
   const dis=sp.type==='dis', rsv=isReserved(sp);
   const selected = sp.id===currentId;
   const fill=fillOf(sp, selected), stroke=strokeOf(sp, selected);
-  const hatch=rsv?'rgba(220,38,38,.16)':(selected?'rgba(37,99,235,.2)':'rgba(37,99,235,.08)');
+  
+  /* UIUX 優化 1：將預約車位的內部斜線背景色，從原本的「暗紅色」翻轉為「優雅半透明紫線」
+     這樣能完美融入科技紫車格中，既能表達斜線條紋質感，視覺又極度和諧純淨 */
+  const hatch=rsv?'rgba(167,139,250,.22)':(selected?'rgba(37,99,235,.2)':'rgba(37,99,235,.08)');
+
   const cx=sp.x+sp.w/2, cy=sp.y+sp.h/2;
   // 車位視覺尺寸：放大為 112%（由中心點等比放大，不影響座標資料本身）
   const SIZE_SCALE=1.12, GAP_SCALE=1.08;
@@ -754,9 +786,10 @@ function spaceInner(sp){
   const rx0=cx-rw/2, ry0=cy-rh/2;
   let content='';
   if(rsv){
-    // 暗紅底 + 亮粉/紅字「預約車位」（含編號）
-    content = `<text x="${cx}" y="${cy-2.5}" text-anchor="middle" font-size="8.6" fill="#f87171" font-family="monospace" font-weight="700">${sp.id}</text>`
-            + `<text x="${cx}" y="${cy+6.5}" text-anchor="middle" font-size="7.8" fill="#ef4444" font-family="'Microsoft JhengHei'" font-weight="700">預約車位</text>`;
+    /*- 車位編號 (sp.id) 改為「純白色 (#ffffff)」，確保在紫色方塊中清晰度 100% 爆發。
+       - 「預約車位」說明字改為帶有氣質的「淡薰衣草紫 (#ddd6fe)」，做出高低層級，且完全不刺眼。 */
+    content = `<text x="${cx}" y="${cy-2.5}" text-anchor="middle" font-size="8.6" fill="#ffffff" font-family="monospace" font-weight="900">${sp.id}</text>`
+            + `<text x="${cx}" y="${cy+6.5}" text-anchor="middle" font-size="7.8" fill="#ddd6fe" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif" font-weight="700">預約車位</text>`;
   } else {
     const fs=Math.min(sp.w,sp.h)>=30?11:9;
     // 未被搜尋到的（未選中）車位號碼：改為細體、半透明灰藍字，讓主體（橘色導航線＋目標車位）更突出
@@ -1401,11 +1434,14 @@ function drawRoute(sp){
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
     <circle cx="${dx}" cy="${dy}" r="6.5" fill="${P.destColor}" stroke="#fff" stroke-width="2"/>`;
   const arrowAttr = isSpaceDest ? '' : `marker-end="url(#${arrowMk})"`;
-  // 線寬加粗：核心線 5.5px、外圈光暈 13px，讓路線在寬車道中央更醒目、昏暗車內也看得清。
+  // 三層疊加：①實線底(route-under)＝連續不斷、避免虛線的縫隙讓線條看起來「沒接起來」（尤其起點/轉角處）；
+  //           ②外圈光暈(glow，虛線流動)；③明亮核心(core，虛線流動)。線寬加粗：核心 5.5、光暈 13、實底 6。
   const pathHtml = routeDir==='in'
     ? `<path d="${d}" fill="none" stroke="#22c55e" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" class="route-in-glow"/>
+       <path d="${d}" fill="none" stroke="#22c55e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="route-under"/>
        <path d="${d}" fill="none" stroke="#E0F7FA" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" class="route-in-core" ${arrowAttr}/>`
     : `<path d="${d}" fill="none" stroke="#f97316" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" class="route-out-glow"/>
+       <path d="${d}" fill="none" stroke="#f97316" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="route-under"/>
        <path d="${d}" fill="none" stroke="#ffedd5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" class="route-out-core" ${arrowAttr}/>`;
   const rl=document.getElementById('routeLayer');
   rl.innerHTML=`
