@@ -121,7 +121,7 @@ body.editing .edit-bar{display:flex;}
 .edit-bar input[type=range]{width:82px;}
 
 /* ---------- MAP ---------- */
-.map-area{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:8px;
+.map-area{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:0;
   background:radial-gradient(ellipse at 50% 26%,#0e1f3d 0%,var(--bg-primary) 62%);-webkit-overflow-scrolling:touch;}
 .map-area::-webkit-scrollbar{width:7px;height:7px;}
 .map-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
@@ -298,7 +298,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   </header>
 
   <main class="map-area" id="mapArea">
-  <svg id="floorplan" viewBox="120 20 720 1640" width="940" height="1672">
+  <svg id="floorplan" viewBox="140 20 720 1640" width="940" height="1672">
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
       <path d="M40 0 L0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
@@ -357,8 +357,8 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   <rect width="940" height="1672" fill="#0A0D14"/>
   <rect width="940" height="1672" fill="url(#grid)"/>
 
-  <rect x="126" y="28" width="718" height="1620" rx="4" stroke-width="8"/>
-  <rect x="142" y="44" width="686" height="1588" rx="2" fill="#0D1420"/>
+  <rect x="126" y="28" width="718" height="1620" rx="4" fill="#0D1420" stroke-width="8"/>
+ 
 
   <!-- 「通往 B2」匝道標籤：刻意放在 roadLayer 之前（z-index 較低），
        讓車道的亮藍色發光外框能疊在它上面、把邊角包起來，不會被標籤的實色方塊吃掉發光邊。
@@ -1477,7 +1477,7 @@ function scrollToSpace(sp){
 const VB_W=720,VB_H=1640;   // 已裁掉平面圖左右各 ~110px 空白（原為 940×1672）
 // 一開始即「滿版」：平面圖寬度直接填滿 mapArea 可用寬度（扣掉左右 padding），不再套用縮小係數與 700px 上限，
 // 左右不留空白。放大縮小仍交給手機捏放 / 桌機瀏覽器縮放。
-function baseSize(){const map=document.getElementById('mapArea');const w=Math.max(300,map.clientWidth-16);return{w,h:w*(VB_H/VB_W)};}
+function baseSize(){const map=document.getElementById('mapArea');const w=Math.max(300,map.clientWidth);return{w,h:w*(VB_H/VB_W)};}
 function applyView(){const s=document.getElementById('floorplan');const{w,h}=baseSize();s.setAttribute('width',Math.round(w));s.setAttribute('height',Math.round(h));}
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(applyView,120);});
 
