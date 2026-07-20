@@ -38,13 +38,59 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
 .mini-btn:hover{background:rgba(255,255,255,.1);color:var(--text-1);}
 .mini-btn.on{background:linear-gradient(135deg,var(--accent-gold),#d97706);color:#fff;border-color:var(--accent-gold);}
 .search-row{display:flex;gap:8px;align-items:stretch;}
-.search-wrap{position:relative;flex:1;margin:0;}   /* .search-wrap 也可能是 <form>，把預設 margin 歸零 */
-.s-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:.95rem;}
-.search-input{width:100%;height:42px;padding:0 34px 0 32px;background:rgba(255,255,255,.06);
-  border:none;border-radius:18px;color:var(--text-1);
-  font-family:inherit;font-size:1rem;font-weight:600;letter-spacing:1px;outline:none;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
-  transition:box-shadow .2s,background .2s;}
+
+/* ==================== 1. 調整最外層容器（parking.html 約 66 行） ==================== */
+.search-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 42px;
+  /* 關鍵優化：把灰色圓角底色移到最外層的 form 殼上，這樣外殼才會完美包裹住裡面的所有東西 */
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(34, 197, 94, 0.3); /* 綠色外框統一寫在外層 */
+  border-radius: 18px;
+  padding: 0 14px; /* 給搜尋框內部左右兩側留出寬裕、精緻的呼吸留白 */
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* ==================== 2. 調整放大鏡圖示 ==================== */
+.s-ic {
+  font-size: 1.1rem;
+  margin-right: 10px; /* 完美拉開：讓放大鏡與右邊提示文字保持 10px 的黃金距離 */
+  flex-shrink: 0;     /* 核心防呆：防止放大鏡因為手機螢幕太窄而被硬生生擠壓變形 */
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ==================== 3. 調整輸入框本體（parking.html 約 93 行） ==================== */
+/* 請注意：如果您的 CSS 帶有狀態前綴（如 body.dir-in .search-input），請同步覆蓋 */
+body.dir-in .search-input,
+.search-input {
+  flex: 1;              /* 自動撐滿剩餘的所有橫向打字空間 */
+  height: 100%;
+  padding: 0 !important; /* 核心修正：既然外殼已經有 padding 了，這裡的 padding 請直接歸零！ */
+  background: transparent !important; /* 核心修正：徹底拔除原本重複套用的灰色底色 */
+  border: none !important;            /* 徹底拔除原本重複套用的邊框 */
+  color: var(--text-1);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  outline: none;
+  box-shadow: none !important;        /* 移除內層多餘的 shadow */
+}
+
+/* ==================== 4. 點擊輸入框時的亮起特效 ==================== */
+.search-wrap:focus-within {
+  background: rgba(34, 197, 94, 0.04);
+  border-color: rgba(34, 197, 94, 0.7);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+  transition: all .2s;
+}
+  
+.search-input::placeholder{color:var(--text-3);letter-spacing:0;font-weight:400;}
+.search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.18);}
 .search-input::placeholder{color:var(--text-3);letter-spacing:0;font-weight:400;}
 .search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.18);}
 /* 依方向切換動態上色：入口模式=綠、出口模式=橘（改用內陰影取代粗邊框） */
@@ -224,18 +270,17 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   transform-box:fill-box;
   transform-origin:center;
 }
-@keyframes route-dash{from{stroke-dashoffset:520;}to{stroke-dashoffset:0;}}
+/* 路線動畫已改為「單次延伸」：不再用 CSS 無限跑馬燈虛線捲動，
+   而是由 drawRoute() 以 JS 控制 stroke-dasharray/dashoffset，讓線條像水流一樣
+   從起點延伸到終點播放一次（約 1~1.2 秒），到達終點後立刻定格為靜態實線。
+   這裡的 class 只保留光暈/發光相關的視覺樣式，不含動畫本身。 */
 /* 找車位（綠色）導航線：雙層疊加 —— 下層是模糊發光的光暈，上層是近白的純淨核心線，
    兩層都用 screen（濾色）混合模式疊在灰色車道上，看起來就像真的有一道光投影在地面上 */
-.route-in-glow{stroke-dasharray:12 7;animation:route-dash 2s linear infinite;
-  filter:blur(6px);opacity:.85;mix-blend-mode:screen;}
-.route-in-core{stroke-dasharray:12 7;animation:route-dash 2s linear infinite;
-  filter:drop-shadow(0 0 4px rgba(34,197,94,.9));mix-blend-mode:screen;}
-/* 找出口（橘色）導航線：與綠線同款雙層 —— 下層模糊光暈 + 上層明亮核心線，流動虛線（速度與綠線一致 2s） */
-.route-out-glow{stroke-dasharray:12 7;animation:route-dash 2s linear infinite;
-  filter:blur(6px);opacity:.85;mix-blend-mode:screen;}
-.route-out-core{stroke-dasharray:12 7;animation:route-dash 2s linear infinite;
-  filter:drop-shadow(0 0 4px rgba(249,115,22,.9));mix-blend-mode:screen;}
+.route-in-glow{filter:blur(6px);opacity:.85;mix-blend-mode:screen;}
+.route-in-core{filter:drop-shadow(0 0 4px rgba(34,197,94,.9));mix-blend-mode:screen;}
+/* 找出口（橘色）導航線：與綠線同款雙層 —— 下層模糊光暈 + 上層明亮核心線 */
+.route-out-glow{filter:blur(6px);opacity:.85;mix-blend-mode:screen;}
+.route-out-core{filter:drop-shadow(0 0 4px rgba(249,115,22,.9));mix-blend-mode:screen;}
 /* 導航線實線底：連續不中斷，填補上層流動虛線的縫隙，避免線條看起來「沒接起來」 */
 .route-under{opacity:.8;mix-blend-mode:screen;}
 @keyframes ping-expand{0%{r:8;opacity:1;}100%{r:24;opacity:0;}}
@@ -760,20 +805,34 @@ function isReserved(sp){ return sp.reserved || RESERVED_IDS.has(sp.id); }
    1. 預約車位改用「高級科技紫」：底色柔和深邃、邊框亮眼有霓虹感
    2. 完美避開代表「禁止/停滿」的紅色警告語意
    3. 與找車位的「螢光綠」和找出口的「橘黃色」徹底分流，維持全局視覺和諧 */
-function fillOf(sp, selected){ 
-  if(isReserved(sp)) return 'rgba(124, 58, 237, 0.45)'; /* 優化：改用半透明科技紫底色，低調中帶亮點 */
-  return selected ? 'rgba(26,58,106,.55)' : 'rgba(26,58,106,.22)'; 
+function fillOf(sp, selected, hasQuery){ 
+  if(isReserved(sp)) {
+    if(selected) return 'rgba(250, 204, 21, 0.45)'; // 1. 剛好搜到這個預約車位時：黃色最高亮
+    /* 2. 關鍵折衷：只要目前有查詢（不論查誰），路過的預約車位不變藍色，
+          而是改用極淡的「低調紫底 (0.12)」，既能認出是預約區、又絕不搶戲！ */
+    return hasQuery ? 'rgba(124, 58, 237, 0.22)' : 'rgba(124, 58, 237, 0.35)'; 
+  }
+  return selected ? 'rgba(26,58,106,.55)' : 'rgba(26,58,106,.22)';
 }
 
-function strokeOf(sp, selected){ 
-  if(isReserved(sp)) return 'rgba(167, 139, 250, 0.75)'; /* 優化：改用高亮薰衣草紫邊框，在地圖中極度清晰 */
+function strokeOf(sp, selected, hasQuery){ 
+  if(isReserved(sp)) {
+    if(selected) return 'rgba(253, 224, 71, 0.85)'; // 1. 剛好搜到這個預約車位時：黃色邊框全亮
+    /* 2. 關鍵折衷：有查詢時，路過的預約車位邊框降到淡粉紫 (.4)，
+          在地圖中清楚勾勒出專區邊界，視覺層級退居幕後但仍可辨識 */
+    return hasQuery ? 'rgba(167, 139, 250, 0.4)' : 'rgba(167, 139, 250, 0.65)'; 
+  }
   return selected ? 'rgba(37,99,235,.45)' : 'rgba(37,99,235,.18)'; 
 }
 
 function spaceInner(sp){
-  const dis=sp.type==='dis', rsv=isReserved(sp);
+  const dis=sp.type==='dis';
   const selected = sp.id===currentId;
-  const fill=fillOf(sp, selected), stroke=strokeOf(sp, selected);
+  const hasQuery = !!currentId;   // 只要目前「有查詢中」（不論查的是不是這個預約車位本身），預約車位就退回一般樣式
+  // 預約車位樣式（紫色框）只在「完全沒有查詢中」時套用；只要使用者查詢了任何車位（有引導線），
+  // 所有預約車位就改用和一般車位相同的樣式與文字排版（例如與 1067 一樣）。
+  const rsv=isReserved(sp) && !hasQuery;
+  const fill=fillOf(sp, selected, hasQuery), stroke=strokeOf(sp, selected, hasQuery);
   
   /* UIUX 優化 1：將預約車位的內部斜線背景色，從原本的「暗紅色」翻轉為「優雅半透明紫線」
      這樣能完美融入科技紫車格中，既能表達斜線條紋質感，視覺又極度和諧純淨 */
@@ -810,6 +869,12 @@ function renderSpaces(){
   ).join('');
 }
 function updateSpaceEl(sp){ const el=document.getElementById('sp-'+cssId(sp.id)); if(el) el.innerHTML=spaceInner(sp); }
+/* 查詢狀態（有無 currentId）切換時，重新繪製「所有」預約車位（除了 excludeId 本身，因為它另外疊加了查詢高亮樣式）。
+   這是必要的，因為 renderSpaces() 只在初始化時整批畫過一次，之後 selectSpace()/clearSelection() 平常只更新
+   「前一個選中」與「目前選中」這兩個車位，其餘從未被選中過的預約車位不會自動跟著 hasQuery 狀態重繪。 */
+function refreshReservedSpaces(excludeId){
+  SPACES.forEach(sp=>{ if(isReserved(sp) && sp.id!==excludeId) updateSpaceEl(sp); });
+}
 function cssId(id){ return String(id).replace(/[^A-Za-z0-9_-]/g,'_'); }
 function jsStr(id){ return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
@@ -826,7 +891,7 @@ function nearest(a,v){return a.reduce((p,c)=>Math.abs(c-v)<Math.abs(p-v)?c:p);}
 const EDGES = [
   // 左側縱向通道 (切斷 L3-L4 避開 B2 坡道；切斷 L4-L_ramp 和 L_ramp-L_mid 避開 1075 車位)
   { a: 'L1', b: 'L2' },
-  { a: 'L2', b: 'L3' },
+  { a: 'L2', b: 'L3', roundB: false },  // b端(L3)是筆直路段中段的銜接點、不是真正轉彎路口，改用平整切邊，避免和下方 L3→L_b2 接合處出現多餘的圓弧凸起
   // L_mid → L_ba，銜接 y=1182 真實車道（此車道現為 1071-1084 之間唯一貫通通道，見下方 ★ 區塊）
   { a: 'L_mid', b: 'L_ba' },
 
@@ -866,7 +931,8 @@ const EDGES = [
   { a: 'L3', b: 'CL3', penalty: 3 },
 
   // 左側車道向下延伸，銜接「通往 B2」匝道入口（僅到匝道方塊上緣，避免疊在匝道圖示上）
-  { a: 'L3', b: 'L_b2' },
+  // a端(L3)與b端(L_b2)都不要圓角端蓋：a端是筆直路段的銜接點（非路口轉彎），b端要貼齊「通往 B2」匝道方塊上緣
+  { a: 'L3', b: 'L_b2', roundA: false, roundB: false },
 
   // 中下橫向通道 (y = 1070) - 設為單向向東
   // L4-CL4 段實際會穿過 1071-1076 車位正上方，該處無實體車道，改為高懲罰的虛擬備援路徑（不繪製）
@@ -1163,14 +1229,25 @@ function buildLaneNodes() {
 /* 產生「以原點為中心」的圓角矩形 Path（給定寬 w、高 h、圓角半徑 r），
    之後用 transform="translate(...) rotate(...)" 擺到路段的位置與角度上，
    讓每一段道路都是圓角矩形，路口/端點另外疊一塊同半徑的圓角方塊補平接縫。*/
-function roundedRectPath(w, h, r){
-  r = Math.max(0, Math.min(r, w/2, h/2));
+function roundedRectPath(w, h, r, roundA, roundB){
+  if(roundA===undefined) roundA=true;
+  if(roundB===undefined) roundB=true;
   const hw=w/2, hh=h/2;
+  const rA = roundA ? Math.max(0, Math.min(r, w/2, h/2)) : 0;
+  const rB = roundB ? Math.max(0, Math.min(r, w/2, h/2)) : 0;
   const f=n=>Math.round(n*100)/100;
-  return `M${f(-hw+r)},${f(-hh)} L${f(hw-r)},${f(-hh)} A${f(r)},${f(r)} 0 0 1 ${f(hw)},${f(-hh+r)} `
-       + `L${f(hw)},${f(hh-r)} A${f(r)},${f(r)} 0 0 1 ${f(hw-r)},${f(hh)} `
-       + `L${f(-hw+r)},${f(hh)} A${f(r)},${f(r)} 0 0 1 ${f(-hw)},${f(hh-r)} `
-       + `L${f(-hw)},${f(-hh+r)} A${f(r)},${f(r)} 0 0 1 ${f(-hw+r)},${f(-hh)} Z`;
+  // A 端＝局部座標 -hw（線段起點），B 端＝局部座標 +hw（線段終點）；
+  // 對應端的 round 參數為 false 時，該端兩個角都畫成直角（平整切邊），不畫圓弧。
+  let d = `M${f(-hw+rA)},${f(-hh)} L${f(hw-rB)},${f(-hh)} `;
+  d += rB>0 ? `A${f(rB)},${f(rB)} 0 0 1 ${f(hw)},${f(-hh+rB)} ` : `L${f(hw)},${f(-hh)} `;
+  d += `L${f(hw)},${f(hh-rB)} `;
+  d += rB>0 ? `A${f(rB)},${f(rB)} 0 0 1 ${f(hw-rB)},${f(hh)} ` : `L${f(hw)},${f(hh)} `;
+  d += `L${f(-hw+rA)},${f(hh)} `;
+  d += rA>0 ? `A${f(rA)},${f(rA)} 0 0 1 ${f(-hw)},${f(hh-rA)} ` : `L${f(-hw)},${f(hh)} `;
+  d += `L${f(-hw)},${f(-hh+rA)} `;
+  d += rA>0 ? `A${f(rA)},${f(rA)} 0 0 1 ${f(-hw+rA)},${f(-hh)} ` : `L${f(-hw)},${f(-hh)} `;
+  d += 'Z';
+  return d;
 }
 
 /* 道路渲染（Road Rendering Optimization）：
@@ -1206,14 +1283,21 @@ function renderRoads(){
     const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
     // CL2→CL3→CL4：唯一有方向箭頭的單行南向主幹道
     const oneWay = e.dir==='forward' && ((e.a==='CL2'&&e.b==='CL3') || (e.a==='CL3'&&e.b==='CL4'));
-    segs.push({len, cx:mx, cy:my, ang, oneWay, idx});
+    // roundA / roundB：可在 EDGES 個別邊上明確指定該端要不要用圓角端蓋（例如貼齊某個方塊物件、
+    // 或只是筆直路段中段的銜接點、非真正路口轉彎時，設為 false 改用平整切邊）。未指定則預設為 true（圓角）。
+    const roundA = e.roundA!==false, roundB = e.roundB!==false;
+    segs.push({len, cx:mx, cy:my, ang, oneWay, idx, roundA, roundB});
   });
   // ★ 只有真正的路口（degree>=2，兩條以上車道交會）才需要額外的方塊收尾來填補轉角接縫；
   //   死路端點（degree===1）本來就只有一段路段收在那裡，該路段自己的圓角矩形端點已經是完整的圓角發光端蓋，
   //   若再疊一塊獨立的方塊（尺寸、圓角都跟路段端點不完全一致），兩個形狀邊緣對不齊，就會產生你看到的
   //   「藍色重複顯示」接縫/橫線。所以這裡把死路端點排除，不再疊加多餘的方塊。
+  // NO_JUNCTION_SQUARE：雖然 degree>=2，但其實只是「筆直路段中段的銜接點」而非真正轉彎/交會的路口
+  //   （例如 L3：上下都是同一條直線車道），兩段路在此都已改用平整切邊（roundA/roundB:false）緊密相接，
+  //   若還疊加圓角路口方塊，反而會在筆直車道中間多出一顆不該有的圓弧凸起。
+  const NO_JUNCTION_SQUARE = new Set(['L3']);
   const junctions=Object.keys(nodeSet)
-    .filter(k => (degree[k]||0) >= 2)
+    .filter(k => (degree[k]||0) >= 2 && !NO_JUNCTION_SQUARE.has(k))
     .map(k => nodeSet[k]);
 
   // wExtra/rExtra=0 → 路面本體尺寸；數值越大，圓角矩形整體放大越多
@@ -1222,7 +1306,7 @@ function renderRoads(){
     let s='';
     for(const seg of segs){
       const idxAttr = withIdx ? ` class="road-seg" data-idx="${seg.idx}"` : '';
-      s+=`<path${idxAttr} d="${roundedRectPath(seg.len, W+wExtra, CORNER_R+rExtra)}" transform="translate(${seg.cx.toFixed(2)},${seg.cy.toFixed(2)}) rotate(${seg.ang.toFixed(2)})"/>`;
+      s+=`<path${idxAttr} d="${roundedRectPath(seg.len, W+wExtra, CORNER_R+rExtra, seg.roundA, seg.roundB)}" transform="translate(${seg.cx.toFixed(2)},${seg.cy.toFixed(2)}) rotate(${seg.ang.toFixed(2)})"/>`;
     }
     for(const n of junctions){
       s+=`<path d="${roundedRectPath(W+wExtra, W+wExtra, CORNER_R+rExtra)}" transform="translate(${n.x.toFixed(2)},${n.y.toFixed(2)})"/>`;
@@ -1433,16 +1517,18 @@ function drawRoute(sp){
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="2" class="ping-circle"/>
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
     <circle cx="${dx}" cy="${dy}" r="6.5" fill="${P.destColor}" stroke="#fff" stroke-width="2"/>`;
-  const arrowAttr = isSpaceDest ? '' : `marker-end="url(#${arrowMk})"`;
-  // 三層疊加：①實線底(route-under)＝連續不斷、避免虛線的縫隙讓線條看起來「沒接起來」（尤其起點/轉角處）；
-  //           ②外圈光暈(glow，虛線流動)；③明亮核心(core，虛線流動)。線寬加粗：核心 5.5、光暈 13、實底 6。
+  // 箭頭先不畫進 path，等延伸動畫播完才補上（marker-end 是畫在路徑「終點座標」上，
+  // 不受 stroke-dashoffset 影響，若一開始就加上會讓箭頭在線還沒延伸到之前就提早出現）。
+  const needsArrow = !isSpaceDest;
+  // 三層疊加：①實線底(route-under)＝連續不斷、避免縫隙讓線條看起來「沒接起來」（尤其起點/轉角處）；
+  //           ②外圈光暈(glow)；③明亮核心(core)。線寬加粗：核心 5.5、光暈 13、實底 6。
   const pathHtml = routeDir==='in'
     ? `<path d="${d}" fill="none" stroke="#22c55e" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" class="route-in-glow"/>
        <path d="${d}" fill="none" stroke="#22c55e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="route-under"/>
-       <path d="${d}" fill="none" stroke="#E0F7FA" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" class="route-in-core" ${arrowAttr}/>`
+       <path d="${d}" fill="none" stroke="#E0F7FA" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" class="route-in-core"/>`
     : `<path d="${d}" fill="none" stroke="#f97316" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" class="route-out-glow"/>
        <path d="${d}" fill="none" stroke="#f97316" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="route-under"/>
-       <path d="${d}" fill="none" stroke="#ffedd5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" class="route-out-core" ${arrowAttr}/>`;
+       <path d="${d}" fill="none" stroke="#ffedd5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" class="route-out-core"/>`;
   const rl=document.getElementById('routeLayer');
   rl.innerHTML=`
     ${pathHtml}
@@ -1450,6 +1536,39 @@ function drawRoute(sp){
   // 綠線置於最頂層：selectSpace() 會把選中車位搬到最上層，這裡再把導航線搬到它之上，
   // 確保綠線不被任何元素(含選中車位)蓋住。因終點停在車位正前方，不會蓋到車位號碼。
   document.getElementById('floorplan').appendChild(rl);
+
+  /* ---- 路線「單次延伸」動畫：像水流一樣從起點畫到終點（約 1.1 秒），畫完立刻定格為靜態發光線 ----
+     做法：把三層線都用 stroke-dasharray = 該路徑總長，初始 stroke-dashoffset = 總長（等於整條線先「藏起來」），
+     下一影格再讓 dashoffset 過渡到 0，就會產生線條逐漸往終點延伸的效果。動畫結束後移除 transition、
+     清掉 dasharray，讓線條變回單純的靜態實線（不留下任何虛線切割痕跡），並在這時才補上終點箭頭。 */
+  const glowSel = routeDir==='in' ? '.route-in-glow' : '.route-out-glow';
+  const coreSel = routeDir==='in' ? '.route-in-core' : '.route-out-core';
+  const glowEl = rl.querySelector(glowSel);
+  const underEl = rl.querySelector('.route-under');
+  const coreEl = rl.querySelector(coreSel);
+  const growLayers = [glowEl, underEl, coreEl].filter(Boolean);
+  const DRAW_MS = 1800;
+  growLayers.forEach(el=>{
+    const len = el.getTotalLength();
+    el.style.strokeDasharray = len;
+    el.style.strokeDashoffset = len;
+  });
+  // 強制觸發一次 reflow，確保上面「藏起來」的初始狀態先被瀏覽器套用，
+  // 接著才設定 transition，動畫才會確實從「藏起來」平順播放到「完全顯示」。
+  void rl.offsetWidth;
+  growLayers.forEach(el=>{
+    el.style.transition = `stroke-dashoffset ${DRAW_MS}ms cubic-bezier(.4,0,.2,1)`;
+    el.style.strokeDashoffset = '0';
+  });
+  clearTimeout(rl._growTimer);
+  rl._growTimer = setTimeout(()=>{
+    growLayers.forEach(el=>{
+      el.style.transition = '';
+      el.style.strokeDasharray = 'none';
+      el.style.strokeDashoffset = '0';
+    });
+    if(needsArrow && coreEl) coreEl.setAttribute('marker-end', `url(#${arrowMk})`);
+  }, DRAW_MS + 30);
 }
 function routeSteps(sp){ return routeDir==='in'?stepsIn(sp):stepsOut(sp); }
 function stepsIn(sp){
@@ -1537,6 +1656,7 @@ function selectSpace(id){
     el.addEventListener('animationend',()=>el.classList.remove('sp-bounce'),{once:true});
     document.getElementById('floorplan').appendChild(el);   // 移到最上層，確保車位號碼不被導航線蓋住
   }
+  refreshReservedSpaces(id);   // 有查詢中：除了目前選中的這個車位（已套用查詢高亮），其餘預約車位一律退回一般樣式
   updateDirUI(); drawRoute(sp); setInfoReady(true); scrollToSpace(sp); searchEl.blur();
 }
 function clearSelection(){
@@ -1550,6 +1670,7 @@ function clearSelection(){
     }
   }
   document.getElementById('routeLayer').innerHTML=''; setInfoReady(false); updateDirUI();
+  refreshReservedSpaces();   // 沒有查詢中：所有預約車位恢復初始紫色樣式
 }
 function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('clearBtn').style.display='none';clearSelection();clearError();closeSug();}
 function showError(){document.getElementById('errMsg').classList.add('show');}
