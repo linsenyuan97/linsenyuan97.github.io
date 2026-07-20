@@ -90,7 +90,8 @@ body.editing .ov[data-key="exit"]{display:block!important;}
   color:var(--text-2);font-family:inherit;font-size:.88rem;font-weight:700;
   cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:.5px;}
 .mode-btn:hover{background:rgba(255,255,255,.09);color:var(--text-1);}
-.mode-btn .mode-ic{font-size:1.05rem;line-height:1;}
+.mode-btn .mode-ic{font-size:1.05rem;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
+.mode-btn .mode-ic svg{display:block;}
 .mode-btn.active.mode-in{background:rgba(34,197,94,.15);color:#4ade80;}
 .mode-btn.active.mode-out{background:rgba(242,108,33,.15);color:#fb923c;}
 
@@ -136,6 +137,13 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
 .rh[data-dir="h"]{cursor:ns-resize;}
 .rh[data-dir="wh"]{cursor:nwse-resize;}
 .rh:hover{filter:brightness(1.25);}
+.ln{pointer-events:auto;cursor:grab;}
+.ln:hover{filter:brightness(1.3);}
+.ln.dragging{cursor:grabbing;}
+.road-click-layer{pointer-events:none;}
+body.lane-delete-mode .road-click-layer{pointer-events:auto;}
+body.lane-delete-mode .road-click-layer path{cursor:pointer;}
+body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 
 .zoom-ctrls{position:fixed;right:14px;bottom:16px;display:flex;flex-direction:column;gap:5px;z-index:50;}
 .zoom-btn{width:44px;height:44px;background:var(--bg-panel);border:1px solid var(--glass-border);border-radius:11px;
@@ -250,10 +258,23 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
     </div>
     <div class="mode-row">
       <button class="mode-btn mode-in" id="modeInBtn" onclick="setMode('in')">
-        <span class="mode-ic">🚗</span><span>找車位</span>
+        <span class="mode-ic">
+          <svg width="26" height="15" viewBox="-1 6 24 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 13h18M4 13V9a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4M1 13a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-1h14v1a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H1z" style="stroke:var(--accent-green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
+            <circle cx="5.5" cy="18.5" r="1.5" style="fill:var(--accent-green)"/>
+            <circle cx="16.5" cy="18.5" r="1.5" style="fill:var(--accent-green)"/>
+          </svg>
+        </span><span>找車位</span>
       </button>
       <button class="mode-btn mode-out" id="modeOutBtn" onclick="setMode('out')">
-        <span class="mode-ic">🚪</span><span>找出口</span>
+        <span class="mode-ic">
+          <!-- 出口圖示：門框 + 向外箭頭（完整封閉、置中於方形 viewBox，不會被裁切）-->
+          <svg width="22" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8" style="stroke:var(--accent-cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
+            <polyline points="15 8 19 12 15 16" style="stroke:var(--accent-cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
+            <line x1="19" y1="12" x2="9" y2="12" style="stroke:var(--accent-cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
+          </svg>
+        </span><span>找出口</span>
       </button>
     </div>
     <div class="err-inline" id="errMsg">❌ 查無此車位編號，請確認後重試</div>
@@ -267,6 +288,12 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
       <label class="eb-file">📂 匯入<input type="file" id="importFile" accept="application/json,.json" onchange="importJSON(event)" hidden></label>
       <button onclick="resetData()">♻ 還原初始</button>
       <button onclick="resetOverlays()" title="還原棟／車道／入口／出口的位置">↩ 還原棟/通道</button>
+      <label class="eb-chk">車道寬<input type="range" id="roadWRange" min="20" max="80" step="1" value="72" oninput="setRoadWidth(this.value)" title="車道寬度"><span id="roadWVal">72</span></label>
+      <button onclick="resetRoadWidth()" title="還原車道寬度為預設值 72">↩ 車道寬</button>
+      <label class="eb-chk"><input type="checkbox" id="laneNodeToggle" onchange="toggleLaneNodes()"> 車道節點</label>
+      <button onclick="resetLaneOffsets()" title="還原所有車道節點的位置">↩ 車道位置</button>
+      <label class="eb-chk"><input type="checkbox" id="laneDeleteToggle" onchange="toggleLaneDeleteMode()"> 刪除車道</label>
+      <button onclick="resetDisabledEdges()" title="還原所有被刪除的車道">↩ 車道段</button>
     </div>
   </header>
 
@@ -298,6 +325,33 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
     <marker id="arrowGreen" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#22c55e"/></marker>
     <marker id="arrowBlue" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#4f93d6"/></marker>
     <linearGradient id="rampGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#12233b"/></linearGradient>
+    <!-- 道路表面漸層：改用 userSpaceOnUse，以「整個樓層畫面座標」為基準(y 0→1672)，
+         不再隨每段路的邊界框/旋轉各自套用。搭配 renderRoads() 裡「一整片漸層矩形剪裁進車道」的畫法，
+         橫向/縱向車道在同一 Y 高度都是同一顏色，路口不再出現方向不一致的色差。營造全畫面「上亮下暗」立體感。 -->
+    <linearGradient id="roadSurfaceGrad" x1="0" y1="0" x2="0" y2="1672" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3A4659"/>   <!-- 頂部：優雅中灰藍（亮度適中，不刺眼） -->
+      <stop offset="100%" stop-color="#2D3748"/> <!-- 底部：沉穩深灰藍（與背景完美融合） -->
+    </linearGradient>
+
+    <!-- 強烈道路投影：讓亮色道路在深色背景上徹底「浮起來」 -->
+    <filter id="roadDropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+
+    <!-- 車道邊緣亮藍色發光 -->
+    <filter id="roadEdgeGlowBlur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+
+    <!-- 車道「整體輪廓」發光：把整組車道當成一個合併的剪影(alpha)來描邊發光。
+         關鍵在於它只沿著「合併後的外輪廓」發光，車道彼此重疊(十字/丁字路口)的內部接縫因為
+         alpha 連續、沒有邊界，所以完全不會產生藍色線條，路口內部自然乾淨、暢通。 -->
+    <filter id="roadUnionGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.2" result="b"/>
+      <feFlood flood-color="#00BFFF" flood-opacity="0.85" result="c"/>
+      <feComposite in="c" in2="b" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
 
   <rect width="940" height="1672" fill="#0A0D14"/>
@@ -306,11 +360,26 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
   <rect x="126" y="28" width="718" height="1620" rx="4" fill="#111927" stroke="#31506f" stroke-width="8"/>
   <rect x="142" y="44" width="686" height="1588" rx="2" fill="#0D1420"/>
 
+  <!-- 「通往 B2」匝道標籤：刻意放在 roadLayer 之前（z-index 較低），
+       讓車道的亮藍色發光外框能疊在它上面、把邊角包起來，不會被標籤的實色方塊吃掉發光邊。
+       （「通往 1F」匝道改放到 roadLayer 之後——見下方，它要「蓋住」車道，而不是被車道蓋住。） -->
+  <g class="ov" data-key="rampB2">
+    <rect x="250" y="878" width="128" height="176" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
+    <line x1="314" y1="900" x2="314" y2="1030" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrowBlue)" opacity=".7"/>
+    <text x="314" y="970" text-anchor="middle" font-size="16" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 B2</text>
+  </g>
+
   <!-- 灰色車道層（由路網 EDGES 自動繪製，見 renderRoads()）-->
-  <g id="roadLayer"></g>
+  <g id="roadLayer" filter="url(#roadDropShadow)"></g>
+
+  <!-- 「通往 1F」匝道：放在 roadLayer 之後（z-index 較高），蓋住車道 -->
+  <g class="ov" data-key="ramp1F">
+    <rect x="598" y="46" width="132" height="410" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
+    <line x1="664" y1="430" x2="664" y2="66" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrowBlue)" opacity=".7"/>
+    <text x="664" y="176" text-anchor="middle" font-size="20" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 1F</text>
+  </g>
 
   <!-- 循環車道視覺與周邊機房/儲藏室等非停車相關資訊已移除 -->
-
   <!-- A 棟：2 部電梯（左右並排、置中，無「通往 1F～RF」文字） -->
   <g class="ov" data-key="A" font-family="'Microsoft JhengHei',sans-serif" filter="url(#buildingShadow)">
     <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
@@ -333,50 +402,43 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
     <text x="522" y="1638" text-anchor="middle" font-size="30" font-weight="800" fill="#9dc0e4">C 棟</text>
   </g>
 
-  <g class="ov" data-key="ramp1F">
-    <rect x="598" y="46" width="132" height="410" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
-    <line x1="664" y1="430" x2="664" y2="66" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrowBlue)" opacity=".7"/>
-    <text x="664" y="150" text-anchor="middle" font-size="14" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道</text>
-    <text x="664" y="176" text-anchor="middle" font-size="15" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 1F</text>
-    <text x="664" y="235" text-anchor="middle" font-size="9" fill="#4f7ba8" font-family="'Microsoft JhengHei'">↑ 上行至地面層</text>
-    <text x="664" y="418" text-anchor="middle" font-size="9" fill="#7fbef5" font-family="'Microsoft JhengHei'">▲ 車輛由此上行離場</text>
-  </g>
-  <g class="ov" data-key="rampB2">
-    <rect x="250" y="878" width="128" height="176" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
-    <line x1="314" y1="900" x2="314" y2="1030" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrowBlue)" opacity=".7"/>
-    <text x="314" y="948" text-anchor="middle" font-size="12" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道</text>
-    <text x="314" y="970" text-anchor="middle" font-size="13" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 B2</text>
-    <text x="314" y="1044" text-anchor="middle" font-size="9" fill="#4f7ba8" font-family="'Microsoft JhengHei'">↓ 下行至地下二層</text>
-  </g>
   <g class="ov" data-key="rampB1">
-    <rect x="256" y="1092" width="480" height="66" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.4" stroke-dasharray="8,6"/>
+    <rect x="260" y="1082" width="480" height="80" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.4" stroke-dasharray="8,6"/>
     <line x1="290" y1="1125" x2="712" y2="1125" stroke="#4f93d6" stroke-width="2" marker-end="url(#arrowBlue)" opacity=".65"/>
-    <text x="496" y="1120" text-anchor="middle" font-size="12" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">🚗 車道 · 通往 B1（本層匝道）</text>
+    <text x="496" y="1120" text-anchor="middle" font-size="18" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 B1</text>
   </g>
 
   <!-- 參考底圖（校正用；預設隱藏） -->
   <image id="refImg" href="b1.jpg" x="0" y="0" width="940" height="1672"
          preserveAspectRatio="none" opacity="0" style="display:none" pointer-events="none"/>
 
-  <g id="pillarLayer" fill="#0a121d" stroke="#213448" stroke-width="1"></g>
+  <g id="pillarLayer" fill="#0a121d" stroke="none"></g>
   <g id="spacesLayer"></g>
   <g id="routeLayer"></g>
 
-  <!-- 出口：通往 1F（橘色圓，寫「出」）-->
+  <!-- ==================== 出口：通往 1F（放大且優化發光） ==================== -->
   <g class="ov" data-key="exit">
-    <g filter="url(#glow)">
-      <circle cx="664" cy="470" r="14" fill="#ea580c" stroke="#f97316" stroke-width="2.5"/>
-      <text x="664" y="476" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" font-family="'Microsoft JhengHei'">出</text>
+    <!-- UIUX 優化 1：出口改套用黃橙色光暈 #glowYellow，讓橘色圓圈發光更對色、更亮 -->
+    <g filter="url(#glowYellow)">
+      <!-- UIUX 優化 2：半徑 r 從 14 放大到 20（直徑變 40px），手機單手極好辨識 -->
+      <circle cx="664" cy="470" r="20" fill="#ea580c" stroke="#ff7849" stroke-width="3"/>
+      <!-- UIUX 優化 3：文字字體同步放大至 16px，並調整 y 軸垂直置中 (從 476 改為 475) -->
+      <text x="664" y="475" text-anchor="middle" fill="#fff" font-size="16" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">出</text>
     </g>
-    <text x="664" y="500" text-anchor="middle" fill="#f97316" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">出口 · B1→1F</text>
+    <!-- 調整下方說明文字的 y 軸位置 (從 500 移到 508)，避免被放大的圓圈卡到 -->
+    <text x="664" y="508" text-anchor="middle" fill="#ff7849" font-size="11" font-weight="bold" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">出口 · B1→1F</text>
   </g>
 
-  <!-- 入口：通往 B1（綠色圓，不寫字）-->
+  <!-- ==================== 入口：通往 B1（放大且強化文字提示） ==================== -->
   <g class="ov" data-key="entry">
     <g id="entryMarker" class="blink" filter="url(#glow)">
-      <circle cx="405" cy="1125" r="14" fill="#16a34a" stroke="#22c55e" stroke-width="2.5"/>
+      <!-- UIUX 優化 2：半徑 r 從 14 放大到 20（直徑變 40px），在大地圖中更突出 -->
+      <circle cx="405" cy="1125" r="20" fill="#16a34a" stroke="#4ade80" stroke-width="3"/>
+      <!-- UIUX 新增提示：原本入口圓圈裡是空心的，在 UX 上很像未加載完成。建議塞入一個「入」字或「P」字，這裡幫您加上「入」字 -->
+      <text x="405" y="1131" text-anchor="middle" fill="#fff" font-size="16" font-weight="900" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">入</text>
     </g>
-    <text x="405" y="1100" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="bold" font-family="'Microsoft JhengHei'">入口 · 1F→B1</text>
+    <!-- 調整上方說明文字的 y 軸位置 (從 1100 移到 1092)，保持完美的視覺安全安全間距 -->
+    <text x="405" y="1092" text-anchor="middle" fill="#4ade80" font-size="11" font-weight="bold" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif"></text>
   </g>
 
   <rect x="142" y="1610" width="140" height="20" rx="2" fill="rgba(0,0,0,.5)"/>
@@ -388,6 +450,8 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
   </g>
   <!-- 校正模式：縮放控制點層（僅編輯時渲染） -->
   <g id="resizeHandleLayer"></g>
+  <!-- 校正模式：車道節點拖曳控制點層（勾選「車道節點」才顯示） -->
+  <g id="laneNodeLayer"></g>
   </svg>
   </main>
 </div>
@@ -417,6 +481,9 @@ body.editing .ov.dragging{cursor:grabbing;opacity:.9;}
    ①  初始車位分區設定 CLUSTERS（第一次載入用；之後以校正存檔為準）
    ===================================================================== */
 const STORAGE_KEY = 'b1park_spaces_v5';   // v4: 1078-1084 車頭改朝上 + 底部 y=1218 真實車道
+const ROAD_W_KEY = 'b1park_road_w_v1';    // 車道視覺寬度（校正模式可調整並持久化）
+const ROAD_W_DEFAULT = 72;   // 依 B1車位資料.json 校正結果更新的內建預設車道寬
+let ROAD_WIDTH = (()=>{ try{const v=+localStorage.getItem(ROAD_W_KEY); if(v>0) return v;}catch(e){} return ROAD_W_DEFAULT; })();
 
 /* =====================================================================
    汽車位資料 CAR_SPACES（依 b1.jpg 實際平面圖建置，僅 10xx 汽車位）
@@ -453,7 +520,7 @@ const CAR_SPACES=[
   {id:"1028",x:195,y:174,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
   {id:"1029",x:195,y:138,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
   {id:"1031",x:552,y:541,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"A棟"},
-  {id:"1032",x:552,y:578,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1032",x:553,y:578,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟"},
   {id:"1033",x:552,y:615,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟"},
   {id:"1034",x:557,y:664,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
   {id:"1035",x:557,y:699,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
@@ -492,13 +559,13 @@ const CAR_SPACES=[
   {id:"1068",x:792,y:1025,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
   {id:"1069",x:792,y:1061,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
   {id:"1070",x:792,y:1096,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1071",x:432,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1072",x:400,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1073",x:369,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1074",x:324,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1075",x:291,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1076",x:258,y:1087,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1077",x:215,y:1088,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1071",x:433,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1072",x:400,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1073",x:365,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1074",x:324,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1075",x:290,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1076",x:257,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
+  {id:"1077",x:214,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
   {id:"1078",x:213,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
   {id:"1079",x:245,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
   {id:"1080",x:309,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
@@ -579,8 +646,7 @@ const PILLARS=[];
   if(!inCore) PILLARS.push({x:px,y:py});
 }));
 [372,700,1088,1388].forEach(py=>{PILLARS.push({x:150,y:py});PILLARS.push({x:826,y:py});});
-function renderPillars(){document.getElementById('pillarLayer').innerHTML=
-  PILLARS.map(p=>`<rect x="${p.x-7}" y="${p.y-7}" width="14" height="14" rx="1"/>`).join('');}
+function renderPillars(){document.getElementById('pillarLayer').innerHTML='';}
 
 /* ③  繪製車位 */
 /* 預約車位（白底紅字）— 可在此增減編號 */
@@ -677,7 +743,6 @@ const EDGES = [
   // 上方橫向通道 (y = 500)
   { a: 'L2', b: 'CL2' },
   { a: 'CL2', b: 'R2' },
-  { a: 'E2', b: 'R2' },
 
   // 中上橫向通道 (y = 750) — 實際會直接穿過 B 棟正上方，該處無實體車道，改為高懲罰的虛擬備援路徑（不繪製）
   { a: 'L3', b: 'CL3', penalty: 3 },
@@ -711,7 +776,6 @@ const EDGES = [
   // 原本經 L5 拉一段 y=1260 橫向車道會直接穿過 1081-1084 車位，已移除該節點與邊。
 
   // 出口連通性
-  { a: 'exit', b: 'E2' },
   { a: 'exit', b: 'R1' }
 ];
 
@@ -786,6 +850,19 @@ function getLaneX(x) {
   return lanes.reduce((prev, curr) => Math.abs(curr - x) < Math.abs(prev - x) ? curr : prev);
 }
 
+/* 節點「邏輯所屬車道」對照表（x=300/500/745 三條縱向車道）。
+   ★ 修正重點：這裡用「節點名稱」寫死歸屬，不再用即時座標 nodes[name].x === laneX 判斷。
+   原因：「車道節點」編輯模式拖曳時，只是把 dx/dy 疊加到基準座標上（見 buildLaneNodes），
+   一旦節點被拖曳、x 座標不再精準等於 300/500/745（哪怕只偏移 1px），
+   舊寫法會讓它從「屬於這條車道」的清單裡消失，導致車位改接到別的節點，
+   直接跳過 CL2/CL3 等單向南下路段、繞開單行道限制。
+   現在座標怎麼拖都只影響視覺位置與南北排序，不會再影響「這節點算哪條車道」。 */
+const LANE_X_OF = {
+  L1:300, L2:300, L3:300, L_b2:300, L4:300, L_ramp:300, L_mid:300, L_ba:300,
+  CL1:500, CL2:500, CL3:500, CL4:500, CL_ramp:500, CL_mid:500, CL5:500, CL6:500, CL_ba:500,
+  R1:745, R2:745, R3:745, R_ramp:745, R_mid:745, R4:745, R5:745, R6:745, R_ba:745,
+};
+
 function connectPoint(nodeName, pt, nodes, edges) {
   const laneX = getLaneX(pt[0]);
 
@@ -823,10 +900,49 @@ function connectPoint(nodeName, pt, nodes, edges) {
   // 建立投影在直向車道上的臨時節點，確保車輛會沿著直向車道直行到對齊車位的高度才轉彎，避免切西瓜穿過鄰近車位
   const projNodeName = nodeName + '_PROJ';
   nodes[projNodeName] = { x: laneX, y: pt[1] };
-  
+
+  // ★ 中央車道 (x=500) 的 CL2→CL3→CL4→CL_ramp 是唯一的實體單行南下區間（對照 EDGES 裡的 dir:'forward'）。
+  //   這裡改用「固定拓樸順序」而非「即時 y 座標排序」判斷車位卡在哪兩個節點之間、方向該怎麼限制。
+  //   原因：節點的 y 座標會因校正（LANE_OFFSETS 的 dy，用來對齊實際彎道/畫面）而偏移，
+  //   一旦某節點校正後的 y 座標反而比它在單行序列裡的「上游」節點還小（例如 CL4 被往北拖），
+  //   舊寫法（單純比較 y 大小決定 above/below）會產生跟真正單行方向相反、甚至互相矛盾的限制，
+  //   導致 dijkstra 完全找不到路徑（回傳 NULL），退回完全不管單行道的備援直線路徑——
+  //   也就是你在畫面上看到「路線直接逆向闖上去」的來源。
+  //   拓樸順序寫死不受座標影響，永遠照 CL2→CL3→CL4→CL_ramp 的邏輯順序決定方向。
+  const CENTER_ONEWAY_SEQ = ['CL2', 'CL3', 'CL4', 'CL_ramp'];
+  if (laneX === 500) {
+    const seq = CENTER_ONEWAY_SEQ.filter(n => nodes[n]);
+    for (let i = 0; i < seq.length - 1; i++) {
+      const upstream = seq[i], downstream = seq[i + 1];
+      const yA = nodes[upstream].y, yB = nodes[downstream].y;
+      const lo = Math.min(yA, yB), hi = Math.max(yA, yB);
+      if (pt[1] >= lo && pt[1] <= hi) {
+        const distUp = Math.abs(nodes[projNodeName].y - yA);
+        const distDown = Math.abs(yB - nodes[projNodeName].y);
+        // upstream 是單行序列裡的「前一站」：只能「upstream → proj」
+        edges.push({ a: projNodeName, b: upstream, dist: distUp, dir: 'backward' });
+        // downstream 是「下一站」：只能「proj → downstream」
+        edges.push({ a: projNodeName, b: downstream, dist: distDown, dir: 'forward' });
+        edges.push({ a: nodeName, b: projNodeName, dist: Math.abs(pt[0] - laneX) });
+        return;
+      }
+    }
+  }
+
+  // ★ 只挑「目前真的有實際車道邊連通」的同車道節點當候選，
+  //   避免像 R3 這種因座標偏移壞掉、所有連接邊都已停用而形同孤立的節點，
+  //   單純因為 LANE_X_OF 名義上屬於同一車道、y 座標又剛好卡在中間，
+  //   就被誤判為「最近候選」——導致明明走不到它，卻讓 Dijkstra 被迫捨近求遠，
+  //   繞去更遠但「真的連得到」的節點，畫面上就是一段莫名其妙的來回繞路。
+  const connectedLaneNames = new Set();
+  for (const e of edges) {
+    if (LANE_X_OF[e.a] === laneX && LANE_X_OF[e.b] === laneX && nodes[e.a] && nodes[e.b]) {
+      connectedLaneNames.add(e.a); connectedLaneNames.add(e.b);
+    }
+  }
   const laneNodes = [];
   for (const name in nodes) {
-    if (nodes[name].x === laneX && name !== 'START' && name !== 'END' && name !== 'START_PROJ' && name !== 'END_PROJ' && name !== projNodeName) {
+    if (LANE_X_OF[name] === laneX && connectedLaneNames.has(name)) {
       laneNodes.push({ name, y: nodes[name].y });
     }
   }
@@ -843,31 +959,37 @@ function connectPoint(nodeName, pt, nodes, edges) {
     }
   }
   
-  // CL2→CL4 之間（緊鄰 1031-1042）是單向南下車道；車位連接到車道的路段也必須遵守同一限制，
-  // 否則演算法仍可能直接從車位切上車道、逆向北上再繞路，等同於「找出口」時逆向行駛
-  const oneWaySouth = laneX === 500 && pt[1] >= 500 && pt[1] <= 1070;
-  // 這段車道是 1031-1042 唯一的實體車道，沒有替代路線，不套用「避開中央車道」的雙倍懲罰，
-  // 否則演算法會為了避開中央車道，寧可繞去穿越 B 棟的虛擬備援路徑（L3-CL3）
-  const mult = (laneX === 500 && !oneWaySouth) ? 2.0 : 1.0;
+  // 走到這裡代表已經不在 CL2→CL3→CL4→CL_ramp 這段實體單行區間內，屬於雙向路段，
+  // 但仍套用「避開中央車道」的雙倍懲罰，讓演算法優先選兩側主車道（L/R）。
+  const mult = laneX === 500 ? 2.0 : 1.0;
 
+  // ★ above / below 各自建立獨立的轉角投影點，直接用「該節點真實座標」做水平橫移，
+  //   不再共用同一個「名義車道 x（300/500/745）」的投影點。
+  //   之前共用寫法：車位先橫移到名義車道 x，再垂直接到節點，若節點被校正拖曳過、
+  //   真實 x 跟名義車道 x 不一致，就會出現「先衝到名義 x，再折返回節點真實 x」的
+  //   多餘來回小折線。現在每個候選各自對齊自己的真實 x，就不會再繞這一小段冤枉路。
   if (above) {
-    const dist = Math.abs(nodes[projNodeName].y - nodes[above.name].y) * mult;
-    // above 在北側（y 較小）：南下時只能「above → proj」，禁止「proj → above」（北上）
-    edges.push({ a: projNodeName, b: above.name, dist, dir: oneWaySouth ? 'backward' : undefined });
+    const ax_ = nodes[above.name].x;
+    const projA = nodeName + '_PROJ_A';
+    nodes[projA] = { x: ax_, y: pt[1] };
+    edges.push({ a: projA, b: above.name, dist: Math.abs(pt[1] - nodes[above.name].y) * mult });
+    edges.push({ a: nodeName, b: projA, dist: Math.abs(pt[0] - ax_) });
   }
   if (below) {
-    const dist = Math.abs(nodes[below.name].y - nodes[projNodeName].y) * mult;
-    // below 在南側（y 較大）：南下時只能「proj → below」，禁止「below → proj」（北上）
-    edges.push({ a: projNodeName, b: below.name, dist, dir: oneWaySouth ? 'forward' : undefined });
+    const bx_ = nodes[below.name].x;
+    const projB = nodeName + '_PROJ_B';
+    nodes[projB] = { x: bx_, y: pt[1] };
+    edges.push({ a: projB, b: below.name, dist: Math.abs(nodes[below.name].y - pt[1]) * mult });
+    edges.push({ a: nodeName, b: projB, dist: Math.abs(pt[0] - bx_) });
   }
   if (!above && !below && laneNodes.length > 0) {
-    const dist = Math.hypot(nodes[projNodeName].x - nodes[laneNodes[0].name].x, nodes[projNodeName].y - nodes[laneNodes[0].name].y) * mult;
-    edges.push({ a: projNodeName, b: laneNodes[0].name, dist });
+    const only = laneNodes[0];
+    const ox_ = nodes[only.name].x;
+    const projO = nodeName + '_PROJ_O';
+    nodes[projO] = { x: ox_, y: pt[1] };
+    edges.push({ a: projO, b: only.name, dist: Math.abs(nodes[only.name].y - pt[1]) * mult });
+    edges.push({ a: nodeName, b: projO, dist: Math.abs(pt[0] - ox_) });
   }
-  
-  // 橫向連接：從直向車道投影點水平拉進車格的進出點
-  const hDist = Math.abs(pt[0] - laneX);
-  edges.push({ a: nodeName, b: projNodeName, dist: hDist });
 }
 
 /* 車道節點座標（路線演算法與灰色車道渲染共用，保證視覺與導航一致）*/
@@ -909,38 +1031,128 @@ function buildLaneNodes() {
     L_ba_e: { x: 332, y: 1182 }, // 車道在 1079/1081 中間空隙後的東側起頭
     CL_ba: { x: 500, y: 1182 },
     R_ba:  { x: 745, y: 1218 },
-
-    // 出口車道連通點 (動態對齊 exit 的 X 座標，確保 exit→E2 為垂直線段)
-    E2: { x: EXIT.x, y: 500 }
   };
   nodes['entry'] = { x: ENTRY.x, y: ENTRY.y };
   nodes['exit']  = { x: EXIT.x,  y: EXIT.y  };
+  for(const k in LANE_OFFSETS){
+    if(k==='entry'||k==='exit'||!nodes[k]) continue;
+    const o=LANE_OFFSETS[k];
+    nodes[k]={x:nodes[k].x+(o.dx||0), y:nodes[k].y+(o.dy||0)};
+  }
   return nodes;
 }
 
-/* 灰色車道渲染：把 EDGES 每一段畫成有寬度的灰色帶；
-   單行道（B棟與 1031-1042 之間的中央縱向道）加白色箭頭指向行駛方向（南向）。 */
+/* 產生「以原點為中心」的圓角矩形 Path（給定寬 w、高 h、圓角半徑 r），
+   之後用 transform="translate(...) rotate(...)" 擺到路段的位置與角度上，
+   讓每一段道路都是圓角矩形，路口/端點另外疊一塊同半徑的圓角方塊補平接縫。*/
+function roundedRectPath(w, h, r){
+  r = Math.max(0, Math.min(r, w/2, h/2));
+  const hw=w/2, hh=h/2;
+  const f=n=>Math.round(n*100)/100;
+  return `M${f(-hw+r)},${f(-hh)} L${f(hw-r)},${f(-hh)} A${f(r)},${f(r)} 0 0 1 ${f(hw)},${f(-hh+r)} `
+       + `L${f(hw)},${f(hh-r)} A${f(r)},${f(r)} 0 0 1 ${f(hw-r)},${f(hh)} `
+       + `L${f(-hw+r)},${f(hh)} A${f(r)},${f(r)} 0 0 1 ${f(-hw)},${f(hh-r)} `
+       + `L${f(-hw)},${f(-hh+r)} A${f(r)},${f(r)} 0 0 1 ${f(-hw+r)},${f(-hh)} Z`;
+}
+
+/* 道路渲染（Road Rendering Optimization）：
+   1. Shape   — 用圓角矩形 Path 取代直線，路口/轉角圓角 12~18px，T字/十字路口用同半徑圓角方塊銜接，不再是直角。
+   2. Layer   — Base（實色/漸層）→ Highlight（8% 白）→ Shadow（12% 黑），由下往上疊。
+   3. Edge    — 車道左右兩側加兩條細緻的亮藍色發光邊線：外側一條 1px 實線（rgba(0,191,255,.3)），
+                內側再疊一層極淡的模糊發光（inset glow, rgba(0,191,255,.15)），把車道從黑色背景「勾」出來。
+   4. Depth   — 整個 roadLayer 套 feDropShadow（0 2 6, 18% 黑），讓道路整體浮起來。
+   5. Surface — 全畫面統一垂直漸層（不隨路段旋轉），上淺下深、落差 <10%，做出微立體的路面質感。
+   車道中央標線：每一段路的虛線／單行道箭頭，一律用該路段自己的「局部座標系」畫在 y=0（正中央），
+   靠 translate+rotate 擺到世界座標，保證不管路段朝向如何，標線永遠落在車道正中央，不會貼邊。 */
 function renderRoads(){
   const g=document.getElementById('roadLayer');
   if(!g) return;
   const nodes=buildLaneNodes();
-  const W=46;                       // 車道視覺寬度
-  const ROAD='#3B4C63';             // 車道灰（調亮，與深色背景拉開對比）
-  const ROAD_EDGE='rgba(148,168,196,0.35)'; // 車道邊緣：極淡灰藍色實線，勾勒物理輪廓
-  let borderHtml='', fillHtml='';
-  for(const e of EDGES){
-    if(e.penalty) continue;   // penalty 邊是「會穿過車位的虛擬後備通道」，不畫成實體車道
+  const W=ROAD_WIDTH;      // 車道視覺寬度（校正模式可調整，見 setRoadWidth()）
+  const CORNER_R=15;       // 路口圓角半徑（12~18px 內取中間值）
+  const BORDER='#475468';  // 深色結構邊框（發光改由 #roadUnionGlow 依整體輪廓產生）
+
+  const segs=[];           // 路段（旋轉後的圓角矩形）：{len,cx,cy,ang,oneWay,idx}
+  const nodeSet={};        // 需要補圓角方塊的節點
+  const degree={};         // 每個節點連了幾條路（用來判斷是不是真正的路口）
+  EDGES.forEach((e, idx) => {
+    if(e.penalty) return;   // penalty 邊是「會穿過車位的虛擬後備通道」，不畫成實體車道
+    if(DISABLED_EDGES.has(idx)) return;   // 使用者在校正模式手動刪除的車道
     const a=nodes[e.a], b=nodes[e.b];
-    if(!a||!b) continue;
-    // 先畫較寬的邊緣線（露出 1~1.5px 的淡色輪廓），再疊上車道本體色，形成清楚的道路邊界
-    borderHtml+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${ROAD_EDGE}" stroke-width="${W+2}" stroke-linecap="round"/>`;
-    fillHtml+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${ROAD}" stroke-width="${W}" stroke-linecap="round"/>`;
+    if(!a||!b) return;
+    nodeSet[e.a]=a; nodeSet[e.b]=b;
+    degree[e.a]=(degree[e.a]||0)+1; degree[e.b]=(degree[e.b]||0)+1;
+    const dx=b.x-a.x, dy=b.y-a.y, len=Math.hypot(dx,dy);
+    if(len<0.5) return;
+    const ang=Math.atan2(dy,dx)*180/Math.PI;
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    // CL2→CL3→CL4：唯一有方向箭頭的單行南向主幹道
+    const oneWay = e.dir==='forward' && ((e.a==='CL2'&&e.b==='CL3') || (e.a==='CL3'&&e.b==='CL4'));
+    segs.push({len, cx:mx, cy:my, ang, oneWay, idx});
+  });
+  // ★ 只有真正的路口（degree>=2，兩條以上車道交會）才需要額外的方塊收尾來填補轉角接縫；
+  //   死路端點（degree===1）本來就只有一段路段收在那裡，該路段自己的圓角矩形端點已經是完整的圓角發光端蓋，
+  //   若再疊一塊獨立的方塊（尺寸、圓角都跟路段端點不完全一致），兩個形狀邊緣對不齊，就會產生你看到的
+  //   「藍色重複顯示」接縫/橫線。所以這裡把死路端點排除，不再疊加多餘的方塊。
+  const junctions=Object.keys(nodeSet)
+    .filter(k => (degree[k]||0) >= 2)
+    .map(k => nodeSet[k]);
+
+  // wExtra/rExtra=0 → 路面本體尺寸；數值越大，圓角矩形整體放大越多
+  // withIdx=true（僅路面本體圖層使用）：幫每段路加上 data-idx，供「刪除車道」模式點擊辨識用
+  function buildShapes(wExtra, rExtra, withIdx){
+    let s='';
+    for(const seg of segs){
+      const idxAttr = withIdx ? ` class="road-seg" data-idx="${seg.idx}"` : '';
+      s+=`<path${idxAttr} d="${roundedRectPath(seg.len, W+wExtra, CORNER_R+rExtra)}" transform="translate(${seg.cx.toFixed(2)},${seg.cy.toFixed(2)}) rotate(${seg.ang.toFixed(2)})"/>`;
+    }
+    for(const n of junctions){
+      s+=`<path d="${roundedRectPath(W+wExtra, W+wExtra, CORNER_R+rExtra)}" transform="translate(${n.x.toFixed(2)},${n.y.toFixed(2)})"/>`;
+    }
+    return s;
   }
-  let html = borderHtml + fillHtml;
-  // 單行道白色箭頭：x=500 中央縱向道（CL2 y=500 → CL4 y=1070），行駛方向向下（南）
-  for(let y=560; y<=1030; y+=130){
-    html+=`<polyline points="491,${y-8} 500,${y+8} 509,${y-8}" fill="none" stroke="#dfe8f2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".25"/>`;
+  const borderShapes = buildShapes(2, 1);   // 結構邊框：只露出 1px 深色邊
+  const baseShapes   = buildShapes(0, 0);   // 路面本體（含路口方塊，合併後即整條車道的剪影）
+  const baseShapesClickable = buildShapes(0, 0, true);   // 路面本體＋data-idx，只用在最上層可點擊的圖層
+
+  // ★ 發光改用「整體輪廓」策略（見 defs 裡的 #roadUnionGlow）：
+  //   把整組路面(base)當成單一剪影去描邊發光，藍光只會沿著合併後的外輪廓走，
+  //   十字/丁字路口內部因為多段車道重疊、alpha 連續無邊界，完全不會有藍色線條穿過——
+  //   路口內部保持乾淨暢通。因此不再需要舊版的「逐段外框發光 + 內側柔光 + 路口清潔方塊」那一整套補救疊層。
+  //   road-border 仍保留(畫在 base 之下)，替路面補一圈細緻的深色結構邊，內部接縫會被 base 蓋掉、不外露。
+  let html = `<g class="road-border" fill="${BORDER}">${borderShapes}</g>`
+           + `<g class="road-base" fill="url(#roadSurfaceGrad)" filter="url(#roadUnionGlow)">${baseShapes}</g>`
+           + `<g class="road-highlight" fill="#ffffff" opacity="0.08">${baseShapes}</g>`
+           + `<g class="road-shadow" fill="#000000" opacity="0.12">${baseShapes}</g>`;
+
+  // 車道中央標線：每段路自己的局部座標系，y=0 即該路段正中央
+  let markings = '';
+  for (const seg of segs) {
+    const half = seg.len / 2;
+    const g0 = `translate(${seg.cx.toFixed(2)},${seg.cy.toFixed(2)}) rotate(${seg.ang.toFixed(2)})`;
+    if (seg.oneWay) {
+      // 單行道方向箭頭：仍在進入路口前就收尾，避免 "›/v" 箭頭疊在交會口中央顯得雜亂。
+      const margin = Math.max(16, W / 2 + 10);
+      if (half - margin <= 4) continue;
+      // 沿行進方向（局部 +x）每 65px 畫一個朝前的 "›" 箭頭，尖端在 y=0（正中央）
+      for (let d = -half + margin; d <= half - margin; d += 65) {
+        markings += `<polyline points="${(d-8).toFixed(1)},-9 ${(d+8).toFixed(1)},0 ${(d-8).toFixed(1)},9" `
+                  + `fill="none" stroke="#dfe8f2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" `
+                  + `opacity=".28" transform="${g0}"/>`;
+      }
+    } else {
+      // 一般車道：正中央極淡白色虛線分隔線 —— margin 縮小到只避開路段端點的圓角，
+      // 讓虛線一路延伸到路段兩端(路口中心)，T字/十字路口內部也會有連續的 --- 虛線穿過。
+      const margin = 4;
+      if (half - margin <= 4) continue; // 太短的路段不畫標線，避免雜訊
+      markings += `<line x1="${(-half+margin).toFixed(1)}" y1="0" x2="${(half-margin).toFixed(1)}" y2="0" `
+                + `stroke="#dfe8f2" stroke-width="2" stroke-dasharray="14 12" stroke-linecap="round" `
+                + `opacity=".22" transform="${g0}"/>`;
+    }
   }
+  html += markings;
+  // 可點擊圖層：疊在最上層、平常完全透明不影響視覺，只有「刪除車道」模式時才會有 hover 效果與點擊事件（見 CSS .road-seg 與 pointerdown 處理）
+  html += `<g class="road-click-layer" fill="transparent">${baseShapesClickable}</g>`;
   g.innerHTML=html;
 }
 
@@ -950,18 +1162,19 @@ function findShortestPath(startPt, endPt) {
   nodes['END'] = { x: endPt[0], y: endPt[1] };
   
   const edges = [];
-  for (const edge of EDGES) {
+  EDGES.forEach((edge, idx) => {
+    if (DISABLED_EDGES.has(idx)) return;   // 使用者在校正模式手動刪除的車道
     let dist = Math.hypot(nodes[edge.a].x - nodes[edge.b].x, nodes[edge.a].y - nodes[edge.b].y);
     // 懲罰中通道的直向行駛，使其傾向於走兩側主車道（L/R）；
     // 但 CL2→CL3→CL4（緊鄰 1031-1042 的單行道）是這段唯一實體車道、沒有替代路線，
     // 不應被這個「避開中央」的懲罰誤導去繞遠路（甚至繞去穿過 B 棟的虛擬備援路徑）
-    if (nodes[edge.a].x === 500 && nodes[edge.b].x === 500 && !edge.noCenterPenalty) {
+    if (LANE_X_OF[edge.a] === 500 && LANE_X_OF[edge.b] === 500 && !edge.noCenterPenalty) {
       dist *= 2.0;
     }
     // 邊自訂懲罰（例如 y=1180 橫向會穿過 1071-1077 車位，讓其被 y=1182 真實車道取代）
     if (edge.penalty) dist *= edge.penalty;
     edges.push({ a: edge.a, b: edge.b, dist, dir: edge.dir });
-  }
+  });
   
   if (Math.hypot(startPt[0] - ENTRY.x, startPt[1] - ENTRY.y) < 1) {
     edges.push({ a: 'START', b: 'entry', dist: 0 });
@@ -1025,8 +1238,39 @@ function buildPathOut(sp){
 }
 
 function pathOf(sp){ return routeDir==='in'?buildPathIn(sp):buildPathOut(sp); }
+/* 把路徑點列「掰直」：
+   ① 相鄰兩點若某一軸的位移很小（<=SNAP，代表只是車道節點座標些微沒對齊造成的雜訊），
+      就把那個小位移「拉齊」到與前一點相同，讓近乎水平/垂直的線段變成完全水平/垂直，
+      不再出現一連串小階梯狀的抖動（例如 y 從 1041→1043→1046 這種漂移）。
+   ② 拉齊後若兩軸仍都有明顯位移（真正的轉彎），才插入一個直角轉角點（先垂直再水平），
+      確保導引線永遠只有垂直／水平線段、不出現斜線。
+   注意：只會拉齊「較小的那一軸」，永遠不會壓掉線段本身的主要行進方向，
+   因此進車位的短垂直/水平切入段(通常 >=15px)不受影響。
+   純粹是「畫線」時的視覺處理，不影響 Dijkstra 的路徑計算或車道本身。*/
+function orthogonalize(pts){
+  if(!pts || pts.length<2) return pts;
+  const SNAP=12;   // 小於此位移量視為節點雜訊 → 拉直對齊
+  const out=[pts[0].slice()];
+  for(let i=1;i<pts.length;i++){
+    const prev=out[out.length-1];
+    const cur=pts[i].slice();
+    let dx=cur[0]-prev[0], dy=cur[1]-prev[1];
+    if(Math.abs(dx)<=0.5 && Math.abs(dy)<=0.5) continue;   // 重複點跳過
+    // ① 拉齊較小的一軸
+    if(Math.abs(dx)>Math.abs(dy)){
+      if(Math.abs(dy)<=SNAP) cur[1]=prev[1];
+    }else{
+      if(Math.abs(dx)<=SNAP) cur[0]=prev[0];
+    }
+    // ② 拉齊後若仍是斜線 → 插入垂直→水平的直角轉角
+    dx=cur[0]-prev[0]; dy=cur[1]-prev[1];
+    if(Math.abs(dx)>0.5 && Math.abs(dy)>0.5) out.push([prev[0], cur[1]]);
+    out.push(cur);
+  }
+  return out;
+}
 function drawRoute(sp){
-  const P=pathOf(sp); const d='M '+P.pts.map(p=>p[0]+' '+p[1]).join(' L ');
+  const P=pathOf(sp); const d='M '+orthogonalize(P.pts).map(p=>p[0]+' '+p[1]).join(' L ');
   const [dx,dy]=P.destPt, [s0x,s0y]=P.startPt;
   // 入口→車位 = 綠色（配合綠色入口）；車位→出口 = 橘色（配合橘色出口）
   const lineColor = routeDir==='in' ? '#22c55e' : '#f97316';
@@ -1244,6 +1488,7 @@ function toggleEdit(){
   else { clearSelection(); clearSearch(); }
   renderSpaces();
   renderResizeHandles();
+  renderLaneNodeHandles();
 }
 
 /* 參考底圖 */
@@ -1299,9 +1544,28 @@ spacesLayerEl.addEventListener('pointercancel',endDrag);
    ===================================================================== */
 const OV_KEY='b1park_overlays_v2';   // 版號隨烤入 JSON 遞增，強制舊 localStorage 失效
 const OV_SCALE_MIN=0.4, OV_SCALE_MAX=3.0;
-const OV_DEFAULT={"ramp1F":{"dx":115,"dy":-24,"sx":0.626,"sy":0.455},"exit":{"dx":90,"dy":-263,"sx":1,"sy":1},"A":{"dx":63,"dy":28,"sx":0.786,"sy":0.674},"rampB2":{"dx":13,"dy":-39,"sx":0.575,"sy":0.637},"B":{"dx":10,"dy":-41,"sx":0.965,"sy":0.762},"C":{"dx":37,"dy":-113,"sx":0.702,"sy":1.057},"rampB1":{"dx":7,"dy":-82,"sx":0.4,"sy":1},"entry":{"dx":41,"dy":-84,"sx":1,"sy":1}};
+const OV_DEFAULT={"ramp1F":{"dx":109,"dy":-12,"sx":0.626,"sy":0.422},"exit":{"dx":80,"dy":-259,"sx":1,"sy":1},"A":{"dx":63,"dy":28,"sx":0.786,"sy":0.674},"rampB2":{"dx":-4,"dy":-27,"sx":0.575,"sy":0.637},"B":{"dx":10,"dy":-41,"sx":0.965,"sy":0.762},"C":{"dx":37,"dy":-113,"sx":0.702,"sy":1.057},"rampB1":{"dx":-2,"dy":-82,"sx":0.4,"sy":1},"entry":{"dx":41,"dy":-84,"sx":1,"sy":1}};
 let OV_OFFSETS = (()=>{ try{const j=localStorage.getItem(OV_KEY); if(j) return JSON.parse(j);}catch(e){} return JSON.parse(JSON.stringify(OV_DEFAULT)); })();
 function saveOverlays(){ try{ localStorage.setItem(OV_KEY, JSON.stringify(OV_OFFSETS)); }catch(e){} }
+
+/* 車道節點位置（校正模式可個別拖曳，儲存為相對於原始座標的位移）*/
+const LANE_KEY='b1park_lane_nodes_v1';
+const LANE_DEFAULT={"L1":{"dx":-16,"dy":-28},"L2":{"dx":-15,"dy":-18},"L3":{"dx":-16,"dy":100},"L_b2":{"dx":-144,"dy":-26},"CL2":{"dx":18,"dy":-18},"CL1":{"dx":19,"dy":-2},"CL3":{"dx":16,"dy":297},"CL_ramp":{"dx":16,"dy":2},"CL4":{"dx":16,"dy":-25},"CL_ba":{"dx":16,"dy":-3},"CL_mid":{"dx":18,"dy":-133},"CL5":{"dx":16,"dy":167},"CL6":{"dx":-320,"dy":-55},"R2":{"dx":1,"dy":-19},"R1":{"dx":3,"dy":16},"R_mid":{"dx":-1,"dy":463},"R3":{"dx":-592,"dy":-154},"R_ramp":{"dx":-1,"dy":5},"R4":{"dx":-580,"dy":-222},"R_ba":{"dx":-581,"dy":-92},"R5":{"dx":-532,"dy":-135},"R6":{"dx":-545,"dy":-248},"L_ba_e":{"dx":-125,"dy":-2},"L_ba":{"dx":-54,"dy":248},"L_ba0":{"dx":-64,"dy":-3},"L_mid":{"dx":-137,"dy":-92},"L_ba_w":{"dx":-102,"dy":-116}};
+let LANE_OFFSETS = (()=>{ try{const j=localStorage.getItem(LANE_KEY); if(j) return JSON.parse(j);}catch(e){} return JSON.parse(JSON.stringify(LANE_DEFAULT)); })();
+function saveLaneOffsets(){ try{ localStorage.setItem(LANE_KEY, JSON.stringify(LANE_OFFSETS)); }catch(e){} }
+let laneNodeMode=false;
+
+/* 刪除車道（校正模式）：以 EDGES 陣列的索引記錄使用者手動刪除的路段 */
+const EDGE_KEY='b1park_disabled_edges_v1';
+// ★ 目前預設清單只保留「現場真的沒有實體車道，故意刪除」的路段：
+//   R2↔R3↔R_ramp、R_mid↔R_ba↔R4↔R5↔R6（右側車道下半段，節點座標已知有問題、暫未校正）、
+//   CL5↔CL6、L3↔L_b2、L_ramp↔entry、L_ba0↔L_ba_w↔L_ba（下方阿姨道左半段）。
+//   CL3→CL4→CL_ramp 已修正節點座標並重新啟用（唯一實體單行南下車道，不能刪）；
+//   exit→E2 已隨 E2 節點一併移除（E2 沒有實際車道用途，只是失效的輔助轉接點）。
+const EDGE_DEFAULT=[2,10,12,13,16,17,18,19,23,25,26,30,31,32];
+let DISABLED_EDGES = new Set((()=>{ try{const j=localStorage.getItem(EDGE_KEY); if(j) return JSON.parse(j);}catch(e){} return [...EDGE_DEFAULT]; })());
+function saveDisabledEdges(){ try{ localStorage.setItem(EDGE_KEY, JSON.stringify([...DISABLED_EDGES])); }catch(e){} }
+let laneDeleteMode=false;
 function ovOf(k){
   const o=OV_OFFSETS[k]||{};
   return {dx:o.dx||0, dy:o.dy||0, sx:o.sx||1, sy:o.sy||1};
@@ -1338,6 +1602,52 @@ function refreshRouting(){
   EXIT.x=EXIT_BASE.x+xo.dx;   EXIT.y=EXIT_BASE.y+xo.dy;
 }
 
+/* ---------- 車道節點拖曳控制點（讓車道本身可移動）---------- */
+function renderLaneNodeHandles(){
+  const layer=document.getElementById('laneNodeLayer');
+  if(!layer) return;
+  if(!editMode || !laneNodeMode){ layer.innerHTML=''; return; }
+  const nodes=buildLaneNodes();
+  // 只有還連著至少一段「有實際畫出來」的車道（未被 penalty 略過、也未被使用者刪除）的節點，才顯示把手，
+  // 避免車道刪光後留下一堆浮空、拖了也沒作用的空節點
+  const active={};
+  EDGES.forEach((e, idx) => {
+    if(e.penalty || DISABLED_EDGES.has(idx)) return;
+    active[e.a]=true; active[e.b]=true;
+  });
+  let html='';
+  for(const k in nodes){
+    if(k==='entry'||k==='exit') continue;   // 入口/出口另有自己的拖曳把手
+    if(!active[k]) continue;                // 沒有車道連接的空節點不顯示
+    const n=nodes[k];
+    html += `<circle class="ln" data-k="${k}" cx="${n.x}" cy="${n.y}" r="6" fill="#38bdf8" stroke="#0a0f1c" stroke-width="1.2" opacity=".9"/>`;
+  }
+  layer.innerHTML=html;
+}
+function toggleLaneNodes(){
+  laneNodeMode=document.getElementById('laneNodeToggle').checked;
+  renderLaneNodeHandles();
+}
+function resetLaneOffsets(){
+  if(!confirm('還原所有車道節點的位置？')) return;
+  LANE_OFFSETS=JSON.parse(JSON.stringify(LANE_DEFAULT)); saveLaneOffsets();
+  renderRoads(); renderLaneNodeHandles();
+  if(currentId) drawRoute(spaceMap[currentId]);
+}
+
+/* 刪除車道模式：開啟後，滑鼠移到某段車道會反紅提示，點一下即刪除該段（含路線演算法一併排除）*/
+function toggleLaneDeleteMode(){
+  laneDeleteMode=document.getElementById('laneDeleteToggle').checked;
+  document.body.classList.toggle('lane-delete-mode', laneDeleteMode);
+}
+function resetDisabledEdges(){
+  if(!confirm('還原所有被刪除的車道段？')) return;
+  DISABLED_EDGES=new Set(EDGE_DEFAULT); saveDisabledEdges();
+  renderRoads();
+  renderLaneNodeHandles();
+  if(currentId) drawRoute(spaceMap[currentId]);
+}
+
 /* ---------- 縮放控制點 ---------- */
 function renderResizeHandles(){
   const layer=document.getElementById('resizeHandleLayer');
@@ -1365,10 +1675,39 @@ function renderResizeHandles(){
 
 let ovDrag=null;   // 用來 handle 移動 (translate)
 let ovResize=null; // 用來 handle 縮放 (scale)
+let laneDrag=null;  // 車道節點拖曳
 const fpEl=document.getElementById('floorplan');
 fpEl.addEventListener('pointerdown',e=>{
   if(!editMode) return;
   if(e.target.closest('.sp')) return;   // 車位另有處理
+
+  // 刪除車道模式：點一下路段直接刪除，不進入拖曳流程
+  if(laneDeleteMode){
+    const seg=e.target.closest('.road-seg');
+    if(seg){
+      e.preventDefault();
+      const idx=+seg.getAttribute('data-idx');
+      DISABLED_EDGES.add(idx);
+      saveDisabledEdges();
+      renderRoads();
+      renderLaneNodeHandles();
+      if(currentId) drawRoute(spaceMap[currentId]);
+    }
+    return;
+  }
+
+  // 車道節點拖曳把手優先
+  const lnHandle=e.target.closest('.ln');
+  if(lnHandle){
+    e.preventDefault();
+    const k=lnHandle.getAttribute('data-k');
+    const [mx,my]=svgPoint(e);
+    const o=LANE_OFFSETS[k]||{dx:0,dy:0};
+    laneDrag={key:k, el:lnHandle, startMx:mx, startMy:my, startDx:o.dx||0, startDy:o.dy||0};
+    lnHandle.classList.add('dragging');
+    try{lnHandle.setPointerCapture(e.pointerId);}catch(_){}
+    return;
+  }
 
   // 縮放控制點優先
   const handle=e.target.closest('.rh');
@@ -1395,6 +1734,14 @@ fpEl.addEventListener('pointerdown',e=>{
 });
 fpEl.addEventListener('pointermove',e=>{
   const [mx,my]=svgPoint(e);
+  if(laneDrag){
+    const dx=Math.round(laneDrag.startDx + mx - laneDrag.startMx);
+    const dy=Math.round(laneDrag.startDy + my - laneDrag.startMy);
+    LANE_OFFSETS[laneDrag.key]={dx,dy};
+    renderRoads();
+    renderLaneNodeHandles();
+    return;
+  }
   if(ovResize){
     const {key, dir, startMx, startMy, startSx, startSy, bb}=ovResize;
     let sx=startSx, sy=startSy;
@@ -1423,9 +1770,14 @@ fpEl.addEventListener('pointermove',e=>{
   }
 });
 function endOvDrag(){
-  const wasResizing=!!ovResize, wasDragging=!!ovDrag;
+  const wasResizing=!!ovResize, wasDragging=!!ovDrag, wasLaneDrag=!!laneDrag;
   if(ovDrag){ ovDrag.ov.classList.remove('dragging'); ovDrag=null; }
   if(ovResize){ ovResize=null; }
+  if(laneDrag){ laneDrag.el.classList.remove('dragging'); laneDrag=null; }
+  if(wasLaneDrag){
+    saveLaneOffsets();
+    if(currentId) drawRoute(spaceMap[currentId]);
+  }
   if(wasResizing || wasDragging){
     refreshRouting();
     saveOverlays();
@@ -1438,6 +1790,23 @@ fpEl.addEventListener('pointercancel',endOvDrag);
 function resetOverlays(){
   if(!confirm('還原棟／車道／入口／出口的位置與大小？（車位不受影響）')) return;
   OV_OFFSETS=JSON.parse(JSON.stringify(OV_DEFAULT)); saveOverlays(); applyOverlayTransforms();
+  if(currentId) drawRoute(spaceMap[currentId]);
+}
+
+/* 車道寬度調整（校正模式）：拖動滑桿即時重繪灰色車道層，並存入 localStorage */
+function setRoadWidth(v){
+  ROAD_WIDTH=+v;
+  const val=document.getElementById('roadWVal'); if(val) val.textContent=ROAD_WIDTH;
+  renderRoads();
+  try{localStorage.setItem(ROAD_W_KEY, ROAD_WIDTH);}catch(e){}
+  if(currentId) drawRoute(spaceMap[currentId]);
+}
+function resetRoadWidth(){
+  ROAD_WIDTH=ROAD_W_DEFAULT;
+  const range=document.getElementById('roadWRange'); if(range) range.value=ROAD_WIDTH;
+  const val=document.getElementById('roadWVal'); if(val) val.textContent=ROAD_WIDTH;
+  renderRoads();
+  try{localStorage.setItem(ROAD_W_KEY, ROAD_WIDTH);}catch(e){}
   if(currentId) drawRoute(spaceMap[currentId]);
 }
 
@@ -1517,6 +1886,9 @@ function exportJSON(){
     exportedAt:new Date().toISOString(),
     spaces:SPACES,
     overlays:OV_OFFSETS,
+    roadWidth:ROAD_WIDTH,
+    laneNodes:LANE_OFFSETS,
+    disabledEdges:[...DISABLED_EDGES],
   };
   const blob=new Blob([JSON.stringify(payload,null,1)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -1540,8 +1912,23 @@ function importJSON(evt){
       OV_OFFSETS=overlays; saveOverlays(); applyOverlayTransforms();
       ovMsg='，含 '+Object.keys(overlays).length+' 個棟/通道位置';
     }
+    if(!Array.isArray(d) && (+d.roadWidth>0)){
+      ROAD_WIDTH=+d.roadWidth;
+      try{localStorage.setItem(ROAD_W_KEY, ROAD_WIDTH);}catch(e){}
+      const rw=document.getElementById('roadWRange'), rv=document.getElementById('roadWVal');
+      if(rw) rw.value=ROAD_WIDTH; if(rv) rv.textContent=ROAD_WIDTH;
+      ovMsg+='，車道寬 '+ROAD_WIDTH;
+    }
+    if(!Array.isArray(d) && d.laneNodes && typeof d.laneNodes==='object'){
+      LANE_OFFSETS=d.laneNodes; saveLaneOffsets();
+      ovMsg+='，含 '+Object.keys(LANE_OFFSETS).length+' 個車道節點位置';
+    }
+    if(!Array.isArray(d) && Array.isArray(d.disabledEdges)){
+      DISABLED_EDGES=new Set(d.disabledEdges.map(Number)); saveDisabledEdges();
+      ovMsg+='，刪除了 '+DISABLED_EDGES.size+' 段車道';
+    }
     selEdit=null; document.getElementById('editPanel').classList.remove('show');
-    rebuildMap(); renderSpaces(); saveLocal();
+    rebuildMap(); renderSpaces(); renderRoads(); renderLaneNodeHandles(); saveLocal();
     alert('已匯入 '+SPACES.length+' 個車位'+ovMsg);
   }catch(err){alert('匯入失敗：'+err.message);} };
   r.readAsText(f); evt.target.value='';
@@ -1556,6 +1943,8 @@ function resetData(){
 
 /* ⑨  init */
 function init(){
+  const rw=document.getElementById('roadWRange'), rv=document.getElementById('roadWVal');
+  if(rw) rw.value=ROAD_WIDTH; if(rv) rv.textContent=ROAD_WIDTH;
   renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); renderRoads(); applyView(); updateDirUI();
   requestAnimationFrame(applyView);
   window.addEventListener('load',applyView);
