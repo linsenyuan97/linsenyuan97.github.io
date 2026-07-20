@@ -240,21 +240,66 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 
 <div class="app">
   <header class="topbar">
-    <div class="titlebar">🅿 B1 停車場車位查詢 <small style="display:none">· 輸入車號 → 圖上定位 (v2.0 - 2026/07/18 22:00)</small>
+	
+    <div class="titlebar" style="display:none">🅿 B1 停車場車位查詢 <small style="display:none">· 輸入車號 → 圖上定位 (v2.0 - 2026/07/18 22:00)</small>
       <button class="mini-btn" id="editToggle" onclick="toggleEdit()" title="校正" style="display:none">✏️</button>
     </div>
-    <div class="search-row">
-      <!-- 用 <form> 包起來，iOS 才會把它視為「可送出的搜尋表單」，
-           虛擬鍵盤的 Return 鍵才會改成藍色「搜尋」；同時桌機 Enter 也走 submit。 -->
-      <form class="search-wrap" id="searchForm" onsubmit="event.preventDefault(); doSearch();" autocomplete="off" role="search">
-        <span class="s-ic">🔎</span>
-        <input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號 (如 1056)"
-               autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="numeric"
-               name="q" maxlength="6">
-        <button type="button" class="s-clear" id="clearBtn" onclick="clearSearch()" aria-label="清除">✕</button>
-        <div class="suggestions" id="suggestions"></div>
-      </form>
-      <button class="info-i-btn" id="infoBtn" onclick="openInfo()" title="顯示行駛路線提示" aria-label="說明">i</button>
+	
+    <!-- 控制面板第二層的 CSS 排版優化 -->
+	<div class="search-row" style="display: flex; align-items: center; width: 100%; padding: 0 4px;">
+		<!-- 左側定位組件：固定寬度，完美置中 -->
+		<div class="location-trigger" style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-right: 8px;">
+
+			<svg xmlns="http://w3.org" viewBox="0 0 24 24" width="24" height="24">
+			  <defs>
+				<!-- 全局霓虹發光濾鏡：讓定位點在地圖上像 LED 燈一樣亮眼 -->
+				<filter id="pinGlow" x="-50%" y="-50%" width="200%" height="200%">
+				  <feGaussianBlur stdDeviation="1.5" result="blur"/>
+				  <feMerge>
+					<feMergeNode in="blur"/>
+					<feMergeNode in="SourceGraphic"/>
+				  </feMerge>
+				</filter>
+				
+				<!-- 呼吸燈動畫：讓核心小圓點微微閃爍，提示這是「即時（Live）定位點」 -->
+				<style>
+				  @keyframes dotPulse {
+					0%, 100% { opacity: 0.5; }
+					50% { opacity: 1; }
+				  }
+				  .pin-core { animation: dotPulse 2s infinite ease-in-out; }
+				</style>
+			  </defs>
+
+			  <!-- 還原您上傳的經典定位標記 (完美向量化) -->
+			  <g filter="url(#pinGlow)">
+				<!-- 外層水滴大頭針（填滿與地圖起點一致的螢光綠色，並帶有精緻的挖空內部） -->
+				<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" 
+					fill="#4f93d6"/> <!-- 改用與 A 棟、指南針呼應的高亮天藍色 -->
+				
+				<!-- 內層核心圓點（白色，自帶閃爍效果，大幅增加科技質感與視覺層級） -->
+				<circle cx="12" cy="9" r="2.2" fill="#ffffff" class="pin-core"/>
+			  </g>
+			</svg>
+			<span style="color: #fff; font-size: 16px; font-weight: bold; line-height: 1;">B1</span>
+		</div>
+	
+		<!-- 中央搜尋框：自動撐滿剩餘空間 (flex-grow: 1)，並保持完整的圓角外框 -->
+		<div class="search-input-wrapper" style="flex: 1; display: flex; align-items: center; background: rgba(255,255,255,0.04);">
+
+		  <!-- 用 <form> 包起來，iOS 才會把它視為「可送出的搜尋表單」，
+			   虛擬鍵盤的 Return 鍵才會改成藍色「搜尋」；同時桌機 Enter 也走 submit。 -->
+		  <form class="search-wrap" id="searchForm" onsubmit="event.preventDefault(); doSearch();" autocomplete="off" role="search">
+			<span class="s-ic">🔎</span>
+			<input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號 (如 1056)"
+				   autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="numeric"
+				   name="q" maxlength="6">
+			<button type="button" class="s-clear" id="clearBtn" onclick="clearSearch()" aria-label="清除">✕</button>
+			<div class="suggestions" id="suggestions"></div>
+		  </form>
+		</div>
+		<!-- 右側資訊鈕：固定寬度 -->
+		<button class="info-btn" style="flex-shrink: 0; width: 42px; height: 42px;">i</button>
     </div>
     <div class="mode-row">
       <button class="mode-btn mode-in" id="modeInBtn" onclick="setMode('in')">
@@ -1473,6 +1518,20 @@ function scrollToSpace(sp){
   map.scrollTo({left:px-map.clientWidth/2, top:py-map.clientHeight/2, behavior:'smooth'});
 }
 
+/* 第一次載入時，把地圖捲到讓「入口(入)」標記位於畫面中央。
+   直接讀取入口標記實際渲染後的螢幕位置(含 overlay 位移/縮放)，換算成 mapArea 的內容座標再置中，
+   因此不受入口校正位移影響。滿版時左右無法捲動，實務上主要是垂直置中。*/
+function scrollToEntry(){
+  const map=document.getElementById('mapArea');
+  const el=document.getElementById('entryMarker');
+  if(!map||!el) return;
+  const mr=map.getBoundingClientRect(), er=el.getBoundingClientRect();
+  if(er.width===0 && er.height===0) return;   // 入口標記被隱藏(如出口模式)時不處理
+  const cx=(er.left+er.width/2)-mr.left+map.scrollLeft;
+  const cy=(er.top +er.height/2)-mr.top +map.scrollTop;
+  map.scrollTo({left:cx-map.clientWidth/2, top:cy-map.clientHeight/2, behavior:'auto'});
+}
+
 /* ⑦  版面配合寬度（放大縮小交給手機捏放 / 桌機瀏覽器縮放）*/
 const VB_W=720,VB_H=1640;   // 已裁掉平面圖左右各 ~110px 空白（原為 940×1672）
 // 一開始即「滿版」：平面圖寬度直接填滿 mapArea 可用寬度（扣掉左右 padding），不再套用縮小係數與 700px 上限，
@@ -1953,8 +2012,8 @@ function init(){
   const rw=document.getElementById('roadWRange'), rv=document.getElementById('roadWVal');
   if(rw) rw.value=ROAD_WIDTH; if(rv) rv.textContent=ROAD_WIDTH;
   renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); renderRoads(); applyView(); updateDirUI();
-  requestAnimationFrame(applyView);
-  window.addEventListener('load',applyView);
+  requestAnimationFrame(()=>{applyView(); scrollToEntry();});
+  window.addEventListener('load',()=>{applyView(); scrollToEntry();});
   if(window.ResizeObserver){let first=true;
     new ResizeObserver(()=>{if(first){first=false;return;}applyView();}).observe(document.getElementById('mapArea'));}
 }
