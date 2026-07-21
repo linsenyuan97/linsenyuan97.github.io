@@ -148,6 +148,26 @@ body.editing .ov[data-key="exit"]{display:block!important;}
   border-radius:var(--radius-sm);font-size:.76rem;color:#fca5a5;display:none;}
 .err-inline.show{display:block;}
 
+/* mode-row-wrap：讓下方的引導提示框可以「浮」在地圖上方顯示/淡出，
+   不佔用版面高度，這樣提示框出現/消失時，下面的地圖區域完全不會跳動 */
+.mode-row-wrap{position:relative;}
+.route-banner{display:none;position:absolute;left:0;right:0;top:100%;margin-top:8px;
+  align-items:center;gap:8px;padding:9px 12px;border-radius:var(--radius-sm);
+  font-size:.85rem;font-weight:700;letter-spacing:.2px;
+  background:rgba(13,18,28,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 10px 26px rgba(0,0,0,.45);z-index:45;
+  opacity:1;transition:opacity .6s ease;}
+.route-banner.show{display:flex;animation:rb-fade-in .25s ease;}
+.route-banner.fade-out{opacity:0;}
+.route-banner.dir-in{border:1px solid rgba(34,197,94,.5);color:#bbf7d0;}
+.route-banner.dir-out{border:1px solid rgba(249,115,22,.5);color:#ffedd5;}
+.route-banner .rb-ic{flex-shrink:0;font-size:.95rem;line-height:1;}
+.route-banner .rb-text{flex:1;line-height:1.3;}
+.route-banner .rb-close{flex-shrink:0;background:none;border:none;color:inherit;opacity:.65;
+  font-size:.8rem;cursor:pointer;padding:2px;line-height:1;}
+.route-banner .rb-close:hover{opacity:1;}
+@keyframes rb-fade-in{from{opacity:0;transform:translateY(-3px);}to{opacity:1;transform:translateY(0);}}
+
 /* 導引方向切換（同列、精簡）*/
 .dir-toggle{flex-shrink:0;display:flex;align-items:center;gap:5px;
   background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:var(--radius-sm);
@@ -367,6 +387,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 		<!-- 右側資訊鈕：固定寬度 -->
 		<button class="info-btn" style="flex-shrink: 0; width: 42px; height: 42px;">i</button>
     </div>
+    <div class="mode-row-wrap">
     <div class="mode-row">
       <button class="mode-btn mode-in" id="modeInBtn" onclick="setMode('in')">
         <span class="mode-ic">
@@ -387,6 +408,11 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
           </svg>
         </span><span>找出口</span>
       </button>
+    </div>
+    <div class="route-banner" id="routeBanner">
+      <span class="rb-text" id="routeBannerText"></span>
+      <button type="button" class="rb-close" onclick="hideRouteBanner()" aria-label="關閉">✕</button>
+    </div>
     </div>
     <div class="err-inline" id="errMsg">❌ 查無此車位編號，請確認後重試</div>
 
@@ -1723,7 +1749,7 @@ function updateDirUI(){
 function setMode(dir){
   routeDir = dir;
   updateDirUI();
-  if(currentId) drawRoute(spaceMap[currentId]);
+  if(currentId){ drawRoute(spaceMap[currentId]); updateRouteBanner(); }
 }
 /* 舊 API 相容：仍保留 toggleDir 讓程式其他呼叫不炸 */
 function toggleDir(){
@@ -1768,7 +1794,7 @@ function selectSpace(id){
     document.getElementById('floorplan').appendChild(el);   // 移到最上層，確保車位號碼不被導航線蓋住
   }
   refreshReservedSpaces(id);   // 有查詢中：除了目前選中的這個車位（已套用查詢高亮），其餘預約車位一律退回一般樣式
-  updateDirUI(); drawRoute(sp); setInfoReady(true); scrollToSpace(sp); searchEl.blur();
+  updateDirUI(); drawRoute(sp); setInfoReady(true); updateRouteBanner(); scrollToSpace(sp); searchEl.blur();
 }
 function clearSelection(){
   if(currentId){const prevId=currentId; currentId=null;   // 先清空 currentId，重繪時會自動套用未選中的淡化樣式
@@ -1780,13 +1806,37 @@ function clearSelection(){
       document.getElementById('spacesLayer').appendChild(el);   // 還原回原本圖層順序
     }
   }
-  document.getElementById('routeLayer').innerHTML=''; setInfoReady(false); updateDirUI();
+  document.getElementById('routeLayer').innerHTML=''; setInfoReady(false); updateDirUI(); hideRouteBanner();
   refreshReservedSpaces();   // 沒有查詢中：所有預約車位恢復初始紫色樣式
 }
 function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('clearBtn').style.display='none';clearSelection();clearError();closeSug();}
 function showError(){document.getElementById('errMsg').classList.add('show');}
 function clearError(){document.getElementById('errMsg').classList.remove('show');}
 function setInfoReady(on){ /* 舊版是讓「!」按鈕發光；新版由兩顆模式按鈕本身表達狀態，這裡留空當 no-op */ }
+
+/* 引導提示框：只顯示「開始引導 從B1入口到車位OOOO」/「開始引導 從車位OOOO到B1出口」，隨方向切換綠/橘配色。
+   顯示 1 秒後自動淡出並隱藏；若在淡出前重新觸發（換車位/換方向），會取消前一個計時器重新倒數。 */
+function updateRouteBanner(){
+  const banner=document.getElementById('routeBanner');
+  clearTimeout(banner._hideTimer); clearTimeout(banner._removeTimer);
+  if(!currentId){ banner.classList.remove('show','fade-out'); return; }
+  const textEl=document.getElementById('routeBannerText');
+  textEl.textContent = routeDir==='in'
+    ? `開始引導　從 B1 入口到車位 ${currentId}`
+    : `開始引導　從車位 ${currentId} 到 B1 出口`;
+  banner.classList.remove('dir-in','dir-out','fade-out');
+  banner.classList.add(routeDir==='in' ? 'dir-in' : 'dir-out');
+  banner.classList.add('show');
+  banner._hideTimer=setTimeout(()=>{
+    banner.classList.add('fade-out');
+    banner._removeTimer=setTimeout(()=>{ banner.classList.remove('show','fade-out'); }, 600);
+  }, 2000);
+}
+function hideRouteBanner(){
+  const banner=document.getElementById('routeBanner');
+  clearTimeout(banner._hideTimer); clearTimeout(banner._removeTimer);
+  banner.classList.remove('show','fade-out');
+}
 
 /* ⑤  「!」對話框 */
 function openInfo(){
