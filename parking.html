@@ -104,6 +104,8 @@ body.dir-in .ov[data-key="exit"]{display:none;}
 /* 校正模式下兩者都要能被看到、拖曳校正，不受查詢方向影響 */
 body.editing .ov[data-key="entry"],
 body.editing .ov[data-key="exit"]{display:block!important;}
+/* 有導航路徑時，單行道方向箭頭再降低透明度，避免與導航路徑的箭頭混淆搶戲，但仍保留可見 */
+body.has-route .oneway-arrow{opacity:.16!important;transition:opacity .3s ease;}
 .s-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);font-size:1rem;cursor:pointer;display:none;}
 .s-clear:hover{color:var(--text-1);}
 /* 「i」提示按鈕：顯示路線對話框（有車位→路線；沒車位→請輸入提示） */
@@ -522,8 +524,9 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   <!-- 「通往 1F」匝道：放在 roadLayer 之後（z-index 較高），蓋住車道 -->
   <g class="ov" data-key="ramp1F">
     <rect x="598" y="46" width="132" height="410" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.6" stroke-dasharray="8,6"/>
-    <line x1="664" y1="430" x2="664" y2="66" stroke="#4f93d6" stroke-width="5" marker-end="url(#arrowBlue)" opacity=".7"/>
-    <text x="664" y="176" text-anchor="middle" font-size="20" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 1F</text>
+    <line x1="664" y1="340" x2="664" y2="66" stroke="#f97316" stroke-width="5" marker-end="url(#arrow)" opacity=".8"/>
+    <text x="664" y="372" text-anchor="middle" font-size="28" font-weight="800" fill="#fb923c" font-family="'Microsoft JhengHei'">通往 1F</text>
+    <text x="664" y="404" text-anchor="middle" font-size="28" font-weight="800" fill="#fb923c" font-family="'Microsoft JhengHei'">出口</text>
   </g>
 
   <!-- 循環車道視覺與周邊機房/儲藏室等非停車相關資訊已移除 -->
@@ -565,8 +568,8 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 
   <g class="ov" data-key="rampB1">
     <rect x="260" y="1082" width="480" height="80" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.4" stroke-dasharray="8,6"/>
-    <line x1="280" y1="1125" x2="655" y2="1125" stroke="#4f93d6" stroke-width="3" marker-end="url(#arrowBlue)" opacity=".65"/>
-    <text x="496" y="1120" text-anchor="middle" font-size="18" font-weight="800" fill="#7fbef5" font-family="'Microsoft JhengHei'">通往 B1</text>
+    <line x1="295" y1="1125" x2="600" y2="1125" stroke="#22c55e" stroke-width="3" marker-end="url(#arrowGreen)" opacity=".8"/>
+    <text x="450" y="1114" text-anchor="middle" font-size="28" font-weight="800" fill="#4ade80" font-family="'Microsoft JhengHei'">通往 B1</text>
   </g>
 
   <!-- 參考底圖（校正用；預設隱藏） -->
@@ -610,8 +613,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     <g id="entryMarker" filter="url(#glow)">
       <!-- 頭燈光束：車頭朝右，光束往右前方擴散（畫在車身之前，車頭方向= rotate(90) 後的 -y 局部方向）-->
       <g transform="translate(405,1125) rotate(90) scale(1.25)">
-        <polygon points="-8,-19 -4,-19 -15,-54 -28,-51" fill="url(#headBeamGrad)"/>
-        <polygon points="4,-19 8,-19 28,-51 15,-54" fill="url(#headBeamGrad)"/>
+        <polygon points="-8,-19 8,-19 28,-51 -28,-51" fill="url(#headBeamGrad)"/>
       </g>
       <!-- 以車輛俯視圖示意「入口」；車頭朝向 1068 車位方向，整體視覺尺寸放大 1.25 倍 -->
       <g transform="translate(405,1125) rotate(90) scale(1.25)">
@@ -888,23 +890,23 @@ function isReserved(sp){ return sp.reserved || RESERVED_IDS.has(sp.id); }
    2. 完美避開代表「禁止/停滿」的紅色警告語意
    3. 與找車位的「螢光綠」和找出口的「橘黃色」徹底分流，維持全局視覺和諧 */
 function fillOf(sp, selected, hasQuery){ 
+  if(selected) return 'rgba(250, 204, 21, 0.45)'; // 目的地車位：不論是否為預約車位，一律黃色高亮
   if(isReserved(sp)) {
-    if(selected) return 'rgba(250, 204, 21, 0.45)'; // 1. 剛好搜到這個預約車位時：黃色最高亮
-    /* 2. 關鍵折衷：只要目前有查詢（不論查誰），路過的預約車位不變藍色，
+    /* 關鍵折衷：只要目前有查詢（不論查誰），路過的預約車位不變藍色，
           而是改用極淡的「低調紫底 (0.12)」，既能認出是預約區、又絕不搶戲！ */
     return hasQuery ? 'rgba(124, 58, 237, 0.22)' : 'rgba(124, 58, 237, 0.35)'; 
   }
-  return selected ? 'rgba(26,58,106,.55)' : 'rgba(26,58,106,.22)';
+  return 'rgba(26,58,106,.22)';
 }
 
 function strokeOf(sp, selected, hasQuery){ 
+  if(selected) return 'rgba(253, 224, 71, 0.85)'; // 目的地車位：黃色邊框全亮
   if(isReserved(sp)) {
-    if(selected) return 'rgba(253, 224, 71, 0.85)'; // 1. 剛好搜到這個預約車位時：黃色邊框全亮
-    /* 2. 關鍵折衷：有查詢時，路過的預約車位邊框降到淡粉紫 (.4)，
+    /* 有查詢時，路過的預約車位邊框降到淡粉紫 (.4)，
           在地圖中清楚勾勒出專區邊界，視覺層級退居幕後但仍可辨識 */
     return hasQuery ? 'rgba(167, 139, 250, 0.4)' : 'rgba(167, 139, 250, 0.65)'; 
   }
-  return selected ? 'rgba(37,99,235,.45)' : 'rgba(37,99,235,.18)'; 
+  return 'rgba(37,99,235,.18)'; 
 }
 
 function spaceInner(sp){
@@ -933,12 +935,15 @@ function spaceInner(sp){
             + `<text x="${cx}" y="${cy+6.5}" text-anchor="middle" font-size="7.8" fill="#ddd6fe" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif" font-weight="700">預約車位</text>`;
   } else {
     const fs=Math.min(sp.w,sp.h)>=30?11:9;
-    // 未被搜尋到的（未選中）車位號碼：改為細體、半透明灰藍字，讓主體（橘色導航線＋目標車位）更突出
-    const textFill = selected ? 'rgba(241,245,249,.95)' : 'rgba(255,255,255,.3)';
-    const textWeight = selected ? '700' : '300';
+    // 目的地車位：文字亮白加粗、加上「目的地」小標籤；非目的地車位：透明度降到 65%，降低與導航路徑的視覺競爭
+    const textFill = selected ? '#fef9c3' : 'rgba(255,255,255,.65)';
+    const textWeight = selected ? '800' : '300';
+    const tagFont = 6.5, tagFill = '#fde047';
     content = (sp.w>=sp.h)
       ? `<text x="${cx}" y="${cy+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="${textFill}" font-family="monospace" font-weight="${textWeight}">${sp.id}</text>`
-      : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="${textFill}" font-family="monospace" font-weight="${textWeight}" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`;
+        + (selected ? `<text x="${cx}" y="${cy+fs*0.35+9}" text-anchor="middle" font-size="${tagFont}" fill="${tagFill}" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">目的地</text>` : '')
+      : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="${textFill}" font-family="monospace" font-weight="${textWeight}" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`
+        + (selected ? `<text x="${cx}" y="${cy+9}" text-anchor="middle" font-size="${tagFont}" fill="${tagFill}" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif" transform="rotate(-90 ${cx} ${cy})">目的地</text>` : '');
   }
   const selRing=(editMode&&sp.id===selEdit)
     ? `<rect x="${sp.x-3}" y="${sp.y-3}" width="${sp.w+6}" height="${sp.h+6}" rx="3" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3" filter="url(#glowYellow)"/>`:'';
@@ -1431,14 +1436,15 @@ function renderRoads(){
     const half = seg.len / 2;
     const g0 = `translate(${seg.cx.toFixed(2)},${seg.cy.toFixed(2)}) rotate(${seg.ang.toFixed(2)})`;
     if (seg.oneWay) {
-      // 單行道方向箭頭：仍在進入路口前就收尾，避免 "›/v" 箭頭疊在交會口中央顯得雜亂。
-      const margin = Math.max(16, W / 2 + 10);
+      // 單行道方向箭頭：仍在進入路口前就收尾，避免箭頭疊在交會口中央顯得雜亂。
+      const margin = Math.max(20, W / 2 + 10);
       if (half - margin <= 4) continue;
-      // 沿行進方向（局部 +x）每 65px 畫一個朝前的 "›" 箭頭，尖端在 y=0（正中央）
-      for (let d = -half + margin; d <= half - margin; d += 65) {
-        markings += `<polyline points="${(d-8).toFixed(1)},-9 ${(d+8).toFixed(1)},0 ${(d-8).toFixed(1)},9" `
-                  + `fill="none" stroke="#dfe8f2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" `
-                  + `opacity=".28" transform="${g0}"/>`;
+      // 完整箭頭（有箭身＋箭頭三角形，非單純 V 形 chevron），沿中心線(y=0)排列，
+      // 方向辨識更直覺；當作道路標線使用，用低透明度白色，不搶過導航路徑。
+      // 沿行進方向（局部 +x）每 140px 一個，間距加大、密度降低。
+      for (let d = -half + margin; d <= half - margin; d += 140) {
+        markings += `<polygon points="${(d-14).toFixed(1)},-2 ${(d+2).toFixed(1)},-2 ${(d+2).toFixed(1)},-7 ${(d+14).toFixed(1)},0 ${(d+2).toFixed(1)},7 ${(d+2).toFixed(1)},2 ${(d-14).toFixed(1)},2" `
+                  + `fill="#ffffff" class="oneway-arrow" opacity=".35" transform="${g0}"/>`;
       }
     } else {
       // 一般車道：正中央極淡白色虛線分隔線 —— margin 縮小到只避開路段端點的圓角，
@@ -1562,7 +1568,7 @@ function pathOf(sp){ return routeDir==='in'?buildPathIn(sp):buildPathOut(sp); }
    純粹是「畫線」時的視覺處理，不影響 Dijkstra 的路徑計算或車道本身。*/
 function orthogonalize(pts){
   if(!pts || pts.length<2) return pts;
-  const SNAP=12;   // 小於此位移量視為節點雜訊 → 拉直對齊
+  const SNAP=20;   // 小於此位移量視為節點雜訊 → 拉直對齊
   const out=[pts[0].slice()];
   for(let i=1;i<pts.length;i++){
     const prev=out[out.length-1];
@@ -1619,7 +1625,7 @@ function routeArrows(pts, outlineColor){
     if(len<44) continue;
     const ang=Math.atan2(dy,dx)*180/Math.PI;
     const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
-    const half=len/2, margin=18, spacing=50;
+    const half=len/2, margin=20, spacing=90;
     if(half-margin<=4) continue;
     for(let d=-half+margin; d<=half-margin; d+=spacing){
       // 實心 chevron：尖端在前(+7)、後方兩翼略內凹(-6→-2)，形狀比純外框更醒目
@@ -1769,6 +1775,7 @@ function doSearch(){
 }
 function selectSpace(id){
   const sp=spaceMap[id]; if(!sp)return;
+  document.body.classList.add('has-route');
   document.getElementById('searchInput').value=id;
   document.getElementById('clearBtn').style.display='block';
   clearError(); closeSug();
@@ -1797,6 +1804,7 @@ function selectSpace(id){
   updateDirUI(); drawRoute(sp); setInfoReady(true); updateRouteBanner(); scrollToSpace(sp); searchEl.blur();
 }
 function clearSelection(){
+  document.body.classList.remove('has-route');
   if(currentId){const prevId=currentId; currentId=null;   // 先清空 currentId，重繪時會自動套用未選中的淡化樣式
     const el=document.getElementById('sp-'+cssId(prevId));
     if(el){const p=spaceMap[prevId];
