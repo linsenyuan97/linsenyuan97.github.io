@@ -274,19 +274,32 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
    而是由 drawRoute() 以 JS 控制 stroke-dasharray/dashoffset，讓線條像水流一樣
    從起點延伸到終點播放一次（約 1~1.2 秒），到達終點後立刻定格為靜態實線。
    這裡的 class 只保留光暈/發光相關的視覺樣式，不含動畫本身。 */
-/* 找車位（綠色）導航線：雙層疊加 —— 下層是模糊發光的光暈，上層是近白的純淨核心線，
-   兩層都用 screen（濾色）混合模式疊在灰色車道上，看起來就像真的有一道光投影在地面上 */
-.route-in-glow{filter:blur(6px);opacity:.85;mix-blend-mode:screen;}
-.route-in-core{filter:drop-shadow(0 0 4px rgba(34,197,94,.9));mix-blend-mode:screen;}
+/* 找車位（綠色）導航線：雙層疊加 —— 下層是模糊發光的光暈，上層是近白的純淨核心線。
+   光暈/實線底改用一般疊加（不再用 screen 濾色），這樣顏色本身的深淺才會如實呈現，
+   不會因為 screen 混合模式而被灰色地板「洗淡」；只保留核心細線用 screen，做出一絲高光。 */
+.route-in-glow{filter:blur(5.5px);opacity:.95;}
+.route-in-core{filter:drop-shadow(0 0 2.5px rgba(20,83,45,.95));mix-blend-mode:screen;}
 /* 找出口（橘色）導航線：與綠線同款雙層 —— 下層模糊光暈 + 上層明亮核心線 */
-.route-out-glow{filter:blur(6px);opacity:.85;mix-blend-mode:screen;}
-.route-out-core{filter:drop-shadow(0 0 4px rgba(249,115,22,.9));mix-blend-mode:screen;}
+.route-out-glow{filter:blur(5.5px);opacity:.95;}
+.route-out-core{filter:drop-shadow(0 0 2.5px rgba(124,45,18,.95));mix-blend-mode:screen;}
 /* 導航線實線底：連續不中斷，填補上層流動虛線的縫隙，避免線條看起來「沒接起來」 */
-.route-under{opacity:.8;mix-blend-mode:screen;}
+.route-under{opacity:.95;}
 @keyframes ping-expand{0%{r:8;opacity:1;}100%{r:24;opacity:0;}}
 .ping-circle{animation:ping-expand 1.8s ease-out infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.45;}}
 .blink{animation:blink 2s ease-in-out infinite;}
+/* 入口車輛的「淡淡呼吸」定位光暈：仿 Apple AirTag 的柔和脈動感——
+   一顆圓形光暈緩緩放大並淡出，每秒循環一次，不是生硬的開關式閃爍。 */
+@keyframes entry-pulse{
+  0%{transform:scale(.7);opacity:.55;}
+  70%{transform:scale(1.9);opacity:0;}
+  100%{transform:scale(1.9);opacity:0;}
+}
+.entry-pulse{
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:entry-pulse 1s ease-out infinite;
+}
 </style>
 </head>
 <body>
@@ -423,6 +436,11 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     <marker id="arrowGreen" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#22c55e"/></marker>
     <marker id="arrowBlue" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><polygon points="0 0,7 3.5,0 7" fill="#4f93d6"/></marker>
     <linearGradient id="rampGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#12233b"/></linearGradient>
+    <!-- 入口車輛頭燈光束漸層：靠近車頭端不透明、往外逐漸淡出 -->
+    <linearGradient id="headBeamGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fffdf0" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#fffdf0" stop-opacity=".9"/>
+    </linearGradient>
     <!-- 道路表面漸層：改用 userSpaceOnUse，以「整個樓層畫面座標」為基準(y 0→1672)，
          不再隨每段路的邊界框/旋轉各自套用。搭配 renderRoads() 裡「一整片漸層矩形剪裁進車道」的畫法，
          橫向/縱向車道在同一 Y 高度都是同一顏色，路口不再出現方向不一致的色差。營造全畫面「上亮下暗」立體感。 -->
@@ -449,6 +467,11 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
       <feFlood flood-color="#00BFFF" flood-opacity="0.85" result="c"/>
       <feComposite in="c" in2="b" operator="in" result="glow"/>
       <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- 導引線方向箭頭(chevron)投影：讓實心白色箭頭無論疊在淺色或深色線段上都能立體浮起、輪廓分明 -->
+    <filter id="routeArrowShadow" x="-80%" y="-80%" width="260%" height="260%">
+      <feDropShadow dx="0" dy="0.6" stdDeviation="1.1" flood-color="#000000" flood-opacity="0.55"/>
     </filter>
   </defs>
 
@@ -527,42 +550,75 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   <g id="pillarLayer" fill="#0a121d" stroke="none"></g>
   <g id="spacesLayer"></g>
 
-  <!-- ==================== 出口：通往 1F（純文字風格一體化版） ==================== -->
+  <!-- ==================== 出口：通往 1F（左右雙柵欄圖示版） ==================== -->
   <g class="ov" data-key="exit">
     <!-- 套用與「找出口」連動的黃橙色發光光暈 -->
     <g filter="url(#glowYellow)">
-      <!-- 半徑 r 固定為 20 的黃金點擊大尺寸 -->
-      <circle cx="664" cy="470" r="20" fill="#ea580c" stroke="#ff7849" stroke-width="3"/>
-      
-      <!-- 修正：同步字型庫，讓「出」字變回純淨現代的粗黑體，並修正垂直置中 (y="1131.5" 的對應高度是 476.5) -->
-      <text x="664" y="476.5" 
-            text-anchor="middle" 
-            fill="#ffffff" 
-            font-size="16" 
-            font-weight="900" 
-            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang TC', 'Heiti TC', 'Microsoft JhengHei', sans-serif">出</text>
+      <g transform="translate(664,470)">
+        <!-- 左側柱子 -->
+        <rect x="-33" y="-4" width="7" height="26" rx="2" fill="#7c8592" stroke="#4b5563" stroke-width="1"/>
+        <!-- 右側柱子 -->
+        <rect x="26" y="-4" width="7" height="26" rx="2" fill="#7c8592" stroke="#4b5563" stroke-width="1"/>
+        <!-- 左側柵欄橫桿：以左柱頂端為支點，往上升起 30 度 -->
+        <g transform="translate(-30,-5) rotate(-30)">
+          <rect x="0" y="-3.2" width="26" height="6.4" rx="3.2" fill="#ea580c" stroke="#ff7849" stroke-width="1.2"/>
+          <rect x="4" y="-3.2" width="3.4" height="6.4" fill="#fff7ed"/>
+          <rect x="11" y="-3.2" width="3.4" height="6.4" fill="#fff7ed"/>
+          <rect x="18" y="-3.2" width="3.4" height="6.4" fill="#fff7ed"/>
+        </g>
+        <!-- 右側柵欄橫桿：以右柱頂端為支點，往上升起 30 度（左右鏡像對稱） -->
+        <g transform="translate(30,-5) rotate(30)">
+          <rect x="-26" y="-3.2" width="26" height="6.4" rx="3.2" fill="#ea580c" stroke="#ff7849" stroke-width="1.2"/>
+          <rect x="-7.4" y="-3.2" width="3.4" height="6.4" fill="#fff7ed"/>
+          <rect x="-14.4" y="-3.2" width="3.4" height="6.4" fill="#fff7ed"/>
+          <rect x="-21.4" y="-3.2" width="3.4" height="6.4" fill="#fff7ed"/>
+        </g>
+      </g>
     </g>
-    <!-- 說明文字位置與字型同步優化 -->
-    <text x="664" y="508" text-anchor="middle" fill="#ff7849" font-size="11" font-weight="bold" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">出口</text>
   </g>
 
-  <!-- ==================== 入口：通往 B1（純文字完美對齊版） ==================== -->
+  <!-- ==================== 入口：通往 B1（車輛圖示 + 提示氣泡） ==================== -->
   <g class="ov" data-key="entry">
-    <g id="entryMarker" class="blink" filter="url(#glow)">
-      <!-- 半徑 r 固定為 20 的黃金點擊尺寸 -->
-      <circle cx="405" cy="1125" r="20" fill="#16a34a" stroke="#4ade80" stroke-width="3"/>
-      
-      <!-- 完美文字版：加入萬無一失的 Font Family 設定 -->
-      <!-- 透過精準的 y="1131.5"，完美解決漢字在圓圈內垂直不置中的 UX 通病 -->
-      <text x="405" y="1131.5" 
-            text-anchor="middle" 
-            fill="#ffffff" 
-            font-size="16" 
-            font-weight="900" 
-            font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang TC', 'Heiti TC', 'Microsoft JhengHei', sans-serif">入</text>
+    <!-- 淡淡呼吸的定位光暈：仿 AirTag 效果，每秒緩緩放大淡出一次 -->
+    <circle cx="405" cy="1125" r="24" fill="#22c55e" class="entry-pulse"/>
+    <g id="entryMarker" filter="url(#glow)">
+      <!-- 頭燈光束：車頭朝右，光束往右前方擴散（畫在車身之前，車頭方向= rotate(90) 後的 -y 局部方向）-->
+      <g transform="translate(405,1125) rotate(90) scale(1.25)">
+        <polygon points="-8,-19 -4,-19 -15,-54 -28,-51" fill="url(#headBeamGrad)"/>
+        <polygon points="4,-19 8,-19 28,-51 15,-54" fill="url(#headBeamGrad)"/>
+      </g>
+      <!-- 以車輛俯視圖示意「入口」；車頭朝向 1068 車位方向，整體視覺尺寸放大 1.25 倍 -->
+      <g transform="translate(405,1125) rotate(90) scale(1.25)">
+        <!-- 車身 -->
+        <rect x="-13" y="-20" width="26" height="40" rx="8" fill="#16a34a" stroke="#4ade80" stroke-width="2.5"/>
+        <!-- 前擋風玻璃 -->
+        <rect x="-8.5" y="-15" width="17" height="10" rx="3" fill="#0f2f1c" opacity=".55"/>
+        <!-- 後擋風玻璃 -->
+        <rect x="-8.5" y="6" width="17" height="8" rx="3" fill="#0f2f1c" opacity=".55"/>
+        <!-- 車輪 x4 -->
+        <rect x="-16.5" y="-12" width="4" height="8" rx="1.5" fill="#0f2f1c"/>
+        <rect x="12.5" y="-12" width="4" height="8" rx="1.5" fill="#0f2f1c"/>
+        <rect x="-16.5" y="6" width="4" height="8" rx="1.5" fill="#0f2f1c"/>
+        <rect x="12.5" y="6" width="4" height="8" rx="1.5" fill="#0f2f1c"/>
+        <!-- 頭燈：加大並疊加暈光，讓車頭燈看起來是亮著的 -->
+        <circle cx="-6" cy="-18.5" r="3.2" fill="#fef9c3" opacity=".55"/>
+        <circle cx="6" cy="-18.5" r="3.2" fill="#fef9c3" opacity=".55"/>
+        <circle cx="-6" cy="-18.5" r="1.8" fill="#ffffff"/>
+        <circle cx="6" cy="-18.5" r="1.8" fill="#ffffff"/>
+        <!-- 車尾燈：維持原樣不變 -->
+        <circle cx="-6" cy="18.5" r="1.6" fill="#f87171" opacity=".85"/>
+        <circle cx="6" cy="18.5" r="1.6" fill="#f87171" opacity=".85"/>
+      </g>
     </g>
-    <!-- 說明文字 -->
-    <text x="405" y="1092" text-anchor="middle" fill="#4ade80" font-size="11" font-weight="bold" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">入口</text>
+    <!-- 上方提示氣泡：你的車 / (入口位置) -->
+    <g transform="translate(405,1125)">
+      <g transform="translate(0,-58)">
+        <polygon points="-7,17 7,17 0,27" fill="#0f2e1c" stroke="#22c55e" stroke-width="1.5"/>
+        <rect x="-48" y="-25" width="96" height="42" rx="10" fill="#0f2e1c" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="0" y="-6" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">你的車</text>
+        <text x="0" y="11" text-anchor="middle" fill="#4ade80" font-size="10.5" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">(入口位置)</text>
+      </g>
+    </g>
   </g>
 
   <rect x="142" y="1610" width="140" height="20" rx="2" fill="rgba(0,0,0,.5)"/>
@@ -881,6 +937,16 @@ function jsStr(id){ return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 /* ---- 路線（可雙向：入口→車位 / 車位→出口）---- */
 const ENTRY_BASE={x:405,y:1125}, EXIT_BASE={x:664,y:470};
 let ENTRY={...ENTRY_BASE}, EXIT={...EXIT_BASE}, ENTRY_LANE_Y=ENTRY.y;
+/* 入口車輛圖示的朝向角度（需與 SVG 內 #entryMarker 車輛 <g transform="rotate(...)"> 的角度保持一致）
+   與車身中心到車頭鼻尖的距離（對應車身 rect 頂邊 y=-20，即半長 20px）。
+   用來讓導引線改從「車頭前緣」出發，而不是從車輛中心點出發。 */
+const ENTRY_CAR_ANGLE=90, ENTRY_CAR_NOSE_LEN=20*1.25;
+function entryFrontPoint(){
+  const rad=ENTRY_CAR_ANGLE*Math.PI/180;
+  const dx=ENTRY_CAR_NOSE_LEN*Math.sin(rad);
+  const dy=-ENTRY_CAR_NOSE_LEN*Math.cos(rad);
+  return [ENTRY.x+dx, ENTRY.y+dy];
+}
 const TRUNK_X=[300,500,745];
 let routeDir='in';   // 'in' = 入口→車位（停車）; 'out' = 車位→出口（離場）
 function nearest(a,v){return a.reduce((p,c)=>Math.abs(c-v)<Math.abs(p-v)?c:p);}
@@ -1411,6 +1477,14 @@ function buildPathIn(sp){
     debugMsg = `ERROR: ${e.message}`;
   }
   let pts = dijkstraResult || [[ENTRY.x, ENTRY.y], [tx, ENTRY_LANE_Y], [tx, ay], [ax, ay]];
+  // 起點從「車頭前緣」出發，而不是從車輛中心開始：把路徑第一個點（車輛中心/entry 節點）
+  // 換成／補上車頭鼻端座標，讓導引線視覺上是從車子前方畫出去。
+  const frontPt = entryFrontPoint();
+  if (Math.hypot(pts[0][0]-ENTRY.x, pts[0][1]-ENTRY.y) < 1) {
+    pts[0] = frontPt;
+  } else {
+    pts.unshift(frontPt);
+  }
   // 終點退回到「車位正門口（車道邊緣）」：沿路徑從尾端往車道方向退回 15px，
   // 讓終點圓點/箭頭落在車位格子外的車道上，不會插進格子、不遮住車位號碼；車位本身以高亮發光標示。
   pts = trimPathEnd(pts, 15);
@@ -1421,7 +1495,7 @@ function buildPathIn(sp){
   }
   console.log(`[Route] space=${sp.id}, access=(${ax},${ay}), dijkstra=${debugMsg}, path=`, JSON.stringify(pts));
   return {pts, trunkX:tx, ay,
-    startPt:[ENTRY.x,ENTRY.y], startColor:'#22c55e', destPt:destDoor, destColor:'#f59e0b'};
+    startPt:frontPt, startColor:'#22c55e', destPt:destDoor, destColor:'#f59e0b'};
 }
 
 function buildPathOut(sp){
@@ -1501,8 +1575,38 @@ function roundedPathD(pts, r){
   d+=` L ${last[0].toFixed(1)} ${last[1].toFixed(1)}`;
   return d;
 }
+/* 沿著導引線的直線段，每隔一段距離畫一個小箭頭(‹ › 形狀的 chevron)，
+   標示行進方向，做法與車道上的單行道箭頭相同：在每一段的局部座標系(y=0 為線段正中央)
+   畫箭頭，再用 translate+rotate 擺到世界座標，確保箭頭永遠貼著線段方向、不會歪斜。
+   轉角(圓弧)處不畫箭頭，只在直線段內，效果與現有車道單行箭頭一致。 */
+/* 箭頭改為「實心色塊」而非細線描邊的 chevron：
+   - 淺色主體(近白) + 深色系(綠/橘)描邊，確保疊在淺核心線或深色地板上都能維持高對比、清楚辨識方向。
+   - 尺寸加大到接近線條發光層(glow)的寬度，讓箭頭本身就「撐滿」整條導引線，而不是浮在線上的小記號。
+   - 加大間距，讓箭頭之間留白更多、彼此不擠在一起，行進方向感更明確。
+   - 套用 routeArrowShadow 陰影，讓箭頭邊緣有微妙立體感，即使背景色接近也不會糊在一起。 */
+function routeArrows(pts, outlineColor){
+  let s='';
+  for(let i=0;i<pts.length-1;i++){
+    const a=pts[i], b=pts[i+1];
+    const dx=b[0]-a[0], dy=b[1]-a[1];
+    const len=Math.hypot(dx,dy);
+    if(len<44) continue;
+    const ang=Math.atan2(dy,dx)*180/Math.PI;
+    const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2;
+    const half=len/2, margin=18, spacing=50;
+    if(half-margin<=4) continue;
+    for(let d=-half+margin; d<=half-margin; d+=spacing){
+      // 實心 chevron：尖端在前(+7)、後方兩翼略內凹(-6→-2)，形狀比純外框更醒目
+      s+=`<path d="M ${(d-6).toFixed(1)},-7 L ${(d+7).toFixed(1)},0 L ${(d-6).toFixed(1)},7 `
+       + `L ${(d-2).toFixed(1)},0 Z" fill="#ffffff" stroke="${outlineColor}" stroke-width="1.3" `
+       + `stroke-linejoin="round" filter="url(#routeArrowShadow)" `
+       + `transform="translate(${mx.toFixed(1)},${my.toFixed(1)}) rotate(${ang.toFixed(1)})"/>`;
+    }
+  }
+  return s;
+}
 function drawRoute(sp){
-  const P=pathOf(sp); const d=roundedPathD(orthogonalize(P.pts), 16);
+  const P=pathOf(sp); const orthoPts=orthogonalize(P.pts); const d=roundedPathD(orthoPts, 20);
   const [dx,dy]=P.destPt, [s0x,s0y]=P.startPt;
   // 入口→車位 = 綠色（配合綠色入口）；車位→出口 = 橘色（配合橘色出口）
   const arrowMk   = routeDir==='in' ? 'arrowGreen' : 'arrow';
@@ -1522,17 +1626,22 @@ function drawRoute(sp){
   const needsArrow = !isSpaceDest;
   // 三層疊加：①實線底(route-under)＝連續不斷、避免縫隙讓線條看起來「沒接起來」（尤其起點/轉角處）；
   //           ②外圈光暈(glow)；③明亮核心(core)。線寬加粗：核心 5.5、光暈 13、實底 6。
+  // 核心改用淡綠色（而非白/青色），讓整條線維持統一的綠色調，貼近示意圖的視覺效果。
   const pathHtml = routeDir==='in'
-    ? `<path d="${d}" fill="none" stroke="#22c55e" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" class="route-in-glow"/>
-       <path d="${d}" fill="none" stroke="#22c55e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="route-under"/>
-       <path d="${d}" fill="none" stroke="#E0F7FA" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" class="route-in-core"/>`
-    : `<path d="${d}" fill="none" stroke="#f97316" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" class="route-out-glow"/>
-       <path d="${d}" fill="none" stroke="#f97316" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" class="route-under"/>
-       <path d="${d}" fill="none" stroke="#ffedd5" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" class="route-out-core"/>`;
+    ? `<path d="${d}" fill="none" stroke="#14532d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" class="route-in-glow"/>
+       <path d="${d}" fill="none" stroke="#14532d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="route-under"/>
+       <path d="${d}" fill="none" stroke="#d9fce4" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="route-in-core"/>`
+    : `<path d="${d}" fill="none" stroke="#7c2d12" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" class="route-out-glow"/>
+       <path d="${d}" fill="none" stroke="#7c2d12" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="route-under"/>
+       <path d="${d}" fill="none" stroke="#ffe3c2" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" class="route-out-core"/>`;
+  // 沿路徑的方向箭頭（chevron）：白色實心箭頭 + 深色系描邊，標示行進方向，等線畫完後才淡入顯示
+  const arrowOutline = routeDir==='in' ? '#15803d' : '#c2410c';
+  const arrowMarksHtml = routeArrows(orthoPts, arrowOutline);
   const rl=document.getElementById('routeLayer');
   rl.innerHTML=`
     ${pathHtml}
-    ${startDot}${destDots}`;
+    ${startDot}${destDots}
+    <g class="route-arrow-marks" style="opacity:0;transition:opacity .4s ease">${arrowMarksHtml}</g>`;
   // 綠線置於最頂層：selectSpace() 會把選中車位搬到最上層，這裡再把導航線搬到它之上，
   // 確保綠線不被任何元素(含選中車位)蓋住。因終點停在車位正前方，不會蓋到車位號碼。
   document.getElementById('floorplan').appendChild(rl);
@@ -1568,6 +1677,8 @@ function drawRoute(sp){
       el.style.strokeDashoffset = '0';
     });
     if(needsArrow && coreEl) coreEl.setAttribute('marker-end', `url(#${arrowMk})`);
+    const arrowMarksEl = rl.querySelector('.route-arrow-marks');
+    if(arrowMarksEl) arrowMarksEl.style.opacity = '1';
   }, DRAW_MS + 30);
 }
 function routeSteps(sp){ return routeDir==='in'?stepsIn(sp):stepsOut(sp); }
