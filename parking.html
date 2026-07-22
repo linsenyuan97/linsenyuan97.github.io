@@ -109,8 +109,10 @@ body.dir-out .search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 
 /* 找出口模式：地圖上不需要顯示入口(綠)標記；找車位模式：不需要顯示出口(橘)標記 */
 body.dir-out .ov[data-key="entry"]{display:none;}
 body.dir-in .ov[data-key="exit"]{display:none;}
-/* 行人模式：入口的汽車圖示與「目前位置」提示氣泡不需要顯示 */
+/* 行人模式：入口的汽車圖示與「目前位置」提示氣泡不需要顯示；出口(橘)的汽車閘門圖示同樣不適用於行人，
+   不論找愛車(in)或找棟別(out)都要隱藏，所以獨立於 dir-in/dir-out 之外，只要是行人模式就隱藏 */
 body.travel-walk .ov[data-key="entry"]{display:none;}
+body.travel-walk .ov[data-key="exit"]{display:none;}
 /* 各棟入口點（entA1/entA2…）：平常不顯示紫色圓點，只有在「校正」模式下才顯示以便拖曳定位 */
 .entrance-pin{display:none;}
 /* 地圖依行進方向旋轉（track-up）：#floorplan 本身用 CSS transform 旋轉，
@@ -648,7 +650,8 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   
   <!-- ==================== A 棟：文字絕對完美置中（已移除電梯） ==================== -->
   <g class="ov" data-key="A" filter="url(#buildingShadow)">
-    <rect x="398" y="90" width="164" height="200" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
+    <rect x="389" y="99" width="182" height="182" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
+    <!-- 已改為正方形（1:1），中心點維持原本的 (480,190) 不變，所以下面文字座標不用跟著調整 -->
     <!-- 水平置中：398 + (164 / 2) = 480 -->
     <!-- 垂直置中：90 + (200 / 2) + (34 * 0.35) = 202 -->
     <text x="480" y="202" text-anchor="middle" font-size="46" font-weight="900" fill="#9dc0e4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">A 棟</text>
@@ -677,7 +680,8 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 
   <!-- ==================== B 棟：文字絕對完美置中（已移除電梯） ==================== -->
   <g class="ov" data-key="B" filter="url(#buildingShadow)">
-    <rect x="338" y="800" width="126" height="146" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
+    <rect x="333" y="805" width="136" height="136" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
+    <!-- 已改為正方形（1:1），中心點維持原本的 (401,873) 不變，所以下面文字座標不用跟著調整 -->
     <!-- 水平置中：338 + (126 / 2) = 401 -->
     <!-- 垂直置中：800 + (146 / 2) + (28 * 0.35) = 883 -->
     <text x="401" y="883" text-anchor="middle" font-size="36" font-weight="900" fill="#9dc0e4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">B 棟</text>
@@ -706,10 +710,11 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 
   <!-- ==================== C 棟：文字絕對完美置中（已移除電梯） ==================== -->
   <g class="ov" data-key="C" filter="url(#buildingShadow)">
-    <rect x="438" y="1540" width="168" height="120" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
+    <rect x="450" y="1528" width="144" height="144" rx="4" fill="#1b2f49" stroke="rgba(0,150,255,.2)" stroke-width="1" filter="url(#insetShadow)"/>
      <!-- 電梯 1 
     <rect x="424" y="172" width="48" height="52" rx="6" fill="#142337" stroke="#2a4566" stroke-width="1.5"/>
     <text x="448" y="206" text-anchor="middle" font-size="22" font-family="-apple-system, sans-serif">🛗</text>-->
+	<!-- 已改為正方形（1:1），中心點維持原本的 (522,1600) 不變，所以下面文字座標不用跟著調整 -->
 	<!-- 水平置中：438 + (168 / 2) = 522 -->
     <!-- 垂直置中：1540 + (120 / 2) + (28 * 0.35) = 1610 -->
     <text x="522" y="1610" text-anchor="middle" font-size="40" font-weight="900" fill="#9dc0e4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">C 棟</text>
@@ -733,22 +738,11 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     <text x="556" y="1662" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="inherit">C2</text>
   </g>
 
-  <!-- 行人模式藍色定位標記：位置由 JS 依「目前棟別」動態計算並搬移，一次顯示該棟的兩個入口 -->
-  <g id="walkEntMarker" class="walk-ent-marker" filter="url(#glow)">
-    <circle cx="0" cy="0" r="20" fill="#4f93d6" class="entry-pulse"/>
-    <g transform="translate(-19.2,-35.2) scale(1.6)">
-      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#4f93d6"/>
-      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
-    </g>
-  </g>
+  <!-- 行人模式藍色定位標記：位置由 JS 依「目前棟別」動態計算並搬移，一次顯示該棟的兩個入口；
+       內容（脈動圓＋pin圖示）由 initBldgEntIcons() 依共用常數 BLDG_ENT_* 產生，與路線上的入口圖示共用同一份設定 -->
+  <g id="walkEntMarker" class="walk-ent-marker" filter="url(#glow)"></g>
   <!-- 同一棟的第二個入口：與上面樣式完全相同，位置另外由 JS 移動 -->
-  <g id="walkEntMarker2" class="walk-ent-marker" filter="url(#glow)">
-    <circle cx="0" cy="0" r="20" fill="#4f93d6" class="entry-pulse"/>
-    <g transform="translate(-19.2,-35.2) scale(1.6)">
-      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#4f93d6"/>
-      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
-    </g>
-  </g>
+  <g id="walkEntMarker2" class="walk-ent-marker" filter="url(#glow)"></g>
 
   <g class="ov" data-key="rampB1">
     <rect x="260" y="1082" width="480" height="80" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.4" stroke-dasharray="8,6"/>
@@ -1754,6 +1748,35 @@ function entranceXY(key){
   return [b.x+o.dx, b.y+o.dy];
 }
 
+/* 棟別入口 icon 共用設定：「找棟別」瀏覽用的 walkEntMarker/walkEntMarker2，
+   跟畫路線時終點/起點的入口 icon（entPing），統一呼叫 bldgEntMarkerMarkup() 產生內容，
+   之後要調整入口 icon 的大小或樣式，只需要改這裡一個地方，兩邊就會同步。 */
+const BLDG_ENT_ICON_COLOR='#4f93d6';
+const BLDG_ENT_ICON_SCALE=2.6;
+const BLDG_ENT_PULSE_R=22;
+const BLDG_ENT_PIN_PATH='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z';
+function bldgEntPinMarkup(scale){
+  const tx=(-12*scale).toFixed(2), ty=(-22*scale).toFixed(2);
+  return `<g transform="translate(${tx},${ty}) scale(${scale})">
+      <path d="${BLDG_ENT_PIN_PATH}" fill="${BLDG_ENT_ICON_COLOR}"/>
+      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
+    </g>`;
+}
+/* 光暈（脈動圓）+ pin 圖示的完整組合，只有這一份定義：不管是「找棟別」瀏覽用的
+   walkEntMarker/walkEntMarker2，還是路線起點/終點的入口 icon（entPing），都呼叫這個函式產生內容，
+   不再各自維護一套光暈動畫，兩邊視覺一定一致。 */
+function bldgEntMarkerMarkup(){
+  return `<circle cx="0" cy="0" r="${BLDG_ENT_PULSE_R}" fill="${BLDG_ENT_ICON_COLOR}" class="entry-pulse"/>${bldgEntPinMarkup(BLDG_ENT_ICON_SCALE)}`;
+}
+/* 依上面共用函式，重新產生 walkEntMarker / walkEntMarker2 這兩個「瀏覽用」入口圖示的內容，
+   確保它們跟路線上的入口 icon（entPing）視覺上完全一致，不用兩邊各自維護一份數值。 */
+function initBldgEntIcons(){
+  const markup=bldgEntMarkerMarkup();
+  const m1=document.getElementById('walkEntMarker'), m2=document.getElementById('walkEntMarker2');
+  if(m1) m1.innerHTML=markup;
+  if(m2) m2.innerHTML=markup;
+}
+
 /* 行人模式藍色定位標記（尚未選定車位、單純瀏覽某一棟時，會同時顯示「該棟」的兩個入口）：
    1. 尚未選定車位 + 找棟別(out)時已手動點選 A/B/C 按鈕 → 以該按鈕棟別為準（方便瀏覽任一棟的兩個入口）
    2. 已經選定車位 → 隱藏這兩個「瀏覽用」標記；改由 drawRoute() 在車位真正對應的那個入口
@@ -1979,20 +2002,9 @@ function drawRoute(sp){
   const walkMode  = (TRAVEL_MODE==='walk');
   const entAtStart = walkMode && routeDir==='in';
   const entAtDest  = walkMode && routeDir==='out';
-  const ENT_PING_COLOR='#4f93d6';   // 與 walkEntMarker / bldg-pin 同色，讓「入口」視覺語言一致
-  // 跟 walkEntMarker 用同一個地圖定位pin圖形（同一個 path，只是依 20→8 的半徑比例縮小），
-  // 讓路線上真正對應到的那個入口，也能明確顯示「這是入口座標」的圖示，而不只是一顆素色圓點。
-  const ENT_PIN_SCALE=0.64, ENT_PIN_TX=-7.68, ENT_PIN_TY=-14.08;
-  const entPinIcon=(x,y)=>`
-    <g transform="translate(${x+ENT_PIN_TX},${y+ENT_PIN_TY}) scale(${ENT_PIN_SCALE})">
-      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="${ENT_PING_COLOR}"/>
-      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
-    </g>`;
-  const entPing = (x,y)=>`
-    <circle cx="${x}" cy="${y}" r="8" fill="none" stroke="${ENT_PING_COLOR}" stroke-width="2" class="ping-circle"/>
-    <circle cx="${x}" cy="${y}" r="8" fill="none" stroke="${ENT_PING_COLOR}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
-    <circle cx="${x}" cy="${y}" r="6.5" fill="${ENT_PING_COLOR}" stroke="#fff" stroke-width="2"/>
-    ${entPinIcon(x,y)}`;
+  // 跟 walkEntMarker 呼叫同一個 bldgEntMarkerMarkup()（光暈＋pin 圖示都是同一份定義），
+  // 讓路線上真正對應到的那個入口，跟「找棟別」瀏覽時看到的入口 icon 完全一致，只維護一套。
+  const entPing = (x,y)=>`<g transform="translate(${x},${y})">${bldgEntMarkerMarkup()}</g>`;
   const startDot = isSpaceStart ? '' : (entAtStart ? entPing(s0x,s0y)
     : `<circle cx="${s0x}" cy="${s0y}" r="6" fill="${P.startColor}" stroke="#fff" stroke-width="2"/>`);
   // 找出口(out)：開車模式下終點是「出」字閘門口，圓圈本身已是明確標記，不用再畫脈動目標圈；
@@ -2079,7 +2091,17 @@ let MAP_ROTATE_DEG=0;
 function setMapRotation(deg, instant){
   MAP_ROTATE_DEG=deg;
   const svg=document.getElementById('floorplan');
+  const map=document.getElementById('mapArea');
   if(!svg) return;
+  // 旋轉中心用「使用者目前畫面正中央、對應到地圖裡的哪個座標點」，而不是整張大地圖(940x1672)的正中心。
+  // 如果固定用整張圖的中心當軸心，使用者滑到離中心很遠的地方（例如滑到 B1 深處找車位）時，
+  // 旋轉會把那一整塊視野繞著遙遠的軸心甩過去，畫面就會「跑掉」；改成繞使用者當下正在看的那一點轉，
+  // 才會像「原地轉個方向」，不會整個視野被甩飛。
+  if(map){
+    const originX=map.scrollLeft+map.clientWidth/2;
+    const originY=map.scrollTop+map.clientHeight/2;
+    svg.style.transformOrigin=`${originX}px ${originY}px`;
+  }
   if(instant){
     // 瞬間套用角度（不要動畫）：因為呼叫這裡之後緊接著會用 getBoundingClientRect() 算置中位置，
     // 若還在轉場動畫途中量測，算出來的置中座標會是「轉到一半」的位置，不是最終角度的位置。
@@ -2522,7 +2544,11 @@ function selectSpace(id){
     document.getElementById('floorplan').appendChild(el);   // 移到最上層，確保車位號碼不被導航線蓋住
   }
   refreshReservedSpaces(id);   // 有查詢中：除了目前選中的這個車位（已套用查詢高亮），其餘預約車位一律退回一般樣式
-  updateDirUI(); drawRoute(sp); setInfoReady(true); updateRouteBanner(); scrollToSpace(sp); searchEl.blur();
+  updateDirUI();
+  centerOnEntryInstant(sp);   // 先在「角度歸零」的狀態下把「目前位置」入口圖示瞬間置中：避免地圖已經是
+                               // 旋轉狀態時去量測位置，換算出來的捲動座標可能超出可捲動範圍而被瀏覽器裁掉，
+                               // 導致「跑版」、看不到入口；找不到入口圖示時（找出口/行人模式）才退回置中車位本身
+  drawRoute(sp); setInfoReady(true); updateRouteBanner(); searchEl.blur();
   updateWalkEntMarker();
 }
 function clearSelection(){
@@ -2642,6 +2668,39 @@ function scrollToSpace(sp){
   const cx=(er.left+er.width/2)-mr.left+map.scrollLeft;
   const cy=(er.top +er.height/2)-mr.top +map.scrollTop;
   map.scrollTo({left:cx-map.clientWidth/2, top:cy-map.clientHeight/2, behavior:'smooth'});
+}
+
+/* 選到車位時用來「瞬間置中」：一定要先把地圖角度歸零（setMapRotation(0,true)）再量測 el 的位置，
+   否則若地圖當下已經是旋轉狀態，getBoundingClientRect() 量到的是「已旋轉」後的畫面座標，
+   換算回來的捲動目標可能落在可捲動範圍(scrollWidth/Height，仍是「未旋轉」時的大小)之外，
+   會被瀏覽器直接裁掉／夾住，導致地圖跑版、且入口有可能被捲到畫面外看不到。
+   置中完成後才由 drawRoute() 內的 updateMapRotation() 以「目前畫面正中央」為軸心旋轉，
+   旋轉後置中的目標仍會留在正中央，就不需要再另外捲動一次。 */
+function centerOnSpaceInstant(sp){
+  setMapRotation(0, true);
+  const map=document.getElementById('mapArea');
+  const el=document.getElementById('sp-'+cssId(sp.id));
+  if(!map||!el) return;
+  const mr=map.getBoundingClientRect(), er=el.getBoundingClientRect();
+  if(er.width===0 && er.height===0) return;
+  const cx=(er.left+er.width/2)-mr.left+map.scrollLeft;
+  const cy=(er.top +er.height/2)-mr.top +map.scrollTop;
+  map.scrollTo({left:cx-map.clientWidth/2, top:cy-map.clientHeight/2, behavior:'auto'});
+}
+/* 選到車位後，改成一律置中在「目前位置」（B1入口車子圖示），而不是置中在目的地車位本身。
+   邏輯與 centerOnSpaceInstant 相同（先歸零角度再量測，避免旋轉後量測值超出可捲動範圍），
+   只是量測目標換成 #entryMarker；若入口圖示目前是隱藏狀態（例如「找出口」／行人模式，
+   此時畫面上不會顯示入口車子圖示），就退回置中車位本身，避免捲動位置沒有更新。 */
+function centerOnEntryInstant(sp){
+  setMapRotation(0, true);
+  const map=document.getElementById('mapArea');
+  const el=document.getElementById('entryMarker');
+  const mr=map?map.getBoundingClientRect():null;
+  const er=el?el.getBoundingClientRect():null;
+  if(!map||!el||!er||(er.width===0 && er.height===0)){ centerOnSpaceInstant(sp); return; }
+  const cx=(er.left+er.width/2)-mr.left+map.scrollLeft;
+  const cy=(er.top +er.height/2)-mr.top +map.scrollTop;
+  map.scrollTo({left:cx-map.clientWidth/2, top:cy-map.clientHeight/2, behavior:'auto'});
 }
 
 /* 第一次載入時，把地圖捲到讓「入口(入)」標記位於畫面中央。
@@ -3156,6 +3215,7 @@ function resetData(){
 function init(){
   const rw=document.getElementById('roadWRange'), rv=document.getElementById('roadWVal');
   if(rw) rw.value=ROAD_WIDTH; if(rv) rv.textContent=ROAD_WIDTH;
+  initBldgEntIcons();
   renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); renderRoads(); applyView(); updateDirUI(); setTravelMode(TRAVEL_MODE);
   requestAnimationFrame(()=>{applyView(); scrollToEntry();});
   window.addEventListener('load',()=>{applyView(); scrollToEntry();});
