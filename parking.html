@@ -146,6 +146,17 @@ body.has-route .oneway-arrow{opacity:.16!important;transition:opacity .3s ease;}
 .mode-btn.active.mode-in{background:rgba(34,197,94,.15);color:#4ade80;}
 .mode-btn.active.mode-out{background:rgba(242,108,33,.15);color:#fb923c;}
 
+/* 「開車 / 行人」交通方式切換按鈕群：置於「找車位／找出口」左方 */
+.travel-mode-group{flex-shrink:0;display:flex;gap:4px;padding:3px;
+  border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.03);}
+.travel-btn{width:36px;height:38px;border:none;border-radius:7px;
+  background:transparent;color:var(--text-2);cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;}
+.travel-btn:hover{background:rgba(255,255,255,.09);color:var(--text-1);}
+.travel-btn svg{display:block;}
+.travel-btn.active{background:rgba(79,147,214,.18);color:#4f93d6;}
+
 .err-inline{margin:6px 2px 0;padding:6px 10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);
   border-radius:var(--radius-sm);font-size:.76rem;color:#fca5a5;display:none;}
 .err-inline.show{display:block;}
@@ -430,6 +441,26 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     </div>
     <div class="mode-row-wrap">
     <div class="mode-row">
+      <div class="travel-mode-group" id="travelModeGroup">
+        <button class="travel-btn active" id="travelCarBtn" onclick="setTravelMode('car')" title="開車">
+          <svg width="34.4" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="2.5" y="11" width="19" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="7" cy="17.3" r="1.6" fill="currentColor"/>
+            <circle cx="17" cy="17.3" r="1.6" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="travel-btn" id="travelWalkBtn" onclick="setTravelMode('walk')" title="行人">
+          <svg width="23.4" height="31.25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="3.4" r="2.3" fill="currentColor"/>
+            <path d="M12 6.6 L11 12.5" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+            <path d="M11.3 8 L8.34 9.52 L6.56 11.61" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M11.3 8 L14.03 8.73 L16.32 10.3" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M11 12.5 L6 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+            <path d="M11 12.5 L16 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
       <button class="mode-btn mode-in" id="modeInBtn" onclick="setMode('in')">
         <span class="mode-ic">
           <svg width="26" height="15" viewBox="-1 6 24 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -739,6 +770,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   <div class="ndp-row"><span class="ndp-k">是否判定移動中 navMoving</span><span class="ndp-v" id="ndpMoving">—</span></div>
   <div class="ndp-row"><span class="ndp-k">加速度平均值</span><span class="ndp-v" id="ndpAccel">—</span></div>
   <div class="ndp-row"><span class="ndp-k">轉彎狀態 navTurnState</span><span class="ndp-v" id="ndpTurnState">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">直行保底計時</span><span class="ndp-v" id="ndpFallback">—</span></div>
   <div class="ndp-row"><span class="ndp-k">路段進度</span><span class="ndp-v" id="ndpSegIdx">—</span></div>
   <div class="ndp-row"><span class="ndp-k">目前顯示提示</span><span class="ndp-v" id="ndpInstr">—</span></div>
   <div class="ndp-row"><span class="ndp-k">最後更新時間</span><span class="ndp-v" id="ndpTime">—</span></div>
@@ -1814,6 +1846,8 @@ function drawRoute(sp){
      Android Chrome 目前多半不需要額外授權即可直接讀取。 */
 let navActive=false, navHeading=null, navMoving=false;
 let navSegs=[], navSegIdx=0, navTurnState='straight', navTurnStartTime=0, navMotionBuf=[];
+let navHeadingBuf=[];                    // 方向平滑用的環狀緩衝，降低地下室磁力干擾造成的抖動
+let navSegMoveMs=0, navLastMotionTs=0;   // 直行保底機制：累積「持續移動中」的時間，超過估計時長就自動前進
 
 /* ---- 除錯用狀態（不影響原本導航邏輯，純粹記錄用來顯示）---- */
 let navDebugOn=false;
@@ -1869,9 +1903,10 @@ function buildNavSegs(){
   for(let i=0;i<pts.length-1;i++){
     const len=Math.hypot(pts[i+1][0]-pts[i][0], pts[i+1][1]-pts[i][1]);
     if(len<10) continue; // 太短的線段（去頭尾裁切殘留）不當作獨立一段，避免抖動誤判
-    navSegs.push({heading:navBearing(pts[i],pts[i+1])});
+    navSegs.push({heading:navBearing(pts[i],pts[i+1]), len:len});
   }
   navSegIdx=0; navTurnState='straight';
+  navSegMoveMs=0; navLastMotionTs=0; navHeadingBuf=[];
 }
 function resetNavProgress(){ buildNavSegs(); navHeading=null; navMoving=false; navMotionBuf=[]; updateBsInstruction(); }
 async function toggleNav(){
@@ -1937,8 +1972,18 @@ function onNavOrientation(e){
   if(typeof e.webkitCompassHeading==='number') h=e.webkitCompassHeading;       // iOS Safari：0=北，順時針增加
   else if(e.alpha!=null) h=(360-e.alpha)%360;                                   // 其他瀏覽器的近似換算
   else { updateNavDebugPanel(); return; }
-  navHeading=(h+360)%360;
+  const raw=(h+360)%360;
+  navHeading=navSmoothHeading(raw);   // 取最近幾筆讀數的向量平均，降低地下室鋼筋混凝土造成的磁力抖動
   navProcessState();
+}
+function navSmoothHeading(raw){
+  navHeadingBuf.push(raw);
+  if(navHeadingBuf.length>6) navHeadingBuf.shift();
+  let sx=0, sy=0;
+  navHeadingBuf.forEach(d=>{ const r=d*Math.PI/180; sx+=Math.cos(r); sy+=Math.sin(r); });
+  let ang=Math.atan2(sy,sx)*180/Math.PI;
+  if(ang<0) ang+=360;
+  return ang;
 }
 function onNavMotion(e){
   ndMotEvtCount++; ndMotLastTime=Date.now();
@@ -1953,10 +1998,21 @@ function onNavMotion(e){
   navMoving = avg > 0.35; // 經驗閾值：實機測試時可依手機型號微調
   navProcessState();
 }
+function navAdvanceSeg(){
+  navSegIdx++; navTurnState='straight'; navSegMoveMs=0; navLastMotionTs=0;
+}
+function navSegEstimateMs(seg){
+  // 地圖本身沒有真實比例尺，用目前的車道寬 ROAD_WIDTH 粗略換算（假設車道寬約2.7公尺、
+  // 步行速度約1.1公尺/秒），再乘上寬容倍數，避免使用者走快一點就被提早誤判「已走完」。
+  const pxPerMeter = ROAD_WIDTH/2.7;
+  const walkPxPerSec = 1.1*pxPerMeter;
+  const estSec = Math.max(2, (seg.len||0)/walkPxPerSec);
+  return estSec*1000*1.6;
+}
 function navProcessState(){
   if(!navActive || navHeading==null){ updateBsInstruction(); return; }
   const seg=navSegs[navSegIdx];
-  if(seg && navMoving){
+  if(seg){
     const diff=navAngDiff(navHeading, seg.heading);
     if(diff<=40){
       navTurnState='straight';
@@ -1964,9 +2020,23 @@ function navProcessState(){
       if(navTurnState!=='turning'){ navTurnState='turning'; navTurnStartTime=Date.now(); }
       const nextSeg=navSegs[navSegIdx+1];
       // 轉彎後方向已貼近「下一段」，且維持了一小段時間（避免手部晃動誤判）→ 判定轉彎完成，更新下一步
+      // 註：這裡不再要求 navMoving 為 true 才處理——實測轉彎當下腳步常會放慢甚至短暫停下，
+      // 若還卡著「要在動才判斷方向」，反而會讓轉彎判定整個被跳過。
       if(nextSeg && navAngDiff(navHeading, nextSeg.heading)<=30 && Date.now()-navTurnStartTime>400){
-        navSegIdx++; navTurnState='straight';
+        navAdvanceSeg();
       }
+    }
+    // 直行保底機制：不管有沒有偵測到轉彎，只要持續移動的時間超過這段路的估計步行時長，
+    // 就直接視為已走完這段，避免因為轉彎判定失敗（磁力干擾、腳步變慢等）卡在同一段不動。
+    const now=Date.now();
+    if(navMoving){
+      if(navLastMotionTs) navSegMoveMs += now-navLastMotionTs;
+      navLastMotionTs=now;
+    }else{
+      navLastMotionTs=0;
+    }
+    if(navSegMoveMs>=navSegEstimateMs(seg)){
+      navAdvanceSeg();
     }
   }
   updateBsInstruction();
@@ -2003,9 +2073,11 @@ function updateNavDebugPanel(){
   set('ndpSegHeading', seg?seg.heading.toFixed(1)+'°（'+navHeadingLabel(seg.heading)+'）':'—（已抵達或無路徑）');
   const diff=(seg && navHeading!=null)?navAngDiff(navHeading, seg.heading):null;
   set('ndpDiff', diff==null?'—':diff.toFixed(1)+'° '+(diff<=40?'（視為直行，門檻40°）':'（超過門檻→判定轉彎中）'), diff==null?'':(diff<=40?'good':'warn'));
-  set('ndpMoving', navMoving?'是（在動）':'否（判定靜止，不會更新轉彎）', navMoving?'good':'warn');
+  set('ndpMoving', navMoving?'是（在動，計入直行保底計時）':'否（靜止，不計入直行保底計時，但仍會判斷轉彎）', navMoving?'good':'warn');
   set('ndpAccel', ndLastAccelAvg==null?'無資料':ndLastAccelAvg.toFixed(3)+'（門檻 0.35）', ndLastAccelAvg==null?'bad':(ndLastAccelAvg>0.35?'good':'warn'));
   set('ndpTurnState', navTurnState);
+  const estMs=seg?navSegEstimateMs(seg):null;
+  set('ndpFallback', (seg&&estMs)?((navSegMoveMs/1000).toFixed(1)+'s / '+(estMs/1000).toFixed(1)+'s（估計走完這段所需時間）'):'—', (seg&&estMs&&navSegMoveMs>=estMs)?'good':'');
   set('ndpSegIdx', navActive?((navSegIdx+1)+' / '+navSegs.length+' 段'):'尚未開始導航');
   const instr=navActive?navComputeInstruction():null;
   set('ndpInstr', instr?instr.text:'—');
@@ -2038,6 +2110,17 @@ function stepsOut(sp){
     {i:'🟠',t:'抵達「通往 1F」出口（橘色圓），沿匝道上行離場至 1F'},
   ];
   return steps;
+}
+/* 交通方式切換（開車 / 行人）UI */
+let TRAVEL_MODE='car';
+function setTravelMode(mode){
+  TRAVEL_MODE=mode;
+  const carBtn=document.getElementById('travelCarBtn');
+  const walkBtn=document.getElementById('travelWalkBtn');
+  if(carBtn) carBtn.classList.toggle('active', mode==='car');
+  if(walkBtn) walkBtn.classList.toggle('active', mode==='walk');
+  document.body.classList.toggle('travel-walk', mode==='walk');
+  document.body.classList.toggle('travel-car', mode==='car');
 }
 /* 方向切換 UI */
 /* 更新兩顆模式按鈕的 active 狀態，並在 body 上標記 dir-in / dir-out（維持搜尋框邊框動態上色） */
