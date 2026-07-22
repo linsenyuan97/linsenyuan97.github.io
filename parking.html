@@ -39,6 +39,14 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
 .mini-btn.on{background:linear-gradient(135deg,var(--accent-gold),#d97706);color:#fff;border-color:var(--accent-gold);}
 .search-row{display:flex;gap:8px;align-items:stretch;}
 
+/* 棟別快速按鈕（取代搜尋框）：A棟／B棟／C棟橫向排列 */
+.bldg-btn{flex:1;height:42px;border-radius:var(--radius-sm);
+  border:1px solid var(--glass-border);background:rgba(255,255,255,.04);
+  color:var(--text-1);font-family:inherit;font-size:.95rem;font-weight:700;letter-spacing:.5px;
+  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;}
+.bldg-btn:hover{background:rgba(79,147,214,.15);border-color:#4f93d6;color:#4f93d6;}
+.bldg-btn:active,.bldg-btn.active{background:rgba(79,147,214,.22);border-color:#4f93d6;color:#4f93d6;}
+
 /* ==================== 1. 調整最外層容器（parking.html 約 66 行） ==================== */
 .search-wrap {
   display: flex;
@@ -101,6 +109,23 @@ body.dir-out .search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 
 /* 找出口模式：地圖上不需要顯示入口(綠)標記；找車位模式：不需要顯示出口(橘)標記 */
 body.dir-out .ov[data-key="entry"]{display:none;}
 body.dir-in .ov[data-key="exit"]{display:none;}
+/* 行人模式：入口的汽車圖示與「目前位置」提示氣泡不需要顯示 */
+body.travel-walk .ov[data-key="entry"]{display:none;}
+/* 各棟入口點（entA1/entA2…）：平常不顯示紫色圓點，只有在「校正」模式下才顯示以便拖曳定位 */
+.entrance-pin{display:none;}
+/* 地圖依行進方向旋轉（track-up）：#floorplan 本身用 CSS transform 旋轉，
+   svg 內部「所有」文字則統一用 --map-counter-rotate 反向轉回來，維持文字永遠正向可讀。
+   個別文字若本身還有局部方向（例如直向車位號碼原本的 -90°），會在該文字自己的 inline
+   style 裡把兩個角度疊加寫在同一個 transform 屬性內（inline style 優先權高於這條規則，
+   但仍然引用同一個 --map-counter-rotate 變數，行為一致）。 */
+#floorplan{transform-origin:50% 50%;transition:transform .5s ease;}
+#floorplan text{transform-box:fill-box;transform-origin:center;
+  transform:rotate(var(--map-counter-rotate,0deg));transition:transform .5s ease;}
+body.editing .entrance-pin{display:block!important;}
+/* 行人模式：藍色定位標記（依查詢車位的鄰近入口，或所選棟別的2號入口動態定位）*/
+.walk-ent-marker{display:none;pointer-events:none;}
+.bldg-pin{display:none;}
+.bldg-pin.show{display:block;}
 /* 校正模式下兩者都要能被看到、拖曳校正，不受查詢方向影響 */
 body.editing .ov[data-key="entry"],
 body.editing .ov[data-key="exit"]{display:block!important;}
@@ -145,6 +170,10 @@ body.has-route .oneway-arrow{opacity:.16!important;transition:opacity .3s ease;}
 .mode-btn .mode-ic svg{display:block;}
 .mode-btn.active.mode-in{background:rgba(34,197,94,.15);color:#4ade80;}
 .mode-btn.active.mode-out{background:rgba(242,108,33,.15);color:#fb923c;}
+/* 找車位/找出口 按鈕：依交通方式（開車/行人）切換不同圖示 */
+.mode-btn .mode-ic svg.icon-walk-mode{display:none;}
+body.travel-walk .mode-btn .mode-ic svg.icon-car-mode{display:none;}
+body.travel-walk .mode-btn .mode-ic svg.icon-walk-mode{display:block;}
 
 /* 「開車 / 行人」交通方式切換按鈕群：置於「找車位／找出口」左方 */
 .travel-mode-group{flex-shrink:0;display:flex;gap:4px;padding:3px;
@@ -386,15 +415,19 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     <!-- 控制面板第二層的 CSS 排版優化 -->
 	<div class="search-row" style="display: flex; align-items: center; width: 100%; padding: 0 4px;">
 		<!-- 左側定位組件：固定寬度，完美置中 -->
-		<div class="location-trigger" style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-right: 8px;">
+		<div class="location-trigger" id="locationTrigger" style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-right: 8px;">
 			<span style="color: #fff; font-size: 16px; font-weight: bold; line-height: 1;">目前位置 B1</span>
 		</div>
 	
-		<!-- 中央搜尋框：自動撐滿剩餘空間 (flex-grow: 1)，並保持完整的圓角外框 -->
-		<div class="search-input-wrapper" style="flex: 1; display: flex; align-items: center; background: rgba(255,255,255,0.04);">
+		<!-- 棟別快速按鈕：橫向排列的 A棟／B棟／C棟，取代原本的搜尋輸入框 -->
+		<div class="bldg-btn-group" id="bldgBtnGroup" style="flex:1;display:none;gap:8px;">
+			<button type="button" class="bldg-btn" data-bldg="A" onclick="goToBuilding('A')">A 棟</button>
+			<button type="button" class="bldg-btn" data-bldg="B" onclick="goToBuilding('B')">B 棟</button>
+			<button type="button" class="bldg-btn" data-bldg="C" onclick="goToBuilding('C')">C 棟</button>
+		</div>
 
-		  <!-- 用 <form> 包起來，iOS 才會把它視為「可送出的搜尋表單」，
-			   虛擬鍵盤的 Return 鍵才會改成藍色「搜尋」；同時桌機 Enter 也走 submit。 -->
+		<!-- 原搜尋表單：功能仍保留給程式內部使用（車位查詢/路線繪製等），僅從畫面上隱藏 -->
+		<div class="search-input-wrapper" id="searchInputWrapper" style="flex:1;display:flex;align-items:center;background:rgba(255,255,255,0.04);">
 		  <form class="search-wrap" id="searchForm" onsubmit="event.preventDefault(); doSearch();" autocomplete="off" role="search">
 			<span class="s-ic">🔎</span>
 			<input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號 (如 1056)"
@@ -463,22 +496,38 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
       </div>
       <button class="mode-btn mode-in" id="modeInBtn" onclick="setMode('in')">
         <span class="mode-ic">
-          <svg width="26" height="15" viewBox="-1 6 24 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2 13h18M4 13V9a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4M1 13a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-1h14v1a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H1z" style="stroke:var(--accent-green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
-            <circle cx="5.5" cy="18.5" r="1.5" style="fill:var(--accent-green)"/>
-            <circle cx="16.5" cy="18.5" r="1.5" style="fill:var(--accent-green)"/>
+          <!-- 開車模式：經典「P」字停車標誌 -->
+          <svg class="icon-car-mode" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3.5" y="3.5" width="17" height="17" rx="4" style="stroke:var(--accent-green);stroke-width:1.8;stroke-linejoin:round"/>
+            <path d="M9.5 17V7h3.6a3 3 0 0 1 0 6H9.5" style="stroke:var(--accent-green);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round"/>
           </svg>
-        </span><span>找車位</span>
+          <!-- 行人模式（找愛車）：汽車圖示 -->
+          <svg class="icon-walk-mode" width="34" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" style="stroke:var(--accent-green);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/>
+            <rect x="2.5" y="11" width="19" height="5.5" rx="1.5" style="stroke:var(--accent-green);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/>
+            <circle cx="7" cy="17.3" r="1.6" style="fill:var(--accent-green)"/>
+            <circle cx="17" cy="17.3" r="1.6" style="fill:var(--accent-green)"/>
+          </svg>
+        </span><span id="modeInLabel">找車位</span>
       </button>
       <button class="mode-btn mode-out" id="modeOutBtn" onclick="setMode('out')">
         <span class="mode-ic">
-          <!-- 出口圖示：門框 + 向外箭頭（完整封閉、置中於方形 viewBox，不會被裁切）-->
-          <svg width="22" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- 開車模式：出口圖示（門框 + 向外箭頭）-->
+          <svg class="icon-car-mode" width="22" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8" style="stroke:var(--accent-cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
             <polyline points="15 8 19 12 15 16" style="stroke:var(--accent-cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
             <line x1="19" y1="12" x2="9" y2="12" style="stroke:var(--accent-cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
           </svg>
-        </span><span>找出口</span>
+          <!-- 行人模式（找棟別）：大樓圖示 -->
+          <svg class="icon-walk-mode" width="18" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5" y="3" width="14" height="18" rx="1" style="stroke:var(--accent-cyan);stroke-width:1.8;stroke-linejoin:round"/>
+            <rect x="7.8"  y="6"    width="2.2" height="2.2" rx="0.4" style="fill:var(--accent-cyan)"/>
+            <rect x="14"   y="6"    width="2.2" height="2.2" rx="0.4" style="fill:var(--accent-cyan)"/>
+            <rect x="7.8"  y="10.4" width="2.2" height="2.2" rx="0.4" style="fill:var(--accent-cyan)"/>
+            <rect x="14"   y="10.4" width="2.2" height="2.2" rx="0.4" style="fill:var(--accent-cyan)"/>
+            <rect x="10"   y="15.5" width="4"   height="5.5" style="fill:var(--accent-cyan)"/>
+          </svg>
+        </span><span id="modeOutLabel">找出口</span>
       </button>
     </div>
     </div>
@@ -492,7 +541,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
       <button onclick="exportJSON()">💾 匯出</button>
       <label class="eb-file">📂 匯入<input type="file" id="importFile" accept="application/json,.json" onchange="importJSON(event)" hidden></label>
       <button onclick="resetData()">♻ 還原初始</button>
-      <button onclick="resetOverlays()" title="還原棟／車道／入口／出口的位置">↩ 還原棟/通道</button>
+      <button onclick="resetOverlays()" title="還原棟／車道／入口／出口／各棟入口點的位置">↩ 還原棟/通道</button>
       <label class="eb-chk">車道寬<input type="range" id="roadWRange" min="20" max="80" step="1" value="72" oninput="setRoadWidth(this.value)" title="車道寬度"><span id="roadWVal">72</span></label>
       <button onclick="resetRoadWidth()" title="還原車道寬度為預設值 72">↩ 車道寬</button>
       <label class="eb-chk"><input type="checkbox" id="laneNodeToggle" onchange="toggleLaneNodes()"> 車道節點</label>
@@ -607,6 +656,24 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     <rect x="424" y="172" width="48" height="52" rx="6" fill="#142337" stroke="#2a4566" stroke-width="1.5"/>
     <text x="448" y="206" text-anchor="middle" font-size="22" font-family="-apple-system, sans-serif">🛗</text>-->
   </g>
+  <!-- A 棟目的地定位點：選到 A 棟時才顯示 -->
+  <g class="bldg-pin" id="bldgPin-A" data-key="A" filter="url(#glow)">
+    <circle cx="480" cy="235" r="20" fill="#4f93d6" class="entry-pulse"/>
+    <g transform="translate(460.8,199.8) scale(1.6)">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#4f93d6"/>
+      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
+    </g>
+  </g>
+
+  <!-- A 棟入口 1 / 入口 2：可在校正模式下個別拖曳移動位置 -->
+  <g class="ov entrance-pin" data-key="entA1" data-bldg="A" filter="url(#glow)">
+    <circle cx="446" cy="248" r="13" fill="#a855f7" stroke="#0a0f1c" stroke-width="2"/>
+    <text x="446" y="252" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="inherit">A1</text>
+  </g>
+  <g class="ov entrance-pin" data-key="entA2" data-bldg="A" filter="url(#glow)">
+    <circle cx="514" cy="248" r="13" fill="#a855f7" stroke="#0a0f1c" stroke-width="2"/>
+    <text x="514" y="252" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="inherit">A2</text>
+  </g>
 
   <!-- ==================== B 棟：文字絕對完美置中（已移除電梯） ==================== -->
   <g class="ov" data-key="B" filter="url(#buildingShadow)">
@@ -617,6 +684,24 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
      <!-- 電梯 1 
     <rect x="424" y="172" width="48" height="52" rx="6" fill="#142337" stroke="#2a4566" stroke-width="1.5"/>
     <text x="448" y="206" text-anchor="middle" font-size="22" font-family="-apple-system, sans-serif">🛗</text>-->
+  </g>
+  <!-- B 棟目的地定位點：選到 B 棟時才顯示 -->
+  <g class="bldg-pin" id="bldgPin-B" data-key="B" filter="url(#glow)">
+    <circle cx="401" cy="918" r="20" fill="#4f93d6" class="entry-pulse"/>
+    <g transform="translate(381.8,882.8) scale(1.6)">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#4f93d6"/>
+      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
+    </g>
+  </g>
+
+  <!-- B 棟入口 1 / 入口 2：可在校正模式下個別拖曳移動位置 -->
+  <g class="ov entrance-pin" data-key="entB1" data-bldg="B" filter="url(#glow)">
+    <circle cx="367" cy="931" r="13" fill="#a855f7" stroke="#0a0f1c" stroke-width="2"/>
+    <text x="367" y="935" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="inherit">B1</text>
+  </g>
+  <g class="ov entrance-pin" data-key="entB2" data-bldg="B" filter="url(#glow)">
+    <circle cx="435" cy="931" r="13" fill="#a855f7" stroke="#0a0f1c" stroke-width="2"/>
+    <text x="435" y="935" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="inherit">B2</text>
   </g>
 
   <!-- ==================== C 棟：文字絕對完美置中（已移除電梯） ==================== -->
@@ -629,8 +714,41 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     <!-- 垂直置中：1540 + (120 / 2) + (28 * 0.35) = 1610 -->
     <text x="522" y="1610" text-anchor="middle" font-size="40" font-weight="900" fill="#9dc0e4" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">C 棟</text>
   </g>
-  
-  
+  <!-- C 棟目的地定位點：選到 C 棟時才顯示 -->
+  <g class="bldg-pin" id="bldgPin-C" data-key="C" filter="url(#glow)">
+    <circle cx="522" cy="1645" r="20" fill="#4f93d6" class="entry-pulse"/>
+    <g transform="translate(502.8,1609.8) scale(1.6)">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#4f93d6"/>
+      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
+    </g>
+  </g>
+
+  <!-- C 棟入口 1 / 入口 2：可在校正模式下個別拖曳移動位置 -->
+  <g class="ov entrance-pin" data-key="entC1" data-bldg="C" filter="url(#glow)">
+    <circle cx="488" cy="1658" r="13" fill="#a855f7" stroke="#0a0f1c" stroke-width="2"/>
+    <text x="488" y="1662" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="inherit">C1</text>
+  </g>
+  <g class="ov entrance-pin" data-key="entC2" data-bldg="C" filter="url(#glow)">
+    <circle cx="556" cy="1658" r="13" fill="#a855f7" stroke="#0a0f1c" stroke-width="2"/>
+    <text x="556" y="1662" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="inherit">C2</text>
+  </g>
+
+  <!-- 行人模式藍色定位標記：位置由 JS 依「目前棟別」動態計算並搬移，一次顯示該棟的兩個入口 -->
+  <g id="walkEntMarker" class="walk-ent-marker" filter="url(#glow)">
+    <circle cx="0" cy="0" r="20" fill="#4f93d6" class="entry-pulse"/>
+    <g transform="translate(-19.2,-35.2) scale(1.6)">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#4f93d6"/>
+      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
+    </g>
+  </g>
+  <!-- 同一棟的第二個入口：與上面樣式完全相同，位置另外由 JS 移動 -->
+  <g id="walkEntMarker2" class="walk-ent-marker" filter="url(#glow)">
+    <circle cx="0" cy="0" r="20" fill="#4f93d6" class="entry-pulse"/>
+    <g transform="translate(-19.2,-35.2) scale(1.6)">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#4f93d6"/>
+      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
+    </g>
+  </g>
 
   <g class="ov" data-key="rampB1">
     <rect x="260" y="1082" width="480" height="80" rx="3" fill="url(#rampGrad)" stroke="#2f6fae" stroke-width="1.4" stroke-dasharray="8,6"/>
@@ -784,6 +902,15 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   <div class="ep-row"><span>車頭</span><select id="epFace"><option value="up">朝上</option><option value="down">朝下</option><option value="left">朝左</option><option value="right">朝右</option></select></div>
   <div class="ep-row"><span>區域名</span><input id="epZoneName" spellcheck="false"></div>
   <div class="ep-row"><span>電梯</span><input id="epLift" spellcheck="false"></div>
+  <div class="ep-row"><span>鄰近入口</span><select id="epEntrance">
+    <option value="">未設定</option>
+    <option value="entA1">A棟 入口1</option>
+    <option value="entA2">A棟 入口2</option>
+    <option value="entB1">B棟 入口1</option>
+    <option value="entB2">B棟 入口2</option>
+    <option value="entC1">C棟 入口1</option>
+    <option value="entC2">C棟 入口2</option>
+  </select></div>
   <div class="ep-actions">
     <button onclick="applyEdit()">套用</button>
     <button class="ghost" onclick="dupSpace()">複製</button>
@@ -807,137 +934,140 @@ let ROAD_WIDTH = (()=>{ try{const v=+localStorage.getItem(ROAD_W_KEY); if(v>0) r
 
 /* =====================================================================
    汽車位資料 CAR_SPACES（依 b1.jpg 實際平面圖建置，僅 10xx 汽車位）
-   ● 已含 1001–1120 共 116 格；無障礙♿：1016,1017,1032,1033,1085,1086
-   ● 未含/待確認（圖上壓摺痕或特殊格）：1004,1005,1006,1030
+   ● 共 120 格；無障礙♿：1016,1017,1032,1033,1085,1086
    ● 註：B棟下方主要為機車位(C系列)與台電配電場所，汽車位僅右側 1104–1107、1117–1120
-   ● 位置為初版，可用上方「校正」模式拖曳微調（底圖已設 b1.jpg）
+   ● 每格含 entrance 欄位（鄰近入口：entA1/entA2/entB1/entB2/entC1/entC2），對應地圖上各棟的兩個可拖曳入口標記
+   ● 位置已依使用者於 App 內校正後匯出的 JSON 為準（含各棟入口位置 OV_DEFAULT）
    ===================================================================== */
 const CAR_SPACES=[
-  {id:"1001",x:789,y:257,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1002",x:789,y:290,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1003",x:790,y:323,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1007",x:789,y:388,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1008",x:789,y:421,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1009",x:789,y:455,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1010",x:789,y:488,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1011",x:563,y:372,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1012",x:562,y:331,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1013",x:562,y:295,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1014",x:562,y:259,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1015",x:430,y:372,w:44,h:38,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1016",x:429,y:321,w:44,h:38,face:"left",type:"dis",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1017",x:430,y:278,w:44,h:38,face:"left",type:"dis",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1018",x:327,y:374,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1019",x:321,y:326,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1020",x:321,y:289,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1021",x:321,y:253,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1022",x:195,y:406,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1023",x:195,y:369,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1024",x:195,y:328,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1025",x:195,y:291,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1026",x:195,y:254,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1027",x:195,y:210,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1028",x:195,y:174,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1029",x:195,y:138,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1031",x:552,y:541,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"A棟"},
-  {id:"1032",x:553,y:578,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1033",x:552,y:615,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1034",x:557,y:664,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1035",x:557,y:699,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1036",x:557,y:733,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1037",x:557,y:775,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1038",x:557,y:809,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1039",x:557,y:843,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1040",x:557,y:881,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1041",x:557,y:915,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1042",x:557,y:949,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1043",x:654,y:947,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1044",x:654,y:913,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1045",x:654,y:879,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1046",x:654,y:842,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1047",x:654,y:808,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1048",x:654,y:774,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1049",x:654,y:734,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1050",x:654,y:700,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1051",x:654,y:666,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1052",x:655,y:620,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1053",x:655,y:585,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1054",x:655,y:550,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"A棟"},
-  {id:"1055",x:789,y:547,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟"},
-  {id:"1056",x:789,y:583,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1057",x:789,y:619,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1058",x:789,y:662,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1059",x:789,y:698,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1060",x:789,y:733,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1061",x:789,y:774,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1062",x:789,y:808,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1063",x:789,y:842,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1064",x:790,y:880,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1065",x:790,y:914,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1066",x:790,y:948,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1067",x:791,y:989,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1068",x:792,y:1025,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1069",x:792,y:1061,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1070",x:792,y:1096,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟"},
-  {id:"1071",x:433,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1072",x:400,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1073",x:365,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1074",x:324,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1075",x:290,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1076",x:257,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1077",x:214,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1078",x:213,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1079",x:245,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1080",x:309,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1081",x:338,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1082",x:371,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1083",x:401,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1084",x:431,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1085",x:434,y:1297,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1086",x:433,y:1341,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1087",x:557,y:1386,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1088",x:557,y:1347,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1089",x:557,y:1308,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1090",x:557,y:1267,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1091",x:557,y:1228,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟"},
-  {id:"1092",x:556,y:1190,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"B棟"},
-  {id:"1093",x:556,y:1152,w:44,h:36,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1094",x:555,y:1103,w:44,h:36,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1004",x:665,y:254,w:44,h:32,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1005",x:665,y:289,w:44,h:32,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1006",x:665,y:324,w:44,h:32,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟"},
-  {id:"1030",x:436,y:883,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟"},
-  {id:"1108",x:792,y:1145,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1109",x:792,y:1180,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1110",x:792,y:1215,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1111",x:792,y:1250,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1112",x:792,y:1292,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1113",x:792,y:1327,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1114",x:792,y:1362,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1115",x:792,y:1406,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1116",x:792,y:1441,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1117",x:792,y:1477,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1119",x:793,y:1563,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1118",x:793,y:1528,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1120",x:793,y:1598,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟"},
-  {id:"1095",x:653,y:1107,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1096",x:653,y:1152,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1097",x:653,y:1186,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1098",x:653,y:1220,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1099",x:653,y:1254,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1100",x:653,y:1296,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1101",x:653,y:1331,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1102",x:653,y:1365,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1103",x:653,y:1406,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1104",x:653,y:1467,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1105",x:653,y:1517,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1106",x:653,y:1551,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
-  {id:"1107",x:653,y:1587,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟"},
+  {id:"1001",x:789,y:257,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟",entrance:"entA2"},
+  {id:"1002",x:789,y:290,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟",entrance:"entA2"},
+  {id:"1003",x:790,y:323,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟",entrance:"entA2"},
+  {id:"1007",x:789,y:388,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟",entrance:"entA2"},
+  {id:"1008",x:789,y:421,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟",entrance:"entA2"},
+  {id:"1009",x:789,y:455,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟",entrance:"entA2"},
+  {id:"1010",x:789,y:488,w:44,h:30,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟",entrance:"entA2"},
+  {id:"1011",x:562,y:372,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA2"},
+  {id:"1012",x:562,y:331,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA2"},
+  {id:"1013",x:562,y:295,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA2"},
+  {id:"1014",x:562,y:259,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA2"},
+  {id:"1015",x:433,y:372,w:44,h:38,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1016",x:433,y:321,w:44,h:38,face:"left",type:"dis",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1017",x:433,y:278,w:44,h:38,face:"left",type:"dis",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1018",x:325,y:374,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1019",x:324,y:326,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1020",x:324,y:289,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1021",x:324,y:253,w:44,h:34,face:"left",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1022",x:195,y:406,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1023",x:195,y:369,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1024",x:195,y:328,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1025",x:195,y:291,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1026",x:195,y:254,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1027",x:195,y:210,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1028",x:195,y:174,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1029",x:195,y:138,w:44,h:34,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA1"},
+  {id:"1031",x:552,y:541,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"A棟",entrance:"entA2"},
+  {id:"1032",x:553,y:578,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1033",x:552,y:615,w:44,h:32,face:"left",type:"dis",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1034",x:557,y:664,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1035",x:557,y:699,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1036",x:557,y:733,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1037",x:557,y:775,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1038",x:557,y:809,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1039",x:557,y:843,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1040",x:557,y:881,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1041",x:557,y:915,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1042",x:557,y:949,w:44,h:32,face:"left",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1043",x:654,y:947,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1044",x:654,y:913,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1045",x:654,y:879,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1046",x:654,y:842,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1047",x:654,y:808,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1048",x:654,y:774,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1049",x:654,y:734,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1050",x:654,y:700,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1051",x:654,y:666,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1052",x:655,y:620,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1053",x:655,y:585,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1054",x:655,y:550,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"A棟",entrance:"entA2"},
+  {id:"1055",x:789,y:547,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"A棟",entrance:"entA2"},
+  {id:"1056",x:789,y:583,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1057",x:789,y:619,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1058",x:789,y:662,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1059",x:789,y:698,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1060",x:789,y:733,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1061",x:789,y:774,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1062",x:789,y:808,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1063",x:789,y:842,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1064",x:790,y:880,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1065",x:790,y:914,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1066",x:790,y:948,w:44,h:32,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1067",x:791,y:989,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1068",x:792,y:1025,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1069",x:792,y:1061,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1070",x:792,y:1096,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"B棟",entrance:"entB2"},
+  {id:"1071",x:433,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1072",x:400,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1073",x:365,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1074",x:324,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1075",x:290,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1076",x:257,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1077",x:214,y:1084,w:26,h:52,face:"down",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1078",x:213,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1079",x:245,y:1226,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1080",x:309,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1081",x:338,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1082",x:371,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1083",x:401,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1084",x:431,y:1225,w:26,h:52,face:"up",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1085",x:434,y:1297,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1086",x:433,y:1341,w:44,h:38,face:"left",type:"dis",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1087",x:557,y:1386,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1088",x:557,y:1347,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1089",x:557,y:1308,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1090",x:557,y:1267,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1091",x:557,y:1228,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1092",x:556,y:1190,w:44,h:36,face:"left",type:"reg",zoneName:"底部停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1093",x:556,y:1152,w:44,h:36,face:"left",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1094",x:555,y:1103,w:44,h:36,face:"left",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC1"},
+  {id:"1004",x:665,y:254,w:44,h:32,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA2"},
+  {id:"1005",x:665,y:289,w:44,h:32,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA2"},
+  {id:"1006",x:665,y:324,w:44,h:32,face:"right",type:"reg",zoneName:"上方停車區",lift:"A棟",entrance:"entA2"},
+  {id:"1030",x:436,y:883,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"B棟",entrance:"entB2"},
+  {id:"1108",x:792,y:1145,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1109",x:792,y:1180,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1110",x:792,y:1215,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1111",x:792,y:1250,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1112",x:792,y:1292,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1113",x:792,y:1327,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1114",x:792,y:1362,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1115",x:792,y:1406,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1116",x:792,y:1441,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1117",x:792,y:1477,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1119",x:793,y:1563,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1118",x:793,y:1528,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1120",x:793,y:1598,w:44,h:33,face:"left",type:"reg",zoneName:"右側車道",lift:"C棟",entrance:"entC2"},
+  {id:"1095",x:653,y:1107,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1096",x:653,y:1152,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1097",x:653,y:1186,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1098",x:653,y:1220,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1099",x:653,y:1254,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1100",x:653,y:1296,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1101",x:653,y:1331,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1102",x:653,y:1366,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1103",x:653,y:1406,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1104",x:653,y:1467,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1105",x:653,y:1517,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1106",x:653,y:1551,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
+  {id:"1107",x:653,y:1587,w:44,h:32,face:"right",type:"reg",zoneName:"中央停車區",lift:"C棟",entrance:"entC2"},
 ];
+
+/* 各棟入口代碼 → 顯示文字（entA1/entA2 為 SVG 上 .ov 標記的 data-key，同時也是可拖曳校正的 key）*/
+const ENTRANCE_LABELS={entA1:'A棟入口1',entA2:'A棟入口2',entB1:'B棟入口1',entB2:'B棟入口2',entC1:'C棟入口1',entC2:'C棟入口2'};
 
 /* 初始車位（第一次載入用；之後以校正存檔為準）*/
 function genFromClusters(){
-  return CAR_SPACES.map(s=>({...s, zone:s.zoneName||'car', provisional:false}));
+  return CAR_SPACES.map(s=>({...s, zone:s.zoneName||'car', entrance:s.entrance||'', provisional:false}));
 }
 function loadSaved(){ try{const j=localStorage.getItem(STORAGE_KEY);
   if(j){const d=JSON.parse(j); if(Array.isArray(d)&&d.length) return d;}}catch(e){} return null; }
@@ -1056,8 +1186,8 @@ function spaceInner(sp){
     content = (sp.w>=sp.h)
       ? `<text x="${cx}" y="${cy+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="${textFill}" font-family="monospace" font-weight="${textWeight}">${sp.id}</text>`
         + (selected ? `<text x="${cx}" y="${cy+fs*0.35+9}" text-anchor="middle" font-size="${tagFont}" fill="${tagFill}" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif">目的地</text>` : '')
-      : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="${textFill}" font-family="monospace" font-weight="${textWeight}" transform="rotate(-90 ${cx} ${cy})">${sp.id}</text>`
-        + (selected ? `<text x="${cx}" y="${cy+9}" text-anchor="middle" font-size="${tagFont}" fill="${tagFill}" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif" transform="rotate(-90 ${cx} ${cy})">目的地</text>` : '');
+      : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="${fs}" fill="${textFill}" font-family="monospace" font-weight="${textWeight}" style="transform-box:fill-box;transform-origin:center;transform:rotate(-90deg) rotate(var(--map-counter-rotate,0deg));transition:transform .5s ease;">${sp.id}</text>`
+        + (selected ? `<text x="${cx}" y="${cy+9}" text-anchor="middle" font-size="${tagFont}" fill="${tagFill}" font-weight="700" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif" style="transform-box:fill-box;transform-origin:center;transform:rotate(-90deg) rotate(var(--map-counter-rotate,0deg));transition:transform .5s ease;">目的地</text>` : '');
   }
   const selRing=(editMode&&sp.id===selEdit)
     ? `<rect x="${sp.x-3}" y="${sp.y-3}" width="${sp.w+6}" height="${sp.h+6}" rx="3" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3" filter="url(#glowYellow)"/>`:'';
@@ -1611,19 +1741,77 @@ function findShortestPath(startPt, endPt) {
   return dijkstra('START', 'END', nodes, edges);
 }
 
+/* 各棟入口點的原始座標（對應 SVG 上 entA1/entA2… 標記），套用 OV_OFFSETS 校正後的位移，
+   即可得到目前實際位置 —— 供「行人模式：找愛車」路線的起點使用 */
+const ENTRANCE_BASE={
+  entA1:{x:446,y:248}, entA2:{x:514,y:248},
+  entB1:{x:367,y:931}, entB2:{x:435,y:931},
+  entC1:{x:488,y:1658}, entC2:{x:556,y:1658}
+};
+function entranceXY(key){
+  const b=ENTRANCE_BASE[key]; if(!b) return null;
+  const o=ovOf(key);
+  return [b.x+o.dx, b.y+o.dy];
+}
+
+/* 行人模式藍色定位標記（尚未選定車位、單純瀏覽某一棟時，會同時顯示「該棟」的兩個入口）：
+   1. 尚未選定車位 + 找棟別(out)時已手動點選 A/B/C 按鈕 → 以該按鈕棟別為準（方便瀏覽任一棟的兩個入口）
+   2. 已經選定車位 → 隱藏這兩個「瀏覽用」標記；改由 drawRoute() 在車位真正對應的那個入口
+      （sp.entrance）畫出 entPing 圖示＋引導線，避免瀏覽標記跟路線的入口icon重複、混淆。
+   3. 都沒有 → 隱藏兩個標記 */
+function updateWalkEntMarker(){
+  const m1=document.getElementById('walkEntMarker');
+  const m2=document.getElementById('walkEntMarker2');
+  if(!m1||!m2) return;
+  if(TRAVEL_MODE!=='walk'){ m1.style.display='none'; m2.style.display='none'; return; }
+  if (currentId && spaceMap[currentId]) { m1.style.display='none'; m2.style.display='none'; return; }
+  let bKey=null;
+  const activeBtn=document.querySelector('.bldg-btn.active');
+  if (activeBtn) {
+    bKey = activeBtn.getAttribute('data-bldg');
+  }
+  if (bKey) {
+    const xy1=entranceXY('ent'+bKey+'1');
+    const xy2=entranceXY('ent'+bKey+'2');
+    if (xy1) { m1.setAttribute('transform', `translate(${xy1[0]},${xy1[1]})`); m1.style.display='block'; } else { m1.style.display='none'; }
+    if (xy2) { m2.setAttribute('transform', `translate(${xy2[0]},${xy2[1]})`); m2.style.display='block'; } else { m2.style.display='none'; }
+  } else {
+    m1.style.display='none'; m2.style.display='none';
+  }
+}
+
 function buildPathIn(sp){
   const [ax,ay]=accessOf(sp);
   const tx=nearest(TRUNK_X,ax);
+  // 行人模式「找愛車」：路線起點改成該車位設定的鄰近入口（棟別出口），而不是汽車車道的入口
+  const walkMode = (TRAVEL_MODE==='walk');
+  const entXY = walkMode ? entranceXY(sp.entrance) : null;
+
+  if (entXY) {
+    // 行人模式先簡化為「兩點間最短距離」直線，不繞車道路網（之後再視需要調整成貼合走道的路徑）
+    let pts = [[entXY[0], entXY[1]], [ax, ay]];
+    pts = trimPathEnd(pts, 15);
+    const destDoor=pts[pts.length-1];
+    const smallEl = document.querySelector('.titlebar small');
+    if (smallEl) {
+      smallEl.innerHTML = `· [${sp.id}] 行人（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${sp.entrance}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
+    }
+    return {pts, trunkX:tx, ay,
+      startPt:entXY, startColor:'#22c55e', destPt:destDoor, destColor:'#f59e0b'};
+  }
+
+  // 開車模式：沿車道路網跑 dijkstra 演算法
+  const startXY = [ENTRY.x, ENTRY.y];
   let dijkstraResult = null;
   let debugMsg = '';
   try {
-    dijkstraResult = findShortestPath([ENTRY.x, ENTRY.y], [ax, ay]);
+    dijkstraResult = findShortestPath(startXY, [ax, ay]);
     debugMsg = dijkstraResult ? `OK(${dijkstraResult.length}pts)` : 'NULL';
   } catch(e) {
     debugMsg = `ERROR: ${e.message}`;
   }
-  let pts = dijkstraResult || [[ENTRY.x, ENTRY.y], [tx, ENTRY_LANE_Y], [tx, ay], [ax, ay]];
-  // 起點從「車頭前緣」出發，而不是從車輛中心開始：把路徑第一個點（車輛中心/entry 節點）
+  let pts = dijkstraResult || [[startXY[0], startXY[1]], [tx, startXY[1]], [tx, ay], [ax, ay]];
+  // 開車版：起點從「車頭前緣」出發，而不是從車輛中心開始：把路徑第一個點（車輛中心/entry 節點）
   // 換成／補上車頭鼻端座標，讓導引線視覺上是從車子前方畫出去。
   const frontPt = entryFrontPoint();
   if (Math.hypot(pts[0][0]-ENTRY.x, pts[0][1]-ENTRY.y) < 1) {
@@ -1631,6 +1819,7 @@ function buildPathIn(sp){
   } else {
     pts.unshift(frontPt);
   }
+  const startPt = frontPt;
   // 終點退回到「車位正門口（車道邊緣）」：沿路徑從尾端往車道方向退回 15px，
   // 讓終點圓點/箭頭落在車位格子外的車道上，不會插進格子、不遮住車位號碼；車位本身以高亮發光標示。
   pts = trimPathEnd(pts, 15);
@@ -1641,12 +1830,32 @@ function buildPathIn(sp){
   }
   console.log(`[Route] space=${sp.id}, access=(${ax},${ay}), dijkstra=${debugMsg}, path=`, JSON.stringify(pts));
   return {pts, trunkX:tx, ay,
-    startPt:frontPt, startColor:'#22c55e', destPt:destDoor, destColor:'#f59e0b'};
+    startPt, startColor:'#22c55e', destPt:destDoor, destColor:'#f59e0b'};
 }
 
 function buildPathOut(sp){
   const [ax,ay]=accessOf(sp);
   const tx=nearest(TRUNK_X,ax);
+  // 行人模式「找棟別」：路線終點改成該車位設定的鄰近入口（棟別入口），
+  // 不論目前有沒有點選 A/B/C 棟別按鈕，都預設依車位資訊上的棟別入口為準，
+  // 引導線方向為「車位 → 入口」。
+  const walkMode = (TRAVEL_MODE==='walk');
+  const entXY = walkMode ? entranceXY(sp.entrance) : null;
+
+  if (entXY) {
+    // 行人模式先簡化為「兩點間最短距離」直線，不繞車道路網（之後再視需要調整成貼合走道的路徑）
+    let pts = [[ax, ay], [entXY[0], entXY[1]]];
+    pts = trimPathStart(pts, 15);   // 起點退離車位格子，避免插進車位、遮住車位號碼
+    pts = trimPathEnd(pts, 20);     // 終點退離入口標記（藍色定位圖示半徑約 20），不重疊
+    const startDoor=pts[0], destDoor=pts[pts.length-1];
+    const smallEl = document.querySelector('.titlebar small');
+    if (smallEl) {
+      smallEl.innerHTML = `· [${sp.id}] 行人找棟別（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${sp.entrance}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
+    }
+    return {pts, trunkX:tx, ay,
+      startPt:startDoor, startColor:'#f59e0b', destPt:destDoor, destColor:'#4f93d6'};
+  }
+
   let dijkstraResult = null;
   let debugMsg = '';
   try {
@@ -1763,12 +1972,36 @@ function drawRoute(sp){
   const spaceCX=sp.x+sp.w/2, spaceCY=sp.y+sp.h/2;
   const isSpaceStart = Math.hypot(s0x-spaceCX, s0y-spaceCY) < 1;
   const isSpaceDest   = Math.hypot(dx-spaceCX, dy-spaceCY) < 1;
-  const startDot = isSpaceStart ? '' : `<circle cx="${s0x}" cy="${s0y}" r="6" fill="${P.startColor}" stroke="#fff" stroke-width="2"/>`;
-  // 找出口(out)：終點就是「出」字閘門口，圓圈本身已是明確標記，故不再另外畫脈動目標圈，只保留箭頭指入。
-  const destDots = (isSpaceDest || routeDir==='out') ? '' : `
+  // 行人模式下，路線兩端有一端會是「棟別入口」：找愛車(in)＝起點；找棟別(out)＝終點。
+  // 這一端要畫出跟入口定位標記(walkEntMarker)同色的脈動圓圈，並且因為這段markup最終會
+  // 附加在 routeLayer 裡（routeLayer 會被搬到 #floorplan 最後一個子節點＝繪製在最上層），
+  // 保證這個圓圈一定疊在入口定位標記的藍色圓餅之上，不會被蓋住。
+  const walkMode  = (TRAVEL_MODE==='walk');
+  const entAtStart = walkMode && routeDir==='in';
+  const entAtDest  = walkMode && routeDir==='out';
+  const ENT_PING_COLOR='#4f93d6';   // 與 walkEntMarker / bldg-pin 同色，讓「入口」視覺語言一致
+  // 跟 walkEntMarker 用同一個地圖定位pin圖形（同一個 path，只是依 20→8 的半徑比例縮小），
+  // 讓路線上真正對應到的那個入口，也能明確顯示「這是入口座標」的圖示，而不只是一顆素色圓點。
+  const ENT_PIN_SCALE=0.64, ENT_PIN_TX=-7.68, ENT_PIN_TY=-14.08;
+  const entPinIcon=(x,y)=>`
+    <g transform="translate(${x+ENT_PIN_TX},${y+ENT_PIN_TY}) scale(${ENT_PIN_SCALE})">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="${ENT_PING_COLOR}"/>
+      <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
+    </g>`;
+  const entPing = (x,y)=>`
+    <circle cx="${x}" cy="${y}" r="8" fill="none" stroke="${ENT_PING_COLOR}" stroke-width="2" class="ping-circle"/>
+    <circle cx="${x}" cy="${y}" r="8" fill="none" stroke="${ENT_PING_COLOR}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
+    <circle cx="${x}" cy="${y}" r="6.5" fill="${ENT_PING_COLOR}" stroke="#fff" stroke-width="2"/>
+    ${entPinIcon(x,y)}`;
+  const startDot = isSpaceStart ? '' : (entAtStart ? entPing(s0x,s0y)
+    : `<circle cx="${s0x}" cy="${s0y}" r="6" fill="${P.startColor}" stroke="#fff" stroke-width="2"/>`);
+  // 找出口(out)：開車模式下終點是「出」字閘門口，圓圈本身已是明確標記，不用再畫脈動目標圈；
+  // 但行人模式的「找棟別」(entAtDest)，終點是棟別入口，仍要跟找愛車一樣顯示脈動圓圈。
+  const destDots = isSpaceDest ? '' : (entAtDest ? entPing(dx,dy)
+    : (routeDir==='out' ? '' : `
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="2" class="ping-circle"/>
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
-    <circle cx="${dx}" cy="${dy}" r="6.5" fill="${P.destColor}" stroke="#fff" stroke-width="2"/>`;
+    <circle cx="${dx}" cy="${dy}" r="6.5" fill="${P.destColor}" stroke="#fff" stroke-width="2"/>`));
   // 箭頭先不畫進 path，等延伸動畫播完才補上（marker-end 是畫在路徑「終點座標」上，
   // 不受 stroke-dashoffset 影響，若一開始就加上會讓箭頭在線還沒延伸到之前就提早出現）。
   const needsArrow = !isSpaceDest;
@@ -1828,6 +2061,52 @@ function drawRoute(sp){
     const arrowMarksEl = rl.querySelector('.route-arrow-marks');
     if(arrowMarksEl) arrowMarksEl.style.opacity = '1';
   }, DRAW_MS + 30);
+  updateMapRotation(true);   // 只要畫出路線，地圖就依這條路線的行進方向旋轉（瞬間套用，緊接著要置中車位）
+}
+
+/* ===================== 地圖依行進方向旋轉（track-up）=====================
+   只要查到車位、畫面上有畫出引導線，就把整張地圖旋轉成「現在要走的這一段方向朝上」。
+   刻意不依賴手機羅盤——地下室磁力干擾大、指南針常常不準——而是直接用路徑本身
+   已經算好的方向（跟「手機導航」文字提示用的是同一套 navBearing 邏輯，只是這裡拿來轉整張地圖，
+   而不是拿來跟羅盤方向比對）：
+   - 沒有開「開始導航」：用整條路徑第一段的方向。
+   - 有開「開始導航」：改用使用者目前走到的那一段（navSegIdx），每次判定走完一段轉彎（navAdvanceSeg）
+     就會再重新旋轉一次，讓地圖持續跟著「現在這一段」轉。
+   地圖本身用 CSS transform 旋轉 #floorplan 這個 svg；旋轉角度另外寫進 --map-counter-rotate
+   這個 CSS 變數（取負值），讓 svg 內部所有文字（見上面 #floorplan text 那條 CSS 規則）能自動反向轉回來，
+   維持文字永遠正向可讀，不會因為地圖轉了就跟著歪掉。 */
+let MAP_ROTATE_DEG=0;
+function setMapRotation(deg, instant){
+  MAP_ROTATE_DEG=deg;
+  const svg=document.getElementById('floorplan');
+  if(!svg) return;
+  if(instant){
+    // 瞬間套用角度（不要動畫）：因為呼叫這裡之後緊接著會用 getBoundingClientRect() 算置中位置，
+    // 若還在轉場動畫途中量測，算出來的置中座標會是「轉到一半」的位置，不是最終角度的位置。
+    svg.style.transition='none';
+    svg.style.transform = deg ? `rotate(${deg}deg)` : '';
+    svg.style.setProperty('--map-counter-rotate', (-deg)+'deg');
+    void svg.offsetWidth;   // 強制 reflow，讓上面「先關閉 transition」生效，才不會這次的變化也被動畫
+    svg.style.transition='';
+  } else {
+    svg.style.transform = deg ? `rotate(${deg}deg)` : '';
+    svg.style.setProperty('--map-counter-rotate', (-deg)+'deg');
+  }
+}
+function currentRouteHeadingDeg(){
+  const pts=window._navPath;
+  if(!pts || pts.length<2) return null;
+  if(navActive && navSegs.length){
+    const idx=Math.min(navSegIdx, navSegs.length-1);
+    if(navSegs[idx]) return navSegs[idx].heading;
+  }
+  return navBearing(pts[0], pts[1]);
+}
+function updateMapRotation(instant){
+  const hasRoute=document.body.classList.contains('has-route');
+  if(!hasRoute){ setMapRotation(0, instant); return; }
+  const heading=currentRouteHeadingDeg();
+  setMapRotation(heading==null ? 0 : -heading, instant);
 }
 
 /* ===================== 手機導航（方向感測器 + 加速度計） =====================
@@ -2000,6 +2279,7 @@ function onNavMotion(e){
 }
 function navAdvanceSeg(){
   navSegIdx++; navTurnState='straight'; navSegMoveMs=0; navLastMotionTs=0;
+  updateMapRotation();   // 走完一段、轉彎判定完成：地圖立刻跟著轉成「下一段」的方向
 }
 function navSegEstimateMs(seg){
   // 地圖本身沒有真實比例尺，用目前的車道寬 ROAD_WIDTH 粗略換算（假設車道寬約2.7公尺、
@@ -2086,16 +2366,25 @@ function updateNavDebugPanel(){
 function routeSteps(sp){ return routeDir==='in'?stepsIn(sp):stepsOut(sp); }
 function stepsIn(sp){
   const {trunkX,ay}=buildPathIn(sp);
-  const side=trunkX<=300?'左側':trunkX>=700?'右側':'中央';
-  const goDown=ay>ENTRY_LANE_Y;
+  const walkMode=(TRAVEL_MODE==='walk');
   const faceTxt={up:'車頭朝內（上）',down:'車頭朝外（下）',left:'靠左側',right:'靠右側'}[sp.face]||'';
   const dis=sp.type==='dis'?'（無障礙車位）':'';
+  const entTxt=sp.entrance?ENTRANCE_LABELS[sp.entrance]||sp.entrance:'';
+  if(walkMode){
+    // 行人模式目前先以「直線最短距離」帶路，步驟先簡化為兩段（之後再視走道實況調整）
+    return [
+      {i:'🚶',t:`從「${entTxt||'棟別入口'}」出發`},
+      {i:'🚗',t:`直線前往 ${sp.zoneName} 區域，找到愛車 ${sp.id}${dis}，鄰近電梯：${sp.lift||'—'}`}
+    ];
+  }
+  const side=trunkX<=300?'左側':trunkX>=700?'右側':'中央';
+  const goDown=ay>ENTRY_LANE_Y;
   const steps=[{i:'🟢',t:'自「通往 B1」入口進入本層（1F 下行至 B1），保持右側行駛'}];
   if(side==='右側')steps.push({i:'➡️',t:'靠右行駛，沿右側主車道前進'});
   else if(side==='左側')steps.push({i:'⬅️',t:'繞行至左側主車道'});
   else steps.push({i:'↕️',t:'行駛至中央車道'});
   steps.push({i:goDown?'⬇️':'⬆️',t:`沿車道${goDown?'向下':'向上'}行駛至 ${sp.zoneName} 區域`});
-  steps.push({i:'🅿',t:`找到車位 ${sp.id}${dis}，${faceTxt}停入。鄰近電梯：${sp.lift||'—'}`});
+  steps.push({i:'🅿',t:`找到車位 ${sp.id}${dis}，${faceTxt}停入。鄰近電梯：${sp.lift||'—'}${entTxt?'（'+entTxt+'）':''}`});
   return steps;
 }
 function stepsOut(sp){
@@ -2114,6 +2403,7 @@ function stepsOut(sp){
 /* 交通方式切換（開車 / 行人）UI */
 let TRAVEL_MODE='car';
 function setTravelMode(mode){
+  const prevMode=TRAVEL_MODE;
   TRAVEL_MODE=mode;
   const carBtn=document.getElementById('travelCarBtn');
   const walkBtn=document.getElementById('travelWalkBtn');
@@ -2121,6 +2411,46 @@ function setTravelMode(mode){
   if(walkBtn) walkBtn.classList.toggle('active', mode==='walk');
   document.body.classList.toggle('travel-walk', mode==='walk');
   document.body.classList.toggle('travel-car', mode==='car');
+  /* 開車模式：找車位／找出口；行人模式：找愛車／找棟別 */
+  const inLabel=document.getElementById('modeInLabel');
+  const outLabel=document.getElementById('modeOutLabel');
+  if(inLabel)  inLabel.textContent  = (mode==='walk') ? '找愛車' : '找車位';
+  if(outLabel) outLabel.textContent = (mode==='walk') ? '找棟別' : '找出口';
+  /* 只要目前有正確選定的車位（currentId 有效），切換汽車／行人 icon 時，
+     若目前方向還停在「找車位／找愛車」(routeDir='in')，自動切換成「找出口／找棟別」(routeDir='out')：
+     - 車子「找車位」→切成行人：自動變成「找棟別」
+     - 行人「找愛車」→切成汽車：自動變成「找出口」
+     （若目前已經是 'out' 方向，維持原狀，不需要再切換，交給下面的 drawRoute 依新模式重畫即可）*/
+  let routeAlreadyRedrawn=false;
+  if (mode!==prevMode && currentId && spaceMap[currentId] && routeDir==='in') {
+    setMode('out');   // setMode() 內部已經會依 currentId 重新 drawRoute() 一次
+    routeAlreadyRedrawn=true;
+    if (mode==='walk') {
+      const anyBldgActive=!!document.querySelector('.bldg-btn.active');
+      if(!anyBldgActive){
+        const bKey=(spaceMap[currentId].lift||'').replace('棟','').trim();
+        if(bKey) goToBuilding(bKey);
+      }
+    }
+  }
+  updateTopPanel();
+  // 切換汽車／行人時，若目前已經有選定車位，路線終點/起點的意義會跟著模式改變
+  // （例如行人「找棟別」切成汽車後，routeDir 仍是 'out' 但改標示為「找出口」），
+  // 這裡要重新畫一次路線，讓引導線與入口/出口icon立刻對應到新模式，而不是停留在舊模式的畫面上。
+  if (!routeAlreadyRedrawn && currentId && spaceMap[currentId]) drawRoute(spaceMap[currentId]);
+  updateRouteBanner();
+  updateWalkEntMarker();
+}
+/* 依「交通方式」＋「找車位/找出口方向」共同決定上方要顯示搜尋框還是棟別按鈕：
+   - 開車模式：不論方向，一律顯示搜尋框（車位編號查詢）
+   - 行人模式 + 找愛車（routeDir='in'）：顯示搜尋框（輸入愛車的車位編號）
+   - 行人模式 + 找棟別（routeDir='out'）：顯示 A棟/B棟/C棟 按鈕 */
+function updateTopPanel(){
+  const bldgGroup=document.getElementById('bldgBtnGroup');
+  const searchWrap=document.getElementById('searchInputWrapper');
+  const showBldg = (TRAVEL_MODE==='walk' && routeDir==='out');
+  if(bldgGroup) bldgGroup.style.display = showBldg ? 'flex' : 'none';
+  if(searchWrap) searchWrap.style.display = showBldg ? 'none' : 'flex';
 }
 /* 方向切換 UI */
 /* 更新兩顆模式按鈕的 active 狀態，並在 body 上標記 dir-in / dir-out（維持搜尋框邊框動態上色） */
@@ -2136,6 +2466,7 @@ function updateDirUI(){
 function setMode(dir){
   routeDir = dir;
   updateDirUI();
+  updateTopPanel();
   if(currentId){ drawRoute(spaceMap[currentId]); updateRouteBanner(); }
 }
 /* 舊 API 相容：仍保留 toggleDir 讓程式其他呼叫不炸 */
@@ -2170,6 +2501,15 @@ function selectSpace(id){
       prev.classList.remove('sp-highlight'); prev.classList.remove('sp-bounce');
       spacesLayer.appendChild(prev);   // 還原回原本圖層順序
     }}
+  // 行人模式 + 找棟別（routeDir='out'）：若目前尚未選擇任何棟別按鈕，
+  // 預設依這個車位資訊上記錄的棟別（sp.lift）自動反白對應按鈕，導向該車位的棟別入口。
+  if (TRAVEL_MODE==='walk' && routeDir==='out') {
+    const anyBldgActive = !!document.querySelector('.bldg-btn.active');
+    if (!anyBldgActive) {
+      const bKey=(sp.lift||'').replace('棟','').trim();
+      if (bKey) goToBuilding(bKey);
+    }
+  }
   const el=document.getElementById('sp-'+cssId(id));
   if(el){el.innerHTML=spaceInner(sp);   // 先依選中狀態重繪（亮色粗體），再疊加查詢高亮效果
     const r=el.querySelector('rect');
@@ -2183,6 +2523,7 @@ function selectSpace(id){
   }
   refreshReservedSpaces(id);   // 有查詢中：除了目前選中的這個車位（已套用查詢高亮），其餘預約車位一律退回一般樣式
   updateDirUI(); drawRoute(sp); setInfoReady(true); updateRouteBanner(); scrollToSpace(sp); searchEl.blur();
+  updateWalkEntMarker();
 }
 function clearSelection(){
   document.body.classList.remove('has-route');
@@ -2198,6 +2539,8 @@ function clearSelection(){
   }
   document.getElementById('routeLayer').innerHTML=''; setInfoReady(false); updateDirUI(); hideRouteBanner();
   refreshReservedSpaces();   // 沒有查詢中：所有預約車位恢復初始紫色樣式
+  updateWalkEntMarker();
+  updateMapRotation();   // 清除查詢＝沒有路線了，地圖角度重設回正常方向
 }
 function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('clearBtn').style.display='none';clearSelection();clearError();closeSug();}
 function showError(){document.getElementById('errMsg').classList.add('show');}
@@ -2209,10 +2552,12 @@ function setInfoReady(on){ /* 舊版是讓「!」按鈕發光；新版由兩顆�
    使用者可按卡片右上角 ✕ 關閉，或清除查詢時自動收合。 */
 function updateRouteBanner(){
   const sheet=document.getElementById('bottomSheet');
-  if(!currentId){ sheet.classList.remove('show'); return; }
+  if(!currentId || TRAVEL_MODE==='car'){ sheet.classList.remove('show'); return; }
   const textEl=document.getElementById('bsTextNormal');
+  const bannerSp=spaceMap[currentId];
+  const bannerEntLbl = (TRAVEL_MODE==='walk' && bannerSp && bannerSp.entrance) ? (ENTRANCE_LABELS[bannerSp.entrance]||bannerSp.entrance) : 'B1 入口';
   textEl.textContent = routeDir==='in'
-    ? `從 B1 入口到車位 ${currentId}`
+    ? `從 ${bannerEntLbl} 到車位 ${currentId}`
     : `從車位 ${currentId} 到 B1 出口`;
   sheet.classList.remove('dir-in','dir-out');
   sheet.classList.add(routeDir==='in' ? 'dir-in' : 'dir-out');
@@ -2230,8 +2575,12 @@ function openInfo(){
   if(currentId&&spaceMap[currentId]){
     const sp=spaceMap[currentId];
     const dirTxt = routeDir==='in' ? '入口 → 車位' : '車位 → 出口';
-    const dirCellLbl = routeDir==='in' ? '進入方式' : '離場方式';
-    const dirCellVal = routeDir==='in' ? '由「通往B1」入口進場' : '由「通往1F」匝道離場';
+    const dirCellLbl = routeDir==='in' ? (TRAVEL_MODE==='walk' ? '行走方式' : '進入方式') : '離場方式';
+    const dirCellVal = routeDir==='in'
+      ? (TRAVEL_MODE==='walk'
+          ? `從 ${sp.entrance ? (ENTRANCE_LABELS[sp.entrance]||sp.entrance) : '棟別入口'} 前往車位`
+          : '由「通往B1」入口進場')
+      : '由「通往1F」匝道離場';
     const badge=isReserved(sp)?'<span class="type-badge" style="background:rgba(220,38,38,.15);color:#f87171;border:1px solid rgba(220,38,38,.4)">🔒 預約車位</span>'
       :'<span class="type-badge type-reg">🚗 一般車位</span>';
     const steps=routeSteps(sp).map((s,i)=>`${i>0?'<div class="step-line"></div>':''}<div class="route-step"><div class="step-dot">${i+1}</div><div class="step-txt">${s.i} ${s.t}</div></div>`).join('');
@@ -2241,7 +2590,8 @@ function openInfo(){
         <div class="info-cell"><div class="info-cell-lbl">樓層</div><div class="info-cell-val">B1 地下一層</div></div>
         <div class="info-cell"><div class="info-cell-lbl">所在區域</div><div class="info-cell-val">${sp.zoneName}</div></div>
         <div class="info-cell"><div class="info-cell-lbl">${dirCellLbl}</div><div class="info-cell-val">${dirCellVal}</div></div>
-        <div class="info-cell"><div class="info-cell-lbl">鄰近電梯</div><div class="info-cell-val">${sp.lift||'—'}</div></div></div>
+        <div class="info-cell"><div class="info-cell-lbl">鄰近電梯</div><div class="info-cell-val">${sp.lift||'—'}</div></div>
+        <div class="info-cell"><div class="info-cell-lbl">鄰近入口</div><div class="info-cell-val">${sp.entrance?(ENTRANCE_LABELS[sp.entrance]||sp.entrance):'—'}</div></div></div>
       <div class="route-hdr">🛣️ 建議行駛路線（${dirTxt}）</div>${steps}
       ${sp.provisional?'<div class="dlg-foot">※ 此編號為暫定占位碼，請於「校正」模式改為實際編號。</div>':''}`;
   } else {
@@ -2267,7 +2617,7 @@ searchEl.addEventListener('input',()=>{
   const m=SPACES.filter(s=>s.id.toUpperCase().startsWith(v)).slice(0,12);
   if(!m.length){closeSug();return;}
   sugEl.innerHTML=m.map(s=>`<div class="sug-item" onclick="selectSpace('${jsStr(s.id)}')">
-    <span class="sug-id">${s.id}</span>${s.type==='dis'?'':`<span class="sug-badge badge-reg">鄰近${s.lift||'—'}</span>`}</div>`).join('');
+    <span class="sug-id">${s.id}</span>${s.type==='dis'?'':`<span class="sug-badge badge-reg">鄰近${s.entrance?(ENTRANCE_LABELS[s.entrance]||s.entrance):(s.lift||'—')}</span>`}</div>`).join('');
   sugEl.style.display='block';
 
   /* 車位編號都是 4 碼；輸入剛好 4 碼且存在此車位 → 200ms 後自動送出 */
@@ -2284,11 +2634,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInfo();});
 function closeSug(){sugEl.style.display='none';}
 
 function scrollToSpace(sp){
-  const map=document.getElementById('mapArea'),svg=document.getElementById('floorplan');
-  // viewBox 已改為 "120 20 720 1640"，換算時要扣掉起始偏移並用 VB_W/VB_H
-  const sx=svg.clientWidth/VB_W, sy=svg.clientHeight/VB_H;
-  const px=(sp.x+sp.w/2-120)*sx, py=(sp.y+sp.h/2-20)*sy;
-  map.scrollTo({left:px-map.clientWidth/2, top:py-map.clientHeight/2, behavior:'smooth'});
+  const map=document.getElementById('mapArea');
+  const el=document.getElementById('sp-'+cssId(sp.id));
+  if(!map||!el) return;
+  const mr=map.getBoundingClientRect(), er=el.getBoundingClientRect();
+  if(er.width===0 && er.height===0) return;
+  const cx=(er.left+er.width/2)-mr.left+map.scrollLeft;
+  const cy=(er.top +er.height/2)-mr.top +map.scrollTop;
+  map.scrollTo({left:cx-map.clientWidth/2, top:cy-map.clientHeight/2, behavior:'smooth'});
 }
 
 /* 第一次載入時，把地圖捲到讓「入口(入)」標記位於畫面中央。
@@ -2303,6 +2656,22 @@ function scrollToEntry(){
   const cx=(er.left+er.width/2)-mr.left+map.scrollLeft;
   const cy=(er.top +er.height/2)-mr.top +map.scrollTop;
   map.scrollTo({left:cx-map.clientWidth/2, top:cy-map.clientHeight/2, behavior:'auto'});
+}
+
+/* 點擊 A棟／B棟／C棟 按鈕：把地圖捲動到該棟標示置中（邏輯比照 scrollToEntry） */
+function goToBuilding(key){
+  const map=document.getElementById('mapArea');
+  const el=document.querySelector('.ov[data-key="'+key+'"]');
+  if(!map||!el) return;
+  const mr=map.getBoundingClientRect(), er=el.getBoundingClientRect();
+  if(er.width===0 && er.height===0) return;
+  const cx=(er.left+er.width/2)-mr.left+map.scrollLeft;
+  const cy=(er.top +er.height/2)-mr.top +map.scrollTop;
+  map.scrollTo({left:cx-map.clientWidth/2, top:cy-map.clientHeight/2, behavior:'smooth'});
+  document.querySelectorAll('.bldg-btn').forEach(b=>b.classList.toggle('active', b.getAttribute('data-bldg')===key));
+  /* 選了哪一棟，該棟的兩個真實入口 icon 會由 updateWalkEntMarker() 統一顯示，
+     不再使用固定於棟別中心的通用 Pin（bldg-pin 已停用，避免跟真實入口位置的圖示重複出現）。 */
+  updateWalkEntMarker();
 }
 
 /* ⑦  版面配合寬度（放大縮小交給手機捏放 / 桌機瀏覽器縮放）*/
@@ -2383,7 +2752,7 @@ spacesLayerEl.addEventListener('pointercancel',endDrag);
    ===================================================================== */
 const OV_KEY='b1park_overlays_v2';   // 版號隨烤入 JSON 遞增，強制舊 localStorage 失效
 const OV_SCALE_MIN=0.4, OV_SCALE_MAX=3.0;
-const OV_DEFAULT={"ramp1F":{"dx":109,"dy":-12,"sx":0.626,"sy":0.422},"exit":{"dx":85,"dy":-259,"sx":1,"sy":1},"A":{"dx":63,"dy":28,"sx":0.786,"sy":0.674},"rampB2":{"dx":-4,"dy":-27,"sx":0.575,"sy":0.637},"B":{"dx":10,"dy":-41,"sx":0.965,"sy":0.762},"C":{"dx":37,"dy":-113,"sx":0.702,"sy":1.057},"rampB1":{"dx":-2,"dy":-82,"sx":0.4,"sy":1},"entry":{"dx":41,"dy":-84,"sx":1,"sy":1}};
+const OV_DEFAULT={"ramp1F":{"dx":109,"dy":-12,"sx":0.626,"sy":0.422},"exit":{"dx":85,"dy":-259,"sx":1,"sy":1},"A":{"dx":63,"dy":28,"sx":0.786,"sy":0.674},"rampB2":{"dx":-4,"dy":-27,"sx":0.575,"sy":0.637},"B":{"dx":10,"dy":-41,"sx":0.965,"sy":0.762},"C":{"dx":37,"dy":-113,"sx":0.702,"sy":1.057},"rampB1":{"dx":-2,"dy":-82,"sx":0.4,"sy":1},"entry":{"dx":41,"dy":-84,"sx":1,"sy":1},"entA2":{"dx":76,"dy":-63,"sx":1,"sy":1},"entA1":{"dx":14,"dy":-65,"sx":1,"sy":1},"entB2":{"dx":32,"dy":-117,"sx":1,"sy":1},"entB1":{"dx":-19,"dy":-117,"sx":1,"sy":1},"entC2":{"dx":37,"dy":-170,"sx":1,"sy":1},"entC1":{"dx":-13,"dy":-170,"sx":1,"sy":1}};
 let OV_OFFSETS = (()=>{ try{const j=localStorage.getItem(OV_KEY); if(j) return JSON.parse(j);}catch(e){} return JSON.parse(JSON.stringify(OV_DEFAULT)); })();
 function saveOverlays(){ try{ localStorage.setItem(OV_KEY, JSON.stringify(OV_OFFSETS)); }catch(e){} }
 
@@ -2434,6 +2803,7 @@ function applyOverlayTransforms(){
   refreshRouting();
   renderRoads();       // 入口/出口移動會連動匝道車道位置，重畫灰色車道
   renderResizeHandles();
+  updateWalkEntMarker();  // 各棟入口點若被拖曳校正，行人藍色標記位置也要同步更新
 }
 function refreshRouting(){
   const eo=ovOf('entry'), xo=ovOf('exit');
@@ -2660,6 +3030,7 @@ function selectForEdit(id){
   document.getElementById('epFace').value=sp.face;
   document.getElementById('epZoneName').value=sp.zoneName||'';
   document.getElementById('epLift').value=sp.lift||'';
+  document.getElementById('epEntrance').value=sp.entrance||'';
   document.getElementById('editPanel').classList.add('show');
 }
 
@@ -2676,6 +3047,7 @@ function applyEdit(){
   sp.face=document.getElementById('epFace').value;
   sp.zoneName=document.getElementById('epZoneName').value.trim();
   sp.lift=document.getElementById('epLift').value.trim();
+  sp.entrance=document.getElementById('epEntrance').value;
   sp.provisional=false;   // 手動改過即視為正式
   if(newId!==oldId) selEdit=newId;
   rebuildMap(); renderSpaces(); saveLocal();
@@ -2689,7 +3061,7 @@ function addSpace(){
   const cx=(map.scrollLeft+map.clientWidth/2)/(svg.clientWidth/VB_W) + 120;
   const cy=(map.scrollTop+map.clientHeight/2)/(svg.clientHeight/VB_H) + 20;
   const sp={id:uniqueId('N'),x:Math.round(cx-15),y:Math.round(cy-29),w:30,h:58,
-    face:'down',type:'reg',zone:'N',zoneName:'新增區',lift:'',provisional:false};
+    face:'down',type:'reg',zone:'N',zoneName:'新增區',lift:'',entrance:'',provisional:false};
   SPACES.push(sp); rebuildMap(); renderSpaces(); saveLocal(); selectForEdit(sp.id);
 }
 function dupSpace(){
@@ -2744,7 +3116,7 @@ function importJSON(evt){
     if(!Array.isArray(spaces)||!spaces.length)throw new Error('格式錯誤（找不到 spaces）');
     SPACES=spaces.map(s=>({id:String(s.id),x:+s.x,y:+s.y,w:+s.w||30,h:+s.h||58,
       face:s.face||'down',type:s.type==='dis'?'dis':'reg',zone:s.zone||'',
-      zoneName:s.zoneName||'',lift:s.lift||'',provisional:!!s.provisional,
+      zoneName:s.zoneName||'',lift:s.lift||'',entrance:s.entrance||'',provisional:!!s.provisional,
       reserved:!!s.reserved}));
     let ovMsg='';
     if(overlays && typeof overlays==='object'){
@@ -2784,7 +3156,7 @@ function resetData(){
 function init(){
   const rw=document.getElementById('roadWRange'), rv=document.getElementById('roadWVal');
   if(rw) rw.value=ROAD_WIDTH; if(rv) rv.textContent=ROAD_WIDTH;
-  renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); renderRoads(); applyView(); updateDirUI();
+  renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); renderRoads(); applyView(); updateDirUI(); setTravelMode(TRAVEL_MODE);
   requestAnimationFrame(()=>{applyView(); scrollToEntry();});
   window.addEventListener('load',()=>{applyView(); scrollToEntry();});
   if(window.ResizeObserver){let first=true;
