@@ -165,18 +165,44 @@ body.has-route .oneway-arrow{opacity:.16!important;transition:opacity .3s ease;}
 .bottom-sheet.show{transform:translateY(0);}
 .bottom-sheet.dir-in{border-top-color:rgba(34,197,94,.5);}
 .bottom-sheet.dir-out{border-top-color:rgba(249,115,22,.5);}
-/* 主列：左邊提示文字 70% + 右邊「開始導航」按鈕 30% */
-.bottom-sheet .bs-top{display:flex;align-items:center;gap:10px;}
-.bottom-sheet .bs-text{flex:0 0 70%;max-width:70%;font-size:18px;font-weight:700;letter-spacing:.2px;line-height:1.1;}
-.bottom-sheet .bs-text-normal{display:block;}
-.bottom-sheet .bs-text-nav{display:flex;align-items:center;gap:8px;font-size:24px;font-weight:800;line-height:1;}
+/* 主列：左邊提示文字（自動撐滿剩餘空間）+ 右邊「開始導航」按鈕（依內容寬度）+ 除錯小按鈕（固定34px） */
+.bottom-sheet .bs-top{display:flex;align-items:center;gap:8px;}
+.bottom-sheet .bs-text{flex:1 1 auto;min-width:0;max-width:none;font-size:18px;font-weight:700;letter-spacing:.2px;line-height:1.1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bottom-sheet .bs-text-normal{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bottom-sheet .bs-text-nav{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:800;line-height:1;min-width:0;}
 .bottom-sheet .bs-text-nav .nav-instr-icon{flex-shrink:0;width:28px;height:28px;display:flex;}
 .bottom-sheet .bs-text-nav .nav-instr-icon svg{width:100%;height:100%;}
+.bottom-sheet .bs-text-nav #navInstrLabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .bottom-sheet.dir-in .bs-text{color:#bbf7d0;}
 .bottom-sheet.dir-out .bs-text{color:#ffedd5;}
 
-/* 手機導航（方向感測器/加速度計）按鈕與狀態面板：現在與提示文字同列，佔寬度 30% */
-.bs-nav-btn{flex:0 0 30%;max-width:30%;padding:9px 6px;border-radius:var(--radius-sm);font-size:.86rem;font-weight:800;
+/* ---------- 導航除錯面板（debug）---------- */
+.nav-debug-btn{flex-shrink:0;width:34px;height:34px;border-radius:10px;border:1.5px solid var(--glass-border);
+  background:rgba(255,255,255,.05);color:var(--text-2);font-size:1rem;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:all .18s;}
+.nav-debug-btn:hover{background:rgba(255,255,255,.1);color:var(--text-1);}
+.nav-debug-btn.on{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border-color:#7c3aed;}
+.nav-debug-panel{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:200;
+  background:rgba(10,13,20,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(124,58,237,.4);border-radius:12px;padding:10px 12px;
+  font-family:'SF Mono',Menlo,Consolas,monospace;font-size:.72rem;line-height:1.55;color:#e5e7eb;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;max-height:60vh;overflow:auto;}
+.nav-debug-panel.show{display:block;}
+.nav-debug-panel .ndp-title{font-weight:800;color:#a78bfa;font-size:.78rem;margin-bottom:6px;
+  display:flex;align-items:center;justify-content:space-between;}
+.nav-debug-panel .ndp-close{cursor:pointer;color:var(--text-2);font-size:.9rem;padding:0 4px;}
+.nav-debug-panel .ndp-row{display:flex;justify-content:space-between;gap:10px;padding:2px 0;
+  border-bottom:1px dashed rgba(255,255,255,.06);}
+.nav-debug-panel .ndp-row:last-child{border-bottom:none;}
+.nav-debug-panel .ndp-k{color:var(--text-2);}
+.nav-debug-panel .ndp-v{color:#f1f5f9;font-weight:700;text-align:right;}
+.nav-debug-panel .ndp-v.warn{color:#fbbf24;}
+.nav-debug-panel .ndp-v.bad{color:#f87171;}
+.nav-debug-panel .ndp-v.good{color:#34d399;}
+
+/* 手機導航（方向感測器/加速度計）按鈕與狀態面板：依內容寬度自動撐開，不再固定佔 30% */
+.bs-nav-btn{flex:0 0 auto;padding:9px 16px;border-radius:var(--radius-sm);font-size:.86rem;font-weight:800;white-space:nowrap;
   background:var(--accent-blue);border:1px solid var(--accent-blue);color:#fff;
   cursor:pointer;letter-spacing:.2px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .18s;}
 .bs-nav-btn .bs-nav-btn-icon{flex-shrink:0;}
@@ -694,8 +720,28 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
       </svg>
       <span>開始導航</span>
     </button>
+    <button type="button" class="nav-debug-btn" id="navDebugBtn" onclick="toggleNavDebug()" title="導航除錯資訊">🐞
+    </button>
   </div>
 
+</div>
+
+<!-- 導航除錯資訊面板：即時顯示羅盤方向、移動偵測、轉彎判定，方便排查「為何不會提示右轉」 -->
+<div class="nav-debug-panel" id="navDebugPanel">
+  <div class="ndp-title">🐞 導航除錯資訊 <span class="ndp-close" onclick="toggleNavDebug()">✕ 關閉</span></div>
+  <div class="ndp-row"><span class="ndp-k">方向感測器權限</span><span class="ndp-v" id="ndpPermOri">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">動作感測器權限</span><span class="ndp-v" id="ndpPermMot">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">收到羅盤事件</span><span class="ndp-v" id="ndpOriEvt">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">收到動作事件</span><span class="ndp-v" id="ndpMotEvt">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">目前手機朝向 navHeading</span><span class="ndp-v" id="ndpHeading">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">目前路段目標角度</span><span class="ndp-v" id="ndpSegHeading">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">角度差 diff</span><span class="ndp-v" id="ndpDiff">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">是否判定移動中 navMoving</span><span class="ndp-v" id="ndpMoving">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">加速度平均值</span><span class="ndp-v" id="ndpAccel">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">轉彎狀態 navTurnState</span><span class="ndp-v" id="ndpTurnState">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">路段進度</span><span class="ndp-v" id="ndpSegIdx">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">目前顯示提示</span><span class="ndp-v" id="ndpInstr">—</span></div>
+  <div class="ndp-row"><span class="ndp-k">最後更新時間</span><span class="ndp-v" id="ndpTime">—</span></div>
 </div>
 
 <!-- 校正：選取車位編輯面板 -->
@@ -1769,6 +1815,14 @@ function drawRoute(sp){
 let navActive=false, navHeading=null, navMoving=false;
 let navSegs=[], navSegIdx=0, navTurnState='straight', navTurnStartTime=0, navMotionBuf=[];
 
+/* ---- 除錯用狀態（不影響原本導航邏輯，純粹記錄用來顯示）---- */
+let navDebugOn=false;
+let ndPermOri='—', ndPermMot='—';           // 感測器權限結果文字
+let ndOriEvtCount=0, ndOriLastTime=0;        // 羅盤事件收到次數 / 最後收到時間
+let ndMotEvtCount=0, ndMotLastTime=0;        // 動作事件收到次數 / 最後收到時間
+let ndLastAccelAvg=null;                     // 最近一次加速度平均值
+let ndDebugTimer=null;
+
 /* 左邊大字導航提示：轉彎圖示 + 文字（依相鄰兩段路徑的夾角判斷左轉/右轉/直行） */
 const NAV_ICONS={
   straight:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="4"/><polyline points="6 10 12 4 18 10"/></svg>',
@@ -1822,18 +1876,30 @@ function buildNavSegs(){
 function resetNavProgress(){ buildNavSegs(); navHeading=null; navMoving=false; navMotionBuf=[]; updateBsInstruction(); }
 async function toggleNav(){
   if(navActive){ stopNav(); return; }
+  ndPermOri='—'; ndPermMot='—';
+  ndOriEvtCount=0; ndOriLastTime=0; ndMotEvtCount=0; ndMotLastTime=0; ndLastAccelAvg=null;
   try{
     if(typeof DeviceOrientationEvent!=='undefined' && typeof DeviceOrientationEvent.requestPermission==='function'){
       const r1=await DeviceOrientationEvent.requestPermission();
-      if(r1!=='granted'){ alert('需要「方向」感測器權限才能開始導航'); return; }
+      ndPermOri=r1;
+      if(r1!=='granted'){ alert('需要「方向」感測器權限才能開始導航'); updateNavDebugPanel(); return; }
+    }else{
+      ndPermOri='免授權（此瀏覽器/裝置）';
     }
     if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
       const r2=await DeviceMotionEvent.requestPermission();
-      if(r2!=='granted'){ alert('需要「動作」感測器權限才能開始導航'); return; }
+      ndPermMot=r2;
+      if(r2!=='granted'){ alert('需要「動作」感測器權限才能開始導航'); updateNavDebugPanel(); return; }
+    }else{
+      ndPermMot='免授權（此瀏覽器/裝置）';
     }
-  }catch(e){ console.warn('感測器權限請求失敗，部分瀏覽器/桌機不支援：', e); }
+  }catch(e){
+    console.warn('感測器權限請求失敗，部分瀏覽器/桌機不支援：', e);
+    ndPermOri=ndPermOri==='—'?'請求失敗/不支援':ndPermOri;
+    ndPermMot=ndPermMot==='—'?'請求失敗/不支援':ndPermMot;
+  }
   buildNavSegs();
-  if(navSegs.length===0){ alert('請先搜尋一個車位，產生路徑後再開始導航'); return; }
+  if(navSegs.length===0){ alert('請先搜尋一個車位，產生路徑後再開始導航'); updateNavDebugPanel(); return; }
   navActive=true;
   window.addEventListener('deviceorientation', onNavOrientation);
   window.addEventListener('devicemotion', onNavMotion);
@@ -1846,6 +1912,9 @@ async function toggleNav(){
   if(bsNormal) bsNormal.style.display='none';
   if(bsNav) bsNav.style.display='flex';
   updateBsInstruction();
+  updateNavDebugPanel();
+  if(ndDebugTimer) clearInterval(ndDebugTimer);
+  ndDebugTimer=setInterval(updateNavDebugPanel, 500); // 就算沒收到任何感測器事件，面板也會持續刷新「距離上次收到事件已過 X 秒」
 }
 function stopNav(){
   navActive=false;
@@ -1859,23 +1928,28 @@ function stopNav(){
   const bsNormal=document.getElementById('bsTextNormal'), bsNav=document.getElementById('bsTextNav');
   if(bsNormal) bsNormal.style.display='';
   if(bsNav) bsNav.style.display='none';
+  if(ndDebugTimer){ clearInterval(ndDebugTimer); ndDebugTimer=null; }
+  updateNavDebugPanel();
 }
 function onNavOrientation(e){
+  ndOriEvtCount++; ndOriLastTime=Date.now();
   let h;
   if(typeof e.webkitCompassHeading==='number') h=e.webkitCompassHeading;       // iOS Safari：0=北，順時針增加
   else if(e.alpha!=null) h=(360-e.alpha)%360;                                   // 其他瀏覽器的近似換算
-  else return;
+  else { updateNavDebugPanel(); return; }
   navHeading=(h+360)%360;
   navProcessState();
 }
 function onNavMotion(e){
+  ndMotEvtCount++; ndMotLastTime=Date.now();
   const a=e.acceleration || e.accelerationIncludingGravity;
-  if(!a) return;
+  if(!a){ updateNavDebugPanel(); return; }
   const mag=Math.hypot(a.x||0,a.y||0,a.z||0);
   const base=e.acceleration ? 0 : 9.8; // accelerationIncludingGravity 需扣掉重力基準值
   navMotionBuf.push(Math.abs(mag-base));
   if(navMotionBuf.length>15) navMotionBuf.shift();
   const avg=navMotionBuf.reduce((s,v)=>s+v,0)/navMotionBuf.length;
+  ndLastAccelAvg=avg;
   navMoving = avg > 0.35; // 經驗閾值：實機測試時可依手機型號微調
   navProcessState();
 }
@@ -1896,6 +1970,46 @@ function navProcessState(){
     }
   }
   updateBsInstruction();
+  updateNavDebugPanel();
+}
+
+/* ---- 除錯面板：顯示/隱藏 + 內容刷新 ---- */
+function toggleNavDebug(){
+  navDebugOn=!navDebugOn;
+  const panel=document.getElementById('navDebugPanel');
+  const btn=document.getElementById('navDebugBtn');
+  if(panel) panel.classList.toggle('show', navDebugOn);
+  if(btn) btn.classList.toggle('on', navDebugOn);
+  if(navDebugOn) updateNavDebugPanel();
+}
+function ndFmtAgo(ts){
+  if(!ts) return '尚未收到';
+  const s=(Date.now()-ts)/1000;
+  return s<1?'剛剛':s.toFixed(1)+' 秒前';
+}
+function updateNavDebugPanel(){
+  if(!navDebugOn) return;
+  const set=(id,text,cls)=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.textContent=text;
+    el.className='ndp-v'+(cls?(' '+cls):'');
+  };
+  set('ndpPermOri', ndPermOri, ndPermOri==='granted'||ndPermOri.includes('免授權')?'good':(ndPermOri==='—'?'':'bad'));
+  set('ndpPermMot', ndPermMot, ndPermMot==='granted'||ndPermMot.includes('免授權')?'good':(ndPermMot==='—'?'':'bad'));
+  set('ndpOriEvt', ndOriEvtCount+' 次・'+ndFmtAgo(ndOriLastTime), ndOriEvtCount===0?'bad':(((Date.now()-ndOriLastTime)>3000)?'warn':'good'));
+  set('ndpMotEvt', ndMotEvtCount+' 次・'+ndFmtAgo(ndMotLastTime), ndMotEvtCount===0?'bad':(((Date.now()-ndMotLastTime)>3000)?'warn':'good'));
+  set('ndpHeading', navHeading==null?'無資料':navHeading.toFixed(1)+'°（'+navHeadingLabel(navHeading)+'）', navHeading==null?'bad':'');
+  const seg=navSegs[navSegIdx];
+  set('ndpSegHeading', seg?seg.heading.toFixed(1)+'°（'+navHeadingLabel(seg.heading)+'）':'—（已抵達或無路徑）');
+  const diff=(seg && navHeading!=null)?navAngDiff(navHeading, seg.heading):null;
+  set('ndpDiff', diff==null?'—':diff.toFixed(1)+'° '+(diff<=40?'（視為直行，門檻40°）':'（超過門檻→判定轉彎中）'), diff==null?'':(diff<=40?'good':'warn'));
+  set('ndpMoving', navMoving?'是（在動）':'否（判定靜止，不會更新轉彎）', navMoving?'good':'warn');
+  set('ndpAccel', ndLastAccelAvg==null?'無資料':ndLastAccelAvg.toFixed(3)+'（門檻 0.35）', ndLastAccelAvg==null?'bad':(ndLastAccelAvg>0.35?'good':'warn'));
+  set('ndpTurnState', navTurnState);
+  set('ndpSegIdx', navActive?((navSegIdx+1)+' / '+navSegs.length+' 段'):'尚未開始導航');
+  const instr=navActive?navComputeInstruction():null;
+  set('ndpInstr', instr?instr.text:'—');
+  set('ndpTime', new Date().toLocaleTimeString('zh-TW',{hour12:false}));
 }
 function routeSteps(sp){ return routeDir==='in'?stepsIn(sp):stepsOut(sp); }
 function stepsIn(sp){
