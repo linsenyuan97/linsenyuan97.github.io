@@ -1754,15 +1754,9 @@ function entranceXY(key){
 const BLDG_ENT_ICON_COLOR='#4f93d6';
 const BLDG_ENT_ICON_SCALE=2.6;
 const BLDG_ENT_PULSE_R=22;
-/* pin 圖示與光暈中心之間額外保留的間距：光暈(entry-pulse)動畫最大會放大到 1.9 倍
-   （半徑 = BLDG_ENT_PULSE_R*1.9 ≈ 41.8），若 pin 尖端直接貼在光暈圓心，動畫放大過程
-   中光暈會整個蓋到 pin 圖示本體上，讓兩者視覺上疊在一起、位置看起來一致卻很雜亂。
-   這裡讓 pin 尖端往上多留一段距離，確保光暈脹到最大時也不會碰到 pin 本體，
-   兩者才會呈現「光暈在下方定位、pin 在上方清楚懸浮」的乾淨、位置一致的畫面。 */
-const BLDG_ENT_ICON_GAP=10;
 const BLDG_ENT_PIN_PATH='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z';
 function bldgEntPinMarkup(scale){
-  const tx=(-12*scale).toFixed(2), ty=(-22*scale-BLDG_ENT_PULSE_R-BLDG_ENT_ICON_GAP).toFixed(2);
+  const tx=(-12*scale).toFixed(2), ty=(-22*scale).toFixed(2);
   return `<g transform="translate(${tx},${ty}) scale(${scale})">
       <path d="${BLDG_ENT_PIN_PATH}" fill="${BLDG_ENT_ICON_COLOR}"/>
       <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
@@ -2817,7 +2811,7 @@ spacesLayerEl.addEventListener('pointercancel',endDrag);
    ===================================================================== */
 const OV_KEY='b1park_overlays_v2';   // 版號隨烤入 JSON 遞增，強制舊 localStorage 失效
 const OV_SCALE_MIN=0.4, OV_SCALE_MAX=3.0;
-const OV_DEFAULT={"ramp1F":{"dx":109,"dy":-12,"sx":0.626,"sy":0.422},"exit":{"dx":85,"dy":-259,"sx":1,"sy":1},"A":{"dx":63,"dy":16,"sx":0.766,"sy":0.766},"rampB2":{"dx":-4,"dy":-27,"sx":0.575,"sy":0.637},"B":{"dx":10,"dy":-62,"sx":0.923,"sy":0.946},"C":{"dx":-11,"dy":-99,"sx":0.893,"sy":0.88},"rampB1":{"dx":-2,"dy":-82,"sx":0.4,"sy":1},"entry":{"dx":41,"dy":-84,"sx":1,"sy":1},"entA2":{"dx":76,"dy":-63,"sx":1,"sy":1},"entA1":{"dx":14,"dy":-65,"sx":1,"sy":1},"entB2":{"dx":32,"dy":-117,"sx":1,"sy":1},"entB1":{"dx":-19,"dy":-117,"sx":1,"sy":1},"entC2":{"dx":-4,"dy":-171,"sx":1,"sy":1},"entC1":{"dx":-42,"dy":-170,"sx":1,"sy":1}};
+const OV_DEFAULT={"ramp1F":{"dx":109,"dy":-12,"sx":0.626,"sy":0.422},"exit":{"dx":85,"dy":-259,"sx":1,"sy":1},"A":{"dx":63,"dy":28,"sx":1,"sy":1},"rampB2":{"dx":-4,"dy":-27,"sx":0.575,"sy":0.637},"B":{"dx":10,"dy":-41,"sx":1,"sy":1},"C":{"dx":37,"dy":-113,"sx":1,"sy":1},"rampB1":{"dx":-2,"dy":-82,"sx":0.4,"sy":1},"entry":{"dx":41,"dy":-84,"sx":1,"sy":1},"entA2":{"dx":76,"dy":-63,"sx":1,"sy":1},"entA1":{"dx":14,"dy":-65,"sx":1,"sy":1},"entB2":{"dx":32,"dy":-117,"sx":1,"sy":1},"entB1":{"dx":-19,"dy":-117,"sx":1,"sy":1},"entC2":{"dx":37,"dy":-170,"sx":1,"sy":1},"entC1":{"dx":-13,"dy":-170,"sx":1,"sy":1}};
 let OV_OFFSETS = (()=>{ try{const j=localStorage.getItem(OV_KEY); if(j) return JSON.parse(j);}catch(e){} return JSON.parse(JSON.stringify(OV_DEFAULT)); })();
 function saveOverlays(){ try{ localStorage.setItem(OV_KEY, JSON.stringify(OV_OFFSETS)); }catch(e){} }
 
