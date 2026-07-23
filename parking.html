@@ -136,14 +136,11 @@ body.has-route .oneway-arrow{opacity:.16!important;transition:opacity .3s ease;}
 .s-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-3);font-size:1rem;cursor:pointer;display:none;}
 .s-clear:hover{color:var(--text-1);}
 /* 「i」提示按鈕：顯示路線對話框（有車位→路線；沒車位→請輸入提示） */
-.info-i-btn{flex-shrink:0;width:38px;border:1.5px solid var(--glass-border);border-radius:50%;
-  background:rgba(255,255,255,.05);color:var(--text-2);font-family:'Georgia',serif;font-size:1.05rem;font-weight:700;font-style:italic;
-  cursor:pointer;transition:all .18s;line-height:1;padding:0;}
-.info-i-btn:hover{background:rgba(79,147,214,.15);color:#4f93d6;border-color:#4f93d6;}
-.info-btn{flex-shrink:0;width:48px;border:1.5px solid var(--glass-border);border-radius:var(--radius-sm);
-  background:rgba(255,255,255,.05);color:var(--text-2);font-size:1.4rem;font-weight:800;cursor:pointer;transition:all .18s;line-height:1;}
-.info-btn:hover{background:rgba(255,255,255,.1);color:var(--text-1);}
-.info-btn.ready{background:linear-gradient(135deg,var(--accent-gold),#d97706);color:#fff;border-color:var(--accent-gold);animation:btn-pulse 1.6s ease-out infinite;}
+
+
+
+
+
 @keyframes btn-pulse{0%{box-shadow:0 0 0 0 rgba(245,158,11,.5);}70%{box-shadow:0 0 0 10px rgba(245,158,11,0);}100%{box-shadow:0 0 0 0 rgba(245,158,11,0);}}
 
 .suggestions{position:absolute;top:calc(100% + 5px);left:0;right:0;background:rgba(15,20,32,.75);
@@ -156,31 +153,23 @@ body.has-route .oneway-arrow{opacity:.16!important;transition:opacity .3s ease;}
 .sug-id{font-weight:700;font-size:.95rem;letter-spacing:.5px;}
 .sug-badge{font-size:.6rem;font-weight:600;padding:2px 6px;border-radius:4px;}
 .badge-reg{background:rgba(37,99,235,.2);color:#60a5fa;}
-.badge-dis{background:rgba(16,185,129,.2);color:#34d399;}
-.sug-zone{font-size:.68rem;color:var(--text-3);margin-left:auto;}
+
+
 /* 找車位 / 找出口 兩顆大按鈕（同時是方向切換 + 開啟路線對話框）*/
-.mode-row{display:flex;gap:6px;margin-top:6px;}
-.mode-btn{flex:1;height:46px;padding:0 6px;border-radius:var(--radius-sm);
-  /* UIUX 優化 1：不要用 none！加上一圈低調、半透明的灰色細邊框，勾勒出按鈕的可點擊形狀 */
-  border: 1px solid rgba(255, 255, 255, 0.12); 
-  /* 微調底色，使其更內斂 */
-  background: rgba(255, 255, 255, .03);   
-  color:var(--text-2);font-family:inherit;font-size:.88rem;font-weight:700;
-  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;letter-spacing:.5px;}
-.mode-btn:hover{background:rgba(255,255,255,.09);color:var(--text-1);}
-.mode-btn .mode-ic{font-size:1.05rem;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
-.mode-btn .mode-ic svg{display:block;}
-.mode-btn.active.mode-in{background:rgba(34,197,94,.15);color:#4ade80;}
-.mode-btn.active.mode-out{background:rgba(242,108,33,.15);color:#fb923c;}
+
+
+
+
+
+
+
 /* 找車位/找出口 按鈕：依交通方式（開車/行人）切換不同圖示 */
-.mode-btn .mode-ic svg.icon-walk-mode{display:none;}
-body.travel-walk .mode-btn .mode-ic svg.icon-car-mode{display:none;}
-body.travel-walk .mode-btn .mode-ic svg.icon-walk-mode{display:block;}
+
+
+body.travel-walk 
 
 /* 「開車 / 行人」交通方式切換按鈕群：置於「找車位／找出口」左方 */
-.travel-mode-group{flex-shrink:0;display:flex;gap:4px;padding:3px;
-  border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-sm);
-  background:rgba(255,255,255,.03);}
+
 .travel-btn{width:36px;height:38px;border:none;border-radius:7px;
   background:transparent;color:var(--text-2);cursor:pointer;transition:all .18s;
   display:flex;align-items:center;justify-content:center;}
@@ -335,7 +324,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 .dlg-num{font-size:2.1rem;font-weight:800;color:var(--accent-gold);letter-spacing:1.5px;line-height:1;}
 .type-badge{padding:5px 11px;border-radius:20px;font-size:.7rem;font-weight:700;white-space:nowrap;margin-top:4px;}
 .type-reg{background:rgba(37,99,235,.18);color:#60a5fa;border:1px solid rgba(37,99,235,.3);}
-.type-dis{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.3);}
+
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
 .info-cell{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:9px 11px;}
 .info-cell-lbl{font-size:.62rem;color:var(--text-3);margin-bottom:2px;}
@@ -499,12 +488,6 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 
 		<div style="flex:1;"></div>
 
-		<div class="bldg-btn-group" id="bldgBtnGroup" style="display:none;gap:8px;">
-			<button type="button" class="bldg-btn" data-bldg="A" onclick="goToBuilding('A')">A 棟</button>
-			<button type="button" class="bldg-btn" data-bldg="B" onclick="goToBuilding('B')">B 棟</button>
-			<button type="button" class="bldg-btn" data-bldg="C" onclick="goToBuilding('C')">C 棟</button>
-		</div>
-
 		<!-- 方案 B：意圖導向按鈕組 -->
 		<div class="intent-group" id="intentGroup">
 			<button class="intent-btn active intent-park" id="intentBtn_park" onclick="setIntent('park')" title="開車進入停車場並尋找車位">
@@ -543,12 +526,6 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 			  <span>棟別</span>
 			</button>
 		</div>
-
-		<!-- 隱藏保留 -->
-		<div style="display:none;">
-			<button class="travel-btn" id="travelCarBtn" onclick="setTravelMode('car')"></button>
-			<button class="travel-btn" id="travelWalkBtn" onclick="setTravelMode('walk')"></button>
-		</div>
     </div>
 
     <!-- 第二列：目的地下拉選單 + 搜尋輸入框 -->
@@ -573,12 +550,6 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 				<button type="button" class="s-clear" id="clearBtn" onclick="clearSearch()" aria-label="清除">✕</button>
 				<div class="suggestions" id="suggestions"></div>
 			  </form>
-			</div>
-
-			<div class="swap-btn-wrapper" id="swapBtnWrapper" style="display:none;">
-				<button type="button" class="mini-btn" id="swapBtn" onclick="toggleDir()" title="切換方向" style="height: 42px; padding: 0 12px;">
-					<span id="swapArrow">→</span>
-				</button>
 			</div>
 		</div>
     </div>
@@ -2721,7 +2692,7 @@ function clearSelection(){
 function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('clearBtn').style.display='none';clearSelection();clearError();closeSug();}
 function showError(){document.getElementById('errMsg').classList.add('show');}
 function clearError(){document.getElementById('errMsg').classList.remove('show');}
-function setInfoReady(on){ /* 舊版是讓「!」按鈕發光；新版由兩顆模式按鈕本身表達狀態，這裡留空當 no-op */ }
+
 
 /* 底部懸浮卡片：顯示「開始引導 從B1入口到車位OOOO」/「開始引導 從車位OOOO到B1出口」，
    並內含「開始導航」按鈕，隨方向切換綠/橘配色。搜尋到車位後常駐顯示，不會自動消失；
@@ -2756,38 +2727,7 @@ function hideRouteBanner(){
   if(navActive) stopNav();
 }
 
-/* ⑤  「!」對話框 */
-function openInfo(){
-  const body=document.getElementById('modalBody');
-  if(currentId&&spaceMap[currentId]){
-    const sp=spaceMap[currentId];
-    const dirTxt = routeDir==='in' ? '入口 → 車位' : '車位 → 出口';
-    const dirCellLbl = routeDir==='in' ? (TRAVEL_MODE==='walk' ? '行走方式' : '進入方式') : '離場方式';
-    const dirCellVal = routeDir==='in'
-      ? (TRAVEL_MODE==='walk'
-          ? `從 ${sp.entrance ? (ENTRANCE_LABELS[sp.entrance]||sp.entrance) : '棟別入口'} 前往車位`
-          : '由「通往B1」入口進場')
-      : '由「通往1F」匝道離場';
-    const badge=isReserved(sp)?'<span class="type-badge" style="background:rgba(220,38,38,.15);color:#f87171;border:1px solid rgba(220,38,38,.4)">🔒 預約車位</span>'
-      :'<span class="type-badge type-reg">🚗 一般車位</span>';
-    const steps=routeSteps(sp).map((s,i)=>`${i>0?'<div class="step-line"></div>':''}<div class="route-step"><div class="step-dot">${i+1}</div><div class="step-txt">${s.i} ${s.t}</div></div>`).join('');
-    body.innerHTML=`<div class="dlg-head"><div><div class="dlg-num-lbl">查詢車位</div>
-      <div class="dlg-num">${sp.id}${sp.provisional?' <span style="font-size:.8rem;color:#fbbf24">※暫定</span>':''}</div></div>${badge}</div>
-      <div class="info-grid">
-        <div class="info-cell"><div class="info-cell-lbl">樓層</div><div class="info-cell-val">B1 地下一層</div></div>
-        <div class="info-cell"><div class="info-cell-lbl">所在區域</div><div class="info-cell-val">${sp.zoneName}</div></div>
-        <div class="info-cell"><div class="info-cell-lbl">${dirCellLbl}</div><div class="info-cell-val">${dirCellVal}</div></div>
-        <div class="info-cell"><div class="info-cell-lbl">鄰近電梯</div><div class="info-cell-val">${sp.lift||'—'}</div></div>
-        <div class="info-cell"><div class="info-cell-lbl">鄰近入口</div><div class="info-cell-val">${sp.entrance?(ENTRANCE_LABELS[sp.entrance]||sp.entrance):'—'}</div></div></div>
-      <div class="route-hdr">🛣️ 建議行駛路線（${dirTxt}）</div>${steps}
-      ${sp.provisional?'<div class="dlg-foot">※ 此編號為暫定占位碼，請於「校正」模式改為實際編號。</div>':''}`;
-  } else {
-    body.innerHTML=`<div class="dlg-empty"><div class="ico">🅿</div><h3>請輸入查詢車號</h3>
-      <p>於上方欄位輸入車位編號後查詢，<br>系統會在平面圖標示位置，<br>並於此顯示「建議行駛路線」。</p></div>`;
-  }
-  document.getElementById('modal').classList.add('show');
-}
-function closeInfo(){document.getElementById('modal').classList.remove('show');}
+
 
 /* ⑥  自動完成 + 打完 4 碼自動搜尋（200ms debounce）*/
 const searchEl=document.getElementById('searchInput');
