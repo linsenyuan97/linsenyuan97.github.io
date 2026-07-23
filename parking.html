@@ -403,6 +403,79 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   transform-origin:center;
   animation:entry-pulse 1s ease-out infinite;
 }
+
+/* 方案 B 意圖導向按鈕組（Segmented Tabs） */
+.intent-group {
+  flex-shrink: 0;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+.intent-btn {
+  padding: 6px 6px;
+  height: 38px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.intent-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-1);
+}
+.intent-btn.active {
+  background: rgba(79, 147, 214, 0.2);
+  color: #4f93d6;
+}
+.intent-btn.active.intent-park {
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
+}
+.intent-btn.active.intent-find {
+  background: rgba(79, 147, 214, 0.22);
+  color: #60a5fa;
+}
+.intent-btn.active.intent-exit {
+  background: rgba(249, 115, 22, 0.18);
+  color: #fb923c;
+}
+.intent-btn.active.intent-bldg {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+}
+
+@media (min-width: 480px) {
+  .intent-btn {
+    padding: 6px 12px;
+    font-size: 0.88rem;
+    gap: 4px;
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+.pin-core {
+  animation: dotPulse 2s infinite ease-in-out;
+}
+
+.travel-btn { display: none; }
+.dest-select-wrapper { transition: all 0.2s ease; }
+.search-input-wrapper { transition: all 0.2s ease; }
+
 </style>
 </head>
 <body>
@@ -414,125 +487,102 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
       <button class="mini-btn" id="editToggle" onclick="toggleEdit()" title="校正" style="display:none">✏️</button>
     </div>
 	
-    <!-- 控制面板第二層的 CSS 排版優化 -->
+    <!-- 第一列：目前樓層位置 Icon（左） + 意圖切換頁籤（右） -->
 	<div class="search-row" style="display: flex; align-items: center; width: 100%; padding: 0 4px;">
-		<!-- 左側定位組件：固定寬度，完美置中 -->
-		<div class="location-trigger" id="locationTrigger" style="display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-right: 8px;">
-			<span style="color: #fff; font-size: 16px; font-weight: bold; line-height: 1;">目前位置 B1</span>
+		<div class="location-trigger" id="locationTrigger" style="display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-right: 8px;">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" style="flex-shrink:0;">
+			  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#4f93d6"/>
+			  <circle cx="12" cy="9" r="2.2" fill="#ffffff" class="pin-core"/>
+			</svg>
+			<span style="color: #fff; font-size: 16px; font-weight: bold; line-height: 1;">B1</span>
 		</div>
-	
-		<!-- 棟別快速按鈕：橫向排列的 A棟／B棟／C棟，取代原本的搜尋輸入框 -->
-		<div class="bldg-btn-group" id="bldgBtnGroup" style="flex:1;display:none;gap:8px;">
+
+		<div style="flex:1;"></div>
+
+		<div class="bldg-btn-group" id="bldgBtnGroup" style="display:none;gap:8px;">
 			<button type="button" class="bldg-btn" data-bldg="A" onclick="goToBuilding('A')">A 棟</button>
 			<button type="button" class="bldg-btn" data-bldg="B" onclick="goToBuilding('B')">B 棟</button>
 			<button type="button" class="bldg-btn" data-bldg="C" onclick="goToBuilding('C')">C 棟</button>
 		</div>
 
-		<!-- 原搜尋表單：功能仍保留給程式內部使用（車位查詢/路線繪製等），僅從畫面上隱藏 -->
-		<div class="search-input-wrapper" id="searchInputWrapper" style="flex:1;display:flex;align-items:center;background:rgba(255,255,255,0.04);">
-		  <form class="search-wrap" id="searchForm" onsubmit="event.preventDefault(); doSearch();" autocomplete="off" role="search">
-			<span class="s-ic">🔎</span>
-			<input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號 (如 1056)"
-				   autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="numeric"
-				   name="q" maxlength="6">
-			<button type="button" class="s-clear" id="clearBtn" onclick="clearSearch()" aria-label="清除">✕</button>
-			<div class="suggestions" id="suggestions"></div>
-		  </form>
+		<!-- 方案 B：意圖導向按鈕組 -->
+		<div class="intent-group" id="intentGroup">
+			<button class="intent-btn active intent-park" id="intentBtn_park" onclick="setIntent('park')" title="開車進入停車場並尋找車位">
+			  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+			    <rect x="3.5" y="3.5" width="17" height="17" rx="4" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+			    <path d="M9.5 17V7h3.6a3 3 0 0 1 0 6H9.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+			  </svg>
+			  <span>停車</span>
+			</button>
+			<button class="intent-btn intent-find" id="intentBtn_find" onclick="setIntent('find')" title="從特定大樓步行去尋找愛車">
+			  <svg width="20" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+			    <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+			    <rect x="2.5" y="11" width="19" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+			    <circle cx="7" cy="17.3" r="1.6" fill="currentColor"/>
+			    <circle cx="17" cy="17.3" r="1.6" fill="currentColor"/>
+			  </svg>
+			  <span>找車</span>
+			</button>
+			<button class="intent-btn intent-exit" id="intentBtn_exit" onclick="setIntent('exit')" title="開車離開車位並前往出口">
+			  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+			    <path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			    <polyline points="15 8 19 12 15 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			    <line x1="19" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			  </svg>
+			  <span>離場</span>
+			</button>
+			<button class="intent-btn intent-bldg" id="intentBtn_bldg" onclick="setIntent('bldg')" title="停好車後步行前往特定大樓">
+			  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+			    <rect x="5" y="3" width="14" height="18" rx="1" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+			    <rect x="7.8"  y="6"    width="2.2" height="2.2" rx="0.4" fill="currentColor"/>
+			    <rect x="14"   y="6"    width="2.2" height="2.2" rx="0.4" fill="currentColor"/>
+			    <rect x="7.8"  y="10.4" width="2.2" height="2.2" rx="0.4" fill="currentColor"/>
+			    <rect x="14"   y="10.4" width="2.2" height="2.2" rx="0.4" fill="currentColor"/>
+			    <rect x="10"   y="15.5" width="4"   height="5.5" fill="currentColor"/>
+			  </svg>
+			  <span>棟別</span>
+			</button>
 		</div>
-		<!-- 右側資訊鈕：固定寬度 -->
-		<button class="info-btn" style="flex-shrink: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;">
-			<svg xmlns="http://w3.org" viewBox="0 0 24 24" width="24" height="24">
-			  <defs>
-				<!-- 全局霓虹發光濾鏡：讓定位點在地圖上像 LED 燈一樣亮眼 -->
-				<filter id="pinGlow" x="-50%" y="-50%" width="200%" height="200%">
-				  <feGaussianBlur stdDeviation="1.5" result="blur"/>
-				  <feMerge>
-					<feMergeNode in="blur"/>
-					<feMergeNode in="SourceGraphic"/>
-				  </feMerge>
-				</filter>
 
-				<!-- 呼吸燈動畫：讓核心小圓點微微閃爍，提示這是「即時（Live）定位點」 -->
-				<style>
-				  @keyframes dotPulse {
-					0%, 100% { opacity: 0.5; }
-					50% { opacity: 1; }
-				  }
-				  .pin-core { animation: dotPulse 2s infinite ease-in-out; }
-				</style>
-			  </defs>
+		<!-- 隱藏保留 -->
+		<div style="display:none;">
+			<button class="travel-btn" id="travelCarBtn" onclick="setTravelMode('car')"></button>
+			<button class="travel-btn" id="travelWalkBtn" onclick="setTravelMode('walk')"></button>
+		</div>
+    </div>
 
-			  <!-- 還原您上傳的經典定位標記 (完美向量化) -->
-			  <g filter="url(#pinGlow)">
-				<!-- 外層水滴大頭針（填滿與地圖起點一致的螢光綠色，並帶有精緻的挖空內部） -->
-				<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-					fill="#4f93d6"/> <!-- 改用與 A 棟、指南針呼應的高亮天藍色 -->
+    <!-- 第二列：目的地下拉選單 + 搜尋輸入框 -->
+    <div class="mode-row-wrap" style="margin-top: 6px;">
+		<div class="mode-row" style="display: flex; gap: 6px; align-items: center;">
+			<div class="dest-select-wrapper" id="destSelectWrapper" style="display:none; flex: 0 0 35%;">
+				<select id="destSelect" onchange="onDestSelectChange()" class="bldg-btn" style="width: 100%; height: 42px; padding: 0 10px; appearance: auto; background: rgba(15,20,32,0.9); color: var(--text-1); border: 1px solid rgba(255,255,255,0.12);">
+					<option value="entry" style="display:none">入口</option>
+					<option value="exit" style="display:none">出口</option>
+					<option value="A" selected>A 棟</option>
+					<option value="B">B 棟</option>
+					<option value="C">C 棟</option>
+				</select>
+			</div>
+			
+			<div class="search-input-wrapper" id="searchInputWrapper" style="flex: 1 1 100%; display: flex; align-items: center;">
+			  <form class="search-wrap" id="searchForm" onsubmit="event.preventDefault(); doSearch();" autocomplete="off" role="search" style="width: 100%;">
+				<span class="s-ic">🔎</span>
+				<input id="searchInput" class="search-input" type="text" placeholder="輸入車位編號 (如 1056)"
+					   autocomplete="off" spellcheck="false" enterkeyhint="search" inputmode="numeric"
+					   name="q" maxlength="6">
+				<button type="button" class="s-clear" id="clearBtn" onclick="clearSearch()" aria-label="清除">✕</button>
+				<div class="suggestions" id="suggestions"></div>
+			  </form>
+			</div>
 
-				<!-- 內層核心圓點（白色，自帶閃爍效果，大幅增加科技質感與視覺層級） -->
-				<circle cx="12" cy="9" r="2.2" fill="#ffffff" class="pin-core"/>
-			  </g>
-			</svg>
-		</button>
+			<div class="swap-btn-wrapper" id="swapBtnWrapper" style="display:none;">
+				<button type="button" class="mini-btn" id="swapBtn" onclick="toggleDir()" title="切換方向" style="height: 42px; padding: 0 12px;">
+					<span id="swapArrow">→</span>
+				</button>
+			</div>
+		</div>
     </div>
-    <div class="mode-row-wrap">
-    <div class="mode-row">
-      <div class="travel-mode-group" id="travelModeGroup">
-        <button class="travel-btn active" id="travelCarBtn" onclick="setTravelMode('car')" title="開車">
-          <svg width="34.4" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="2.5" y="11" width="19" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="7" cy="17.3" r="1.6" fill="currentColor"/>
-            <circle cx="17" cy="17.3" r="1.6" fill="currentColor"/>
-          </svg>
-        </button>
-        <button class="travel-btn" id="travelWalkBtn" onclick="setTravelMode('walk')" title="行人">
-          <svg width="23.4" height="31.25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="3.4" r="2.3" fill="currentColor"/>
-            <path d="M12 6.6 L11 12.5" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
-            <path d="M11.3 8 L8.34 9.52 L6.56 11.61" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M11.3 8 L14.03 8.73 L16.32 10.3" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M11 12.5 L6 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
-            <path d="M11 12.5 L16 20" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-      <button class="mode-btn mode-in" id="modeInBtn" onclick="setMode('in')">
-        <span class="mode-ic">
-          <!-- 開車模式：經典「P」字停車標誌 -->
-          <svg class="icon-car-mode" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3.5" y="3.5" width="17" height="17" rx="4" style="stroke:var(--accent-green);stroke-width:1.8;stroke-linejoin:round"/>
-            <path d="M9.5 17V7h3.6a3 3 0 0 1 0 6H9.5" style="stroke:var(--accent-green);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round"/>
-          </svg>
-          <!-- 行人模式（找愛車）：汽車圖示 -->
-          <svg class="icon-walk-mode" width="34" height="21" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" style="stroke:var(--accent-green);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/>
-            <rect x="2.5" y="11" width="19" height="5.5" rx="1.5" style="stroke:var(--accent-green);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"/>
-            <circle cx="7" cy="17.3" r="1.6" style="fill:var(--accent-green)"/>
-            <circle cx="17" cy="17.3" r="1.6" style="fill:var(--accent-green)"/>
-          </svg>
-        </span><span id="modeInLabel">找車位</span>
-      </button>
-      <button class="mode-btn mode-out" id="modeOutBtn" onclick="setMode('out')">
-        <span class="mode-ic">
-          <!-- 開車模式：出口圖示（門框 + 向外箭頭）-->
-          <svg class="icon-car-mode" width="22" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8" style="stroke:var(--accent-cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
-            <polyline points="15 8 19 12 15 16" style="stroke:var(--accent-cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
-            <line x1="19" y1="12" x2="9" y2="12" style="stroke:var(--accent-cyan);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/>
-          </svg>
-          <!-- 行人模式（找棟別）：大樓圖示 -->
-          <svg class="icon-walk-mode" width="18" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="5" y="3" width="14" height="18" rx="1" style="stroke:var(--accent-cyan);stroke-width:1.8;stroke-linejoin:round"/>
-            <rect x="7.8"  y="6"    width="2.2" height="2.2" rx="0.4" style="fill:var(--accent-cyan)"/>
-            <rect x="14"   y="6"    width="2.2" height="2.2" rx="0.4" style="fill:var(--accent-cyan)"/>
-            <rect x="7.8"  y="10.4" width="2.2" height="2.2" rx="0.4" style="fill:var(--accent-cyan)"/>
-            <rect x="14"   y="10.4" width="2.2" height="2.2" rx="0.4" style="fill:var(--accent-cyan)"/>
-            <rect x="10"   y="15.5" width="4"   height="5.5" style="fill:var(--accent-cyan)"/>
-          </svg>
-        </span><span id="modeOutLabel">找出口</span>
-      </button>
-    </div>
-    </div>
+
     <div class="err-inline" id="errMsg">❌ 查無此車位編號，請確認後重試</div>
 
     <!-- 校正工具列 -->
@@ -1788,6 +1838,92 @@ function initBldgEntIcons(){
    2. 已經選定車位 → 隱藏這兩個「瀏覽用」標記；改由 drawRoute() 在車位真正對應的那個入口
       （sp.entrance）畫出 entPing 圖示＋引導線，避免瀏覽標記跟路線的入口icon重複、混淆。
    3. 都沒有 → 隱藏兩個標記 */
+
+/* 方案 B 意圖導向狀態管理 */
+let CURRENT_INTENT = 'park';
+
+function setIntent(intent, autoTrigger = true) {
+  CURRENT_INTENT = intent;
+  
+  document.querySelectorAll('.intent-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  const activeBtn = document.getElementById('intentBtn_' + intent);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  const destSelWrapper = document.getElementById('destSelectWrapper');
+  const destSel = document.getElementById('destSelect');
+  const searchWrapper = document.getElementById('searchInputWrapper');
+  
+  if (intent === 'park') {
+    TRAVEL_MODE = 'car';
+    routeDir = 'in';
+    if (destSel) destSel.value = 'entry';
+    if (destSelWrapper) destSelWrapper.style.display = 'none';
+    if (searchWrapper) {
+      searchWrapper.style.flex = '1 1 100%';
+    }
+    document.body.classList.remove('travel-walk');
+    document.body.classList.remove('dir-out');
+    document.body.classList.add('dir-in');
+  } else if (intent === 'exit') {
+    TRAVEL_MODE = 'car';
+    routeDir = 'out';
+    if (destSel) destSel.value = 'exit';
+    if (destSelWrapper) destSelWrapper.style.display = 'none';
+    if (searchWrapper) {
+      searchWrapper.style.flex = '1 1 100%';
+    }
+    document.body.classList.remove('travel-walk');
+    document.body.classList.remove('dir-in');
+    document.body.classList.add('dir-out');
+  } else if (intent === 'find') {
+    TRAVEL_MODE = 'walk';
+    routeDir = 'in';
+    if (destSel) {
+      if (destSel.value !== 'A' && destSel.value !== 'B' && destSel.value !== 'C') {
+        destSel.value = 'A';
+      }
+    }
+    if (destSelWrapper) {
+      destSelWrapper.style.display = 'block';
+      destSelWrapper.style.flex = '0 0 35%';
+    }
+    if (searchWrapper) {
+      searchWrapper.style.flex = '1 1 65%';
+    }
+    document.body.classList.add('travel-walk');
+    document.body.classList.remove('dir-out');
+    document.body.classList.add('dir-in');
+  } else if (intent === 'bldg') {
+    TRAVEL_MODE = 'walk';
+    routeDir = 'out';
+    if (destSel) {
+      if (destSel.value !== 'A' && destSel.value !== 'B' && destSel.value !== 'C') {
+        destSel.value = 'A';
+      }
+    }
+    if (destSelWrapper) {
+      destSelWrapper.style.display = 'block';
+      destSelWrapper.style.flex = '0 0 35%';
+    }
+    if (searchWrapper) {
+      searchWrapper.style.flex = '1 1 65%';
+    }
+    document.body.classList.add('travel-walk');
+    document.body.classList.remove('dir-in');
+    document.body.classList.add('dir-out');
+  }
+
+  updateDirUI();
+  updateWalkEntMarker();
+
+  if (autoTrigger && currentId && spaceMap[currentId]) {
+    drawRoute(spaceMap[currentId]);
+    updateRouteBanner();
+  }
+}
+
 function updateWalkEntMarker(){
   const m1=document.getElementById('walkEntMarker');
   const m2=document.getElementById('walkEntMarker2');
@@ -2394,13 +2530,12 @@ function updateNavDebugPanel(){
 }
 function routeSteps(sp){ return routeDir==='in'?stepsIn(sp):stepsOut(sp); }
 function stepsIn(sp){
-  const {trunkX,ay}=buildPathIn(sp);
+  const {trunkX,ay,entKey}=buildPathIn(sp);
   const walkMode=(TRAVEL_MODE==='walk');
   const faceTxt={up:'車頭朝內（上）',down:'車頭朝外（下）',left:'靠左側',right:'靠右側'}[sp.face]||'';
   const dis=sp.type==='dis'?'（無障礙車位）':'';
-  const entTxt=sp.entrance?ENTRANCE_LABELS[sp.entrance]||sp.entrance:'';
+  const entTxt=entKey?ENTRANCE_LABELS[entKey]||entKey:'';
   if(walkMode){
-    // 行人模式目前先以「直線最短距離」帶路，步驟先簡化為兩段（之後再視走道實況調整）
     return [
       {i:'🚶',t:`從「${entTxt||'棟別入口'}」出發`},
       {i:'🚗',t:`直線前往 ${sp.zoneName} 區域，找到愛車 ${sp.id}${dis}，鄰近電梯：${sp.lift||'—'}`}
@@ -2417,10 +2552,18 @@ function stepsIn(sp){
   return steps;
 }
 function stepsOut(sp){
-  const {trunkX,ay}=buildPathOut(sp);
+  const {trunkX,ay,destIsEntrance,entKey}=buildPathOut(sp);
+  const walkMode=(TRAVEL_MODE==='walk');
+  const dis=sp.type==='dis'?'（無障礙車位）':'';
+  if(walkMode){
+    const destTxt=entKey ? (ENTRANCE_LABELS[entKey]||entKey) : 'B1 出口';
+    return [
+      {i:'🚶',t:`從車位 ${sp.id}${dis} 出發`},
+      {i:'🏢',t:`步行前往「${destTxt}」，鄰近電梯：${sp.lift||'—'}`}
+    ];
+  }
   const side=trunkX<=300?'左側':trunkX>=700?'右側':'中央';
   const goUp=ay>EXIT.y;
-  const dis=sp.type==='dis'?'（無障礙車位）':'';
   const steps=[
     {i:'🅿',t:`由車位 ${sp.id}${dis} 倒車出庫，車頭朝${side}主車道`},
     {i:'🔄',t:`匯入${side}主車道`},
@@ -2585,13 +2728,24 @@ function setInfoReady(on){ /* 舊版是讓「!」按鈕發光；新版由兩顆�
    使用者可按卡片右上角 ✕ 關閉，或清除查詢時自動收合。 */
 function updateRouteBanner(){
   const sheet=document.getElementById('bottomSheet');
-  if(!currentId || TRAVEL_MODE==='car'){ sheet.classList.remove('show'); return; }
+  if(!currentId){ sheet.classList.remove('show'); return; }
   const textEl=document.getElementById('bsTextNormal');
   const bannerSp=spaceMap[currentId];
-  const bannerEntLbl = (TRAVEL_MODE==='walk' && bannerSp && bannerSp.entrance) ? (ENTRANCE_LABELS[bannerSp.entrance]||bannerSp.entrance) : 'B1 入口';
-  textEl.textContent = routeDir==='in'
-    ? `從 ${bannerEntLbl} 到車位 ${currentId}`
-    : `從車位 ${currentId} 到 B1 出口`;
+  const destSel = document.getElementById('destSelect');
+  const destVal = destSel ? destSel.value : 'entry';
+  const isBldg = (destVal==='A'||destVal==='B'||destVal==='C');
+  const entKey = isBldg ? ('ent'+destVal+'2') : (bannerSp ? bannerSp.entrance : '');
+  const bannerEntLbl = (TRAVEL_MODE==='walk' && entKey) ? (ENTRANCE_LABELS[entKey]||entKey) : 'B1 入口';
+  
+  if (TRAVEL_MODE === 'walk') {
+    textEl.textContent = routeDir==='in'
+      ? `從 ${bannerEntLbl} 到車位 ${currentId}`
+      : `從車位 ${currentId} 到 ${isBldg ? bannerEntLbl : 'B1 出口'}`;
+  } else {
+    textEl.textContent = routeDir==='in'
+      ? `從 B1 入口 到車位 ${currentId}`
+      : `從車位 ${currentId} 到 B1 出口`;
+  }
   sheet.classList.remove('dir-in','dir-out');
   sheet.classList.add(routeDir==='in' ? 'dir-in' : 'dir-out');
   sheet.classList.add('show');
@@ -3223,7 +3377,7 @@ function init(){
   const rw=document.getElementById('roadWRange'), rv=document.getElementById('roadWVal');
   if(rw) rw.value=ROAD_WIDTH; if(rv) rv.textContent=ROAD_WIDTH;
   initBldgEntIcons();
-  renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); renderRoads(); applyView(); updateDirUI(); setTravelMode(TRAVEL_MODE);
+  renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); renderRoads(); applyView(); setIntent('park', false);
   requestAnimationFrame(()=>{applyView(); scrollToEntry();});
   window.addEventListener('load',()=>{applyView(); scrollToEntry();});
   if(window.ResizeObserver){let first=true;
