@@ -1775,25 +1775,28 @@ function entranceXY(key){
 const BLDG_ENT_ICON_COLOR='#4f93d6';
 const BLDG_ENT_ICON_SCALE=2.6;
 const BLDG_ENT_PULSE_R=22;
-/* pin 圖示與光暈中心之間額外保留的間距：光暈(entry-pulse)動畫最大會放大到 1.9 倍
-   （半徑 = BLDG_ENT_PULSE_R*1.9 ≈ 41.8），若 pin 尖端直接貼在光暈圓心，動畫放大過程
-   中光暈會整個蓋到 pin 圖示本體上，讓兩者視覺上疊在一起、位置看起來一致卻很雜亂。
-   這裡讓 pin 尖端往上多留一段距離，確保光暈脹到最大時也不會碰到 pin 本體，
-   兩者才會呈現「光暈在下方定位、pin 在上方清楚懸浮」的乾淨、位置一致的畫面。 */
-const BLDG_ENT_ICON_GAP=10;
+/* 「錨點」小圓：不參與縮放/淡出動畫，永遠原尺寸、原透明度顯示在原地，
+   讓 pin 尖端隨時都有一個看得到的落點可以「插」進去，兩者視覺上才會像同一個圖示，
+   不會因為外層光暈脈動到最淡/最小的那一刻，讓 pin 看起來懸空、跟底下的光暈脫節。 */
+const BLDG_ENT_ANCHOR_R=7;
 const BLDG_ENT_PIN_PATH='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z';
 function bldgEntPinMarkup(scale){
-  const tx=(-12*scale).toFixed(2), ty=(-22*scale-BLDG_ENT_PULSE_R-BLDG_ENT_ICON_GAP).toFixed(2);
+  /* 尖端直接對齊光暈／錨點圓心 (0,0)：pin 像「插」在光暈正中央一樣落地，
+     不再額外留距離，視覺上兩者才會是同一個定位圖示，而不是各自分開的兩塊元素。 */
+  const tx=(-12*scale).toFixed(2), ty=(-22*scale).toFixed(2);
   return `<g transform="translate(${tx},${ty}) scale(${scale})">
       <path d="${BLDG_ENT_PIN_PATH}" fill="${BLDG_ENT_ICON_COLOR}"/>
       <circle cx="12" cy="9" r="2.2" fill="#ffffff"/>
     </g>`;
 }
-/* 光暈（脈動圓）+ pin 圖示的完整組合，只有這一份定義：不管是「找棟別」瀏覽用的
+/* 光暈（脈動圓）+ 錨點圓 + pin 圖示的完整組合，只有這一份定義：不管是「找棟別」瀏覽用的
    walkEntMarker/walkEntMarker2，還是路線起點/終點的入口 icon（entPing），都呼叫這個函式產生內容，
-   不再各自維護一套光暈動畫，兩邊視覺一定一致。 */
+   不再各自維護一套光暈動畫，兩邊視覺一定一致。
+   繪製順序（由下而上）：①脈動光暈（會放大淡出）→ ②靜態錨點小圓（一直存在，負責視覺銜接）→ ③pin 本體。 */
 function bldgEntMarkerMarkup(){
-  return `<circle cx="0" cy="0" r="${BLDG_ENT_PULSE_R}" fill="${BLDG_ENT_ICON_COLOR}" class="entry-pulse"/>${bldgEntPinMarkup(BLDG_ENT_ICON_SCALE)}`;
+  return `<circle cx="0" cy="0" r="${BLDG_ENT_PULSE_R}" fill="${BLDG_ENT_ICON_COLOR}" class="entry-pulse"/>`
+    + `<circle cx="0" cy="0" r="${BLDG_ENT_ANCHOR_R}" fill="${BLDG_ENT_ICON_COLOR}" stroke="#ffffff" stroke-width="2"/>`
+    + bldgEntPinMarkup(BLDG_ENT_ICON_SCALE);
 }
 /* 依上面共用函式，重新產生 walkEntMarker / walkEntMarker2 這兩個「瀏覽用」入口圖示的內容，
    確保它們跟路線上的入口 icon（entPing）視覺上完全一致，不用兩邊各自維護一份數值。 */
@@ -1830,9 +1833,13 @@ function setIntent(intent, autoTrigger = true) {
     TRAVEL_MODE = 'car';
     routeDir = 'in';
     if (destSel) destSel.value = 'entry';
-    if (destSelWrapper) destSelWrapper.style.display = 'none';
+    if (destSelWrapper) {
+      destSelWrapper.style.display = 'none';
+      destSelWrapper.style.order = '1';
+    }
     if (searchWrapper) {
       searchWrapper.style.flex = '1 1 100%';
+      searchWrapper.style.order = '2';
     }
     document.body.classList.remove('travel-walk');
     document.body.classList.remove('dir-out');
@@ -1841,9 +1848,13 @@ function setIntent(intent, autoTrigger = true) {
     TRAVEL_MODE = 'car';
     routeDir = 'out';
     if (destSel) destSel.value = 'exit';
-    if (destSelWrapper) destSelWrapper.style.display = 'none';
+    if (destSelWrapper) {
+      destSelWrapper.style.display = 'none';
+      destSelWrapper.style.order = '1';
+    }
     if (searchWrapper) {
       searchWrapper.style.flex = '1 1 100%';
+      searchWrapper.style.order = '2';
     }
     document.body.classList.remove('travel-walk');
     document.body.classList.remove('dir-in');
@@ -1855,13 +1866,21 @@ function setIntent(intent, autoTrigger = true) {
       if (destSel.value !== 'A' && destSel.value !== 'B' && destSel.value !== 'C') {
         destSel.value = 'A';
       }
+      for (let opt of destSel.options) {
+        if (opt.value === 'A') opt.text = '目前所在：A 棟';
+        if (opt.value === 'B') opt.text = '目前所在：B 棟';
+        if (opt.value === 'C') opt.text = '目前所在：C 棟';
+      }
     }
     if (destSelWrapper) {
       destSelWrapper.style.display = 'block';
-      destSelWrapper.style.flex = '0 0 35%';
+      destSelWrapper.style.flex = '0 0 auto';
+      destSelWrapper.style.maxWidth = '48%';
+      destSelWrapper.style.order = '1';
     }
     if (searchWrapper) {
-      searchWrapper.style.flex = '1 1 65%';
+      searchWrapper.style.flex = '1 1 52%';
+      searchWrapper.style.order = '2';
     }
     document.body.classList.add('travel-walk');
     document.body.classList.remove('dir-out');
@@ -1873,13 +1892,21 @@ function setIntent(intent, autoTrigger = true) {
       if (destSel.value !== 'A' && destSel.value !== 'B' && destSel.value !== 'C') {
         destSel.value = 'A';
       }
+      for (let opt of destSel.options) {
+        if (opt.value === 'A') opt.text = '前往棟別：A 棟';
+        if (opt.value === 'B') opt.text = '前往棟別：B 棟';
+        if (opt.value === 'C') opt.text = '前往棟別：C 棟';
+      }
     }
     if (destSelWrapper) {
       destSelWrapper.style.display = 'block';
-      destSelWrapper.style.flex = '0 0 35%';
+      destSelWrapper.style.flex = '0 0 auto';
+      destSelWrapper.style.maxWidth = '48%';
+      destSelWrapper.style.order = '2';
     }
     if (searchWrapper) {
-      searchWrapper.style.flex = '1 1 65%';
+      searchWrapper.style.flex = '1 1 52%';
+      searchWrapper.style.order = '1';
     }
     document.body.classList.add('travel-walk');
     document.body.classList.remove('dir-in');
@@ -1913,6 +1940,18 @@ function updateWalkEntMarker(){
     if (xy2) { m2.setAttribute('transform', `translate(${xy2[0]},${xy2[1]})`); m2.style.display='block'; } else { m2.style.display='none'; }
   } else {
     m1.style.display='none'; m2.style.display='none';
+  }
+}
+
+/* 目的地下拉選單（棟別 A/B/C）變更時：若目前已經有選定車位，重新計算路線與更新底部卡片文字；
+   若還沒選車位（例如純瀏覽某一棟的入口位置），只更新藍色定位標記。
+   注意：原本這個函式在 HTML 裡被 onchange 呼叫卻從未定義，導致切換棟別下拉完全沒反應，是路線
+   「選了車位又下拉切棟別、但路線不會換」的主因之一。 */
+function onDestSelectChange(){
+  updateWalkEntMarker();
+  if (currentId && spaceMap[currentId]) {
+    drawRoute(spaceMap[currentId]);
+    updateRouteBanner();
   }
 }
 
@@ -1976,7 +2015,21 @@ function buildPathOut(sp){
   // 不論目前有沒有點選 A/B/C 棟別按鈕，都預設依車位資訊上的棟別入口為準，
   // 引導線方向為「車位 → 入口」。
   const walkMode = (TRAVEL_MODE==='walk');
-  const entXY = walkMode ? entranceXY(sp.entrance) : null;
+  // 目的地入口以「下拉選單選的棟別」為準：
+  //   · 若下拉選的棟別跟車位本身登記的棟別相同 → 沿用車位的鄰近入口（entrance 欄位，可能是1或2號）
+  //   · 若下拉選的棟別跟車位不同棟 → 固定導去該棟的「2號入口」
+  //   · 若沒有下拉選單或選的不是 A/B/C（例如尚未進入棟別模式）→ 退回原本車位登記的入口
+  let entKey = sp.entrance;
+  if (walkMode) {
+    const destSel = document.getElementById('destSelect');
+    const selBldg = (destSel && ['A','B','C'].includes(destSel.value)) ? destSel.value : null;
+    const spBldgMatch = sp.entrance ? sp.entrance.match(/^ent([A-Z])/) : null;
+    const spBldg = spBldgMatch ? spBldgMatch[1] : null;
+    if (selBldg) {
+      entKey = (selBldg === spBldg) ? sp.entrance : ('ent' + selBldg + '2');
+    }
+  }
+  const entXY = walkMode ? entranceXY(entKey) : null;
 
   if (entXY) {
     // 行人模式先簡化為「兩點間最短距離」直線，不繞車道路網（之後再視需要調整成貼合走道的路徑）
@@ -1986,7 +2039,7 @@ function buildPathOut(sp){
     const startDoor=pts[0], destDoor=pts[pts.length-1];
     const smallEl = document.querySelector('.titlebar small');
     if (smallEl) {
-      smallEl.innerHTML = `· [${sp.id}] 行人找棟別（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${sp.entrance}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
+      smallEl.innerHTML = `· [${sp.id}] 行人找棟別（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${entKey}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
     }
     return {pts, trunkX:tx, ay,
       startPt:startDoor, startColor:'#f59e0b', destPt:destDoor, destColor:'#4f93d6'};
@@ -2123,7 +2176,7 @@ function drawRoute(sp){
   // 找出口(out)：開車模式下終點是「出」字閘門口，圓圈本身已是明確標記，不用再畫脈動目標圈；
   // 但行人模式的「找棟別」(entAtDest)，終點是棟別入口，仍要跟找愛車一樣顯示脈動圓圈。
   const destDots = isSpaceDest ? '' : (entAtDest ? entPing(dx,dy)
-    : (routeDir==='out' ? '' : `
+    : (routeDir==='out' ? `<circle cx="${dx}" cy="${dy}" r="8" fill="${P.destColor}" stroke="#fff" stroke-width="2.5"/>` : `
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="2" class="ping-circle"/>
     <circle cx="${dx}" cy="${dy}" r="8" fill="none" stroke="${P.destColor}" stroke-width="1.5" class="ping-circle" style="animation-delay:.6s"/>
     <circle cx="${dx}" cy="${dy}" r="6.5" fill="${P.destColor}" stroke="#fff" stroke-width="2"/>`));
@@ -2621,6 +2674,11 @@ function toggleDir(){
    ④  查詢模式
    ===================================================================== */
 let currentId=null;
+/* 補：這個函式原本被呼叫卻從未定義，導致呼叫到這裡就丟出 ReferenceError，
+   讓 selectSpace() 後面的 updateRouteBanner()（顯示底部浮動視窗）整段沒機會執行。
+   直接打字搜尋走的正是 selectSpace()，所以才會「打字沒反應、點圖示才出現」──
+   點圖示是走 setMode() 直接呼叫 updateRouteBanner()，沒有經過這個壞掉的呼叫。 */
+function setInfoReady(){}
 function onSpaceClick(id){ if(editMode) selectForEdit(id); else selectSpace(id); }
 function doSearch(){
   const raw=document.getElementById('searchInput').value.trim().toUpperCase();
@@ -2705,7 +2763,12 @@ function updateRouteBanner(){
   const destSel = document.getElementById('destSelect');
   const destVal = destSel ? destSel.value : 'entry';
   const isBldg = (destVal==='A'||destVal==='B'||destVal==='C');
-  const entKey = isBldg ? ('ent'+destVal+'2') : (bannerSp ? bannerSp.entrance : '');
+  // 與 buildPathOut() 相同規則：下拉選的棟別若跟車位本身棟別相同，沿用車位登記的入口；不同棟則固定用該棟2號入口
+  const spBldgMatch2 = (bannerSp && bannerSp.entrance) ? bannerSp.entrance.match(/^ent([A-Z])/) : null;
+  const spBldg2 = spBldgMatch2 ? spBldgMatch2[1] : null;
+  const entKey = isBldg
+    ? ((destVal===spBldg2) ? (bannerSp ? bannerSp.entrance : ('ent'+destVal+'2')) : ('ent'+destVal+'2'))
+    : (bannerSp ? bannerSp.entrance : '');
   const bannerEntLbl = (TRAVEL_MODE==='walk' && entKey) ? (ENTRANCE_LABELS[entKey]||entKey) : 'B1 入口';
   
   if (TRAVEL_MODE === 'walk') {
