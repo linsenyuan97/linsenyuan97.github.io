@@ -47,6 +47,35 @@ body{font-family:'Segoe UI','Microsoft JhengHei',system-ui,sans-serif;
 .bldg-btn:hover{background:rgba(79,147,214,.15);border-color:#4f93d6;color:#4f93d6;}
 .bldg-btn:active,.bldg-btn.active{background:rgba(79,147,214,.22);border-color:#4f93d6;color:#4f93d6;}
 
+/* 目的地下拉選單（棟別 A/B/C）：自訂樣式取代瀏覽器原生 <select>，
+   讓開合後的選項清單也套用玻璃質感（原生 select 的下拉清單無法用 CSS 客製，
+   只能重畫一份 HTML 清單來假扮下拉選單，觸發邏輯仍透過隱藏的原生 select 維持）。 */
+.custom-select{position:relative;width:100%;height:100%;}
+.custom-select-trigger{width:100%;height:42px;display:flex;align-items:center;justify-content:space-between;
+  gap:6px;padding:0 12px;border-radius:var(--radius-sm);background:rgba(255,255,255,.04);
+  border:1px solid var(--glass-border);color:var(--text-1);font-family:inherit;font-size:.92rem;
+  font-weight:700;letter-spacing:.3px;cursor:pointer;transition:all .18s;}
+.custom-select-trigger:hover{background:rgba(79,147,214,.15);border-color:#4f93d6;color:#4f93d6;}
+.custom-select-trigger.open{background:rgba(79,147,214,.15);border-color:#4f93d6;color:#4f93d6;
+  box-shadow:0 0 0 3px rgba(79,147,214,.15);}
+.custom-select-trigger .cs-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.custom-select-trigger .cs-caret{font-size:.7rem;transition:transform .18s;color:var(--text-3);flex-shrink:0;}
+.custom-select-trigger.open .cs-caret{transform:rotate(180deg);color:#4f93d6;}
+.custom-select-menu{position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:rgba(15,20,32,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-sm);overflow:hidden;z-index:200;
+  box-shadow:0 14px 34px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px) scale(.98);
+  pointer-events:none;transition:opacity .16s ease,transform .16s ease;}
+.custom-select-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
+.cs-option{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;
+  cursor:pointer;font-size:.9rem;font-weight:600;color:var(--text-2);
+  border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s,color .12s;}
+.cs-option:last-child{border-bottom:none;}
+.cs-option:hover{background:rgba(79,147,214,.12);color:var(--text-1);}
+.cs-option.selected{color:#4f93d6;background:rgba(79,147,214,.08);}
+.cs-option .cs-check{opacity:0;font-size:.8rem;color:#4f93d6;}
+.cs-option.selected .cs-check{opacity:1;}
+
 /* ==================== 1. 調整最外層容器（parking.html 約 66 行） ==================== */
 .search-wrap {
   display: flex;
@@ -532,13 +561,22 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     <div class="mode-row-wrap" style="margin-top: 6px;">
 		<div class="mode-row" style="display: flex; gap: 6px; align-items: center;">
 			<div class="dest-select-wrapper" id="destSelectWrapper" style="display:none; flex: 0 0 35%;">
-				<select id="destSelect" onchange="onDestSelectChange()" class="bldg-btn" style="width: 100%; height: 42px; padding: 0 10px; appearance: auto; background: rgba(15,20,32,0.9); color: var(--text-1); border: 1px solid rgba(255,255,255,0.12);">
+				<!-- 隱藏的原生 select：只當作狀態容器，維持既有 JS（destSel.value / options[].text）邏輯不變 -->
+				<select id="destSelect" onchange="onDestSelectChange()" style="display:none;">
 					<option value="entry" style="display:none">入口</option>
 					<option value="exit" style="display:none">出口</option>
 					<option value="A" selected>A 棟</option>
 					<option value="B">B 棟</option>
 					<option value="C">C 棟</option>
 				</select>
+				<!-- 實際顯示、可互動的自訂下拉選單：與其餘玻璃質感 UI 一致 -->
+				<div class="custom-select" id="destSelectCustom">
+					<button type="button" class="custom-select-trigger" id="destSelectTrigger" onclick="toggleDestSelectMenu(event)">
+						<span class="cs-label" id="destSelectLabel">A 棟</span>
+						<span class="cs-caret">▾</span>
+					</button>
+					<div class="custom-select-menu" id="destSelectMenu"></div>
+				</div>
 			</div>
 			
 			<div class="search-input-wrapper" id="searchInputWrapper" style="flex: 1 1 100%; display: flex; align-items: center;">
@@ -1915,6 +1953,8 @@ function setIntent(intent, autoTrigger = true) {
 
   updateDirUI();
   updateWalkEntMarker();
+  updateDestSelectLabel();
+  closeDestSelectMenu();
 
   if (autoTrigger && currentId && spaceMap[currentId]) {
     drawRoute(spaceMap[currentId]);
@@ -1954,6 +1994,60 @@ function onDestSelectChange(){
     updateRouteBanner();
   }
 }
+
+/* ---------- 自訂目的地下拉選單（棟別 A/B/C）：玻璃質感版本 ----------
+   隱藏的原生 <select id="destSelect"> 仍是唯一的資料來源（setIntent 等既有邏輯
+   直接讀寫它的 value 與 options[].text）；這裡只是把「顯示」與「互動」換成
+   一份自訂 HTML 清單，開合動畫、模糊背景都跟 .suggestions／.bldg-btn 同一套語彙。 */
+function renderDestSelectMenu(){
+  const sel=document.getElementById('destSelect');
+  const menu=document.getElementById('destSelectMenu');
+  if(!sel||!menu) return;
+  menu.innerHTML='';
+  for(const opt of sel.options){
+    if(opt.value==='entry'||opt.value==='exit') continue; // entry/exit 為內部用值，不出現在自訂清單
+    const row=document.createElement('div');
+    row.className='cs-option'+(opt.value===sel.value?' selected':'');
+    row.innerHTML=`<span>${opt.text}</span><span class="cs-check">✓</span>`;
+    row.onclick=()=>selectDestOption(opt.value);
+    menu.appendChild(row);
+  }
+}
+function updateDestSelectLabel(){
+  const sel=document.getElementById('destSelect');
+  const label=document.getElementById('destSelectLabel');
+  if(!sel||!label) return;
+  const opt=sel.options[sel.selectedIndex];
+  label.textContent=opt?opt.text:'';
+}
+function selectDestOption(value){
+  const sel=document.getElementById('destSelect');
+  if(!sel) return;
+  sel.value=value;
+  updateDestSelectLabel();
+  closeDestSelectMenu();
+  onDestSelectChange();
+}
+function toggleDestSelectMenu(e){
+  if(e) e.stopPropagation();
+  const menu=document.getElementById('destSelectMenu');
+  const trigger=document.getElementById('destSelectTrigger');
+  if(!menu||!trigger) return;
+  const isOpen=menu.classList.contains('open');
+  if(isOpen){ closeDestSelectMenu(); return; }
+  renderDestSelectMenu();
+  menu.classList.add('open'); trigger.classList.add('open');
+}
+function closeDestSelectMenu(){
+  const menu=document.getElementById('destSelectMenu');
+  const trigger=document.getElementById('destSelectTrigger');
+  if(menu) menu.classList.remove('open');
+  if(trigger) trigger.classList.remove('open');
+}
+document.addEventListener('click',(e)=>{
+  const wrap=document.getElementById('destSelectCustom');
+  if(wrap && !wrap.contains(e.target)) closeDestSelectMenu();
+});
 
 function buildPathIn(sp){
   const [ax,ay]=accessOf(sp);
@@ -3380,6 +3474,7 @@ function init(){
   const rw=document.getElementById('roadWRange'), rv=document.getElementById('roadWVal');
   if(rw) rw.value=ROAD_WIDTH; if(rv) rv.textContent=ROAD_WIDTH;
   initBldgEntIcons();
+  updateDestSelectLabel();
   renderPillars(); renderSpaces(); computeOvBBoxes(); applyOverlayTransforms(); renderRoads(); applyView(); setIntent('park', false);
   requestAnimationFrame(()=>{applyView(); scrollToEntry();});
   window.addEventListener('load',()=>{applyView(); scrollToEntry();});
