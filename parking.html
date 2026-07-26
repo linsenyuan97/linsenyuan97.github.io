@@ -130,11 +130,15 @@ body.dir-in .search-input,
 .search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.18);}
 .search-input::placeholder{color:var(--text-3);letter-spacing:0;font-weight:400;}
 .search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.18);}
-/* 依方向切換動態上色：入口模式=綠、出口模式=橘（改用內陰影取代粗邊框） */
-body.dir-in .search-input{box-shadow:inset 0 0 0 1px rgba(34,197,94,.4);}
-body.dir-in .search-input:focus{background:rgba(34,197,94,.08);box-shadow:0 0 0 3px rgba(34,197,94,.20);}
+/* 依「意圖」動態上色搜尋框：🚗 開車(停車/離場)=橘、🚶 步行(找車/棟別)=綠 */
+body.dir-in .search-input{box-shadow:inset 0 0 0 1px rgba(249,115,22,.4);}
+body.dir-in .search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.20);}
 body.dir-out .search-input{box-shadow:inset 0 0 0 1px rgba(249,115,22,.4);}
 body.dir-out .search-input:focus{background:rgba(249,115,22,.08);box-shadow:0 0 0 3px rgba(249,115,22,.20);}
+body.travel-walk.dir-in .search-input{box-shadow:inset 0 0 0 1px rgba(34,197,94,.4);}
+body.travel-walk.dir-in .search-input:focus{background:rgba(34,197,94,.08);box-shadow:0 0 0 3px rgba(34,197,94,.20);}
+body.travel-walk.dir-out .search-input{box-shadow:inset 0 0 0 1px rgba(34,197,94,.4);}
+body.travel-walk.dir-out .search-input:focus{background:rgba(34,197,94,.08);box-shadow:0 0 0 3px rgba(34,197,94,.20);}
 /* 找出口模式：地圖上不需要顯示入口(綠)標記；找車位模式：不需要顯示出口(橘)標記 */
 body.dir-out .ov[data-key="entry"]{display:none;}
 body.dir-in .ov[data-key="exit"]{display:none;}
@@ -437,21 +441,22 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   filter:drop-shadow(0 0 4px rgba(79,147,214,.9));
 }
 
-/* 方案 B 意圖導向按鈕組：原本是「同一個框」的分段式標籤（segmented tabs），
-   改成 4 顆各自獨立的按鈕框，彼此用間距分開，不再共用外框。 */
+/* 方案 B 意圖導向按鈕組（Segmented Tabs） */
 .intent-group {
   flex-shrink: 0;
   display: flex;
-  gap: 6px;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
 }
 .intent-btn {
   padding: 6px 6px;
   height: 38px;
-  min-width: 72px;
-  box-sizing: border-box;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  border-radius: 6px;
+  background: transparent;
   color: var(--text-2);
   font-family: inherit;
   font-size: 0.8rem;
@@ -466,32 +471,28 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 .intent-btn:hover {
   background: rgba(255, 255, 255, 0.06);
   color: var(--text-1);
-  border-color: rgba(255, 255, 255, 0.22);
 }
 .intent-btn.active {
-  background: rgba(79, 147, 214, 0.2);
-  color: #4f93d6;
-  border-color: rgba(79, 147, 214, 0.45);
+  background: rgba(249, 115, 22, 0.2);
+  color: #f97316;
 }
+/* 🚗 開車模式：橘色 */
 .intent-btn.active.intent-park {
-  background: rgba(34, 197, 94, 0.18);
-  color: #4ade80;
-  border-color: rgba(34, 197, 94, 0.45);
-}
-.intent-btn.active.intent-find {
-  background: rgba(79, 147, 214, 0.22);
-  color: #60a5fa;
-  border-color: rgba(79, 147, 214, 0.5);
+  background: rgba(249, 115, 22, 0.18);
+  color: #f97316;
 }
 .intent-btn.active.intent-exit {
   background: rgba(249, 115, 22, 0.18);
-  color: #fb923c;
-  border-color: rgba(249, 115, 22, 0.45);
+  color: #f97316;
+}
+/* 🚶 步行模式：綠色 */
+.intent-btn.active.intent-find {
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
 }
 .intent-btn.active.intent-bldg {
-  background: rgba(245, 158, 11, 0.18);
-  color: #fbbf24;
-  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
 }
 
 @media (min-width: 480px) {
@@ -499,7 +500,6 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     padding: 6px 12px;
     font-size: 0.88rem;
     gap: 4px;
-    min-width: 84px;
   }
 }
 
@@ -548,7 +548,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 			  <span>停車</span>
 			</button>
 			<button class="intent-btn intent-find" id="intentBtn_find" onclick="setIntent('find')" title="從特定大樓步行去尋找愛車">
-			  <svg width="30" height="19.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+			  <svg width="20" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
 			    <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 			    <rect x="2.5" y="11" width="19" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 			    <circle cx="7" cy="17.3" r="1.6" fill="currentColor"/>
@@ -2003,10 +2003,11 @@ function updateWalkEntMarker(){
   if(!m1||!m2) return;
   if(TRAVEL_MODE!=='walk'){ m1.style.display='none'; m2.style.display='none'; return; }
   if (currentId && spaceMap[currentId]) { m1.style.display='none'; m2.style.display='none'; return; }
+  /* 改用 destSelect.value 取得目前選擇的棟別（舊版用 .bldg-btn.active 已移除） */
   let bKey=null;
-  const activeBtn=document.querySelector('.bldg-btn.active');
-  if (activeBtn) {
-    bKey = activeBtn.getAttribute('data-bldg');
+  const destSel=document.getElementById('destSelect');
+  if(destSel && (destSel.value==='A'||destSel.value==='B'||destSel.value==='C')){
+    bKey=destSel.value;
   }
   if (bKey) {
     const xy1=entranceXY('ent'+bKey+'1');
@@ -2089,24 +2090,7 @@ function buildPathIn(sp){
   const tx=nearest(TRUNK_X,ax);
   // 行人模式「找愛車」：路線起點改成該車位設定的鄰近入口（棟別出口），而不是汽車車道的入口
   const walkMode = (TRAVEL_MODE==='walk');
-  // 入口以「下拉選單選的棟別」為準（跟 buildPathOut 同一套規則，兩種模式行為才會一致）：
-  //   · 若下拉選的棟別跟車位本身登記的棟別相同 → 沿用車位的鄰近入口（entrance 欄位，可能是1或2號）
-  //   · 若下拉選的棟別跟車位不同棟 → 固定改成該棟的「2號入口」
-  //   · 若沒有下拉選單或選的不是 A/B/C（例如尚未進入棟別模式）→ 退回原本車位登記的入口
-  // 修正前這裡永遠只認 sp.entrance，完全沒讀下拉選單，導致「找車」時下拉選單雖然
-  // 顯示著棟別、卻對實際路線毫無作用，使用者會看到路線從車位登記的入口出發，
-  // 跟下拉選單目前顯示的棟別對不上。
-  let entKey = sp.entrance;
-  if (walkMode) {
-    const destSel = document.getElementById('destSelect');
-    const selBldg = (destSel && ['A','B','C'].includes(destSel.value)) ? destSel.value : null;
-    const spBldgMatch = sp.entrance ? sp.entrance.match(/^ent([A-Z])/) : null;
-    const spBldg = spBldgMatch ? spBldgMatch[1] : null;
-    if (selBldg) {
-      entKey = (selBldg === spBldg) ? sp.entrance : ('ent' + selBldg + '2');
-    }
-  }
-  const entXY = walkMode ? entranceXY(entKey) : null;
+  const entXY = walkMode ? entranceXY(sp.entrance) : null;
 
   if (entXY) {
     // 行人模式先簡化為「兩點間最短距離」直線，不繞車道路網（之後再視需要調整成貼合走道的路徑）
@@ -2115,7 +2099,7 @@ function buildPathIn(sp){
     const destDoor=pts[pts.length-1];
     const smallEl = document.querySelector('.titlebar small');
     if (smallEl) {
-      smallEl.innerHTML = `· [${sp.id}] 行人（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${entKey}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
+      smallEl.innerHTML = `· [${sp.id}] 行人（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${sp.entrance}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
     }
     return {pts, trunkX:tx, ay,
       startPt:entXY, startColor:'#22c55e', destPt:destDoor, destColor:'#f59e0b'};
