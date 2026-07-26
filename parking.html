@@ -422,22 +422,36 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
   animation:entry-pulse 1s ease-out infinite;
 }
 
-/* 方案 B 意圖導向按鈕組（Segmented Tabs） */
+/* 行人 icon 的走路微幅位移 + 藍色光暈：仿使用者提供的 HTML/CSS 版本效果，
+   改用 SVG 相容寫法（transform-box:fill-box），套在 bldgEntPinMarkup() 包出來的 <g> 上。 */
+@keyframes ped-walk-move{
+  0%,100%{transform:translate(0,0);}
+  50%{transform:translate(2px,-1px);}
+}
+.ped-walk{
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:ped-walk-move 1.2s ease-in-out infinite;
+}
+.ped-glow{
+  filter:drop-shadow(0 0 4px rgba(79,147,214,.9));
+}
+
+/* 方案 B 意圖導向按鈕組：原本是「同一個框」的分段式標籤（segmented tabs），
+   改成 4 顆各自獨立的按鈕框，彼此用間距分開，不再共用外框。 */
 .intent-group {
   flex-shrink: 0;
   display: flex;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.02);
+  gap: 6px;
 }
 .intent-btn {
   padding: 6px 6px;
   height: 38px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
+  min-width: 72px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--text-2);
   font-family: inherit;
   font-size: 0.8rem;
@@ -452,26 +466,32 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 .intent-btn:hover {
   background: rgba(255, 255, 255, 0.06);
   color: var(--text-1);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 .intent-btn.active {
   background: rgba(79, 147, 214, 0.2);
   color: #4f93d6;
+  border-color: rgba(79, 147, 214, 0.45);
 }
 .intent-btn.active.intent-park {
   background: rgba(34, 197, 94, 0.18);
   color: #4ade80;
+  border-color: rgba(34, 197, 94, 0.45);
 }
 .intent-btn.active.intent-find {
   background: rgba(79, 147, 214, 0.22);
   color: #60a5fa;
+  border-color: rgba(79, 147, 214, 0.5);
 }
 .intent-btn.active.intent-exit {
   background: rgba(249, 115, 22, 0.18);
   color: #fb923c;
+  border-color: rgba(249, 115, 22, 0.45);
 }
 .intent-btn.active.intent-bldg {
   background: rgba(245, 158, 11, 0.18);
   color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.45);
 }
 
 @media (min-width: 480px) {
@@ -479,6 +499,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
     padding: 6px 12px;
     font-size: 0.88rem;
     gap: 4px;
+    min-width: 84px;
   }
 }
 
@@ -527,7 +548,7 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 			  <span>停車</span>
 			</button>
 			<button class="intent-btn intent-find" id="intentBtn_find" onclick="setIntent('find')" title="從特定大樓步行去尋找愛車">
-			  <svg width="20" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+			  <svg width="30" height="19.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
 			    <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 			    <rect x="2.5" y="11" width="19" height="5.5" rx="1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 			    <circle cx="7" cy="17.3" r="1.6" fill="currentColor"/>
@@ -545,13 +566,13 @@ body.lane-delete-mode .road-click-layer path:hover{fill:rgba(239,68,68,.45);}
 			</button>
 			<button class="intent-btn intent-bldg" id="intentBtn_bldg" onclick="setIntent('bldg')" title="停好車後步行前往特定大樓">
 			  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-			    <ellipse cx="8" cy="8" rx="2.3" ry="3.2" fill="currentColor" transform="rotate(-18 8 8)"/>
-			    <circle cx="6.1" cy="4.6" r="0.85" fill="currentColor" transform="rotate(-18 8 8)"/>
-			    <ellipse cx="16" cy="16.5" rx="2.3" ry="3.2" fill="currentColor" transform="rotate(18 16 16.5)"/>
-			    <circle cx="17.9" cy="20.4" r="0.85" fill="currentColor" transform="rotate(18 16 16.5)"/>
+			    <rect x="5" y="3" width="14" height="18" rx="1" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+			    <rect x="7.8"  y="6"    width="2.2" height="2.2" rx="0.4" fill="currentColor"/>
+			    <rect x="14"   y="6"    width="2.2" height="2.2" rx="0.4" fill="currentColor"/>
+			    <rect x="7.8"  y="10.4" width="2.2" height="2.2" rx="0.4" fill="currentColor"/>
+			    <rect x="14"   y="10.4" width="2.2" height="2.2" rx="0.4" fill="currentColor"/>
+			    <rect x="10"   y="15.5" width="4"   height="5.5" fill="currentColor"/>
 			  </svg>
-			  <span>棟別</span>
-			</button>
 			  <span>棟別</span>
 			</button>
 		</div>
@@ -1811,29 +1832,31 @@ function entranceXY(key){
    跟畫路線時終點/起點的入口 icon（entPing），統一呼叫 bldgEntMarkerMarkup() 產生內容，
    之後要調整入口 icon 的大小或樣式，只需要改這裡一個地方，兩邊就會同步。 */
 const BLDG_ENT_ICON_COLOR='#4f93d6';
-const BLDG_ENT_ICON_SCALE=3.8;
+const BLDG_ENT_ICON_SCALE=3.2;
 const BLDG_ENT_BASE_R=8;
 const BLDG_ENT_BASE_RING_R=9;
 function bldgEntPinMarkup(scale){
   /* 直接畫行人圖示（無圓圈／圖釘背景），把座標系平移到讓「腳底」落在地圖上的入口點 (0,0)，
-     跟原本圖釘尖端對齊地圖點的邏輯一致，只是現在對齊的是人形的腳底而不是圖釘尖端。 */
+     跟原本圖釘尖端對齊地圖點的邏輯一致，只是現在對齊的是人形的腳底而不是圖釘尖端。
+     圖示改為「線條骨架＋光暈」畫法（仿使用者提供的霓虹走路人示意圖）：
+     頭部實心圓 + 軀幹/雙臂/雙腳皆為圓角線條，呈現跨步走路的姿態；
+     左手（畫面左側手臂）額外旋轉 20 度抬高，是使用者確認過的最終角度。
+     ped-walk／ped-glow 沿用既有動畫：走路微幅位移 + 藍色光暈。
+     注意：ped-walk 用 CSS 動畫改寫 transform，如果跟負責定位的 translate/scale 寫在
+     同一個 <g> 上，CSS 的 transform 動畫會整個覆蓋掉 attribute 版的 transform，
+     導致人形失去縮放、變成極小一點——所以定位用的 outer <g> 不掛動畫 class，
+     動畫 class 改放在裡面沒有自己 transform 屬性的 inner <g> 上，兩者才不會互相打架。 */
   const tx=(-12*scale).toFixed(2), ty=(-22*scale).toFixed(2);
   return `<g transform="translate(${tx},${ty}) scale(${scale})">
-      <circle cx="12" cy="4.5" r="2.3" fill="${BLDG_ENT_ICON_COLOR}"/>
-      <rect x="10.2" y="7" width="3.6" height="7" rx="1.6" fill="${BLDG_ENT_ICON_COLOR}" transform="rotate(6 12 10.4)"/>
-      <rect x="10.9" y="13.4" width="2.2" height="7.6" rx="1.1" fill="${BLDG_ENT_ICON_COLOR}" transform="rotate(-22 12 13.4)"/>
-      <rect x="10.9" y="13.4" width="2.2" height="7.6" rx="1.1" fill="${BLDG_ENT_ICON_COLOR}" transform="rotate(22 12 13.4)"/>
-      <g transform="translate(13.4,8) rotate(45.5)">
-        <rect x="-0.9" y="0" width="1.8" height="3.2" rx="0.9" fill="${BLDG_ENT_ICON_COLOR}"/>
-        <g transform="translate(0,3.2) rotate(19.6)">
-          <rect x="-0.8" y="0" width="1.6" height="3.9" rx="0.8" fill="${BLDG_ENT_ICON_COLOR}"/>
+      <g class="ped-walk ped-glow" fill="none" stroke="${BLDG_ENT_ICON_COLOR}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12.6" cy="3.3" r="1.7" fill="${BLDG_ENT_ICON_COLOR}" stroke="none"/>
+        <path d="M12.6 5 L11.6 11.4"/>
+        <path d="M11.6 11.4 L9.4 15.8 L6.8 20.6"/>
+        <path d="M11.6 11.4 L14.2 15.4 L15.6 20.4"/>
+        <g transform="rotate(20 12.4 6.2)">
+          <path d="M12.4 6.2 L10.2 9.6 L9.4 13.2"/>
         </g>
-      </g>
-      <g transform="translate(10.6,8) rotate(-49)">
-        <rect x="-0.9" y="0" width="1.8" height="3.2" rx="0.9" fill="${BLDG_ENT_ICON_COLOR}"/>
-        <g transform="translate(0,3.2) rotate(-15.4)">
-          <rect x="-0.8" y="0" width="1.6" height="3.9" rx="0.8" fill="${BLDG_ENT_ICON_COLOR}"/>
-        </g>
+        <path d="M12.4 6.2 L15 8.4 L16.4 11.6"/>
       </g>
     </g>`;
 }
@@ -1846,7 +1869,7 @@ function bldgEntPinMarkup(scale){
 function bldgEntMarkerMarkup(){
   return `<circle cx="0" cy="0" r="${BLDG_ENT_BASE_RING_R}" fill="#ffffff"/>`
     + `<circle cx="0" cy="0" r="${BLDG_ENT_BASE_R}" fill="${BLDG_ENT_ICON_COLOR}"/>`
-    + bldgEntPinMarkup(BLDG_ENT_ICON_SCALE);
+    + `<g transform="translate(0,${-BLDG_ENT_BASE_RING_R})">${bldgEntPinMarkup(BLDG_ENT_ICON_SCALE)}</g>`;
 }
 /* 依上面共用函式，重新產生 walkEntMarker / walkEntMarker2 這兩個「瀏覽用」入口圖示的內容，
    確保它們跟路線上的入口 icon（entPing）視覺上完全一致，不用兩邊各自維護一份數值。 */
@@ -2066,7 +2089,24 @@ function buildPathIn(sp){
   const tx=nearest(TRUNK_X,ax);
   // 行人模式「找愛車」：路線起點改成該車位設定的鄰近入口（棟別出口），而不是汽車車道的入口
   const walkMode = (TRAVEL_MODE==='walk');
-  const entXY = walkMode ? entranceXY(sp.entrance) : null;
+  // 入口以「下拉選單選的棟別」為準（跟 buildPathOut 同一套規則，兩種模式行為才會一致）：
+  //   · 若下拉選的棟別跟車位本身登記的棟別相同 → 沿用車位的鄰近入口（entrance 欄位，可能是1或2號）
+  //   · 若下拉選的棟別跟車位不同棟 → 固定改成該棟的「2號入口」
+  //   · 若沒有下拉選單或選的不是 A/B/C（例如尚未進入棟別模式）→ 退回原本車位登記的入口
+  // 修正前這裡永遠只認 sp.entrance，完全沒讀下拉選單，導致「找車」時下拉選單雖然
+  // 顯示著棟別、卻對實際路線毫無作用，使用者會看到路線從車位登記的入口出發，
+  // 跟下拉選單目前顯示的棟別對不上。
+  let entKey = sp.entrance;
+  if (walkMode) {
+    const destSel = document.getElementById('destSelect');
+    const selBldg = (destSel && ['A','B','C'].includes(destSel.value)) ? destSel.value : null;
+    const spBldgMatch = sp.entrance ? sp.entrance.match(/^ent([A-Z])/) : null;
+    const spBldg = spBldgMatch ? spBldgMatch[1] : null;
+    if (selBldg) {
+      entKey = (selBldg === spBldg) ? sp.entrance : ('ent' + selBldg + '2');
+    }
+  }
+  const entXY = walkMode ? entranceXY(entKey) : null;
 
   if (entXY) {
     // 行人模式先簡化為「兩點間最短距離」直線，不繞車道路網（之後再視需要調整成貼合走道的路徑）
@@ -2075,7 +2115,7 @@ function buildPathIn(sp){
     const destDoor=pts[pts.length-1];
     const smallEl = document.querySelector('.titlebar small');
     if (smallEl) {
-      smallEl.innerHTML = `· [${sp.id}] 行人（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${sp.entrance}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
+      smallEl.innerHTML = `· [${sp.id}] 行人（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${entKey}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
     }
     return {pts, trunkX:tx, ay,
       startPt:entXY, startColor:'#22c55e', destPt:destDoor, destColor:'#f59e0b'};
