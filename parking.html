@@ -2096,7 +2096,21 @@ function buildPathIn(sp){
   const tx=nearest(TRUNK_X,ax);
   // 行人模式「找愛車」：路線起點改成該車位設定的鄰近入口（棟別出口），而不是汽車車道的入口
   const walkMode = (TRAVEL_MODE==='walk');
-  const entXY = walkMode ? entranceXY(sp.entrance) : null;
+  // 入口以「下拉選單選的棟別」為準（跟 buildPathOut 同一套規則，兩種模式行為才會一致）：
+  //   · 若下拉選的棟別跟車位本身登記的棟別相同 → 沿用車位的鄰近入口（entrance 欄位，可能是1或2號）
+  //   · 若下拉選的棟別跟車位不同棟 → 固定改成該棟的「2號入口」
+  //   · 若沒有下拉選單或選的不是 A/B/C（例如尚未進入棟別模式）→ 退回原本車位登記的入口
+  let entKey = sp.entrance;
+  if (walkMode) {
+    const destSel = document.getElementById('destSelect');
+    const selBldg = (destSel && ['A','B','C'].includes(destSel.value)) ? destSel.value : null;
+    const spBldgMatch = sp.entrance ? sp.entrance.match(/^ent([A-Z])/) : null;
+    const spBldg = spBldgMatch ? spBldgMatch[1] : null;
+    if (selBldg) {
+      entKey = (selBldg === spBldg) ? sp.entrance : ('ent' + selBldg + '2');
+    }
+  }
+  const entXY = walkMode ? entranceXY(entKey) : null;
 
   if (entXY) {
     // 行人模式先簡化為「兩點間最短距離」直線，不繞車道路網（之後再視需要調整成貼合走道的路徑）
@@ -2105,7 +2119,7 @@ function buildPathIn(sp){
     const destDoor=pts[pts.length-1];
     const smallEl = document.querySelector('.titlebar small');
     if (smallEl) {
-      smallEl.innerHTML = `· [${sp.id}] 行人（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${sp.entrance}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
+      smallEl.innerHTML = `· [${sp.id}] 行人（直線最短距離） access=(${Math.round(ax)},${Math.round(ay)}) 入口=${entKey}(${Math.round(entXY[0])},${Math.round(entXY[1])})`;
     }
     return {pts, trunkX:tx, ay,
       startPt:entXY, startColor:'#22c55e', destPt:destDoor, destColor:'#f59e0b'};
