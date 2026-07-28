@@ -2483,7 +2483,7 @@ const NAV_ICONS={
   right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l5 5-5 5"/><path d="M20 11h-9a6 6 0 0 0-6 6v2"/></svg>',
   arrived:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>'
 };
-function navSignedTurnDiff(a,b){ return ((b-a+540)%360)-180; } // 正值＝順時針（右轉），負值＝逆時針（左轉）
+function navSignedTurnDiff(a,b){ return -(((b-a+540)%360)-180); } // 地圖座標左右鏡射修正：反轉正負號後，正值＝右轉，負值＝左轉
 function navComputeInstruction(){
   if(navSegIdx>=navSegs.length) return {type:'arrived',text:'已抵達車位'};
   const cur=navSegs[navSegIdx], next=navSegs[navSegIdx+1];
