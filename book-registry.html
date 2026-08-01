@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>社區書籍登記 · 掃碼建檔</title>
+<style>
+  :root{
+    --paper:#EAE4D3;--paper-2:#F3EEE0;--ink:#2A2622;--ink-soft:#6B655B;
+    --stamp:#B23A2E;--teal:#2F6B62;--rule-red:#D8B4A8;--rule-blue:#9FB9BD;--line:#C9BFA8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;color:var(--ink);
+    background:repeating-linear-gradient(var(--paper),var(--paper) 31px,var(--rule-blue) 31px,var(--rule-blue) 32px),var(--paper);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:20px 16px 64px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:6px}
+  .kicker{font-family:"Courier New",monospace;letter-spacing:.28em;font-size:11px;color:var(--stamp);text-transform:uppercase}
+  h1{font-family:Georgia,"Noto Serif TC",serif;font-size:26px;margin:4px 0 0;font-weight:700}
+  .sub{font-size:12px;color:var(--ink-soft);margin-top:4px}
+  .tabs{display:flex;margin:18px 0 22px;border:1.5px solid var(--ink)}
+  .tab{flex:1;padding:12px 0;background:transparent;border:0;border-right:1.5px solid var(--ink);font:inherit;font-size:15px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .tab:last-child{border-right:0}
+  .tab[aria-selected="true"]{background:var(--ink);color:var(--paper-2)}
+  .panel{display:none}
+  .panel.on{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--paper-2);border:1px solid var(--line);box-shadow:2px 3px 0 rgba(42,38,34,.12);border-radius:2px;padding:16px;margin-bottom:16px;position:relative}
+  .field{margin:12px 0}
+  label{display:block;font-family:"Courier New",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:5px}
+  input[type=text],input[type=number],input[type=search]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:16px;color:var(--ink)}
+  input:focus{outline:2px solid var(--teal);outline-offset:1px}
+  .row{display:flex;gap:10px}.row>*{flex:1}
+  button.act{width:100%;padding:14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper-2);font:inherit;font-weight:700;font-size:16px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
+  button.act:disabled{opacity:.45;cursor:default}
+  button.stampbtn{background:var(--stamp);border-color:var(--stamp);color:#fff}
+  button.ghost{background:transparent;color:var(--ink)}
+  .scanbtns{display:flex;gap:10px;margin-top:14px}
+  .scanbtns>*{flex:1}
+  .filelabel .act{display:block;text-align:center}
+  .hidden{display:none!important}
+  #scanStage{margin-top:14px;position:relative;background:#000;border-radius:4px;overflow:hidden;aspect-ratio:4/3;display:none}
+  #video{width:100%;height:100%;object-fit:cover;display:block}
+  .reticle{position:absolute;inset:18% 12%;border:2px solid #fff;border-radius:6px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
+  .scanline{position:absolute;left:14%;right:14%;height:2px;background:var(--stamp);top:50%;animation:sc 1.6s ease-in-out infinite}
+  @keyframes sc{0%,100%{top:24%}50%{top:74%}}
+  .isbnbadge{font-family:"Courier New",monospace;font-size:14px;letter-spacing:.08em;background:var(--ink);color:var(--paper-2);display:inline-block;padding:6px 12px;border-radius:2px;margin:4px 0}
+  .stamp{position:absolute;top:12px;right:14px;transform:rotate(-8deg);border:2px solid var(--stamp);color:var(--stamp);border-radius:4px;padding:4px 8px;text-align:center;font-family:"Courier New",monospace;line-height:1.15;opacity:.9}
+  .stamp small{display:block;font-size:8px;letter-spacing:.22em}.stamp b{font-size:13px}
+  .book{background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:13px 14px;margin-bottom:11px}
+  .book h3{font-family:Georgia,"Noto Serif TC",serif;font-size:18px;margin:0 0 3px}
+  .meta{font-family:"Courier New",monospace;font-size:12px;color:var(--ink-soft);line-height:1.7}
+  .agechip{display:inline-block;background:var(--teal);color:#fff;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;margin-top:6px}
+  .setage{display:flex;gap:8px;margin-top:10px;align-items:center}
+  .setage input{width:84px}
+  .setage button{padding:9px 12px;border:1px solid var(--teal);background:#fff;color:var(--teal);border-radius:2px;font:inherit;font-weight:600;cursor:pointer;font-size:13px}
+  .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
+  .status{font-size:13px;color:var(--teal);margin:12px 0;min-height:20px}
+  .status.err{color:var(--stamp)}
+  .note{font-size:11.5px;color:var(--ink-soft);margin-top:8px;line-height:1.6}
+  details{margin-top:26px;border-top:1px dashed var(--line);padding-top:14px}
+  summary{font-size:13px;color:var(--ink-soft);cursor:pointer;font-weight:600}
+  .spin{display:inline-block;width:15px;height:15px;border:2px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Community Library · 掃碼建檔</div>
+    <h1>社區書籍登記處</h1>
+    <div class="sub">掃書背條碼 → 自動帶入書名/作者/出版日 · 依書名或年紀查詢</div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab-admin" role="tab" aria-selected="true" onclick="showTab('admin')">管理員 · 建檔</button>
+    <button class="tab" id="tab-user" role="tab" aria-selected="false" onclick="showTab('user')">使用者 · 查詢</button>
+  </div>
+
+  <!-- 管理員 -->
+  <section class="panel on" id="panel-admin" role="tabpanel">
+    <div class="card" style="text-align:center">
+      <div style="font-size:34px">🏷️</div>
+      <div class="note" style="font-size:13px;color:var(--ink-soft)">掃書背 <b>ISBN 條碼</b>,或直接手動輸入 ISBN,系統會自動查書</div>
+      <div class="scanbtns">
+        <button class="act" id="liveBtn" onclick="toggleLive()">開啟相機掃描</button>
+      </div>
+      <div id="scanStage"><video id="video" playsinline muted></video><div class="reticle"></div><div class="scanline"></div></div>
+      <div class="field" style="text-align:left;margin-bottom:0">
+        <label>或手動輸入 ISBN</label>
+        <div style="display:flex;gap:8px;align-items:stretch">
+          <input type="text" id="manualIsbn" inputmode="numeric" placeholder="例:9789863426806" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}">
+          <button class="act" style="width:auto;padding:0 18px;white-space:nowrap" onclick="submitManual()">查詢書籍</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="status" id="admStatus"></div>
+
+    <div class="card hidden" id="resultCard">
+      <div class="stamp"><small>建檔 FILED</small><b id="stampDate">—</b></div>
+      <div id="isbnLine"></div>
+      <div class="field"><label>書名 Title</label><input type="text" id="fTitle" placeholder="書名"></div>
+      <div class="field"><label>作者 Author</label><input type="text" id="fAuthor" placeholder="作者"></div>
+      <div class="row">
+        <div class="field"><label>出版日期 Published</label><input type="text" id="fPub" placeholder="例:2021-03"></div>
+        <div class="field"><label>適合年齡(歲以上)</label><input type="number" id="fAge" min="0" max="18" placeholder="例:3"></div>
+      </div>
+      <button class="act stampbtn" onclick="saveBook()">確認並存檔</button>
+      <div class="note">資料自動帶入後可修改。適讀年齡請自行設定(童書封底常有,例如「適合3～10歲」)。</div>
+    </div>
+
+    <div id="recent"></div>
+  </section>
+
+  <!-- 使用者 -->
+  <section class="panel" id="panel-user" role="tabpanel">
+    <div class="card">
+      <div class="row">
+        <div class="field" style="margin-top:0"><label>書名關鍵字</label><input type="search" id="qTitle" placeholder="輸入書名或作者" oninput="runSearch()"></div>
+        <div class="field" style="margin-top:0;max-width:140px"><label>孩子年紀</label><input type="number" id="qAge" min="0" max="18" placeholder="歲" oninput="runSearch()"></div>
+      </div>
+      <div class="note">留空=顯示全部。填年紀=只顯示「適讀年齡 ≤ 該年紀」的書。</div>
+    </div>
+    <div id="results"></div>
+  </section>
+
+  <details>
+    <summary>⚙︎ 後端設定(接你的 Google 雲端硬碟)</summary>
+    <div class="field"><label>Apps Script 網頁應用程式網址</label><input type="text" id="backendUrl" placeholder="https://script.google.com/macros/s/.../exec" onchange="saveBackend()"></div>
+    <div class="note">貼上 /exec 網址後,建檔會同時寫入你的 Google 試算表。留空則存在此網頁內建儲存、社區共用。</div>
+  </details>
+</div>
+
+<script>
+const KEY_BOOKS="books-all",KEY_BACKEND="backend-url";
+let books=[],backend="";
+
+(async function init(){
+  stampToday();
+  try{const b=await window.storage.get(KEY_BACKEND);if(b&&b.value){backend=b.value;document.getElementById('backendUrl').value=backend;}}catch(e){}
+  await loadBooks();
+})();
+
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');}
+function stampToday(){document.getElementById('stampDate').textContent=todayStr();}
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ===== 儲存 ===== */
+async function loadBooks(){
+  if(backend){try{const r=await fetch(backend+"?action=list");const j=await r.json();if(Array.isArray(j)){books=j;renderAll();return;}}catch(e){}}
+  try{const s=await window.storage.get(KEY_BOOKS,true);books=s&&s.value?JSON.parse(s.value):[];}catch(e){books=[];}
+  renderAll();
+}
+async function persistLocal(){try{await window.storage.set(KEY_BOOKS,JSON.stringify(books),true);}catch(e){}}
+function saveBackend(){backend=document.getElementById('backendUrl').value.trim();window.storage.set(KEY_BACKEND,backend).catch(()=>{});loadBooks();}
+
+/* ===== 分頁 ===== */
+function showTab(t){
+  const a=t==='admin';
+  document.getElementById('tab-admin').setAttribute('aria-selected',a);
+  document.getElementById('tab-user').setAttribute('aria-selected',!a);
+  document.getElementById('panel-admin').classList.toggle('on',a);
+  document.getElementById('panel-user').classList.toggle('on',!a);
+  if(!a){stopLive();runSearch();}
+}
+
+/* ===== 條碼工具 ===== */
+function pickISBN(values){
+  for(const v of values){const d=(v||"").replace(/\D/g,"");if(d.length===13&&(d.startsWith("978")||d.startsWith("979")))return d;}
+  return null;
+}
+
+/* ---- 即時相機掃描 ---- */
+let stream=null,scanning=false;
+async function toggleLive(){
+  if(scanning){stopLive();return;}
+  const stage=document.getElementById('scanStage'),video=document.getElementById('video'),btn=document.getElementById('liveBtn');
+  const st=document.getElementById('admStatus');
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
+    video.srcObject=stream;await video.play();
+    stage.style.display='block';btn.textContent='停止掃描';scanning=true;
+    st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
+    if('BarcodeDetector' in window){
+      const bd=new BarcodeDetector({formats:['ean_13']});
+      const loop=async()=>{
+        if(!scanning)return;
+        try{const codes=await bd.detect(video);const isbn=pickISBN(codes.map(c=>c.rawValue));if(isbn){stopLive();onISBN(isbn);return;}}catch(e){}
+        requestAnimationFrame(loop);
+      };loop();
+    }else{
+      // 沒有原生條碼偵測(如 iOS Safari):改用拍照模式
+      stopLive();
+      st.className='status err';st.textContent='此瀏覽器不支援即時掃描,請改用「拍照上傳掃描」。';
+    }
+  }catch(e){
+    st.className='status err';st.textContent='無法開啟相機,請改用「拍照上傳掃描」,或確認已允許相機權限。';
+  }
+}
+function stopLive(){
+  scanning=false;
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  document.getElementById('scanStage').style.display='none';
+  document.getElementById('liveBtn').textContent='開啟相機掃描';
+}
+
+/* ---- 手動輸入 ISBN ---- */
+function submitManual(){
+  const raw=(document.getElementById('manualIsbn').value||'').replace(/[^0-9Xx]/g,'');
+  let isbn=null;
+  if(raw.length===13&&(raw.startsWith('978')||raw.startsWith('979')))isbn=raw;
+  else if(raw.length===10)isbn=isbn10to13(raw);
+  if(!isbn){const st=document.getElementById('admStatus');st.className='status err';st.textContent='ISBN 格式不正確:請輸入 13 碼(978/979 開頭)或 10 碼。';return;}
+  document.getElementById('manualIsbn').value='';
+  onISBN(isbn);
+}
+function isbn10to13(t){
+  const core='978'+t.slice(0,9);let sum=0;
+  for(let i=0;i<12;i++)sum+=(+core[i])*(i%2?3:1);
+  return core+((10-(sum%10))%10);
+}
+
+/* ===== 拿到 ISBN → 查書 ===== */
+async function onISBN(isbn){
+  const st=document.getElementById('admStatus');
+  st.className='status';st.innerHTML='已讀取 ISBN <span class="isbnbadge">'+isbn+'</span> <span class="spin"></span>查詢書籍資料中…';
+  const info=await fetchBook(isbn);
+  if(info){showManual(isbn,info);st.className='status';st.innerHTML='查到資料,請確認後存檔。ISBN <span class="isbnbadge">'+isbn+'</span>';}
+  else{showManual(isbn,{});st.className='status err';st.innerHTML='ISBN <span class="isbnbadge">'+isbn+'</span> 免費資料庫查無資料,請手動補上書名/作者。';}
+}
+async function fetchBook(isbn){
+  // Google Books(免金鑰、免登入)
+  try{
+    const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn);
+    const j=await r.json();
+    if(j.totalItems>0){const v=j.items[0].volumeInfo;return{title:v.title||'',author:(v.authors||[]).join('、'),publishDate:v.publishedDate||''};}
+  }catch(e){}
+  // Open Library 備援
+  try{
+    const r=await fetch('https://openlibrary.org/isbn/'+isbn+'.json');
+    if(r.ok){const d=await r.json();let author='';
+      if(d.authors&&d.authors[0]&&d.authors[0].key){try{const a=await fetch('https://openlibrary.org'+d.authors[0].key+'.json');author=(await a.json()).name||'';}catch(e){}}
+      return{title:d.title||'',author,publishDate:d.publish_date||''};}
+  }catch(e){}
+  return null;
+}
+
+function showManual(isbn,info){
+  info=info||{};
+  document.getElementById('isbnLine').innerHTML=isbn?'<div class="field" style="margin-top:0"><label>ISBN</label><span class="isbnbadge">'+isbn+'</span></div>':'';
+  document.getElementById('fTitle').value=info.title||"";
+  document.getElementById('fAuthor').value=info.author||"";
+  document.getElementById('fPub').value=info.publishDate||"";
+  document.getElementById('fAge').value="";
+  document.getElementById('resultCard').dataset.isbn=isbn||"";
+  stampToday();
+  document.getElementById('resultCard').classList.remove('hidden');
+}
+
+/* ===== 存檔 ===== */
+async function saveBook(){
+  const title=document.getElementById('fTitle').value.trim();
+  if(!title){alert("請至少填寫書名");return;}
+  const rec={id:Date.now().toString(36),isbn:document.getElementById('resultCard').dataset.isbn||"",title,
+    author:document.getElementById('fAuthor').value.trim(),publishDate:document.getElementById('fPub').value.trim(),
+    filedDate:todayStr(),minAge:parseInt(document.getElementById('fAge').value)||0};
+  const st=document.getElementById('admStatus');
+  if(backend){
+    st.className='status';st.innerHTML='<span class="spin"></span>寫入 Google 試算表中…';
+    try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"add",book:rec})});}
+    catch(e){st.className='status err';st.textContent="後端寫入失敗,已先存於本地。";}
+  }
+  books.unshift(rec);await persistLocal();
+  document.getElementById('resultCard').classList.add('hidden');
+  if(!st.classList.contains('err')){st.className='status';st.textContent='已存檔:《'+title+'》';}
+  renderRecent();
+}
+
+/* ===== 顯示 ===== */
+function renderAll(){renderRecent();runSearch();}
+function renderRecent(){
+  const el=document.getElementById('recent');const list=books.slice(0,6);
+  if(!list.length){el.innerHTML='<div class="empty">尚無登記書籍,掃一本開始吧。</div>';return;}
+  el.innerHTML='<div style="font-family:Courier New,monospace;font-size:11px;letter-spacing:.2em;color:var(--stamp);margin:22px 0 10px">最近登記 RECENT</div>'+list.map(b=>bookCard(b,false)).join('');
+}
+function runSearch(){
+  const q=(document.getElementById('qTitle').value||"").trim().toLowerCase();
+  const ageRaw=document.getElementById('qAge').value;const age=ageRaw===""?null:parseInt(ageRaw);
+  const list=books.filter(b=>{
+    const okT=!q||(b.title&&b.title.toLowerCase().includes(q))||(b.author&&b.author.toLowerCase().includes(q));
+    const okA=age===null||(b.minAge<=age);return okT&&okA;});
+  const el=document.getElementById('results');
+  if(!list.length){el.innerHTML='<div class="empty">沒有符合的書籍。</div>';return;}
+  el.innerHTML=list.map(b=>bookCard(b,true)).join('');
+}
+function bookCard(b,editable){
+  const age=b.minAge>0?(b.minAge+"歲以上"):"全齡適讀";
+  let h='<div class="book"><h3>'+esc(b.title)+'</h3><div class="meta">'
+    +(b.author?('作者　'+esc(b.author)+'<br>'):'')
+    +(b.publishDate?('出版　'+esc(b.publishDate)+'<br>'):'')
+    +(b.isbn?('ISBN　'+esc(b.isbn)+'<br>'):'')
+    +'建檔　'+esc(b.filedDate)+'</div><span class="agechip">'+age+'</span>';
+  if(editable)h+='<div class="setage"><input type="number" min="0" max="18" placeholder="歲" value="'+(b.minAge||"")+'" id="age-'+b.id+'"><button onclick="setAge(\''+b.id+'\')">設定適讀年齡</button></div>';
+  return h+'</div>';
+}
+async function setAge(id){
+  const v=parseInt(document.getElementById('age-'+id).value)||0;
+  const bk=books.find(x=>x.id===id);if(!bk)return;bk.minAge=v;await persistLocal();
+  if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"update",id:id,minAge:v})});}catch(e){}}
+  runSearch();
+}
+</script>
+</body>
+</html>
