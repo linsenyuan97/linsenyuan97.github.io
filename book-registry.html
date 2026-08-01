@@ -175,40 +175,32 @@ function pickISBN(values){
   return null;
 }
 
-/* ---- 即時相機掃描 ---- */
-let stream=null,scanning=false;
+/* ---- 即時相機掃描(html5-qrcode,iOS Safari 也支援) ---- */
+let h5q=null,scanning=false;
 async function toggleLive(){
   if(scanning){stopLive();return;}
-  const stage=document.getElementById('scanStage'),video=document.getElementById('video'),btn=document.getElementById('liveBtn');
-  const st=document.getElementById('admStatus');
+  const st=document.getElementById('admStatus'),btn=document.getElementById('liveBtn'),stage=document.getElementById('scanStage');
+  if(!window.Html5Qrcode){st.className='status err';st.textContent='掃描元件載入失敗,請確認網路後重新整理,或用下方手動輸入 ISBN。';return;}
+  stage.style.display='block';btn.textContent='停止掃描';scanning=true;
+  st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
-    video.srcObject=stream;await video.play();
-    stage.style.display='block';btn.textContent='停止掃描';scanning=true;
-    st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
-    if('BarcodeDetector' in window){
-      const bd=new BarcodeDetector({formats:['ean_13']});
-      const loop=async()=>{
-        if(!scanning)return;
-        try{const codes=await bd.detect(video);const isbn=pickISBN(codes.map(c=>c.rawValue));if(isbn){stopLive();onISBN(isbn);return;}}catch(e){}
-        requestAnimationFrame(loop);
-      };loop();
-    }else{
-      // 沒有原生條碼偵測(如 iOS Safari):改用手動輸入
-      stopLive();
-      st.className='status err';st.textContent='此瀏覽器不支援即時掃描,請改用下方「手動輸入 ISBN」。';
-      document.getElementById('manualIsbn').focus();
-    }
+    h5q=new Html5Qrcode("reader",{formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8]});
+    await h5q.start({facingMode:"environment"},{fps:10,qrbox:{width:260,height:150}},(text)=>{
+      if(!scanning)return;
+      const isbn=pickISBN([text]);
+      if(isbn){scanning=false;stopLive();onISBN(isbn);}
+    },()=>{});
   }catch(e){
-    st.className='status err';st.textContent='無法開啟相機(在 Claude 預覽視窗中相機通常被封鎖)。請改用下方「手動輸入 ISBN」;部署到 GitHub Pages(https)後相機即可使用。';
+    scanning=false;btn.textContent='開啟相機掃描';stage.style.display='none';
+    st.className='status err';st.textContent='無法開啟相機,請到 Safari 允許相機權限,或用下方手動輸入 ISBN。';
     document.getElementById('manualIsbn').focus();
   }
 }
 function stopLive(){
   scanning=false;
-  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
-  document.getElementById('scanStage').style.display='none';
   document.getElementById('liveBtn').textContent='開啟相機掃描';
+  if(h5q){const inst=h5q;h5q=null;inst.stop().then(()=>{try{inst.clear();}catch(e){}}).catch(()=>{});}
+  document.getElementById('scanStage').style.display='none';
 }
 
 /* ---- 手動輸入 ISBN ---- */
