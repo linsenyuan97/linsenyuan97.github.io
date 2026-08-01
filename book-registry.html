@@ -71,7 +71,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="kicker">Community Library · 掃碼建檔</div>
+    <div class="kicker">Community Library · 掃碼建檔 <span style="float:right;color:var(--teal);background:#fff;border:1px solid var(--teal);border-radius:20px;padding:1px 9px;letter-spacing:.05em">v4 · 掃描強化</span></div>
     <h1>社區書籍登記處</h1>
     <div class="sub">掃書背條碼 → 自動帶入書名/作者/出版日 · 依書名或年紀查詢</div>
   </header>
@@ -184,8 +184,12 @@ async function toggleLive(){
   stage.style.display='block';btn.textContent='停止掃描';scanning=true;
   st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
   try{
-    h5q=new Html5Qrcode("reader",{formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8]});
-    await h5q.start({facingMode:"environment"},{fps:10,qrbox:{width:260,height:150}},(text)=>{
+    h5q=new Html5Qrcode("reader",{
+      formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A],
+      experimentalFeatures:{useBarCodeDetectorIfSupported:true}
+    });
+    const cfg={fps:15,qrbox:(vw,vh)=>({width:Math.floor(vw*0.92),height:Math.max(130,Math.floor(vh*0.5))})};
+    await h5q.start({facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},cfg,(text)=>{
       if(!scanning)return;
       const isbn=pickISBN([text]);
       if(isbn){scanning=false;stopLive();onISBN(isbn);}
@@ -227,21 +231,35 @@ async function onISBN(isbn){
   if(info){showManual(isbn,info);st.className='status';st.innerHTML='查到資料,請確認後存檔。ISBN <span class="isbnbadge">'+isbn+'</span>';}
   else{showManual(isbn,{});st.className='status err';st.innerHTML='ISBN <span class="isbnbadge">'+isbn+'</span> 免費資料庫查無資料,請手動補上書名/作者。';}
 }
+function hasCJK(s){return /[\u3400-\u9FFF]/.test(s||"");}
 async function fetchBook(isbn){
-  // Google Books(免金鑰、免登入)
-  try{
-    const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn);
-    const j=await r.json();
-    if(j.totalItems>0){const v=j.items[0].volumeInfo;return{title:v.title||'',author:(v.authors||[]).join('、'),publishDate:v.publishedDate||''};}
-  }catch(e){}
+  let best=null;
+  // Google Books:掃過所有版本,優先挑「中文書名」的那筆
+  for(const extra of ['','&country=TW']){
+    try{
+      const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn+extra);
+      const j=await r.json();
+      if(j.items&&j.items.length){
+        for(const it of j.items){
+          const v=it.volumeInfo||{};
+          const cand={title:v.title||'',author:(v.authors||[]).join('、'),publishDate:v.publishedDate||''};
+          if(hasCJK(cand.title))return cand;              // 中文書名 → 直接採用
+          if(!best&&cand.title)best=cand;                 // 保底記住第一筆
+        }
+      }
+    }catch(e){}
+  }
   // Open Library 備援
   try{
     const r=await fetch('https://openlibrary.org/isbn/'+isbn+'.json');
     if(r.ok){const d=await r.json();let author='';
       if(d.authors&&d.authors[0]&&d.authors[0].key){try{const a=await fetch('https://openlibrary.org'+d.authors[0].key+'.json');author=(await a.json()).name||'';}catch(e){}}
-      return{title:d.title||'',author,publishDate:d.publish_date||''};}
+      const cand={title:d.title||'',author,publishDate:d.publish_date||''};
+      if(hasCJK(cand.title))return cand;
+      if(!best&&cand.title)best=cand;
+    }
   }catch(e){}
-  return null;
+  return best;   // 沒有中文時回傳保底(拼音),可在確認畫面自行改成中文
 }
 
 function showManual(isbn,info){
