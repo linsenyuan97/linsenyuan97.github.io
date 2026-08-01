@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>社區書籍登記 · 掃碼建檔</title>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   :root{
     --paper:#EAE4D3;--paper-2:#F3EEE0;--ink:#2A2622;--ink-soft:#6B655B;
@@ -42,11 +43,10 @@
   .scanbtns>*{flex:1}
   .filelabel .act{display:block;text-align:center}
   .hidden{display:none!important}
-  #scanStage{margin-top:14px;position:relative;background:#000;border-radius:4px;overflow:hidden;aspect-ratio:4/3;display:none}
-  #video{width:100%;height:100%;object-fit:cover;display:block}
-  .reticle{position:absolute;inset:18% 12%;border:2px solid #fff;border-radius:6px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
-  .scanline{position:absolute;left:14%;right:14%;height:2px;background:var(--stamp);top:50%;animation:sc 1.6s ease-in-out infinite}
-  @keyframes sc{0%,100%{top:24%}50%{top:74%}}
+  #scanStage{margin-top:14px;border-radius:4px;overflow:hidden;display:none;background:#000}
+  #reader{width:100%}
+  #reader video{width:100%!important;display:block}
+  #reader img{display:none}
   .isbnbadge{font-family:"Courier New",monospace;font-size:14px;letter-spacing:.08em;background:var(--ink);color:var(--paper-2);display:inline-block;padding:6px 12px;border-radius:2px;margin:4px 0}
   .stamp{position:absolute;top:12px;right:14px;transform:rotate(-8deg);border:2px solid var(--stamp);color:var(--stamp);border-radius:4px;padding:4px 8px;text-align:center;font-family:"Courier New",monospace;line-height:1.15;opacity:.9}
   .stamp small{display:block;font-size:8px;letter-spacing:.22em}.stamp b{font-size:13px}
@@ -89,7 +89,7 @@
       <div class="scanbtns">
         <button class="act" id="liveBtn" onclick="toggleLive()">開啟相機掃描</button>
       </div>
-      <div id="scanStage"><video id="video" playsinline muted></video><div class="reticle"></div><div class="scanline"></div></div>
+      <div id="scanStage"><div id="reader"></div></div>
       <div class="field" style="text-align:left;margin-bottom:0">
         <label>或手動輸入 ISBN</label>
         <div style="display:flex;gap:8px;align-items:stretch">
@@ -194,12 +194,14 @@ async function toggleLive(){
         requestAnimationFrame(loop);
       };loop();
     }else{
-      // 沒有原生條碼偵測(如 iOS Safari):改用拍照模式
+      // 沒有原生條碼偵測(如 iOS Safari):改用手動輸入
       stopLive();
-      st.className='status err';st.textContent='此瀏覽器不支援即時掃描,請改用「拍照上傳掃描」。';
+      st.className='status err';st.textContent='此瀏覽器不支援即時掃描,請改用下方「手動輸入 ISBN」。';
+      document.getElementById('manualIsbn').focus();
     }
   }catch(e){
-    st.className='status err';st.textContent='無法開啟相機,請改用「拍照上傳掃描」,或確認已允許相機權限。';
+    st.className='status err';st.textContent='無法開啟相機(在 Claude 預覽視窗中相機通常被封鎖)。請改用下方「手動輸入 ISBN」;部署到 GitHub Pages(https)後相機即可使用。';
+    document.getElementById('manualIsbn').focus();
   }
 }
 function stopLive(){
