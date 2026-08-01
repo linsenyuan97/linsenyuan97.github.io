@@ -71,7 +71,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="kicker">Community Library · 掃碼建檔 <span style="float:right;color:var(--teal);background:#fff;border:1px solid var(--teal);border-radius:20px;padding:1px 9px;letter-spacing:.05em">v4 · 掃描強化</span></div>
+    <div class="kicker">Community Library · 掃碼建檔 <span style="float:right;color:var(--teal);background:#fff;border:1px solid var(--teal);border-radius:20px;padding:1px 9px;letter-spacing:.05em">v5 · 相機修復</span></div>
     <h1>社區書籍登記處</h1>
     <div class="sub">掃書背條碼 → 自動帶入書名/作者/出版日 · 依書名或年紀查詢</div>
   </header>
@@ -189,7 +189,7 @@ async function toggleLive(){
       experimentalFeatures:{useBarCodeDetectorIfSupported:true}
     });
     const cfg={fps:15,qrbox:(vw,vh)=>({width:Math.floor(vw*0.92),height:Math.max(130,Math.floor(vh*0.5))})};
-    await h5q.start({facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},cfg,(text)=>{
+    await h5q.start({facingMode:"environment"},cfg,(text)=>{
       if(!scanning)return;
       const isbn=pickISBN([text]);
       if(isbn){scanning=false;stopLive();onISBN(isbn);}
