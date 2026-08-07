@@ -71,7 +71,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="kicker">Community Library · 掃碼建檔 <span style="float:right;color:var(--teal);background:#fff;border:1px solid var(--teal);border-radius:20px;padding:1px 9px;letter-spacing:.05em">v5 · 相機修復</span></div>
+    <div class="kicker">Community Library · 掃碼建檔 <span style="float:right;color:var(--teal);background:#fff;border:1px solid var(--teal);border-radius:20px;padding:1px 9px;letter-spacing:.05em">v7 · 已接後端</span></div>
     <h1>社區書籍登記處</h1>
     <div class="sub">掃書背條碼 → 自動帶入書名/作者/出版日 · 依書名或年紀查詢</div>
   </header>
@@ -138,10 +138,11 @@
 
 <script>
 const KEY_BOOKS="books-all",KEY_BACKEND="backend-url";
-let books=[],backend="";
+let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vqr17UZRl3knAVh0HaDWz5MniwE26oXWtz7yRaVK1fqR1wP1dRgmw/exec";
 
 (async function init(){
   stampToday();
+  document.getElementById('backendUrl').value=backend;
   try{const b=await window.storage.get(KEY_BACKEND);if(b&&b.value){backend=b.value;document.getElementById('backendUrl').value=backend;}}catch(e){}
   await loadBooks();
 })();
@@ -234,6 +235,14 @@ async function onISBN(isbn){
 function hasCJK(s){return /[\u3400-\u9FFF]/.test(s||"");}
 async function fetchBook(isbn){
   let best=null;
+  // 有後端時,先請後端代查中文書名(博客來等)
+  if(backend){
+    try{
+      const r=await fetch(backend+'?action=lookup&isbn='+isbn);
+      const j=await r.json();
+      if(j&&j.title){if(hasCJK(j.title))return{title:j.title,author:j.author||'',publishDate:j.publishDate||''};best={title:j.title,author:j.author||'',publishDate:j.publishDate||''};}
+    }catch(e){}
+  }
   // Google Books:掃過所有版本,優先挑「中文書名」的那筆
   for(const extra of ['','&country=TW']){
     try{
