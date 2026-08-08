@@ -62,18 +62,29 @@
   .corner.bl{bottom:8px;left:8px;border-right:0;border-top:0}
   .corner.br{bottom:8px;right:8px;border-left:0;border-top:0}
   .hidden{display:none!important}
-  #scanStage{margin-top:14px;border-radius:4px;overflow:hidden;display:none;background:#000}
-  #reader{width:100%}
-  #reader video{width:100%!important;display:block}
-  #reader img{display:none}
+  #scanStage,#scanStageR{margin-top:14px;border-radius:4px;overflow:hidden;display:none;background:#000}
+  #reader,#readerRemove{width:100%}
+  #reader video,#readerRemove video{width:100%!important;display:block}
+  #reader img,#readerRemove img{display:none}
   .isbnbadge{font-family:"Courier New",monospace;font-size:18px;letter-spacing:.08em;color:#1a56b8;font-weight:700;display:inline}
   .book{background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:13px 14px;margin-bottom:11px}
   .book h3{font-family:Georgia,"Noto Serif TC",serif;font-size:18px;margin:0 0 3px;color:var(--teal)}
   .meta{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:16px;color:#2C221E;line-height:1.7}
   .meta .mval{color:#2C221E}
   .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
-  .delbtn{background:var(--stamp);color:#fff;border:none;border-radius:4px;padding:9px 20px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .delbtn{background:var(--stamp);color:#fff;border:none;border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
   .delbtn:active{opacity:.8}
+  .bookrow{display:flex;align-items:flex-end;gap:12px}
+  .bookrow .meta{flex:1;margin:0}
+  .overlay{position:fixed;inset:0;background:rgba(42,38,34,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px}
+  .dialog{background:var(--paper-2);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.3);max-width:360px;width:100%;padding:24px 22px 18px;animation:fade .2s ease}
+  .dialog-msg{font-size:18px;font-weight:700;color:var(--ink);line-height:1.6;text-align:center;margin-bottom:22px}
+  .dialog-msg b{color:var(--stamp)}
+  .dialog-btns{display:flex;gap:10px}
+  .dialog-btns>button{flex:1;padding:13px 0;border:none;border-radius:6px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;color:#fff}
+  .dlg-cancel{background:var(--stamp)}
+  .dlg-ok{background:var(--teal)}
+  .dialog-btns>button:active{opacity:.85}
   .empty.big{font-size:36px;font-weight:700;padding:50px 10px}
   .status{font-size:13px;color:var(--teal);margin:0 0 14px;min-height:20px}
   .status:empty{display:none;margin:0;min-height:0}
@@ -165,11 +176,45 @@
     <div class="helpbox" id="helpBox">💡 掃描 ISBN 或手動輸入,確認資料後即可存檔</div>
   </section>
 
+  <!-- 移除 -->
+  <section class="panel" id="panel-remove" role="tabpanel">
+    <div class="card sec" style="margin-top:19px;padding:20px 14px 12px">
+      <div class="sechead">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+        移除書籍
+      </div>
+      <button class="scanhero" id="liveBtnR" onclick="toggleLiveRemove()">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <svg class="scanicon" viewBox="0 0 56 36" aria-hidden="true"><g fill="currentColor">
+          <rect x="10" y="9" width="2.5" height="18"/><rect x="14.5" y="9" width="1.2" height="18"/>
+          <rect x="17.5" y="9" width="3.2" height="18"/><rect x="22.5" y="9" width="1.2" height="18"/>
+          <rect x="25.5" y="9" width="2.2" height="18"/><rect x="29.5" y="9" width="3.2" height="18"/>
+          <rect x="34.5" y="9" width="1.2" height="18"/><rect x="37.5" y="9" width="2.5" height="18"/>
+          <rect x="42" y="9" width="1.2" height="18"/><rect x="44.8" y="9" width="1.2" height="18"/>
+        </g></svg>
+        <span id="scanLabelR">點擊此處，開啟相機掃描ISBN</span>
+      </button>
+      <div id="scanStageR"><div id="readerRemove"></div></div>
+      <div class="ordiv">或</div>
+      <div class="searchgroup">
+        <div class="float"><input type="number" id="rIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();removeByIsbn();}"><label>輸入 ISBN 查詢</label></div>
+        <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="removeByIsbn()">查詢</button>
+      </div>
+      <div class="ordiv">或</div>
+      <div class="searchgroup">
+        <div class="float"><input type="search" id="rKw" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();removeByKeyword();}"><label>輸入書名或作者 關鍵字查詢</label></div>
+        <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="removeByKeyword()">查詢</button>
+      </div>
+      <div class="status" id="rStatus"></div>
+    </div>
+    <div id="removeResults"></div>
+  </section>
+
   <!-- 使用者 -->
   <section class="panel on" id="panel-user" role="tabpanel">
     <div style="margin-bottom:16px">
       <div class="searchgroup">
-        <div class="float"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名 / 作者 / ISBN 查詢</label></div>
+        <div class="float"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名或作者 關鍵字查詢</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="doResidentSearch()">查詢</button>
       </div>
     </div>
@@ -178,10 +223,20 @@
 
 </div>
 
+<!-- 移除確認對話框 -->
+<div id="delOverlay" class="overlay hidden" onclick="if(event.target===this)closeDelDialog()">
+  <div class="dialog">
+    <div class="dialog-msg" id="delMsg">是否移除?</div>
+    <div class="dialog-btns">
+      <button class="dlg-cancel" onclick="closeDelDialog()">取消</button>
+      <button class="dlg-ok" id="delOkBtn">確定</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const KEY_BOOKS="books-all";
 let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vqr17UZRl3knAVh0HaDWz5MniwE26oXWtz7yRaVK1fqR1wP1dRgmw/exec";
-let removeMode=false;
 
 (async function init(){
   const isAdmin=/[?&]admin\b/i.test(location.search);
@@ -216,22 +271,19 @@ async function persistLocal(){try{await window.storage.set(KEY_BOOKS,JSON.string
 
 /* ===== 分頁 ===== */
 function showTab(t){
-  const isAdd=(t==='add');
-  document.getElementById('panel-admin').classList.toggle('on',isAdd);
-  document.getElementById('panel-user').classList.toggle('on',!isAdd);
+  document.getElementById('panel-admin').classList.toggle('on',t==='add');
+  document.getElementById('panel-remove').classList.toggle('on',t==='remove');
+  document.getElementById('panel-user').classList.toggle('on',t==='user');
   const ta=document.getElementById('tab-add'),tr=document.getElementById('tab-remove');
-  if(ta){ta.setAttribute('aria-selected',isAdd);}
-  if(tr){tr.setAttribute('aria-selected',!isAdd);}
-  stopLive();
-  if(isAdd)return;
-  // 查詢面板:住戶(t==='user')或移除(t==='remove')
-  removeMode=(t==='remove');
+  if(ta)ta.setAttribute('aria-selected',t==='add');
+  if(tr)tr.setAttribute('aria-selected',t==='remove');
+  stopLive();stopLiveRemove();
   if(t==='remove'){
-    // 移除頁預設不查詢:清空
-    document.getElementById('qTitle').value='';
-    document.getElementById('results').innerHTML='';
-  }else{
-    // 住戶預設列出全部
+    document.getElementById('rIsbn').value='';
+    document.getElementById('rKw').value='';
+    document.getElementById('rStatus').innerHTML='';
+    document.getElementById('removeResults').innerHTML='<div class="empty">請查詢要移除的書籍資料</div>';
+  }else if(t==='user'){
     const q=(document.getElementById('qTitle').value||'').trim();
     const hasResults=document.getElementById('results').innerHTML.trim()!=='';
     if(q===''||!hasResults) doResidentSearch();
@@ -281,6 +333,44 @@ function stopLive(){
     }catch(e){try{inst.clear();}catch(e2){}}
   }
   document.getElementById('scanStage').style.display='none';
+}
+
+/* ---- 移除頁的相機掃描(獨立的掃描器) ---- */
+let h5qR=null,scanningR=false;
+function setScanLabelR(t){const e=document.getElementById('scanLabelR');if(e)e.textContent=t;}
+async function toggleLiveRemove(){
+  if(scanningR){stopLiveRemove();return;}
+  const st=document.getElementById('rStatus'),stage=document.getElementById('scanStageR');
+  if(!window.Html5Qrcode){st.className='status err';st.textContent='掃描元件載入失敗,請確認網路後重新整理,或用下方輸入 ISBN。';return;}
+  stage.style.display='block';setScanLabelR('停止掃描');scanningR=true;
+  st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
+  try{
+    h5qR=new Html5Qrcode("readerRemove",{
+      formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A],
+      experimentalFeatures:{useBarCodeDetectorIfSupported:true}
+    });
+    const cfg={fps:15,qrbox:(vw,vh)=>({width:Math.floor(vw*0.92),height:Math.max(130,Math.floor(vh*0.5))})};
+    await h5qR.start({facingMode:"environment"},cfg,(text)=>{
+      if(!scanningR)return;
+      const isbn=pickISBN([text]);
+      if(isbn){scanningR=false;stopLiveRemove();st.innerHTML='';removeByIsbnValue(isbn);}
+    },()=>{});
+  }catch(e){
+    scanningR=false;setScanLabelR('點擊此處，開啟相機掃描ISBN');stage.style.display='none';
+    st.className='status err';st.textContent='無法開啟相機,請到 Safari 允許相機權限,或用下方輸入 ISBN。';
+  }
+}
+function stopLiveRemove(){
+  scanningR=false;
+  setScanLabelR('點擊此處，開啟相機掃描ISBN');
+  if(h5qR){
+    const inst=h5qR;h5qR=null;
+    try{
+      const p=inst.stop();
+      if(p&&p.then){p.then(()=>{try{inst.clear();}catch(e){}}).catch(()=>{});}
+    }catch(e){try{inst.clear();}catch(e2){}}
+  }
+  document.getElementById('scanStageR').style.display='none';
 }
 
 /* ---- 手動輸入 ISBN ---- */
@@ -398,38 +488,75 @@ async function saveBook(){
 
 /* ===== 顯示 ===== */
 // 住戶查詢:按下按鈕才查,先顯示 loading、抓最新資料再篩選
-async function doResidentSearch(){
-  const el=document.getElementById('results');
+// 通用:抓最新資料 → 依條件篩選 → 渲染到指定容器
+async function runQuery(targetId, predicate, removable, emptyMsg){
+  const el=document.getElementById(targetId);
   el.innerHTML='<div style="text-align:center;padding:40px 0"><span class="spin-lg"></span></div>';
   await loadBooksData();
-  renderResults();
+  const list=books.filter(predicate);
+  if(!list.length){el.innerHTML='<div class="empty big">'+emptyMsg+'</div>';return;}
+  el.innerHTML=list.map(b=>bookCard(b,removable)).join('');
 }
-function renderResults(){
-  const q=(document.getElementById('qTitle').value||"").trim().toLowerCase();
-  const list=books.filter(b=>!q
-    ||(b.title&&b.title.toLowerCase().includes(q))
-    ||(b.author&&b.author.toLowerCase().includes(q))
-    ||(b.isbn&&String(b.isbn).includes(q.replace(/\D/g,''))&&q.replace(/\D/g,'')!==''));
-  const el=document.getElementById('results');
-  if(!list.length){el.innerHTML='<div class="empty big">沒有符合的書籍</div>';return;}
-  el.innerHTML=list.map(b=>bookCard(b,removeMode)).join('');
+function kwPredicate(q){
+  q=(q||'').trim().toLowerCase();
+  return b=>!q||(b.title&&b.title.toLowerCase().includes(q))||(b.author&&b.author.toLowerCase().includes(q));
+}
+function isbnPredicate(isbn){
+  isbn=(isbn||'').replace(/\D/g,'');
+  return b=>isbn&&b.isbn&&String(b.isbn).replace(/\D/g,'')===isbn;
+}
+// 住戶查詢(書名/作者,無刪除)
+async function doResidentSearch(){
+  await runQuery('results', kwPredicate(document.getElementById('qTitle').value), false, '沒有符合的書籍');
+}
+// 移除頁:關鍵字查
+async function removeByKeyword(){
+  await runQuery('removeResults', kwPredicate(document.getElementById('rKw').value), true, '沒有符合的書籍');
+}
+// 移除頁:輸入 ISBN 查(本地書庫比對)
+function removeByIsbn(){
+  const raw=(document.getElementById('rIsbn').value||'').replace(/[^0-9Xx]/g,'');
+  let isbn=null;
+  if(raw.length===13&&(raw.startsWith('978')||raw.startsWith('979')))isbn=raw;
+  else if(raw.length===10)isbn=isbn10to13(raw);
+  const st=document.getElementById('rStatus');
+  if(!isbn){st.className='status err';st.textContent='ISBN 格式不正確:請輸入 13 碼或 10 碼。';return;}
+  st.innerHTML='';runQuery('removeResults', isbnPredicate(isbn), true, '書庫中查無此 ISBN');
+}
+function removeByIsbnValue(isbn){
+  document.getElementById('rIsbn').value=isbn;
+  document.getElementById('rStatus').innerHTML='';
+  runQuery('removeResults', isbnPredicate(isbn), true, '書庫中查無此 ISBN');
 }
 function bookCard(b,removable){
-  let h='<div class="book"><h3>'+esc(b.title)+'</h3><div class="meta">'
+  let meta='<div class="meta">'
     +(b.author?('作者　<span class="mval">'+esc(b.author)+'</span><br>'):'')
     +(b.publishDate?('出版日期　<span class="mval">'+esc(fmtDate(b.publishDate))+'</span><br>'):'')
     +'建檔日期　<span class="mval">'+esc(fmtDate(b.filedDate))+'</span></div>';
-  if(removable)h+='<div style="text-align:right;margin-top:10px"><button class="delbtn" onclick="deleteBook(\''+b.id+'\')">移除</button></div>';
+  let h='<div class="book"><h3>'+esc(b.title)+'</h3>';
+  if(removable){
+    h+='<div class="bookrow">'+meta+'<button class="delbtn" onclick="deleteBook(\''+b.id+'\')">移除</button></div>';
+  }else{
+    h+=meta;
+  }
   return h+'</div>';
 }
-async function deleteBook(id){
+function deleteBook(id){
   const bk=books.find(x=>x.id===id);if(!bk)return;
-  if(!confirm('確定刪除《'+bk.title+'》?此動作不可復原。'))return;
-  const el=document.getElementById('results');
+  document.getElementById('delMsg').innerHTML='是否移除《<b>'+esc(bk.title)+'</b>》?';
+  document.getElementById('delOkBtn').onclick=()=>{closeDelDialog();doDelete(id);};
+  document.getElementById('delOverlay').classList.remove('hidden');
+}
+function closeDelDialog(){document.getElementById('delOverlay').classList.add('hidden');}
+async function doDelete(id){
+  const el=document.getElementById('removeResults');
   el.innerHTML='<div style="text-align:center;padding:40px 0"><span class="spin-lg"></span></div>';
   if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"delete",id:id})});}catch(e){}}
-  await loadBooksData();
-  renderResults();
+  // 依目前的查詢條件重新列出
+  const isbnV=(document.getElementById('rIsbn').value||'').replace(/\D/g,'');
+  const kwV=(document.getElementById('rKw').value||'').trim();
+  if(isbnV){await runQuery('removeResults', isbnPredicate(isbnV), true, '書庫中查無此 ISBN');}
+  else{await runQuery('removeResults', kwPredicate(kwV), true, '沒有符合的書籍');}
 }
 </script>
 </body>
