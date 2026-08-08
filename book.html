@@ -189,7 +189,12 @@ function showTab(t){
   document.getElementById('tab-user').setAttribute('aria-selected',!a);
   document.getElementById('panel-admin').classList.toggle('on',a);
   document.getElementById('panel-user').classList.toggle('on',!a);
-  if(!a){stopLive();document.getElementById('results').innerHTML='';}
+  if(!a){
+    stopLive();
+    const q=(document.getElementById('qTitle').value||'').trim();
+    const hasResults=document.getElementById('results').innerHTML.trim()!=='';
+    if(q===''||!hasResults) doResidentSearch();
+  }
 }
 
 /* ===== 條碼工具 ===== */
@@ -366,7 +371,7 @@ function bookCard(b,editable){
   let h='<div class="book"><h3>'+esc(b.title)+'</h3><div class="meta">'
     +(b.author?('作者　'+esc(b.author)+'<br>'):'')
     +(b.publishDate?('出版日期　'+esc(fmtDate(b.publishDate))+'<br>'):'')
-    +'建檔　'+esc(fmtDate(b.filedDate))+'</div>';
+    +'建檔日期　'+esc(fmtDate(b.filedDate))+'</div>';
   return h+'</div>';
 }
 </script>
