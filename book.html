@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>林森苑書籍管理系統</title>
+<meta name="theme-color" content="#1d4ed8">
+<meta name="apple-mobile-web-app-title" content="林森苑書籍">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/book/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/book/apple-touch-icon.png">
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root{
+    --paper:#EAE4D3;--paper-2:#F3EEE0;--ink:#2A2622;--ink-soft:#6B655B;
+    --stamp:#B23A2E;--teal:#2F6B62;--rule-red:#D8B4A8;--rule-blue:#9FB9BD;--line:#C9BFA8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;color:var(--ink);
+    background:repeating-linear-gradient(var(--paper),var(--paper) 31px,var(--rule-blue) 31px,var(--rule-blue) 32px),var(--paper);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:20px 16px 64px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:18px}
+  .kicker{font-family:"Courier New",monospace;letter-spacing:.28em;font-size:11px;color:var(--stamp);text-transform:uppercase}
+  h1{font-family:Georgia,"Noto Serif TC",serif;font-size:24px;margin:0;font-weight:700}
+  .sub{font-size:12px;color:var(--ink-soft);margin-top:4px}
+  .tabs{display:flex;gap:6px}
+  .tab{padding:8px 14px;background:transparent;border:1.5px solid var(--ink);border-radius:20px;font:inherit;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer}
+  .tab[aria-selected="true"]{background:var(--ink);color:var(--paper-2)}
+  .panel{display:none}
+  .panel.on{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--paper-2);border:1px solid var(--line);box-shadow:2px 3px 0 rgba(42,38,34,.12);border-radius:2px;padding:16px;margin-bottom:16px;position:relative}
+  .field{margin:12px 0}
+  label{display:block;font-family:"Courier New",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:5px}
+  input[type=text],input[type=number],input[type=search],textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:16px;color:#1a56b8}
+  textarea{resize:vertical;line-height:1.45;min-height:46px}
+  input::placeholder,textarea::placeholder{color:var(--ink-soft);opacity:.7}
+  input:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:1px}
+  .row{display:flex;gap:10px}.row>*{flex:1}
+  .float{position:relative;display:flex;margin:18px 0 0}
+  .float>input,.float>textarea{width:100%}
+  .float>label{position:absolute;left:12px;top:13px;color:var(--ink-soft);font-family:inherit;font-size:16px;font-weight:400;letter-spacing:0;text-transform:none;pointer-events:none;transition:all .15s ease;background:transparent;padding:0 4px}
+  /* 有內容或聚焦時,label 上浮到框線上 */
+  .float>input:focus+label,.float>input:not(:placeholder-shown)+label,
+  .float>textarea:focus+label,.float>textarea:not(:placeholder-shown)+label{top:-7px;font-size:12px;font-weight:700;color:var(--teal);background:var(--paper-2)}
+  button.act{width:100%;padding:14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper-2);font:inherit;font-weight:700;font-size:16px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
+  button.act:disabled{opacity:.45;cursor:default}
+  button.stampbtn{background:var(--stamp);border-color:var(--stamp);color:#fff}
+  button.ghost{background:transparent;color:var(--ink)}
+  .scanbtns{display:flex;gap:10px;margin-top:14px}
+  .scanbtns>*{flex:1}
+  .scanhero{position:relative;width:100%;padding:24px 12px;background:repeating-linear-gradient(45deg,#fffdf7,#fffdf7 6px,#f3eee0 6px,#f3eee0 12px);border:1.5px dashed var(--line);border-radius:6px;color:var(--ink);font:inherit;font-weight:700;font-size:17px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;letter-spacing:.03em}
+  .scanhero:active{background:#f3eee0}
+  .scanhero .scanicon{width:56px;height:36px;color:var(--stamp)}
+  .scanhero .corner{position:absolute;width:20px;height:20px;border:3px solid var(--stamp)}
+  .corner.tl{top:8px;left:8px;border-right:0;border-bottom:0}
+  .corner.tr{top:8px;right:8px;border-left:0;border-bottom:0}
+  .corner.bl{bottom:8px;left:8px;border-right:0;border-top:0}
+  .corner.br{bottom:8px;right:8px;border-left:0;border-top:0}
+  .filelabel .act{display:block;text-align:center}
+  .hidden{display:none!important}
+  #scanStage{margin-top:14px;border-radius:4px;overflow:hidden;display:none;background:#000}
+  #reader{width:100%}
+  #reader video{width:100%!important;display:block}
+  #reader img{display:none}
+  .isbnbadge{font-family:"Courier New",monospace;font-size:18px;letter-spacing:.08em;color:#1a56b8;font-weight:700;display:inline}
+  .stamp{position:absolute;top:12px;right:14px;transform:rotate(-8deg);border:2px solid var(--stamp);color:var(--stamp);border-radius:4px;padding:4px 8px;text-align:center;font-family:"Courier New",monospace;line-height:1.15;opacity:.9}
+  .stamp small{display:block;font-size:8px;letter-spacing:.22em}.stamp b{font-size:13px}
+  .book{background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:13px 14px;margin-bottom:11px}
+  .book h3{font-family:Georgia,"Noto Serif TC",serif;font-size:18px;margin:0 0 3px}
+  .meta{font-family:"Courier New",monospace;font-size:12px;color:var(--ink-soft);line-height:1.7}
+  .agechip{display:inline-block;background:var(--teal);color:#fff;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;margin-top:6px}
+  .setage{display:flex;gap:8px;margin-top:10px;align-items:center}
+  .setage input{width:84px}
+  .setage button{padding:9px 12px;border:1px solid var(--teal);background:#fff;color:var(--teal);border-radius:2px;font:inherit;font-weight:600;cursor:pointer;font-size:13px}
+  .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
+  .status{font-size:13px;color:var(--teal);margin:12px 0;min-height:20px}
+  .status.err{color:var(--stamp)}
+  .note{font-size:11.5px;color:var(--ink-soft);margin-top:8px;line-height:1.6}
+  details{margin-top:26px;border-top:1px dashed var(--line);padding-top:14px}
+  summary{font-size:13px;color:var(--ink-soft);cursor:pointer;font-weight:600}
+  .spin{display:inline-block;width:15px;height:15px;border:2px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  .spin-lg{display:inline-block;width:36px;height:36px;border:3px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>林森苑書籍管理系統 <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:400;color:var(--line);letter-spacing:.1em;vertical-align:middle">v32</span></h1>
+    <div class="tabs" role="tablist">
+      <button class="tab" id="tab-admin" role="tab" aria-selected="true" onclick="showTab('admin')">管理員</button>
+      <button class="tab" id="tab-user" role="tab" aria-selected="false" onclick="showTab('user')">住戶</button>
+    </div>
+  </header>
+
+  <!-- 管理員 -->
+  <section class="panel on" id="panel-admin" role="tabpanel">
+    <div class="card">
+      <button class="scanhero" id="liveBtn" onclick="toggleLive()">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <svg class="scanicon" viewBox="0 0 56 36" aria-hidden="true"><g fill="currentColor">
+          <rect x="10" y="9" width="2.5" height="18"/><rect x="14.5" y="9" width="1.2" height="18"/>
+          <rect x="17.5" y="9" width="3.2" height="18"/><rect x="22.5" y="9" width="1.2" height="18"/>
+          <rect x="25.5" y="9" width="2.2" height="18"/><rect x="29.5" y="9" width="3.2" height="18"/>
+          <rect x="34.5" y="9" width="1.2" height="18"/><rect x="37.5" y="9" width="2.5" height="18"/>
+          <rect x="42" y="9" width="1.2" height="18"/><rect x="44.8" y="9" width="1.2" height="18"/>
+        </g></svg>
+        <span id="scanLabel">點擊此處，開啟相機掃描ISBN</span>
+      </button>
+      <div id="scanStage"><div id="reader"></div></div>
+      <div style="display:flex;gap:8px;align-items:stretch;margin:20px 0 0">
+        <div class="float" style="flex:1;margin:0"><input type="number" id="manualIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}"><label>手動輸入 ISBN</label></div>
+        <button class="act" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="submitManual()">查詢</button>
+      </div>
+    </div>
+
+    <div class="status" id="admStatus"></div>
+    <div id="loadingArea" class="hidden" style="text-align:center;padding:36px 0"><span class="spin-lg"></span></div>
+
+    <div class="card hidden" id="resultCard">
+      <div id="isbnLine" class="hidden"></div>
+      <div class="float"><textarea id="fTitle" rows="2" placeholder=" "></textarea><label>書名（必填）</label></div>
+      <div class="float"><input type="text" id="fAuthor" placeholder=" "><label>作者</label></div>
+      <div class="row">
+        <div class="float"><input type="text" id="fPub" placeholder=" "><label>出版日期</label></div>
+        <div class="float hidden"><input type="number" id="fAge" min="0" max="18" placeholder=" "><label>適合年齡(歲以上)</label></div>
+      </div>
+      <button class="act stampbtn" style="margin-top:14px" onclick="saveBook()">確認並存檔</button>
+      <div class="note" style="text-align:center">資料自動帶入後可修改</div>
+    </div>
+  </section>
+
+  <!-- 使用者 -->
+  <section class="panel" id="panel-user" role="tabpanel">
+    <div class="card">
+      <div class="row">
+        <div class="float" style="margin-top:0"><input type="search" id="qTitle" placeholder=" " oninput="runSearch()"><label>書名關鍵字</label></div>
+        <div class="float hidden" style="margin-top:0;max-width:140px"><input type="number" id="qAge" min="0" max="18" placeholder=" " oninput="runSearch()"><label>孩子年紀</label></div>
+      </div>
+      <div class="note">輸入書名或作者關鍵字查詢;留空顯示全部。</div>
+    </div>
+    <div id="results"></div>
+  </section>
+
+</div>
+
+<script>
+const KEY_BOOKS="books-all",KEY_BACKEND="backend-url";
+let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vqr17UZRl3knAVh0HaDWz5MniwE26oXWtz7yRaVK1fqR1wP1dRgmw/exec";
+
+(async function init(){
+  stampToday();
+  await loadBooks();
+})();
+
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');}
+function stampToday(){const e=document.getElementById('stampDate');if(e)e.textContent=todayStr();}
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ===== 儲存 ===== */
+async function loadBooks(){
+  if(backend){try{const r=await fetch(backend+"?action=list");const j=await r.json();if(Array.isArray(j)){books=j;renderAll();return;}}catch(e){}}
+  try{const s=await window.storage.get(KEY_BOOKS,true);books=s&&s.value?JSON.parse(s.value):[];}catch(e){books=[];}
+  renderAll();
+}
+async function persistLocal(){try{await window.storage.set(KEY_BOOKS,JSON.stringify(books),true);}catch(e){}}
+
+/* ===== 分頁 ===== */
+function showTab(t){
+  const a=t==='admin';
+  document.getElementById('tab-admin').setAttribute('aria-selected',a);
+  document.getElementById('tab-user').setAttribute('aria-selected',!a);
+  document.getElementById('panel-admin').classList.toggle('on',a);
+  document.getElementById('panel-user').classList.toggle('on',!a);
+  if(!a){stopLive();runSearch();}
+}
+
+/* ===== 條碼工具 ===== */
+function pickISBN(values){
+  for(const v of values){const d=(v||"").replace(/\D/g,"");if(d.length===13&&(d.startsWith("978")||d.startsWith("979")))return d;}
+  return null;
+}
+
+/* ---- 即時相機掃描(html5-qrcode,iOS Safari 也支援) ---- */
+let h5q=null,scanning=false;
+function setScanLabel(t){const e=document.getElementById('scanLabel');if(e)e.textContent=t;}
+async function toggleLive(){
+  if(scanning){stopLive();return;}
+  const st=document.getElementById('admStatus'),stage=document.getElementById('scanStage');
+  if(!window.Html5Qrcode){st.className='status err';st.textContent='掃描元件載入失敗,請確認網路後重新整理,或用下方手動輸入 ISBN。';return;}
+  stage.style.display='block';setScanLabel('停止掃描');scanning=true;
+  st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
+  try{
+    h5q=new Html5Qrcode("reader",{
+      formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A],
+      experimentalFeatures:{useBarCodeDetectorIfSupported:true}
+    });
+    const cfg={fps:15,qrbox:(vw,vh)=>({width:Math.floor(vw*0.92),height:Math.max(130,Math.floor(vh*0.5))})};
+    await h5q.start({facingMode:"environment"},cfg,(text)=>{
+      if(!scanning)return;
+      const isbn=pickISBN([text]);
+      if(isbn){scanning=false;stopLive();onISBN(isbn);}
+    },()=>{});
+  }catch(e){
+    scanning=false;setScanLabel('點擊此處，開啟相機掃描ISBN');stage.style.display='none';
+    st.className='status err';st.textContent='無法開啟相機,請到 Safari 允許相機權限,或用下方手動輸入 ISBN。';
+    document.getElementById('manualIsbn').focus();
+  }
+}
+function stopLive(){
+  scanning=false;
+  setScanLabel('點擊此處，開啟相機掃描ISBN');
+  if(h5q){const inst=h5q;h5q=null;inst.stop().then(()=>{try{inst.clear();}catch(e){}}).catch(()=>{});}
+  document.getElementById('scanStage').style.display='none';
+}
+
+/* ---- 手動輸入 ISBN ---- */
+function submitManual(){
+  const raw=(document.getElementById('manualIsbn').value||'').replace(/[^0-9Xx]/g,'');
+  let isbn=null;
+  if(raw.length===13&&(raw.startsWith('978')||raw.startsWith('979')))isbn=raw;
+  else if(raw.length===10)isbn=isbn10to13(raw);
+  if(!isbn){const st=document.getElementById('admStatus');st.className='status err';st.textContent='ISBN 格式不正確:請輸入 13 碼(978/979 開頭)或 10 碼。';return;}
+  document.getElementById('manualIsbn').value='';
+  onISBN(isbn);
+}
+function isbn10to13(t){
+  const core='978'+t.slice(0,9);let sum=0;
+  for(let i=0;i<12;i++)sum+=(+core[i])*(i%2?3:1);
+  return core+((10-(sum%10))%10);
+}
+
+/* ===== 拿到 ISBN → 查書 ===== */
+async function onISBN(isbn){
+  const st=document.getElementById('admStatus');
+  const load=document.getElementById('loadingArea');
+  document.getElementById('resultCard').classList.add('hidden');
+  load.classList.remove('hidden');
+  st.className='status';st.innerHTML='查詢 ISBN：<span class="isbnbadge">'+isbn+'</span>';
+  const info=await fetchBook(isbn);
+  load.classList.add('hidden');
+  if(info){showManual(isbn,info);st.className='status';st.innerHTML='查詢 ISBN：<span class="isbnbadge">'+isbn+'</span>。請確認後存檔';}
+  else{showManual(isbn,{});st.className='status err';st.innerHTML='ISBN <span class="isbnbadge">'+isbn+'</span> 查無資料,請手動填書名。';}
+}
+function hasCJK(s){return /[\u3400-\u9FFF]/.test(s||"");}
+async function fetchBook(isbn){
+  let best=null;
+  // 有後端時,先請後端代查中文書名(博客來等)
+  if(backend){
+    try{
+      const r=await fetch(backend+'?action=lookup&isbn='+isbn);
+      const j=await r.json();
+      if(j&&j.title){if(hasCJK(j.title))return{title:j.title,author:j.author||'',publishDate:j.publishDate||''};best={title:j.title,author:j.author||'',publishDate:j.publishDate||''};}
+    }catch(e){}
+  }
+  // Google Books:掃過所有版本,優先挑「中文書名」的那筆
+  for(const extra of ['','&country=TW']){
+    try{
+      const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn+extra);
+      const j=await r.json();
+      if(j.items&&j.items.length){
+        for(const it of j.items){
+          const v=it.volumeInfo||{};
+          const cand={title:v.title||'',author:(v.authors||[]).join('、'),publishDate:v.publishedDate||''};
+          if(hasCJK(cand.title))return cand;              // 中文書名 → 直接採用
+          if(!best&&cand.title)best=cand;                 // 保底記住第一筆
+        }
+      }
+    }catch(e){}
+  }
+  // Open Library 備援
+  try{
+    const r=await fetch('https://openlibrary.org/isbn/'+isbn+'.json');
+    if(r.ok){const d=await r.json();let author='';
+      if(d.authors&&d.authors[0]&&d.authors[0].key){try{const a=await fetch('https://openlibrary.org'+d.authors[0].key+'.json');author=(await a.json()).name||'';}catch(e){}}
+      const cand={title:d.title||'',author,publishDate:d.publish_date||''};
+      if(hasCJK(cand.title))return cand;
+      if(!best&&cand.title)best=cand;
+    }
+  }catch(e){}
+  return best;   // 沒有中文時回傳保底(拼音),可在確認畫面自行改成中文
+}
+
+function showManual(isbn,info){
+  info=info||{};
+  document.getElementById('isbnLine').innerHTML=isbn?'<div class="field" style="margin-top:0"><label>ISBN</label><span class="isbnbadge">'+isbn+'</span></div>':'';
+  document.getElementById('fTitle').value=info.title||"";
+  document.getElementById('fAuthor').value=info.author||"";
+  document.getElementById('fPub').value=info.publishDate||"";
+  document.getElementById('fAge').value="";
+  document.getElementById('resultCard').dataset.isbn=isbn||"";
+  stampToday();
+  document.getElementById('resultCard').classList.remove('hidden');
+}
+
+/* ===== 存檔 ===== */
+async function saveBook(){
+  const title=document.getElementById('fTitle').value.trim();
+  if(!title){alert("請至少填寫書名");return;}
+  const rec={id:Date.now().toString(36),isbn:document.getElementById('resultCard').dataset.isbn||"",title,
+    author:document.getElementById('fAuthor').value.trim(),publishDate:document.getElementById('fPub').value.trim(),
+    filedDate:todayStr(),minAge:parseInt(document.getElementById('fAge').value)||0};
+  const st=document.getElementById('admStatus');
+  if(backend){
+    st.className='status';st.innerHTML='<span class="spin"></span>寫入 Google 試算表中…';
+    try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"add",book:rec})});}
+    catch(e){st.className='status err';st.textContent="後端寫入失敗,已先存於本地。";}
+  }
+  books.unshift(rec);await persistLocal();
+  document.getElementById('resultCard').classList.add('hidden');
+  if(!st.classList.contains('err')){st.className='status';st.textContent='已存檔:《'+title+'》';}
+  renderRecent();
+}
+
+/* ===== 顯示 ===== */
+function renderAll(){renderRecent();runSearch();}
+function renderRecent(){
+  const el=document.getElementById('recent');
+  if(!el)return;
+  const list=books.slice(0,6);
+  if(!list.length){el.innerHTML='<div class="empty">尚無登記書籍,掃一本開始吧。</div>';return;}
+  el.innerHTML='<div style="font-family:Courier New,monospace;font-size:11px;letter-spacing:.2em;color:var(--stamp);margin:22px 0 10px">最近登記 RECENT</div>'+list.map(b=>bookCard(b,false)).join('');
+}
+function runSearch(){
+  const q=(document.getElementById('qTitle').value||"").trim().toLowerCase();
+  const ageRaw=document.getElementById('qAge').value;const age=ageRaw===""?null:parseInt(ageRaw);
+  const list=books.filter(b=>{
+    const okT=!q||(b.title&&b.title.toLowerCase().includes(q))||(b.author&&b.author.toLowerCase().includes(q));
+    const okA=age===null||(b.minAge<=age);return okT&&okA;});
+  const el=document.getElementById('results');
+  if(!list.length){el.innerHTML='<div class="empty">沒有符合的書籍。</div>';return;}
+  el.innerHTML=list.map(b=>bookCard(b,true)).join('');
+}
+function bookCard(b,editable){
+  const age=b.minAge>0?(b.minAge+"歲以上"):"全齡適讀";
+  let h='<div class="book"><h3>'+esc(b.title)+'</h3><div class="meta">'
+    +(b.author?('作者　'+esc(b.author)+'<br>'):'')
+    +(b.publishDate?('出版　'+esc(b.publishDate)+'<br>'):'')
+    +(b.isbn?('ISBN　'+esc(b.isbn)+'<br>'):'')
+    +'建檔　'+esc(b.filedDate)+'</div><span class="agechip">'+age+'</span>';
+  if(editable)h+='<div class="setage"><input type="number" min="0" max="18" placeholder="歲" value="'+(b.minAge||"")+'" id="age-'+b.id+'"><button onclick="setAge(\''+b.id+'\')">設定適讀年齡</button></div>';
+  return h+'</div>';
+}
+async function setAge(id){
+  const v=parseInt(document.getElementById('age-'+id).value)||0;
+  const bk=books.find(x=>x.id===id);if(!bk)return;bk.minAge=v;await persistLocal();
+  if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"update",id:id,minAge:v})});}catch(e){}}
+  runSearch();
+}
+</script>
+</body>
+</html>
