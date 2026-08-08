@@ -37,8 +37,11 @@
   input:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:1px}
   .row{display:flex;gap:10px}.row>*{flex:1}
   .float{position:relative;display:flex;margin:18px 0 0}
-  .float>label{position:absolute;top:-7px;left:10px;background:var(--paper-2);padding:0 6px;font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--ink-soft);text-transform:none;z-index:1}
   .float>input,.float>textarea{width:100%}
+  .float>label{position:absolute;left:12px;top:13px;color:var(--ink-soft);font-family:inherit;font-size:16px;font-weight:400;letter-spacing:0;text-transform:none;pointer-events:none;transition:all .15s ease;background:transparent;padding:0 4px}
+  /* 有內容或聚焦時,label 上浮到框線上 */
+  .float>input:focus+label,.float>input:not(:placeholder-shown)+label,
+  .float>textarea:focus+label,.float>textarea:not(:placeholder-shown)+label{top:-7px;font-size:12px;font-weight:700;color:var(--teal);background:var(--paper-2)}
   button.act{width:100%;padding:14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper-2);font:inherit;font-weight:700;font-size:16px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
   button.act:disabled{opacity:.45;cursor:default}
   button.stampbtn{background:var(--stamp);border-color:var(--stamp);color:#fff}
@@ -84,7 +87,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>林森苑書籍管理系統 <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:400;color:var(--line);letter-spacing:.1em;vertical-align:middle">v24</span></h1>
+    <h1>林森苑書籍管理系統 <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:400;color:var(--line);letter-spacing:.1em;vertical-align:middle">v26</span></h1>
     <div class="tabs" role="tablist">
       <button class="tab" id="tab-admin" role="tab" aria-selected="true" onclick="showTab('admin')">管理員</button>
       <button class="tab" id="tab-user" role="tab" aria-selected="false" onclick="showTab('user')">住戶</button>
@@ -107,7 +110,7 @@
       </button>
       <div id="scanStage"><div id="reader"></div></div>
       <div style="display:flex;gap:8px;align-items:stretch;margin:20px 0 0">
-        <div class="float" style="flex:1;margin:0"><label>手動輸入 ISBN</label><input type="number" id="manualIsbn" inputmode="numeric" placeholder="例:9789863426806" onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}"></div>
+        <div class="float" style="flex:1;margin:0"><input type="number" id="manualIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}"><label>手動輸入 ISBN</label></div>
         <button class="act" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="submitManual()">查詢</button>
       </div>
     </div>
@@ -117,11 +120,11 @@
 
     <div class="card hidden" id="resultCard">
       <div id="isbnLine" class="hidden"></div>
-      <div class="float"><label>書名（必填）</label><textarea id="fTitle" rows="2" placeholder="書名"></textarea></div>
-      <div class="float"><label>作者</label><input type="text" id="fAuthor" placeholder="作者"></div>
+      <div class="float"><textarea id="fTitle" rows="2" placeholder=" "></textarea><label>書名（必填）</label></div>
+      <div class="float"><input type="text" id="fAuthor" placeholder=" "><label>作者</label></div>
       <div class="row">
-        <div class="float"><label>出版日期</label><input type="text" id="fPub" placeholder="例:2021-03"></div>
-        <div class="float hidden"><label>適合年齡(歲以上)</label><input type="number" id="fAge" min="0" max="18" placeholder="例:3"></div>
+        <div class="float"><input type="text" id="fPub" placeholder=" "><label>出版日期</label></div>
+        <div class="float hidden"><input type="number" id="fAge" min="0" max="18" placeholder=" "><label>適合年齡(歲以上)</label></div>
       </div>
       <button class="act stampbtn" style="margin-top:14px" onclick="saveBook()">確認並存檔</button>
       <div class="note" style="text-align:center">資料自動帶入後可修改</div>
@@ -132,10 +135,10 @@
   <section class="panel" id="panel-user" role="tabpanel">
     <div class="card">
       <div class="row">
-        <div class="float" style="margin-top:0"><label>書名關鍵字</label><input type="search" id="qTitle" placeholder="輸入書名或作者" oninput="runSearch()"></div>
-        <div class="float" style="margin-top:0;max-width:140px"><label>孩子年紀</label><input type="number" id="qAge" min="0" max="18" placeholder="歲" oninput="runSearch()"></div>
+        <div class="float" style="margin-top:0"><input type="search" id="qTitle" placeholder=" " oninput="runSearch()"><label>書名關鍵字</label></div>
+        <div class="float hidden" style="margin-top:0;max-width:140px"><input type="number" id="qAge" min="0" max="18" placeholder=" " oninput="runSearch()"><label>孩子年紀</label></div>
       </div>
-      <div class="note">留空=顯示全部。填年紀=只顯示「適讀年齡 ≤ 該年紀」的書。</div>
+      <div class="note">輸入書名或作者關鍵字查詢;留空顯示全部。</div>
     </div>
     <div id="results"></div>
   </section>
