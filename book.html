@@ -106,6 +106,11 @@
   .ordiv::before,.ordiv::after{content:"";flex:1;height:1px;background:var(--line)}
   .helpbox{background:rgba(243,238,224,.7);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-top:4px;font-size:13px;color:var(--ink-soft);line-height:1.7}
   .helpbox b{color:var(--ink)}
+  .searchgroup{display:flex;width:100%}
+  .searchgroup .float{flex:1;margin:0}
+  .searchgroup input{border:1.5px solid var(--ink);border-radius:8px 0 0 8px;border-right:none;height:100%}
+  .searchgroup input:focus{outline:none;border-color:var(--ink)}
+  .searchgroup button{border:1.5px solid var(--ink);border-left:none;border-radius:0 8px 8px 0}
 </style>
 </head>
 <body>
@@ -146,8 +151,8 @@
       </button>
       <div id="scanStage"><div id="reader"></div></div>
       <div class="ordiv">或</div>
-      <div style="display:flex;gap:8px;align-items:stretch">
-        <div class="float" style="flex:1;margin:0"><input type="number" id="manualIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}"><label>手動輸入 ISBN</label></div>
+      <div class="searchgroup">
+        <div class="float"><input type="number" id="manualIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}"><label>手動輸入 ISBN</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="submitManual()">查詢</button>
       </div>
     </div>
@@ -179,8 +184,8 @@
   <!-- 使用者 -->
   <section class="panel" id="panel-user" role="tabpanel">
     <div style="margin-bottom:16px">
-      <div style="display:flex;gap:8px;align-items:stretch">
-        <div class="float" style="flex:1;margin:0"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名或作者關鍵字查詢</label></div>
+      <div class="searchgroup">
+        <div class="float"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名或作者關鍵字查詢</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="doResidentSearch()">查詢</button>
       </div>
     </div>
