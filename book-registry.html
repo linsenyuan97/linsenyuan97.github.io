@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>社區書籍登記 · 掃碼建檔</title>
+<title>林森苑書籍管理系統</title>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   :root{
@@ -31,10 +31,14 @@
   .card{background:var(--paper-2);border:1px solid var(--line);box-shadow:2px 3px 0 rgba(42,38,34,.12);border-radius:2px;padding:16px;margin-bottom:16px;position:relative}
   .field{margin:12px 0}
   label{display:block;font-family:"Courier New",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:5px}
-  input[type=text],input[type=number],input[type=search]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:16px;color:#1a56b8}
-  input::placeholder{color:var(--ink-soft);opacity:.7}
-  input:focus{outline:2px solid var(--teal);outline-offset:1px}
+  input[type=text],input[type=number],input[type=search],textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:16px;color:#1a56b8}
+  textarea{resize:vertical;line-height:1.45;min-height:46px}
+  input::placeholder,textarea::placeholder{color:var(--ink-soft);opacity:.7}
+  input:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:1px}
   .row{display:flex;gap:10px}.row>*{flex:1}
+  .float{position:relative;display:flex;margin:18px 0 0}
+  .float>label{position:absolute;top:-7px;left:10px;background:var(--paper-2);padding:0 6px;font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--ink-soft);text-transform:none;z-index:1}
+  .float>input,.float>textarea{width:100%}
   button.act{width:100%;padding:14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper-2);font:inherit;font-weight:700;font-size:16px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
   button.act:disabled{opacity:.45;cursor:default}
   button.stampbtn{background:var(--stamp);border-color:var(--stamp);color:#fff}
@@ -72,6 +76,7 @@
   details{margin-top:26px;border-top:1px dashed var(--line);padding-top:14px}
   summary{font-size:13px;color:var(--ink-soft);cursor:pointer;font-weight:600}
   .spin{display:inline-block;width:15px;height:15px;border:2px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+  .spin-lg{display:inline-block;width:36px;height:36px;border:3px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
@@ -79,7 +84,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>林森苑書籍管理 <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:400;color:var(--line);letter-spacing:.1em;vertical-align:middle">v19</span></h1>
+    <h1>林森苑書籍管理系統 <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:400;color:var(--line);letter-spacing:.1em;vertical-align:middle">v24</span></h1>
     <div class="tabs" role="tablist">
       <button class="tab" id="tab-admin" role="tab" aria-selected="true" onclick="showTab('admin')">管理員</button>
       <button class="tab" id="tab-user" role="tab" aria-selected="false" onclick="showTab('user')">住戶</button>
@@ -98,29 +103,27 @@
           <rect x="34.5" y="9" width="1.2" height="18"/><rect x="37.5" y="9" width="2.5" height="18"/>
           <rect x="42" y="9" width="1.2" height="18"/><rect x="44.8" y="9" width="1.2" height="18"/>
         </g></svg>
-        <span id="scanLabel">相機掃描 ISBN</span>
+        <span id="scanLabel">點擊此處，開啟相機掃描ISBN</span>
       </button>
       <div id="scanStage"><div id="reader"></div></div>
-      <div class="field" style="text-align:left;margin:16px 0 0">
-        <label style="font-family:inherit;font-size:15px;font-weight:700;letter-spacing:.03em;color:var(--ink);text-transform:none">手動輸入 ISBN</label>
-        <div style="display:flex;gap:8px;align-items:stretch;margin-top:8px">
-          <input type="number" id="manualIsbn" inputmode="numeric" placeholder="例:9789863426806" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}">
-          <button class="act" style="width:auto;padding:0 24px;white-space:nowrap" onclick="submitManual()">查詢</button>
-        </div>
+      <div style="display:flex;gap:8px;align-items:stretch;margin:20px 0 0">
+        <div class="float" style="flex:1;margin:0"><label>手動輸入 ISBN</label><input type="number" id="manualIsbn" inputmode="numeric" placeholder="例:9789863426806" onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}"></div>
+        <button class="act" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="submitManual()">查詢</button>
       </div>
     </div>
 
     <div class="status" id="admStatus"></div>
+    <div id="loadingArea" class="hidden" style="text-align:center;padding:36px 0"><span class="spin-lg"></span></div>
 
     <div class="card hidden" id="resultCard">
       <div id="isbnLine" class="hidden"></div>
-      <div class="field"><label>書名（必填）</label><input type="text" id="fTitle" placeholder="書名"></div>
-      <div class="field"><label>作者</label><input type="text" id="fAuthor" placeholder="作者"></div>
+      <div class="float"><label>書名（必填）</label><textarea id="fTitle" rows="2" placeholder="書名"></textarea></div>
+      <div class="float"><label>作者</label><input type="text" id="fAuthor" placeholder="作者"></div>
       <div class="row">
-        <div class="field"><label>出版日期</label><input type="text" id="fPub" placeholder="例:2021-03"></div>
-        <div class="field"><label>適合年齡(歲以上)</label><input type="number" id="fAge" min="0" max="18" placeholder="例:3"></div>
+        <div class="float"><label>出版日期</label><input type="text" id="fPub" placeholder="例:2021-03"></div>
+        <div class="float hidden"><label>適合年齡(歲以上)</label><input type="number" id="fAge" min="0" max="18" placeholder="例:3"></div>
       </div>
-      <button class="act stampbtn" onclick="saveBook()">確認並存檔</button>
+      <button class="act stampbtn" style="margin-top:14px" onclick="saveBook()">確認並存檔</button>
       <div class="note" style="text-align:center">資料自動帶入後可修改</div>
     </div>
   </section>
@@ -129,8 +132,8 @@
   <section class="panel" id="panel-user" role="tabpanel">
     <div class="card">
       <div class="row">
-        <div class="field" style="margin-top:0"><label>書名關鍵字</label><input type="search" id="qTitle" placeholder="輸入書名或作者" oninput="runSearch()"></div>
-        <div class="field" style="margin-top:0;max-width:140px"><label>孩子年紀</label><input type="number" id="qAge" min="0" max="18" placeholder="歲" oninput="runSearch()"></div>
+        <div class="float" style="margin-top:0"><label>書名關鍵字</label><input type="search" id="qTitle" placeholder="輸入書名或作者" oninput="runSearch()"></div>
+        <div class="float" style="margin-top:0;max-width:140px"><label>孩子年紀</label><input type="number" id="qAge" min="0" max="18" placeholder="歲" oninput="runSearch()"></div>
       </div>
       <div class="note">留空=顯示全部。填年紀=只顯示「適讀年齡 ≤ 該年紀」的書。</div>
     </div>
@@ -197,14 +200,14 @@ async function toggleLive(){
       if(isbn){scanning=false;stopLive();onISBN(isbn);}
     },()=>{});
   }catch(e){
-    scanning=false;setScanLabel('相機掃描 ISBN');stage.style.display='none';
+    scanning=false;setScanLabel('點擊此處，開啟相機掃描ISBN');stage.style.display='none';
     st.className='status err';st.textContent='無法開啟相機,請到 Safari 允許相機權限,或用下方手動輸入 ISBN。';
     document.getElementById('manualIsbn').focus();
   }
 }
 function stopLive(){
   scanning=false;
-  setScanLabel('相機掃描 ISBN');
+  setScanLabel('點擊此處，開啟相機掃描ISBN');
   if(h5q){const inst=h5q;h5q=null;inst.stop().then(()=>{try{inst.clear();}catch(e){}}).catch(()=>{});}
   document.getElementById('scanStage').style.display='none';
 }
@@ -228,8 +231,12 @@ function isbn10to13(t){
 /* ===== 拿到 ISBN → 查書 ===== */
 async function onISBN(isbn){
   const st=document.getElementById('admStatus');
-  st.className='status';st.innerHTML='已讀取 ISBN <span class="isbnbadge">'+isbn+'</span> <span class="spin"></span>查詢書籍資料中…';
+  const load=document.getElementById('loadingArea');
+  document.getElementById('resultCard').classList.add('hidden');
+  load.classList.remove('hidden');
+  st.className='status';st.innerHTML='查詢 ISBN：<span class="isbnbadge">'+isbn+'</span>';
   const info=await fetchBook(isbn);
+  load.classList.add('hidden');
   if(info){showManual(isbn,info);st.className='status';st.innerHTML='查詢 ISBN：<span class="isbnbadge">'+isbn+'</span>。請確認後存檔';}
   else{showManual(isbn,{});st.className='status err';st.innerHTML='ISBN <span class="isbnbadge">'+isbn+'</span> 查無資料,請手動填書名。';}
 }
