@@ -108,14 +108,14 @@
         <h1>林森苑書籍系統</h1>
       </div>
     </div>
-    <div class="tabs" role="tablist">
-      <button class="tab" id="tab-admin" role="tab" aria-selected="true" onclick="showTab('admin')">管理員</button>
-      <button class="tab" id="tab-user" role="tab" aria-selected="false" onclick="showTab('user')">住戶</button>
+    <div class="tabs hidden" id="tabsBar" role="tablist">
+      <button class="tab" id="tab-admin" role="tab" aria-selected="false" onclick="showTab('admin')">管理員</button>
+      <button class="tab" id="tab-user" role="tab" aria-selected="true" onclick="showTab('user')">住戶</button>
     </div>
   </header>
 
   <!-- 管理員 -->
-  <section class="panel on" id="panel-admin" role="tabpanel">
+  <section class="panel" id="panel-admin" role="tabpanel">
     <div class="card sec" style="margin-top:19px;padding:20px 14px 12px">
       <div class="sechead">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M12 9v6M9 12h6"/></svg>
@@ -164,7 +164,7 @@
   </section>
 
   <!-- 使用者 -->
-  <section class="panel" id="panel-user" role="tabpanel">
+  <section class="panel on" id="panel-user" role="tabpanel">
     <div style="margin-bottom:16px">
       <div class="searchgroup">
         <div class="float"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名或作者關鍵字查詢</label></div>
@@ -181,7 +181,13 @@ const KEY_BOOKS="books-all";
 let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vqr17UZRl3knAVh0HaDWz5MniwE26oXWtz7yRaVK1fqR1wP1dRgmw/exec";
 
 (async function init(){
-  await loadBooks();
+  const isAdmin=/[?&]admin\b/i.test(location.search);
+  if(isAdmin){
+    document.getElementById('tabsBar').classList.remove('hidden');
+    showTab('admin');
+  }else{
+    showTab('user');
+  }
 })();
 
 function todayStr(){const d=new Date();return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,'0')+"/"+String(d.getDate()).padStart(2,'0');}
