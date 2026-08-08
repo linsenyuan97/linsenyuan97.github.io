@@ -159,7 +159,16 @@ let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vq
   await loadBooks();
 })();
 
-function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');}
+function todayStr(){const d=new Date();return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,'0')+"/"+String(d.getDate()).padStart(2,'0');}
+// 把各種日期格式正規化成 yyyy/MM/dd(缺月/日補 01)
+function fmtDate(s){
+  s=(s||"").trim();
+  if(!s)return "";
+  const m=s.match(/(\d{4})[\/\-.]?(\d{1,2})?[\/\-.]?(\d{1,2})?/);
+  if(!m)return s;
+  const y=m[1], mo=(m[2]||"1").padStart(2,'0'), da=(m[3]||"1").padStart(2,'0');
+  return y+"/"+mo+"/"+da;
+}
 function stampToday(){const e=document.getElementById('stampDate');if(e)e.textContent=todayStr();}
 function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function autoGrow(el){el.style.height='auto';el.style.height=(el.scrollHeight)+'px';}
@@ -293,7 +302,7 @@ function showManual(isbn,info){
   document.getElementById('isbnLine').innerHTML=isbn?'<div class="field" style="margin-top:0"><label>ISBN</label><span class="isbnbadge">'+isbn+'</span></div>':'';
   document.getElementById('fTitle').value=info.title||"";
   document.getElementById('fAuthor').value=info.author||"";
-  document.getElementById('fPub').value=info.publishDate||"";
+  document.getElementById('fPub').value=fmtDate(info.publishDate||"");
   document.getElementById('fAge').value="";
   document.getElementById('resultCard').dataset.isbn=isbn||"";
   stampToday();
@@ -309,7 +318,7 @@ async function saveBook(){
   if(!title){alert("請至少填寫書名");return;}
   btn.disabled=true;btn.textContent='存檔中…';
   const rec={id:Date.now().toString(36),isbn:document.getElementById('resultCard').dataset.isbn||"",title,
-    author:document.getElementById('fAuthor').value.trim(),publishDate:document.getElementById('fPub').value.trim(),
+    author:document.getElementById('fAuthor').value.trim(),publishDate:fmtDate(document.getElementById('fPub').value),
     filedDate:todayStr(),minAge:parseInt(document.getElementById('fAge').value)||0};
   const st=document.getElementById('admStatus');
   if(backend){
@@ -351,8 +360,8 @@ function runSearch(){
 function bookCard(b,editable){
   let h='<div class="book"><h3>'+esc(b.title)+'</h3><div class="meta">'
     +(b.author?('作者　'+esc(b.author)+'<br>'):'')
-    +(b.publishDate?('出版日期　'+esc(b.publishDate)+'<br>'):'')
-    +'建檔　'+esc(b.filedDate)+'</div>';
+    +(b.publishDate?('出版日期　'+esc(fmtDate(b.publishDate))+'<br>'):'')
+    +'建檔　'+esc(fmtDate(b.filedDate))+'</div>';
   return h+'</div>';
 }
 async function setAge(id){
