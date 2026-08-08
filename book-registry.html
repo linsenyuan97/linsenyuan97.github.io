@@ -31,7 +31,8 @@
   .card{background:var(--paper-2);border:1px solid var(--line);box-shadow:2px 3px 0 rgba(42,38,34,.12);border-radius:2px;padding:16px;margin-bottom:16px;position:relative}
   .field{margin:12px 0}
   label{display:block;font-family:"Courier New",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:5px}
-  input[type=text],input[type=number],input[type=search]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:16px;color:var(--ink)}
+  input[type=text],input[type=number],input[type=search]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:16px;color:#1a56b8}
+  input::placeholder{color:var(--ink-soft);opacity:.7}
   input:focus{outline:2px solid var(--teal);outline-offset:1px}
   .row{display:flex;gap:10px}.row>*{flex:1}
   button.act{width:100%;padding:14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper-2);font:inherit;font-weight:700;font-size:16px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
@@ -54,7 +55,7 @@
   #reader{width:100%}
   #reader video{width:100%!important;display:block}
   #reader img{display:none}
-  .isbnbadge{font-family:"Courier New",monospace;font-size:14px;letter-spacing:.08em;background:var(--ink);color:var(--paper-2);display:inline-block;padding:6px 12px;border-radius:2px;margin:4px 0}
+  .isbnbadge{font-family:"Courier New",monospace;font-size:14px;letter-spacing:.08em;color:#1a56b8;font-weight:700;display:inline}
   .stamp{position:absolute;top:12px;right:14px;transform:rotate(-8deg);border:2px solid var(--stamp);color:var(--stamp);border-radius:4px;padding:4px 8px;text-align:center;font-family:"Courier New",monospace;line-height:1.15;opacity:.9}
   .stamp small{display:block;font-size:8px;letter-spacing:.22em}.stamp b{font-size:13px}
   .book{background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:13px 14px;margin-bottom:11px}
@@ -78,7 +79,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>林森苑書籍管理 <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:400;color:var(--line);letter-spacing:.1em;vertical-align:middle">v11</span></h1>
+    <h1>林森苑書籍管理 <span style="font-family:'Courier New',monospace;font-size:11px;font-weight:400;color:var(--line);letter-spacing:.1em;vertical-align:middle">v17</span></h1>
     <div class="tabs" role="tablist">
       <button class="tab" id="tab-admin" role="tab" aria-selected="true" onclick="showTab('admin')">管理員</button>
       <button class="tab" id="tab-user" role="tab" aria-selected="false" onclick="showTab('user')">住戶</button>
@@ -112,16 +113,15 @@
     <div class="status" id="admStatus"></div>
 
     <div class="card hidden" id="resultCard">
-      <div class="stamp"><small>建檔 FILED</small><b id="stampDate">—</b></div>
-      <div id="isbnLine"></div>
-      <div class="field"><label>書名 Title</label><input type="text" id="fTitle" placeholder="書名"></div>
-      <div class="field"><label>作者 Author</label><input type="text" id="fAuthor" placeholder="作者"></div>
+      <div id="isbnLine" class="hidden"></div>
+      <div class="field"><label>書名（必填）</label><input type="text" id="fTitle" placeholder="書名"></div>
+      <div class="field"><label>作者</label><input type="text" id="fAuthor" placeholder="作者"></div>
       <div class="row">
-        <div class="field"><label>出版日期 Published</label><input type="text" id="fPub" placeholder="例:2021-03"></div>
+        <div class="field"><label>出版日期</label><input type="text" id="fPub" placeholder="例:2021-03"></div>
         <div class="field"><label>適合年齡(歲以上)</label><input type="number" id="fAge" min="0" max="18" placeholder="例:3"></div>
       </div>
       <button class="act stampbtn" onclick="saveBook()">確認並存檔</button>
-      <div class="note">資料自動帶入後可修改。適讀年齡請自行設定(童書封底常有,例如「適合3～10歲」)。</div>
+      <div class="note" style="text-align:center">資料自動帶入後可修改</div>
     </div>
   </section>
 
@@ -149,7 +149,7 @@ let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vq
 })();
 
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0');}
-function stampToday(){document.getElementById('stampDate').textContent=todayStr();}
+function stampToday(){const e=document.getElementById('stampDate');if(e)e.textContent=todayStr();}
 function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 /* ===== 儲存 ===== */
@@ -230,8 +230,8 @@ async function onISBN(isbn){
   const st=document.getElementById('admStatus');
   st.className='status';st.innerHTML='已讀取 ISBN <span class="isbnbadge">'+isbn+'</span> <span class="spin"></span>查詢書籍資料中…';
   const info=await fetchBook(isbn);
-  if(info){showManual(isbn,info);st.className='status';st.innerHTML='查到資料,請確認後存檔。ISBN <span class="isbnbadge">'+isbn+'</span>';}
-  else{showManual(isbn,{});st.className='status err';st.innerHTML='ISBN <span class="isbnbadge">'+isbn+'</span> 免費資料庫查無資料,請手動補上書名/作者。';}
+  if(info){showManual(isbn,info);st.className='status';st.innerHTML='查詢 ISBN：<span class="isbnbadge">'+isbn+'</span>。請確認後存檔';}
+  else{showManual(isbn,{});st.className='status err';st.innerHTML='ISBN <span class="isbnbadge">'+isbn+'</span> 查無資料,請手動填書名。';}
 }
 function hasCJK(s){return /[\u3400-\u9FFF]/.test(s||"");}
 async function fetchBook(isbn){
