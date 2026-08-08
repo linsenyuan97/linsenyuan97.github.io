@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>林森苑書籍管理系統</title>
+<title>林森苑書籍系統</title>
 <meta name="theme-color" content="#1d4ed8">
 <meta name="apple-mobile-web-app-title" content="林森苑書籍">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -40,7 +40,7 @@
   .card.sec{padding-top:26px}
   .field{margin:12px 0}
   label{display:block;font-family:"Courier New",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:5px}
-  input[type=text],input[type=number],input[type=search],textarea{width:100%;padding:13px 12px;line-height:1.4;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:18px;color:#1a56b8}
+  input[type=text],input[type=number],input[type=search],textarea{width:100%;padding:13px 12px;line-height:1.5;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:18px;color:#1a56b8}
   textarea{resize:none;line-height:1.4;min-height:44px;overflow:hidden}
   input::placeholder,textarea::placeholder{color:var(--ink-soft);opacity:.7}
   input:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:1px}
@@ -50,7 +50,7 @@
   .float>label{position:absolute;left:12px;top:15px;color:var(--ink-soft);font-family:inherit;font-size:18px;font-weight:400;letter-spacing:0;text-transform:none;pointer-events:none;transition:all .15s ease;background:transparent;padding:0 4px}
   /* 有內容或聚焦時,label 上浮到框線上 */
   .float>input:focus+label,.float>input:not(:placeholder-shown)+label,
-  .float>textarea:focus+label,.float>textarea:not(:placeholder-shown)+label{top:-13px;font-size:16px;font-weight:700;color:var(--teal);background:var(--paper-2)}
+  .float>textarea:focus+label,.float>textarea:not(:placeholder-shown)+label{top:-15px;font-size:16px;font-weight:700;color:var(--teal);background:var(--paper-2)}
   #panel-user .float>input:focus+label,#panel-user .float>input:not(:placeholder-shown)+label{background:#F6EEDD}
   button.act{width:100%;padding:14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper-2);font:inherit;font-weight:700;font-size:18px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
   button.act:disabled{opacity:.45;cursor:default}
@@ -79,7 +79,7 @@
   .book{background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:13px 14px;margin-bottom:11px}
   .book h3{font-family:Georgia,"Noto Serif TC",serif;font-size:18px;margin:0 0 3px;color:var(--teal)}
   .meta{font-family:"Courier New",monospace;font-size:15px;color:var(--ink-soft);line-height:1.7}
-  .meta .mval{color:#444}
+  .meta .mval{color:#333}
   .agechip{display:inline-block;background:var(--teal);color:#fff;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;margin-top:6px}
   .setage{display:flex;gap:8px;margin-top:10px;align-items:center}
   .setage input{width:84px}
@@ -270,7 +270,13 @@ async function toggleLive(){
 function stopLive(){
   scanning=false;
   setScanLabel('點擊此處，開啟相機掃描ISBN');
-  if(h5q){const inst=h5q;h5q=null;inst.stop().then(()=>{try{inst.clear();}catch(e){}}).catch(()=>{});}
+  if(h5q){
+    const inst=h5q;h5q=null;
+    try{
+      const p=inst.stop();
+      if(p&&p.then){p.then(()=>{try{inst.clear();}catch(e){}}).catch(()=>{});}
+    }catch(e){try{inst.clear();}catch(e2){}}
+  }
   document.getElementById('scanStage').style.display='none';
 }
 
