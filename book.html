@@ -72,6 +72,8 @@
   .meta{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:16px;color:#2C221E;line-height:1.7}
   .meta .mval{color:#2C221E}
   .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
+  .delbtn{background:var(--stamp);color:#fff;border:none;border-radius:4px;padding:9px 20px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .delbtn:active{opacity:.8}
   .empty.big{font-size:36px;font-weight:700;padding:50px 10px}
   .status{font-size:13px;color:var(--teal);margin:0 0 14px;min-height:20px}
   .status:empty{display:none;margin:0;min-height:0}
@@ -109,8 +111,8 @@
       </div>
     </div>
     <div class="tabs hidden" id="tabsBar" role="tablist">
-      <button class="tab" id="tab-admin" role="tab" aria-selected="false" onclick="showTab('admin')">管理員</button>
-      <button class="tab" id="tab-user" role="tab" aria-selected="true" onclick="showTab('user')">住戶</button>
+      <button class="tab" id="tab-add" role="tab" aria-selected="true" onclick="showTab('add')">新增</button>
+      <button class="tab" id="tab-remove" role="tab" aria-selected="false" onclick="showTab('remove')">移除</button>
     </div>
   </header>
 
@@ -167,7 +169,7 @@
   <section class="panel on" id="panel-user" role="tabpanel">
     <div style="margin-bottom:16px">
       <div class="searchgroup">
-        <div class="float"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名或作者關鍵字查詢</label></div>
+        <div class="float"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名 / 作者 / ISBN 查詢</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="doResidentSearch()">查詢</button>
       </div>
     </div>
@@ -179,12 +181,13 @@
 <script>
 const KEY_BOOKS="books-all";
 let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vqr17UZRl3knAVh0HaDWz5MniwE26oXWtz7yRaVK1fqR1wP1dRgmw/exec";
+let removeMode=false;
 
 (async function init(){
   const isAdmin=/[?&]admin\b/i.test(location.search);
   if(isAdmin){
     document.getElementById('tabsBar').classList.remove('hidden');
-    showTab('admin');
+    showTab('add');
   }else{
     showTab('user');
   }
@@ -213,13 +216,22 @@ async function persistLocal(){try{await window.storage.set(KEY_BOOKS,JSON.string
 
 /* ===== 分頁 ===== */
 function showTab(t){
-  const a=t==='admin';
-  document.getElementById('tab-admin').setAttribute('aria-selected',a);
-  document.getElementById('tab-user').setAttribute('aria-selected',!a);
-  document.getElementById('panel-admin').classList.toggle('on',a);
-  document.getElementById('panel-user').classList.toggle('on',!a);
-  if(!a){
-    stopLive();
+  const isAdd=(t==='add');
+  document.getElementById('panel-admin').classList.toggle('on',isAdd);
+  document.getElementById('panel-user').classList.toggle('on',!isAdd);
+  const ta=document.getElementById('tab-add'),tr=document.getElementById('tab-remove');
+  if(ta){ta.setAttribute('aria-selected',isAdd);}
+  if(tr){tr.setAttribute('aria-selected',!isAdd);}
+  stopLive();
+  if(isAdd)return;
+  // 查詢面板:住戶(t==='user')或移除(t==='remove')
+  removeMode=(t==='remove');
+  if(t==='remove'){
+    // 移除頁預設不查詢:清空
+    document.getElementById('qTitle').value='';
+    document.getElementById('results').innerHTML='';
+  }else{
+    // 住戶預設列出全部
     const q=(document.getElementById('qTitle').value||'').trim();
     const hasResults=document.getElementById('results').innerHTML.trim()!=='';
     if(q===''||!hasResults) doResidentSearch();
@@ -394,17 +406,30 @@ async function doResidentSearch(){
 }
 function renderResults(){
   const q=(document.getElementById('qTitle').value||"").trim().toLowerCase();
-  const list=books.filter(b=>!q||(b.title&&b.title.toLowerCase().includes(q))||(b.author&&b.author.toLowerCase().includes(q)));
+  const list=books.filter(b=>!q
+    ||(b.title&&b.title.toLowerCase().includes(q))
+    ||(b.author&&b.author.toLowerCase().includes(q))
+    ||(b.isbn&&String(b.isbn).includes(q.replace(/\D/g,''))&&q.replace(/\D/g,'')!==''));
   const el=document.getElementById('results');
   if(!list.length){el.innerHTML='<div class="empty big">沒有符合的書籍</div>';return;}
-  el.innerHTML=list.map(b=>bookCard(b,true)).join('');
+  el.innerHTML=list.map(b=>bookCard(b,removeMode)).join('');
 }
-function bookCard(b,editable){
+function bookCard(b,removable){
   let h='<div class="book"><h3>'+esc(b.title)+'</h3><div class="meta">'
     +(b.author?('作者　<span class="mval">'+esc(b.author)+'</span><br>'):'')
     +(b.publishDate?('出版日期　<span class="mval">'+esc(fmtDate(b.publishDate))+'</span><br>'):'')
     +'建檔日期　<span class="mval">'+esc(fmtDate(b.filedDate))+'</span></div>';
+  if(removable)h+='<div style="text-align:right;margin-top:10px"><button class="delbtn" onclick="deleteBook(\''+b.id+'\')">移除</button></div>';
   return h+'</div>';
+}
+async function deleteBook(id){
+  const bk=books.find(x=>x.id===id);if(!bk)return;
+  if(!confirm('確定刪除《'+bk.title+'》?此動作不可復原。'))return;
+  const el=document.getElementById('results');
+  el.innerHTML='<div style="text-align:center;padding:40px 0"><span class="spin-lg"></span></div>';
+  if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"delete",id:id})});}catch(e){}}
+  await loadBooksData();
+  renderResults();
 }
 </script>
 </body>
