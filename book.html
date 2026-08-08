@@ -108,9 +108,10 @@
   .helpbox b{color:var(--ink)}
   .searchgroup{display:flex;width:100%}
   .searchgroup .float{flex:1;margin:0}
-  .searchgroup input{border:1.5px solid var(--ink);border-radius:8px 0 0 8px;border-right:none;height:100%}
+  .searchgroup input{border:1.5px solid var(--ink);border-radius:8px 0 0 8px !important;border-right:none;height:100%}
   .searchgroup input:focus{outline:none;border-color:var(--ink)}
-  .searchgroup button{border:1.5px solid var(--ink);border-left:none;border-radius:0 8px 8px 0}
+  .searchgroup button{border:1.5px solid var(--ink);border-left:none;border-radius:0 8px 8px 0 !important}
+  .searchgroup .float{overflow:hidden;border-radius:8px 0 0 8px}
 </style>
 </head>
 <body>
@@ -178,7 +179,7 @@
       </button>
     </div>
 
-    <div class="helpbox">💡 <b>操作說明</b><br>掃描 ISBN 或手動輸入後,確認書名等資料,點「確認並存檔」完成新增。</div>
+    <div class="helpbox" id="helpBox">💡 <b>操作說明</b><br>掃描 ISBN 或手動輸入後,確認書名等資料,點「確認並存檔」完成新增。</div>
   </section>
 
   <!-- 使用者 -->
@@ -362,6 +363,7 @@ function showManual(isbn,info){
   document.getElementById('resultCard').dataset.isbn=isbn||"";
   stampToday();
   document.getElementById('resultCard').classList.remove('hidden');
+  document.getElementById('helpBox').classList.add('hidden');
   autoGrow(document.getElementById('fTitle'));
 }
 
@@ -393,6 +395,7 @@ async function saveBook(){
     document.getElementById('fPub').value='';
     document.getElementById('resultCard').dataset.isbn='';
     document.getElementById('resultCard').classList.add('hidden');
+    document.getElementById('helpBox').classList.remove('hidden');
     autoGrow(document.getElementById('fTitle'));
   }
   btn.disabled=false;document.getElementById('saveLabel').textContent='確認並存檔';
