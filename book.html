@@ -51,6 +51,7 @@
   /* 有內容或聚焦時,label 上浮到框線上 */
   .float>input:focus+label,.float>input:not(:placeholder-shown)+label,
   .float>textarea:focus+label,.float>textarea:not(:placeholder-shown)+label{top:-13px;font-size:12px;font-weight:700;color:var(--teal);background:var(--paper-2)}
+  #panel-user .float>input:focus+label,#panel-user .float>input:not(:placeholder-shown)+label{background:#F6EEDD}
   button.act{width:100%;padding:14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper-2);font:inherit;font-weight:700;font-size:16px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
   button.act:disabled{opacity:.45;cursor:default}
   button.stampbtn{background:var(--stamp);border-color:var(--stamp);color:#fff}
@@ -85,7 +86,7 @@
   .setage button{padding:9px 12px;border:1px solid var(--teal);background:#fff;color:var(--teal);border-radius:2px;font:inherit;font-weight:600;cursor:pointer;font-size:13px}
   .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
   .empty.big{font-size:36px;font-weight:700;padding:50px 10px}
-  .status{font-size:13px;color:var(--teal);margin:12px 0;min-height:20px}
+  .status{font-size:13px;color:var(--teal);margin:10px 0 14px;min-height:20px}
   .status.saved{text-align:center;font-size:17px;font-weight:700}
   .status.err{color:var(--stamp)}
   .note{font-size:11.5px;color:var(--ink-soft);margin-top:8px;line-height:1.6}
@@ -173,11 +174,10 @@
 
     <div class="helpbox">💡 <b>操作說明</b><br>掃描 ISBN 或手動輸入後,確認書名等資料,點「確認並存檔」完成新增。</div>
   </section>
-  </section>
 
   <!-- 使用者 -->
   <section class="panel" id="panel-user" role="tabpanel">
-    <div class="card">
+    <div style="margin-bottom:16px">
       <div style="display:flex;gap:8px;align-items:stretch">
         <div class="float" style="flex:1;margin:0"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名或作者關鍵字查詢</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="doResidentSearch()">查詢</button>
