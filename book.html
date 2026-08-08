@@ -108,10 +108,9 @@
   .helpbox b{color:var(--ink)}
   .searchgroup{display:flex;width:100%}
   .searchgroup .float{flex:1;margin:0}
-  .searchgroup input{border:1.5px solid var(--ink);border-radius:8px 0 0 8px !important;border-right:none;height:100%}
+  .searchgroup input{border:1.5px solid var(--ink);border-radius:8px 0 0 8px;border-right:none;height:100%}
   .searchgroup input:focus{outline:none;border-color:var(--ink)}
-  .searchgroup button{border:1.5px solid var(--ink);border-left:none;border-radius:0 8px 8px 0 !important}
-  .searchgroup .float{overflow:hidden;border-radius:8px 0 0 8px}
+  .searchgroup button{border:1.5px solid var(--ink);border-left:none;border-radius:0 8px 8px 0}
 </style>
 </head>
 <body>
@@ -167,13 +166,13 @@
         書籍資料
       </div>
       <div id="isbnLine" class="hidden"></div>
-      <div class="float"><textarea id="fTitle" rows="1" placeholder=" " oninput="autoGrow(this)"></textarea><label>書名（必填）</label></div>
+      <div class="float" style="margin-top:16px"><textarea id="fTitle" rows="1" placeholder=" " oninput="autoGrow(this)"></textarea><label>書名（必填）</label></div>
       <div class="float"><input type="text" id="fAuthor" placeholder=" "><label>作者</label></div>
       <div class="row">
         <div class="float"><input type="text" id="fPub" placeholder=" "><label>出版日期</label></div>
         <div class="float hidden"><input type="number" id="fAge" min="0" max="18" placeholder=" "><label>適合年齡(歲以上)</label></div>
       </div>
-      <button class="act stampbtn" id="saveBtn" style="margin:14px 0 16px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="saveBook()">
+      <button class="act stampbtn" id="saveBtn" style="margin:14px 0 10px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="saveBook()">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
         <span id="saveLabel">確認並存檔</span>
       </button>
