@@ -13,7 +13,7 @@
 <style>
   :root{
     --paper:#EAE4D3;--paper-2:#F3EEE0;--ink:#2A2622;--ink-soft:#6B655B;
-    --stamp:#B23A2E;--teal:#2F6B62;--rule-red:#D8B4A8;--rule-blue:#9FB9BD;--line:#C9BFA8;
+    --stamp:#B23A2E;--teal:#2F6B62;--line:#C9BFA8;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
@@ -24,9 +24,7 @@
   }
   .wrap{max-width:640px;margin:0 auto;padding:16px 16px 20px}
   header{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;border-bottom:2px solid #4A3F3B;padding-bottom:0;margin-bottom:18px}
-  .kicker{font-family:"Courier New",monospace;letter-spacing:.28em;font-size:11px;color:var(--stamp);text-transform:uppercase}
   h1{font-family:Georgia,"Noto Serif TC",serif;font-size:22px;margin:0 0 8px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sub{font-size:12px;color:var(--ink-soft);margin-top:4px}
   .tabs{display:flex;gap:4px;flex-shrink:0}
   .tab{padding:9px 16px;background:rgba(42,38,34,.05);border:1.5px solid var(--line);border-bottom:none;border-radius:10px 10px 0 0;font:inherit;font-size:14px;font-weight:600;color:#666;cursor:pointer;white-space:nowrap;position:relative;bottom:-2px;box-shadow:inset 0 2px 4px rgba(0,0,0,.10)}
   .tab[aria-selected="true"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink);box-shadow:none}
@@ -38,7 +36,6 @@
   .sechead svg{width:19px;height:19px;color:#4A3F3B;flex-shrink:0}
   .sechead small{font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:13px;color:var(--ink-soft)}
   .card.sec{padding-top:26px}
-  .field{margin:12px 0}
   label{display:block;font-family:"Courier New",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:5px}
   input[type=text],input[type=number],input[type=search],textarea{width:100%;padding:13px 12px;line-height:1.5;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:18px;color:#1a56b8}
   textarea{resize:none;line-height:1.4;min-height:44px;overflow:hidden}
@@ -55,10 +52,7 @@
   button.act{width:100%;padding:14px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper-2);font:inherit;font-weight:700;font-size:18px;border-radius:2px;cursor:pointer;letter-spacing:.04em}
   button.act:disabled{opacity:.45;cursor:default}
   button.stampbtn{background:var(--stamp);border-color:var(--stamp);color:#fff}
-  button.ghost{background:transparent;color:var(--ink)}
   button.tealbtn{background:var(--teal);border-color:var(--teal);color:#fff}
-  .scanbtns{display:flex;gap:10px;margin-top:14px}
-  .scanbtns>*{flex:1}
   .scanhero{position:relative;width:100%;padding:24px 12px;background:repeating-linear-gradient(45deg,#fffdf7,#fffdf7 6px,#f3eee0 6px,#f3eee0 12px);border:1.5px dashed var(--line);border-radius:6px;color:var(--ink);font:inherit;font-weight:700;font-size:17px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;letter-spacing:.03em}
   .scanhero:active{background:#f3eee0}
   .scanhero .scanicon{width:56px;height:36px;color:var(--stamp)}
@@ -67,32 +61,22 @@
   .corner.tr{top:8px;right:8px;border-left:0;border-bottom:0}
   .corner.bl{bottom:8px;left:8px;border-right:0;border-top:0}
   .corner.br{bottom:8px;right:8px;border-left:0;border-top:0}
-  .filelabel .act{display:block;text-align:center}
   .hidden{display:none!important}
   #scanStage{margin-top:14px;border-radius:4px;overflow:hidden;display:none;background:#000}
   #reader{width:100%}
   #reader video{width:100%!important;display:block}
   #reader img{display:none}
   .isbnbadge{font-family:"Courier New",monospace;font-size:18px;letter-spacing:.08em;color:#1a56b8;font-weight:700;display:inline}
-  .stamp{position:absolute;top:12px;right:14px;transform:rotate(-8deg);border:2px solid var(--stamp);color:var(--stamp);border-radius:4px;padding:4px 8px;text-align:center;font-family:"Courier New",monospace;line-height:1.15;opacity:.9}
-  .stamp small{display:block;font-size:8px;letter-spacing:.22em}.stamp b{font-size:13px}
   .book{background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:13px 14px;margin-bottom:11px}
   .book h3{font-family:Georgia,"Noto Serif TC",serif;font-size:18px;margin:0 0 3px;color:var(--teal)}
-  .meta{font-family:"Courier New",monospace;font-size:16px;color:#757575;line-height:1.7}
+  .meta{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:16px;color:#757575;line-height:1.7}
   .meta .mval{color:#2C221E}
-  .agechip{display:inline-block;background:var(--teal);color:#fff;font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;margin-top:6px}
-  .setage{display:flex;gap:8px;margin-top:10px;align-items:center}
-  .setage input{width:84px}
-  .setage button{padding:9px 12px;border:1px solid var(--teal);background:#fff;color:var(--teal);border-radius:2px;font:inherit;font-weight:600;cursor:pointer;font-size:13px}
   .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
   .empty.big{font-size:36px;font-weight:700;padding:50px 10px}
   .status{font-size:13px;color:var(--teal);margin:0 0 14px;min-height:20px}
   .status:empty{display:none;margin:0;min-height:0}
   .status.saved{text-align:center;font-size:17px;font-weight:700}
   .status.err{color:var(--stamp)}
-  .note{font-size:11.5px;color:var(--ink-soft);margin-top:8px;line-height:1.6}
-  details{margin-top:26px;border-top:1px dashed var(--line);padding-top:14px}
-  summary{font-size:13px;color:var(--ink-soft);cursor:pointer;font-weight:600}
   .spin{display:inline-block;width:15px;height:15px;border:2px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
   .spin-lg{display:inline-block;width:36px;height:36px;border:3px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
@@ -101,7 +85,6 @@
   .brand .logo{width:34px;height:34px;flex-shrink:0;color:var(--teal)}
   .brand .btext{min-width:0}
   .brand .btext h1{margin:0}
-  .brand .btext .bsub{font-family:"Noto Sans TC",sans-serif;font-size:12px;color:var(--ink-soft);margin-top:2px;letter-spacing:.05em}
   .ordiv{display:flex;align-items:center;gap:12px;color:var(--ink-soft);font-size:13px;margin:14px 0}
   .ordiv::before,.ordiv::after{content:"";flex:1;height:1px;background:var(--line)}
   .helpbox{background:rgba(243,238,224,.7);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-top:4px;font-size:13px;color:var(--ink-soft);line-height:1.7}
@@ -165,7 +148,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/></svg>
         書籍資料
       </div>
-      <div id="isbnLine" class="hidden"></div>
       <div class="float" style="margin-top:16px"><textarea id="fTitle" rows="1" placeholder=" " oninput="autoGrow(this)"></textarea><label>書名（必填）</label></div>
       <div class="float"><input type="text" id="fAuthor" placeholder=" "><label>作者</label></div>
       <div class="row">
@@ -195,11 +177,10 @@
 </div>
 
 <script>
-const KEY_BOOKS="books-all",KEY_BACKEND="backend-url";
+const KEY_BOOKS="books-all";
 let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vqr17UZRl3knAVh0HaDWz5MniwE26oXWtz7yRaVK1fqR1wP1dRgmw/exec";
 
 (async function init(){
-  stampToday();
   await loadBooks();
 })();
 
@@ -213,7 +194,6 @@ function fmtDate(s){
   const y=m[1], mo=(m[2]||"1").padStart(2,'0'), da=(m[3]||"1").padStart(2,'0');
   return y+"/"+mo+"/"+da;
 }
-function stampToday(){const e=document.getElementById('stampDate');if(e)e.textContent=todayStr();}
 function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function autoGrow(el){el.style.height='auto';el.style.height=(el.scrollHeight)+'px';}
 
@@ -222,7 +202,7 @@ async function loadBooksData(){
   if(backend){try{const r=await fetch(backend+"?action=list");const j=await r.json();if(Array.isArray(j)){books=j;return;}}catch(e){}}
   try{const s=await window.storage.get(KEY_BOOKS,true);books=s&&s.value?JSON.parse(s.value):[];}catch(e){books=[];}
 }
-async function loadBooks(){await loadBooksData();renderAll();}
+async function loadBooks(){await loadBooksData();}
 async function persistLocal(){try{await window.storage.set(KEY_BOOKS,JSON.stringify(books),true);}catch(e){}}
 
 /* ===== 分頁 ===== */
@@ -354,13 +334,11 @@ async function fetchBook(isbn){
 
 function showManual(isbn,info){
   info=info||{};
-  document.getElementById('isbnLine').innerHTML=isbn?'<div class="field" style="margin-top:0"><label>ISBN</label><span class="isbnbadge">'+isbn+'</span></div>':'';
   document.getElementById('fTitle').value=info.title||"";
   document.getElementById('fAuthor').value=info.author||"";
   document.getElementById('fPub').value=fmtDate(info.publishDate||"");
   document.getElementById('fAge').value="";
   document.getElementById('resultCard').dataset.isbn=isbn||"";
-  stampToday();
   document.getElementById('resultCard').classList.remove('hidden');
   document.getElementById('helpBox').classList.add('hidden');
   autoGrow(document.getElementById('fTitle'));
@@ -398,18 +376,9 @@ async function saveBook(){
     autoGrow(document.getElementById('fTitle'));
   }
   btn.disabled=false;document.getElementById('saveLabel').textContent='確認並存檔';
-  renderRecent();
 }
 
 /* ===== 顯示 ===== */
-function renderAll(){renderRecent();}
-function renderRecent(){
-  const el=document.getElementById('recent');
-  if(!el)return;
-  const list=books.slice(0,6);
-  if(!list.length){el.innerHTML='<div class="empty">尚無登記書籍,掃一本開始吧。</div>';return;}
-  el.innerHTML='<div style="font-family:Courier New,monospace;font-size:11px;letter-spacing:.2em;color:var(--stamp);margin:22px 0 10px">最近登記 RECENT</div>'+list.map(b=>bookCard(b,false)).join('');
-}
 // 住戶查詢:按下按鈕才查,先顯示 loading、抓最新資料再篩選
 async function doResidentSearch(){
   const el=document.getElementById('results');
