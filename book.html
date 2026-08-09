@@ -79,13 +79,15 @@
   .overlay{position:fixed;inset:0;background:rgba(42,38,34,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px}
   .dialog{background:var(--paper-2);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.3);max-width:360px;width:100%;padding:24px 22px 18px;animation:fade .2s ease}
   .dialog-msg{font-size:18px;font-weight:700;color:var(--ink);line-height:1.6;text-align:center;margin-bottom:22px}
-  .dialog-msg b{color:var(--stamp)}
+  .dialog-msg b{color:#1a56b8;font-weight:700}
   .dialog-btns{display:flex;gap:10px}
   .dialog-btns>button{flex:1;padding:13px 0;border:none;border-radius:6px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;color:#fff}
   .dlg-cancel{background:var(--stamp)}
   .dlg-ok{background:var(--teal)}
   .dialog-btns>button:active{opacity:.85}
-  .empty.big{font-size:36px;font-weight:700;padding:50px 10px}
+  .toast-overlay{position:fixed;inset:0;background:rgba(120,120,120,.35);display:flex;align-items:flex-start;justify-content:center;z-index:200;padding-top:22vh;pointer-events:none}
+  .toast-box{background:var(--teal);color:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.3);padding:34px 48px;font-size:48px;font-weight:700;letter-spacing:.05em;animation:fade .25s ease}
+  .empty.big{font-size:40px;font-weight:700;padding:50px 10px;line-height:1.3}
   .status{font-size:13px;color:var(--teal);margin:0 0 14px;min-height:20px}
   .status:empty{display:none;margin:0;min-height:0}
   .status.saved{text-align:center;font-size:17px;font-weight:700}
@@ -195,17 +197,18 @@
         <span id="scanLabelR">點擊此處，開啟相機掃描ISBN</span>
       </button>
       <div id="scanStageR"><div id="readerRemove"></div></div>
+      <div class="status" id="rStatus"></div>
       <div class="ordiv">或</div>
       <div class="searchgroup">
         <div class="float"><input type="number" id="rIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();removeByIsbn();}"><label>輸入 ISBN 查詢</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="removeByIsbn()">查詢</button>
       </div>
+      <div class="status" id="rIsbnStatus"></div>
       <div class="ordiv">或</div>
       <div class="searchgroup">
         <div class="float"><input type="search" id="rKw" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();removeByKeyword();}"><label>輸入書名或作者 關鍵字查詢</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="removeByKeyword()">查詢</button>
       </div>
-      <div class="status" id="rStatus"></div>
     </div>
     <div id="removeResults"></div>
   </section>
@@ -221,6 +224,11 @@
     <div id="results"></div>
   </section>
 
+</div>
+
+<!-- 成功提示 toast -->
+<div id="toast" class="toast-overlay hidden">
+  <div class="toast-box"><span id="toastText">成功</span></div>
 </div>
 
 <!-- 移除確認對話框 -->
@@ -260,6 +268,14 @@ function fmtDate(s){
 }
 function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function autoGrow(el){el.style.height='auto';el.style.height=(el.scrollHeight)+'px';}
+let toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastText').textContent=msg;
+  t.classList.remove('hidden');
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{t.classList.add('hidden');},5000);
+}
 
 /* ===== 儲存 ===== */
 async function loadBooksData(){
@@ -282,7 +298,8 @@ function showTab(t){
     document.getElementById('rIsbn').value='';
     document.getElementById('rKw').value='';
     document.getElementById('rStatus').innerHTML='';
-    document.getElementById('removeResults').innerHTML='<div class="empty">請查詢要移除的書籍資料</div>';
+    document.getElementById('rIsbnStatus').innerHTML='';
+    document.getElementById('removeResults').innerHTML='<div class="empty big">請查詢要移除的書籍資料</div>';
   }else if(t==='user'){
     const q=(document.getElementById('qTitle').value||'').trim();
     const hasResults=document.getElementById('results').innerHTML.trim()!=='';
@@ -474,6 +491,7 @@ async function saveBook(){
     st.innerHTML = rec.isbn
       ? '✓ ISBN：<span class="isbnbadge">'+rec.isbn+'</span> 已存檔。'
       : '✓《'+esc(title)+'》已存檔。';
+    showToast('新增成功');
     // 清空欄位並隱藏,回到乾淨狀態
     document.getElementById('fTitle').value='';
     document.getElementById('fAuthor').value='';
@@ -511,6 +529,7 @@ async function doResidentSearch(){
 }
 // 移除頁:關鍵字查
 async function removeByKeyword(){
+  document.getElementById('rIsbnStatus').innerHTML='';
   await runQuery('removeResults', kwPredicate(document.getElementById('rKw').value), true, '沒有符合的書籍');
 }
 // 移除頁:輸入 ISBN 查(本地書庫比對)
@@ -519,13 +538,13 @@ function removeByIsbn(){
   let isbn=null;
   if(raw.length===13&&(raw.startsWith('978')||raw.startsWith('979')))isbn=raw;
   else if(raw.length===10)isbn=isbn10to13(raw);
-  const st=document.getElementById('rStatus');
+  const st=document.getElementById('rIsbnStatus');
   if(!isbn){st.className='status err';st.textContent='ISBN 格式不正確:請輸入 13 碼或 10 碼。';return;}
-  st.innerHTML='';runQuery('removeResults', isbnPredicate(isbn), true, '書庫中查無此 ISBN');
+  st.className='status';st.innerHTML='';runQuery('removeResults', isbnPredicate(isbn), true, '書庫中查無此 ISBN');
 }
 function removeByIsbnValue(isbn){
   document.getElementById('rIsbn').value=isbn;
-  document.getElementById('rStatus').innerHTML='';
+  document.getElementById('rIsbnStatus').innerHTML='';
   runQuery('removeResults', isbnPredicate(isbn), true, '書庫中查無此 ISBN');
 }
 function bookCard(b,removable){
@@ -552,6 +571,7 @@ async function doDelete(id){
   const el=document.getElementById('removeResults');
   el.innerHTML='<div style="text-align:center;padding:40px 0"><span class="spin-lg"></span></div>';
   if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"delete",id:id})});}catch(e){}}
+  showToast('移除成功');
   // 依目前的查詢條件重新列出
   const isbnV=(document.getElementById('rIsbn').value||'').replace(/\D/g,'');
   const kwV=(document.getElementById('rKw').value||'').trim();
