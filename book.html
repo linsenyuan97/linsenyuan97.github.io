@@ -74,8 +74,9 @@
   .meta .mval{color:#2C221E}
   .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
   .delbtn{background:var(--stamp);color:#fff;border:none;border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-  .borrowbtn{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-  .delbtn:active,.borrowbtn:active{opacity:.8}
+  .borrowbtn{background:var(--teal);color:#fff;border:1.5px solid var(--teal);border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .returnbtn{background:#fffdf7;color:var(--teal);border:1.5px solid var(--teal);border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .delbtn:active,.borrowbtn:active,.returnbtn:active{opacity:.8}
   .brwtag{position:absolute;top:-12px;left:12px;background:var(--paper-2);color:var(--teal);padding:0 8px;font-size:14px;font-weight:700;letter-spacing:.02em}
   .addr-row{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;margin-top:6px}
   .addr-sel{-webkit-appearance:none;appearance:none;font:inherit;font-size:18px;font-weight:700;color:#1a56b8;padding:9px 26px 9px 12px;border:1.5px solid #4A3F3B;border-radius:8px;background-color:#fffdf7;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234A3F3B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 9px center;text-align:center;text-align-last:center;box-shadow:0 1px 2px rgba(0,0,0,.08)}
@@ -611,7 +612,7 @@ function bookCard(b,removable){
     // 借閱中:門牌標籤壓在卡片上緣(綠字)
     h='<div class="book borrowed"><div class="brwtag">'+esc(b.borrower)+' 借閱中</div><h3>'+esc(b.title)+'</h3>';
     if(me&&b.borrower===me){
-      h+='<div class="bookrow">'+meta+'<button class="borrowbtn" onclick="returnBook(\''+b.id+'\')">歸還</button></div>';
+      h+='<div class="bookrow">'+meta+'<button class="returnbtn" onclick="returnBook(\''+b.id+'\')">歸還</button></div>';
     }else{
       h+=meta;
     }
