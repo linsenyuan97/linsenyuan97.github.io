@@ -73,7 +73,12 @@
   .meta .mval{color:#2C221E}
   .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
   .delbtn{background:var(--stamp);color:#fff;border:none;border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-  .delbtn:active{opacity:.8}
+  .borrowbtn{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .delbtn:active,.borrowbtn:active{opacity:.8}
+  .brwtag{display:inline-block;background:#f7e9e7;color:var(--stamp);border:1px solid var(--stamp);border-radius:4px;padding:3px 10px;font-size:14px;font-weight:700;margin:2px 0 10px}
+  .addr-row{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+  .addr-sel{font:inherit;font-size:18px;color:#1a56b8;padding:10px 8px;border:1.5px solid #4A3F3B;border-radius:6px;background:#fffdf7}
+  .addr-unit{font-size:16px;color:var(--ink)}
   .bookrow{display:flex;align-items:flex-end;gap:12px}
   .bookrow .meta{flex:1;margin:0}
   .overlay{position:fixed;inset:0;background:rgba(42,38,34,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px}
@@ -242,11 +247,28 @@
   </div>
 </div>
 
+<!-- 借閱門牌對話框 -->
+<div id="borrowOverlay" class="overlay hidden" onclick="if(event.target===this)closeBorrowDialog()">
+  <div class="dialog">
+    <div class="dialog-msg">請選擇借閱門牌</div>
+    <div class="addr-row">
+      <select id="addrHao" class="addr-sel"></select><span class="addr-unit">號</span>
+      <select id="addrLou" class="addr-sel"></select><span class="addr-unit">樓之</span>
+      <select id="addrZhi" class="addr-sel"></select>
+    </div>
+    <div class="dialog-btns" style="margin-top:22px">
+      <button class="dlg-cancel" onclick="closeBorrowDialog()">取消</button>
+      <button class="dlg-ok" id="borrowOkBtn">確認</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const KEY_BOOKS="books-all";
 let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vqr17UZRl3knAVh0HaDWz5MniwE26oXWtz7yRaVK1fqR1wP1dRgmw/exec";
 
 (async function init(){
+  initAddrSelects();
   const isAdmin=/[?&]admin\b/i.test(location.search);
   if(isAdmin){
     document.getElementById('tabsBar').classList.remove('hidden');
@@ -555,10 +577,55 @@ function bookCard(b,removable){
   let h='<div class="book"><h3>'+esc(b.title)+'</h3>';
   if(removable){
     h+='<div class="bookrow">'+meta+'<button class="delbtn" onclick="deleteBook(\''+b.id+'\')">移除</button></div>';
+  }else if(b.borrower){
+    h+='<div class="brwtag">'+esc(b.borrower)+' 借閱中</div>';
+    h+='<div class="bookrow">'+meta+'<button class="delbtn" onclick="returnBook(\''+b.id+'\')">歸還</button></div>';
   }else{
-    h+=meta;
+    h+='<div class="bookrow">'+meta+'<button class="borrowbtn" onclick="openBorrow(\''+b.id+'\')">借閱</button></div>';
   }
   return h+'</div>';
+}
+/* ===== 借閱 / 歸還 ===== */
+const ADDR_KEY='borrower-addr';
+function initAddrSelects(){
+  const hao=[95,97,99], zhi=[1,2,3,5];
+  const lou=[];for(let i=2;i<=24;i++)lou.push(i);
+  const fill=(id,arr)=>{document.getElementById(id).innerHTML=arr.map(v=>'<option value="'+v+'">'+v+'</option>').join('');};
+  fill('addrHao',hao);fill('addrLou',lou);fill('addrZhi',zhi);
+  // 帶入上次選擇
+  try{
+    const s=JSON.parse(localStorage.getItem(ADDR_KEY)||'{}');
+    if(s.hao)document.getElementById('addrHao').value=s.hao;
+    if(s.lou)document.getElementById('addrLou').value=s.lou;
+    if(s.zhi)document.getElementById('addrZhi').value=s.zhi;
+  }catch(e){}
+}
+function openBorrow(id){
+  const ok=document.getElementById('borrowOkBtn');
+  ok.onclick=()=>{
+    const hao=document.getElementById('addrHao').value;
+    const lou=document.getElementById('addrLou').value;
+    const zhi=document.getElementById('addrZhi').value;
+    try{localStorage.setItem(ADDR_KEY,JSON.stringify({hao,lou,zhi}));}catch(e){}
+    const addr=hao+'號'+lou+'樓之'+zhi;
+    closeBorrowDialog();doBorrow(id,addr);
+  };
+  document.getElementById('borrowOverlay').classList.remove('hidden');
+}
+function closeBorrowDialog(){document.getElementById('borrowOverlay').classList.add('hidden');}
+async function doBorrow(id,addr){
+  const el=document.getElementById('results');
+  el.innerHTML='<div style="text-align:center;padding:40px 0"><span class="spin-lg"></span></div>';
+  if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"borrow",id:id,borrower:addr})});}catch(e){}}
+  showToast('借閱成功');
+  await doResidentSearch();
+}
+async function returnBook(id){
+  const el=document.getElementById('results');
+  el.innerHTML='<div style="text-align:center;padding:40px 0"><span class="spin-lg"></span></div>';
+  if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"return",id:id})});}catch(e){}}
+  showToast('歸還成功');
+  await doResidentSearch();
 }
 function deleteBook(id){
   const bk=books.find(x=>x.id===id);if(!bk)return;
