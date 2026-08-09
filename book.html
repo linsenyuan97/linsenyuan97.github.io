@@ -265,7 +265,6 @@
 </div>
 
 <script>
-const KEY_BOOKS="books-all";
 let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vqr17UZRl3knAVh0HaDWz5MniwE26oXWtz7yRaVK1fqR1wP1dRgmw/exec";
 let toastTimer=null;
 let h5q=null,scanning=false;
@@ -279,8 +278,7 @@ function bootResident(){
       document.getElementById('tabsBar').classList.remove('hidden');
       showTab('add');
     }else{
-      showTab('user');
-      doResidentSearch();
+      showTab('user');   // showTab('user') 內部會自動查詢一次
     }
   }catch(e){ try{doResidentSearch();}catch(e2){} }
 }
@@ -288,13 +286,6 @@ function bootResident(){
   try{initAddrSelects();}catch(e){}
   bootResident();
 })();
-window.addEventListener('load',function(){
-  // 保險:若結果區還是空的(初始化未觸發到),再查一次
-  const r=document.getElementById('results');
-  if(r&&r.innerHTML.trim()===''&&!/[?&]admin\b/i.test(location.search)){
-    doResidentSearch();
-  }
-});
 
 function todayStr(){const d=new Date();return d.getFullYear()+"/"+String(d.getMonth()+1).padStart(2,'0')+"/"+String(d.getDate()).padStart(2,'0');}
 // 把各種日期格式正規化成 yyyy/MM/dd(缺月/日補 01)
@@ -316,13 +307,10 @@ function showToast(msg){
   toastTimer=setTimeout(()=>{t.classList.add('hidden');},5000);
 }
 
-/* ===== 儲存 ===== */
+/* ===== 資料讀取(後端) ===== */
 async function loadBooksData(){
-  if(backend){try{const r=await fetch(backend+"?action=list");const j=await r.json();if(Array.isArray(j)){books=j;return;}}catch(e){}}
-  try{const s=await window.storage.get(KEY_BOOKS,true);books=s&&s.value?JSON.parse(s.value):[];}catch(e){books=[];}
+  if(backend){try{const r=await fetch(backend+"?action=list");const j=await r.json();if(Array.isArray(j))books=j;}catch(e){}}
 }
-async function loadBooks(){await loadBooksData();}
-async function persistLocal(){try{await window.storage.set(KEY_BOOKS,JSON.stringify(books),true);}catch(e){}}
 
 /* ===== 分頁 ===== */
 function showTab(t){
@@ -520,7 +508,7 @@ async function saveBook(){
     try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"add",book:rec})});}
     catch(e){st.className='status err';st.textContent="後端寫入失敗,已先存於本地。";}
   }
-  books.unshift(rec);await persistLocal();
+  books.unshift(rec);
   if(!st.classList.contains('err')){
     st.className='status saved';
     st.innerHTML = rec.isbn
