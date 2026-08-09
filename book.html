@@ -323,9 +323,7 @@ function showTab(t){
     document.getElementById('rIsbnStatus').innerHTML='';
     document.getElementById('removeResults').innerHTML='<div class="empty big">請查詢要移除的書籍資料</div>';
   }else if(t==='user'){
-    const q=(document.getElementById('qTitle').value||'').trim();
-    const hasResults=document.getElementById('results').innerHTML.trim()!=='';
-    if(q===''||!hasResults) doResidentSearch();
+    doResidentSearch();
   }
 }
 
