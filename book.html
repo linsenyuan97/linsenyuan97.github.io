@@ -99,8 +99,8 @@
   .loadmask{position:fixed;inset:0;background:rgba(42,38,34,.45);display:flex;align-items:center;justify-content:center;z-index:320}
   .loginbtn{position:relative;background:transparent;border:none;padding:4px;cursor:pointer;color:var(--ink);flex-shrink:0;align-self:center;line-height:0}
   .loginbtn svg{width:30px;height:30px}
-  .login-dot{position:absolute;right:2px;bottom:2px;width:12px;height:12px;border-radius:50%;background:#2e9e5b;border:2px solid var(--paper-2)}
-  .login-dot::after{content:"";position:absolute;left:3px;top:1px;width:3px;height:5px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+  .login-dot{position:absolute;right:0;bottom:0;width:16px;height:16px;border-radius:50%;background:#2e9e5b;border:2px solid var(--paper-2)}
+  .login-dot::after{content:"";position:absolute;left:4px;top:2px;width:4px;height:7px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
   .loginnotice{position:fixed;left:0;right:0;bottom:0;z-index:150;width:100%;text-align:center;font-size:16px;font-weight:600;color:var(--ink);background:#F6EEDD;border-top:1px solid var(--line);padding:14px 16px;box-sizing:border-box}
   .notice-ico{width:18px;height:18px;vertical-align:-4px;margin:0 3px}
   .logoutbtn{width:100%;margin-top:12px;padding:11px;background:transparent;border:1.5px solid var(--stamp);color:var(--stamp);border-radius:6px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
@@ -237,7 +237,7 @@
 
   <!-- 使用者 -->
   <section class="panel on" id="panel-user" role="tabpanel">
-    <div style="margin:8px 0 16px">
+    <div style="margin:16px 0 16px">
       <div class="searchgroup">
         <div class="float"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名或作者 關鍵字查詢</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="doResidentSearch()">查詢</button>
@@ -645,6 +645,7 @@ function applyLoginUI(){
   document.getElementById('loginDot').classList.toggle('hidden',!logged);
   document.getElementById('loginNotice').classList.toggle('hidden',logged);
   document.getElementById('logoutBtn').classList.toggle('hidden',!logged);
+  document.body.style.paddingBottom = logged ? '' : '64px';
 }
 function openLogin(){
   applyLoginUI();
