@@ -67,7 +67,8 @@
   #reader video,#readerRemove video{width:100%!important;display:block}
   #reader img,#readerRemove img{display:none}
   .isbnbadge{font-family:"Courier New",monospace;font-size:18px;letter-spacing:.08em;color:#1a56b8;font-weight:700;display:inline}
-  .book{background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:13px 14px;margin-bottom:11px}
+  .book{position:relative;background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:13px 14px;margin-bottom:11px}
+  .book.borrowed{margin-top:20px}
   .book h3{font-family:Georgia,"Noto Serif TC",serif;font-size:18px;margin:0 0 3px;color:var(--teal)}
   .meta{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:16px;color:#2C221E;line-height:1.7}
   .meta .mval{color:#2C221E}
@@ -75,7 +76,7 @@
   .delbtn{background:var(--stamp);color:#fff;border:none;border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
   .borrowbtn{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
   .delbtn:active,.borrowbtn:active{opacity:.8}
-  .brwtag{display:inline-block;background:#f7e9e7;color:var(--stamp);border:1px solid var(--stamp);border-radius:4px;padding:3px 10px;font-size:14px;font-weight:700;margin:2px 0 10px}
+  .brwtag{position:absolute;top:-12px;left:12px;background:var(--paper-2);color:var(--teal);padding:0 8px;font-size:14px;font-weight:700;letter-spacing:.02em}
   .addr-row{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;margin-top:6px}
   .addr-sel{-webkit-appearance:none;appearance:none;font:inherit;font-size:18px;font-weight:700;color:#1a56b8;padding:9px 26px 9px 12px;border:1.5px solid #4A3F3B;border-radius:8px;background-color:#fffdf7;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234A3F3B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 9px center;text-align:center;text-align-last:center;box-shadow:0 1px 2px rgba(0,0,0,.08)}
   .addr-sel:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 2px rgba(47,107,98,.25)}
@@ -91,10 +92,18 @@
   .dlg-cancel{background:var(--stamp)}
   .dlg-ok{background:var(--teal)}
   .dialog-btns>button:active{opacity:.85}
-  .toast-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:300;pointer-events:none;padding:24px}
-  .toast-box{display:inline-flex;align-items:center;gap:12px;background:var(--teal);color:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.28);padding:20px 30px;font-size:22px;font-weight:700;letter-spacing:.05em;animation:toastPop .25s ease}
+  .toast-overlay{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:300;pointer-events:none}
+  .toast-box{display:flex;align-items:center;justify-content:center;gap:12px;background:var(--teal);color:#fff;width:100%;border-radius:0;box-shadow:0 -4px 16px rgba(0,0,0,.2);padding:20px 24px;font-size:22px;font-weight:700;letter-spacing:.05em;animation:toastUp .25s ease}
   .toast-box svg{width:28px;height:28px;flex-shrink:0}
-  @keyframes toastPop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  @keyframes toastUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+  .loadmask{position:fixed;inset:0;background:rgba(42,38,34,.45);display:flex;align-items:center;justify-content:center;z-index:320}
+  .loginbtn{position:relative;background:transparent;border:none;padding:4px;cursor:pointer;color:var(--ink);flex-shrink:0;align-self:center;line-height:0}
+  .loginbtn svg{width:30px;height:30px}
+  .login-dot{position:absolute;right:2px;bottom:2px;width:12px;height:12px;border-radius:50%;background:#2e9e5b;border:2px solid var(--paper-2)}
+  .login-dot::after{content:"";position:absolute;left:3px;top:1px;width:3px;height:5px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+  .loginnotice{position:fixed;left:0;right:0;bottom:0;z-index:150;width:100%;text-align:center;font-size:16px;font-weight:600;color:var(--ink);background:#F6EEDD;border-top:1px solid var(--line);padding:14px 16px;box-sizing:border-box}
+  .notice-ico{width:18px;height:18px;vertical-align:-4px;margin:0 3px}
+  .logoutbtn{width:100%;margin-top:12px;padding:11px;background:transparent;border:1.5px solid var(--stamp);color:var(--stamp);border-radius:6px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
   .empty.big{font-size:40px;font-weight:700;padding:50px 10px;line-height:1.3}
   .status{font-size:13px;color:var(--teal);margin:0 0 14px;min-height:20px}
   .status:empty{display:none;margin:0;min-height:0}
@@ -120,6 +129,7 @@
 </style>
 </head>
 <body>
+<div class="loginnotice" id="loginNotice">請按右上方<svg class="notice-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6v1H4z"/></svg>登入,才能借閱或歸還書籍。</div>
 <div class="wrap">
   <header>
     <div class="brand">
@@ -135,6 +145,10 @@
       <button class="tab" id="tab-add" role="tab" aria-selected="true" onclick="showTab('add')">新增</button>
       <button class="tab" id="tab-remove" role="tab" aria-selected="false" onclick="showTab('remove')">移除</button>
     </div>
+    <button id="loginBtn" class="loginbtn" onclick="openLogin()" aria-label="登入">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6v1H4z"/></svg>
+      <span class="login-dot hidden" id="loginDot"></span>
+    </button>
   </header>
 
   <!-- 管理員 -->
@@ -223,7 +237,7 @@
 
   <!-- 使用者 -->
   <section class="panel on" id="panel-user" role="tabpanel">
-    <div style="margin-bottom:16px">
+    <div style="margin:8px 0 16px">
       <div class="searchgroup">
         <div class="float"><input type="search" id="qTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();doResidentSearch();}"><label>輸入書名或作者 關鍵字查詢</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="doResidentSearch()">查詢</button>
@@ -235,6 +249,8 @@
 </div>
 
 <!-- 成功提示 toast -->
+<div id="loadMask" class="loadmask hidden"><span class="spin-lg"></span></div>
+
 <div id="toast" class="toast-overlay hidden">
   <div class="toast-box">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
@@ -253,19 +269,20 @@
   </div>
 </div>
 
-<!-- 借閱門牌對話框 -->
-<div id="borrowOverlay" class="overlay hidden" onclick="if(event.target===this)closeBorrowDialog()">
+<!-- 門牌登入對話框 -->
+<div id="loginOverlay" class="overlay hidden" onclick="if(event.target===this)closeLogin()">
   <div class="dialog">
-    <div class="dialog-msg">請選擇借閱門牌</div>
+    <div class="dialog-msg">請選擇您的門牌</div>
     <div class="addr-row">
       <select id="addrHao" class="addr-sel"></select><span class="addr-unit">號</span>
       <select id="addrLou" class="addr-sel"></select><span class="addr-unit">樓之</span>
       <select id="addrZhi" class="addr-sel"></select>
     </div>
     <div class="dialog-btns" style="margin-top:22px">
-      <button class="dlg-cancel" onclick="closeBorrowDialog()">取消</button>
-      <button class="dlg-ok" id="borrowOkBtn">確認</button>
+      <button class="dlg-cancel" onclick="closeLogin()">取消</button>
+      <button class="dlg-ok" onclick="confirmLogin()">確認</button>
     </div>
+    <button id="logoutBtn" class="logoutbtn hidden" onclick="doLogout()">登出</button>
   </div>
 </div>
 
@@ -281,8 +298,10 @@ function bootResident(){
     const isAdmin=/[?&]admin\b/i.test(location.search);
     if(isAdmin){
       document.getElementById('tabsBar').classList.remove('hidden');
+      document.getElementById('loginBtn').classList.add('hidden');
       showTab('add');
     }else{
+      applyLoginUI();
       showTab('user');   // showTab('user') 內部會自動查詢一次
     }
   }catch(e){ try{doResidentSearch();}catch(e2){} }
@@ -582,54 +601,88 @@ function bookCard(b,removable){
     +'建檔日期　<span class="mval">'+esc(fmtDate(b.filedDate))+'</span></div>';
   let h='<div class="book"><h3>'+esc(b.title)+'</h3>';
   if(removable){
+    // 管理員移除頁
     h+='<div class="bookrow">'+meta+'<button class="delbtn" onclick="deleteBook(\''+b.id+'\')">移除</button></div>';
-  }else if(b.borrower){
-    h+='<div class="brwtag">'+esc(b.borrower)+' 借閱中</div>';
-    h+='<div class="bookrow">'+meta+'<button class="delbtn" onclick="returnBook(\''+b.id+'\')">歸還</button></div>';
+    return h+'</div>';
+  }
+  // 住戶檢視
+  const me=myAddr();
+  if(b.borrower){
+    // 借閱中:門牌標籤壓在卡片上緣(綠字)
+    h='<div class="book borrowed"><div class="brwtag">'+esc(b.borrower)+' 借閱中</div><h3>'+esc(b.title)+'</h3>';
+    if(me&&b.borrower===me){
+      h+='<div class="bookrow">'+meta+'<button class="borrowbtn" onclick="returnBook(\''+b.id+'\')">歸還</button></div>';
+    }else{
+      h+=meta;
+    }
   }else{
-    h+='<div class="bookrow">'+meta+'<button class="borrowbtn" onclick="openBorrow(\''+b.id+'\')">借閱</button></div>';
+    // 在架:登入才給借閱鈕;未登入不顯示按鈕
+    if(me){
+      h+='<div class="bookrow">'+meta+'<button class="borrowbtn" onclick="borrowBook(\''+b.id+'\')">借閱</button></div>';
+    }else{
+      h+=meta;
+    }
   }
   return h+'</div>';
 }
-/* ===== 借閱 / 歸還 ===== */
+/* ===== 門牌登入 / 借閱 / 歸還 ===== */
 function initAddrSelects(){
   const hao=[95,97,99], zhi=[1,2,3,5];
   const lou=[];for(let i=2;i<=24;i++)lou.push(i);
   const fill=(id,arr)=>{document.getElementById(id).innerHTML=arr.map(v=>'<option value="'+v+'">'+v+'</option>').join('');};
   fill('addrHao',hao);fill('addrLou',lou);fill('addrZhi',zhi);
-  // 帶入上次選擇
-  try{
-    const s=JSON.parse(localStorage.getItem(ADDR_KEY)||'{}');
+  const s=getLogin();
+  if(s){
     if(s.hao)document.getElementById('addrHao').value=s.hao;
     if(s.lou)document.getElementById('addrLou').value=s.lou;
     if(s.zhi)document.getElementById('addrZhi').value=s.zhi;
-  }catch(e){}
+  }
 }
-function openBorrow(id){
-  const ok=document.getElementById('borrowOkBtn');
-  ok.onclick=()=>{
-    const hao=document.getElementById('addrHao').value;
-    const lou=document.getElementById('addrLou').value;
-    const zhi=document.getElementById('addrZhi').value;
-    try{localStorage.setItem(ADDR_KEY,JSON.stringify({hao,lou,zhi}));}catch(e){}
-    const addr=hao+'號'+lou+'樓之'+zhi;
-    closeBorrowDialog();doBorrow(id,addr);
-  };
-  document.getElementById('borrowOverlay').classList.remove('hidden');
+function getLogin(){try{const s=JSON.parse(localStorage.getItem(ADDR_KEY)||'null');return (s&&s.hao)?s:null;}catch(e){return null;}}
+function myAddr(){const s=getLogin();return s?(s.hao+'號'+s.lou+'樓之'+s.zhi):'';}
+function applyLoginUI(){
+  const logged=!!getLogin();
+  document.getElementById('loginDot').classList.toggle('hidden',!logged);
+  document.getElementById('loginNotice').classList.toggle('hidden',logged);
+  document.getElementById('logoutBtn').classList.toggle('hidden',!logged);
 }
-function closeBorrowDialog(){document.getElementById('borrowOverlay').classList.add('hidden');}
-async function doBorrow(id,addr){
+function openLogin(){
+  applyLoginUI();
+  document.getElementById('loginOverlay').classList.remove('hidden');
+}
+function closeLogin(){document.getElementById('loginOverlay').classList.add('hidden');}
+function confirmLogin(){
+  const hao=document.getElementById('addrHao').value;
+  const lou=document.getElementById('addrLou').value;
+  const zhi=document.getElementById('addrZhi').value;
+  try{localStorage.setItem(ADDR_KEY,JSON.stringify({hao,lou,zhi}));}catch(e){}
+  closeLogin();applyLoginUI();
+  if(document.getElementById('panel-user').classList.contains('on')) doResidentSearch();
+}
+function doLogout(){
+  try{localStorage.removeItem(ADDR_KEY);}catch(e){}
+  closeLogin();applyLoginUI();
+  if(document.getElementById('panel-user').classList.contains('on')) doResidentSearch();
+}
+async function borrowBook(id){
+  const addr=myAddr();if(!addr){openLogin();return;}
+  showMask();
   if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"borrow",id:id,borrower:addr})});}catch(e){}}
   const bk=books.find(x=>x.id===id);if(bk)bk.borrower=addr;
   replaceCard(id);
+  hideMask();
   showToast('借閱成功');
 }
 async function returnBook(id){
+  showMask();
   if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"return",id:id})});}catch(e){}}
   const bk=books.find(x=>x.id===id);if(bk)bk.borrower='';
   replaceCard(id);
+  hideMask();
   showToast('歸還成功');
 }
+function showMask(){document.getElementById('loadMask').classList.remove('hidden');}
+function hideMask(){document.getElementById('loadMask').classList.add('hidden');}
 // 只重繪指定 id 的那一張卡片,畫面不跳動
 function replaceCard(id){
   const bk=books.find(x=>x.id===id);if(!bk)return;
