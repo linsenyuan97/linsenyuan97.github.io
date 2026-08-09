@@ -268,13 +268,14 @@ const KEY_BOOKS="books-all";
 let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vqr17UZRl3knAVh0HaDWz5MniwE26oXWtz7yRaVK1fqR1wP1dRgmw/exec";
 
 (async function init(){
-  initAddrSelects();
+  try{initAddrSelects();}catch(e){}
   const isAdmin=/[?&]admin\b/i.test(location.search);
   if(isAdmin){
     document.getElementById('tabsBar').classList.remove('hidden');
     showTab('add');
   }else{
     showTab('user');
+    doResidentSearch();   // 保險:一定觸發一次
   }
 })();
 
