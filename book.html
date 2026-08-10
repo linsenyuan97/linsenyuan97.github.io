@@ -330,7 +330,20 @@ function showToast(msg){
   document.getElementById('toastText').textContent=msg;
   t.classList.remove('hidden');
   if(toastTimer)clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>{t.classList.add('hidden');},5000);
+  const hide=()=>{
+    t.classList.add('hidden');
+    if(toastTimer)clearTimeout(toastTimer);
+    window.removeEventListener('scroll',hide);
+    window.removeEventListener('touchstart',hide);
+    window.removeEventListener('click',hide);
+  };
+  // 點擊或滑動就立即消失(延遲掛載,避免觸發當下那次操作)
+  setTimeout(()=>{
+    window.addEventListener('scroll',hide,{passive:true});
+    window.addEventListener('touchstart',hide,{passive:true});
+    window.addEventListener('click',hide);
+  },50);
+  toastTimer=setTimeout(hide,5000);
 }
 
 /* ===== 資料讀取(後端) ===== */
@@ -610,9 +623,10 @@ function bookCard(b,removable){
   // 住戶檢視
   const me=myAddr();
   if(b.borrower){
-    // 借閱中:門牌標籤壓在卡片上緣(綠字)
-    h='<div class="book borrowed"><div class="brwtag">'+esc(b.borrower)+' 借閱中</div><h3>'+esc(b.title)+'</h3>';
-    if(me&&b.borrower===me){
+    // 借閱中:本人顯示「你已借閱」,其他/未登入顯示「已借出」
+    const isMine=(me&&b.borrower===me);
+    h='<div class="book borrowed"><div class="brwtag">'+(isMine?'你已借閱':'已借出')+'</div><h3>'+esc(b.title)+'</h3>';
+    if(isMine){
       h+='<div class="bookrow">'+meta+'<button class="returnbtn" onclick="returnBook(\''+b.id+'\')">歸還</button></div>';
     }else{
       h+=meta;
