@@ -301,6 +301,8 @@ function bootResident(){
     if(isAdmin){
       document.getElementById('tabsBar').classList.remove('hidden');
       document.getElementById('loginBtn').classList.add('hidden');
+      document.getElementById('loginNotice').classList.add('hidden');
+      document.body.style.paddingBottom='';
       showTab('add');
     }else{
       applyLoginUI();
