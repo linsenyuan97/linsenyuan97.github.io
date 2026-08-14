@@ -99,10 +99,12 @@
   .toast-box svg{width:28px;height:28px;flex-shrink:0}
   @keyframes toastUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
   .loadmask{position:fixed;inset:0;background:rgba(42,38,34,.45);display:flex;align-items:center;justify-content:center;z-index:320}
-  .loginbtn{position:relative;background:transparent;border:none;padding:4px;cursor:pointer;color:var(--ink);flex-shrink:0;align-self:center;line-height:0}
-  .loginbtn svg{width:36px;height:36px;display:block}
-  .login-dot{position:absolute;right:2px;bottom:4px;width:16px;height:16px;border-radius:50%;background:#2e9e5b;border:2px solid var(--paper-2)}
-  .login-dot::after{content:"";position:absolute;left:4px;top:2px;width:4px;height:7px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .loginbtn{display:flex;align-items:center;gap:6px;background:transparent;border:1.5px solid var(--line);border-radius:20px;padding:5px 12px 5px 8px;cursor:pointer;color:var(--ink);flex-shrink:0;align-self:center}
+  .login-ico{position:relative;line-height:0}
+  .loginbtn svg{width:26px;height:26px;display:block}
+  .login-label{font:inherit;font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .login-dot{position:absolute;right:-2px;bottom:-1px;width:14px;height:14px;border-radius:50%;background:#2e9e5b;border:2px solid var(--paper-2)}
+  .login-dot::after{content:"";position:absolute;left:3.5px;top:1.5px;width:3px;height:6px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
   .loginnotice{position:fixed;left:0;right:0;bottom:0;z-index:150;width:100%;text-align:center;font-size:16px;font-weight:600;color:var(--ink);background:#F6EEDD;border-top:1px solid var(--line);padding:13px 5px;box-sizing:border-box;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .notice-ico{width:18px;height:18px;vertical-align:-4px;margin:0 3px}
   .logoutbtn{width:100%;margin-top:12px;padding:11px;background:transparent;border:1.5px solid var(--stamp);color:var(--stamp);border-radius:6px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
@@ -148,8 +150,11 @@
       <button class="tab" id="tab-remove" role="tab" aria-selected="false" onclick="showTab('remove')">移除</button>
     </div>
     <button id="loginBtn" class="loginbtn" onclick="openLogin()" aria-label="登入">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6v1H4z"/></svg>
-      <span class="login-dot hidden" id="loginDot"></span>
+      <span class="login-ico">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6v1H4z"/></svg>
+        <span class="login-dot hidden" id="loginDot"></span>
+      </span>
+      <span class="login-label" id="loginLabel">未登入</span>
     </button>
   </header>
 
@@ -658,11 +663,13 @@ function initAddrSelects(){
 }
 function getLogin(){try{const s=JSON.parse(localStorage.getItem(ADDR_KEY)||'null');return (s&&s.hao)?s:null;}catch(e){return null;}}
 function myAddr(){const s=getLogin();return s?(s.hao+'號'+s.lou+'樓之'+s.zhi):'';}
+function myAddrShort(){const s=getLogin();return s?(s.hao+'-'+s.lou+'F'+s.zhi):'';}
 function applyLoginUI(){
   const logged=!!getLogin();
   document.getElementById('loginDot').classList.toggle('hidden',!logged);
   document.getElementById('loginNotice').classList.toggle('hidden',logged);
   document.getElementById('logoutBtn').classList.toggle('hidden',!logged);
+  document.getElementById('loginLabel').textContent = logged ? myAddrShort() : '未登入';
   document.body.style.paddingBottom = logged ? '' : '64px';
 }
 function openLogin(){
