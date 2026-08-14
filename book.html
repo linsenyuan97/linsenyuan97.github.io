@@ -677,18 +677,30 @@ function openLogin(){
   document.getElementById('loginOverlay').classList.remove('hidden');
 }
 function closeLogin(){document.getElementById('loginOverlay').classList.add('hidden');}
+function renderCurrent(){
+  // 用現有資料就地重繪(不重新抓後端、保留捲動位置)
+  const el=document.getElementById('results');
+  if(!el)return;
+  const y=window.scrollY;
+  const q=(document.getElementById('qTitle').value||'');
+  const list=books.filter(kwPredicate(q));
+  el.innerHTML=list.length?list.map(b=>bookCard(b,false)).join(''):'<div class="empty big">沒有符合的書籍</div>';
+  window.scrollTo(0,y);
+}
 function confirmLogin(){
   const hao=document.getElementById('addrHao').value;
   const lou=document.getElementById('addrLou').value;
   const zhi=document.getElementById('addrZhi').value;
   try{localStorage.setItem(ADDR_KEY,JSON.stringify({hao,lou,zhi}));}catch(e){}
   closeLogin();applyLoginUI();
-  if(document.getElementById('panel-user').classList.contains('on')) doResidentSearch();
+  if(document.getElementById('panel-user').classList.contains('on')) renderCurrent();
+  showToast('歡迎！'+hao+'號'+lou+'樓之'+zhi);
 }
 function doLogout(){
   try{localStorage.removeItem(ADDR_KEY);}catch(e){}
   closeLogin();applyLoginUI();
-  if(document.getElementById('panel-user').classList.contains('on')) doResidentSearch();
+  if(document.getElementById('panel-user').classList.contains('on')) renderCurrent();
+  showToast('已登出');
 }
 async function borrowBook(id){
   const addr=myAddr();if(!addr){openLogin();return;}
