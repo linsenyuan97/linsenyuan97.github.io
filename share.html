@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>林森苑好物分享</title>
+<meta name="theme-color" content="#0ABAB5">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230ABAB5'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' transform='translate(4 4)'%3E%3Crect x='4.5' y='11' width='15' height='8.6' rx='1.3'/%3E%3Cpath d='M12 11v8.6'/%3E%3Cpath d='M12 11C8.6 8.4 8.2 6.4 9.6 5.4C10.5 4.8 11.5 5.1 12 6C12.5 5.1 13.5 4.8 14.4 5.4C15.8 6.4 15.4 8.4 12 11Z'/%3E%3C/g%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="好物分享">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tiffany:#0ABAB5; --tiffany-dark:#078B87; --tiffany-light:#E0F7F6; --tiffany-mid:#5DD4CF;
+  --coral:#E05B5B; --coral-dark:#C44A4A; --coral-light:#FDECEC;
+  --green:#16A34A; --green-light:#E5F6EC;
+  --amber:#D97706; --amber-light:#FBF0DF;
+  --slate:#64748B; --slate-light:#EEF1F5;
+  --ink:#1A2B2B; --ink-soft:#5F7B7B; --ink-muted:#94ABAB;
+  --surface:#fff; --bg:#F0F8F8; --line:#DCE8E8;
+  --radius:16px; --radius-sm:11px;
+  --shadow-card:0 4px 18px rgba(10,186,181,.11);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  color:var(--ink);background:var(--bg);-webkit-tap-highlight-color:transparent;min-height:100dvh;
+}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+/* ===== Header ===== */
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.header-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:58px;gap:12px;padding:0 16px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.back-btn{background:none;border:none;width:34px;height:34px;border-radius:50%;display:none;align-items:center;justify-content:center;color:var(--ink);flex-shrink:0}
+.back-btn svg{width:22px;height:22px}
+.brand-icon{width:34px;height:34px;background:var(--tiffany);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-icon svg{width:19px;height:19px;color:#fff}
+.brand-text{font-size:17px;font-weight:900;line-height:1.1}
+/* ===== Login UI (Same as book.html) ===== */
+.loginbtn{display:flex;align-items:center;gap:6px;background:transparent;border:1.5px solid var(--line);border-radius:20px;padding:5px 12px 5px 8px;cursor:pointer;color:var(--ink);flex-shrink:0;align-self:center}
+.login-ico{position:relative;line-height:0}
+.loginbtn svg{width:24px;height:24px;display:block}
+.login-label{font:inherit;font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap}
+.login-dot{position:absolute;right:-2px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#2e9e5b;border:2px solid #fff}
+.login-dot::after{content:"";position:absolute;left:3px;top:1px;width:3px;height:6px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.logoutbtn{width:100%;margin-top:12px;padding:11px;background:transparent;border:1.5px solid var(--coral);color:var(--coral);border-radius:8px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+
+/* ===== Layout ===== */
+.wrap{max-width:640px;margin:0 auto;padding:0 16px 120px}
+.page{display:none}
+.page.on{display:block;animation:fade .2s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+
+/* ===== Search Group (book.html Style 8:2) ===== */
+.searchgroup{display:flex;width:100%;align-items:stretch}
+.searchgroup .float{flex:1;margin:0}
+.searchgroup .float>input{border:1.5px solid var(--tiffany);border-radius:8px 0 0 8px !important;border-right:none !important;height:100%}
+.searchgroup .float>input:focus{outline:none;border-color:var(--tiffany-dark);box-shadow:none}
+.searchgroup button{border:1.5px solid var(--tiffany);border-left:none;border-radius:0 8px 8px 0 !important}
+button.act{padding:14px;background:var(--tiffany);color:#fff;font:inherit;font-weight:700;font-size:18px;cursor:pointer}
+button.tealbtn{background:var(--tiffany);color:#fff}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{font-size:13px;font-weight:700;padding:7px 13px;border-radius:100px;background:#fff;border:1.5px solid var(--line);color:var(--ink-soft);white-space:nowrap}
+.chip.on{background:var(--tiffany);border-color:var(--tiffany);color:#fff}
+.sortline{display:flex;align-items:center;justify-content:space-between;margin:16px 0 12px}
+.sortline h2{font-size:14px;font-weight:700;color:var(--ink-soft);margin:0;letter-spacing:.05em}
+.sort-btn{background:none;border:none;font-size:13px;font-weight:700;color:var(--tiffany-dark);display:flex;align-items:center;gap:3px}
+.sort-btn svg{width:14px;height:14px}
+
+/* ===== Card (book.html Layout Style) ===== */
+.card{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow-card);margin-bottom:14px;border:1px solid var(--line);border-left:4px solid var(--tiffany);transition:transform .12s;position:relative}
+.card.claimed-card{margin-top:20px}
+.card:active{transform:scale(.99)}
+.card-tap{display:flex;gap:14px;padding:16px;align-items:center;cursor:pointer;border-radius:var(--radius-sm);overflow:hidden}
+.thumb{width:88px;height:88px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--tiffany-light);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.thumb svg{width:32px;height:32px;color:var(--tiffany-mid)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.info{flex:1;min-width:0}
+.iname{font-size:18px;font-weight:700;margin:0 0 5px;color:var(--tiffany-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.idesc{font-size:14px;color:var(--ink-soft);line-height:1.45;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.donor{font-size:13px;color:var(--ink-muted);font-weight:500}
+
+/* 左上角標籤 (book.html 風格) */
+.card-top-tag{position:absolute;top:-12px;left:14px;background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;z-index:5;line-height:1.2}
+
+/* 右側按鈕區域 (book.html 風格) */
+.card-right-btn{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.btn-action-right{height:48px;padding:0 14px;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:normal;text-align:center;line-height:1.2}
+.btn-action-right.claim{background:var(--tiffany);color:#fff;border:1.5px solid var(--tiffany)}
+.btn-action-right.cancel{background:#fff;color:var(--coral);border:1.5px solid var(--coral)}
+.btn-action-right:active{opacity:.85}
+
+/* ===== Detail ===== */
+.hero{width:100%;height:210px;border-radius:15px;background:var(--tiffany-light);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px}
+.hero svg{width:52px;height:52px;color:var(--tiffany-mid)}
+.hero img{width:100%;height:100%;object-fit:cover}
+.thumb-strip{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.thumb-strip::-webkit-scrollbar{display:none}
+.thumb-strip img,.thumb-strip .ph{width:56px;height:56px;border-radius:9px;object-fit:cover;flex-shrink:0;background:var(--tiffany-light);border:1.5px solid var(--line)}
+.dtitle{font-size:22px;font-weight:900;margin:0 0 10px}
+.ddesc{font-size:14px;color:var(--ink-soft);line-height:1.65;margin:0 0 16px}
+.dfield{display:flex;justify-content:space-between;font-size:13px;padding:11px 0;border-bottom:1px solid var(--line)}
+.dfield .k{color:var(--ink-muted)}
+.dfield .v{font-weight:700}
+.queue-box{background:var(--amber-light);border-radius:12px;padding:13px 15px;margin:16px 0;display:flex;align-items:center;gap:11px}
+.queue-box.calm{background:var(--green-light)}
+.queue-box svg{width:22px;height:22px;color:var(--amber);flex-shrink:0}
+.queue-box.calm svg{color:var(--green)}
+.queue-box .qt{font-size:13px;font-weight:700;color:var(--amber)}
+.queue-box.calm .qt{color:var(--green)}
+.queue-box .qs{font-size:11px;color:#A9721F}
+.queue-box.calm .qs{color:#3d8259}
+
+/* ===== Status Pill ===== */
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap}
+.pill.avail{background:var(--tiffany-light);color:var(--tiffany-dark)}
+.pill.wait{background:var(--amber-light);color:var(--amber)}
+.pill.gone{background:var(--slate-light);color:var(--slate)}
+.pill.notified{background:var(--tiffany-light);color:var(--tiffany-dark)}
+
+
+/* ===== Buttons ===== */
+.cta-bar{position:fixed;bottom:0;left:0;right:0;z-index:40;background:#fff;border-top:1px solid var(--line);padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center}
+.cta{width:100%;max-width:608px;background:var(--tiffany);color:#fff;font-size:16px;font-weight:900;border:none;border-radius:13px;padding:15px;display:flex;align-items:center;justify-content:center;gap:8px}
+.cta:disabled{background:var(--slate-light);color:var(--slate)}
+.cta svg{width:19px;height:19px}
+.btn-row{display:flex;gap:8px;padding:0 13px 13px}
+.btn{font-size:13px;font-weight:700;border:none;border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn svg{width:15px;height:15px}
+.btn.primary{background:var(--tiffany);color:#fff;flex:6}
+.btn.ghost{background:var(--tiffany-light);color:var(--tiffany-dark);flex:6}
+.btn.danger{background:var(--coral-light);color:var(--coral);flex:4;width:auto}
+
+/* ===== FAB ===== */
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:45;background:var(--tiffany);color:#fff;border:none;border-radius:100px;padding:14px 22px;font-size:15px;font-weight:900;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(10,186,181,.45)}
+.fab svg{width:20px;height:20px}
+
+/* ===== Bottom Tab Bar & Raised FAB ===== */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:44;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1.5px solid var(--line);display:flex;padding:10px 4px calc(6px + env(safe-area-inset-bottom,0px));overflow:visible}
+.tab{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:700;color:var(--ink-muted);padding:0;position:relative}
+.tab svg{width:22px;height:22px}
+.tab.on{color:var(--tiffany-dark)}
+.tab .badge{position:absolute;transform:translate(14px,-4px);min-width:16px;height:16px;background:var(--coral);color:#fff;border-radius:100px;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 4px;border:1.5px solid #fff}
+
+/* 中間凸起圓圈樣式：調整 top 為 -34px，讓上邊線剛好裁切在圓圈正中間 */
+.tab.nav-add{position:relative;top:-34px;margin-bottom:-24px}
+.nav-add-btn{width:50px;height:50px;border-radius:50%;background:var(--tiffany);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(10,186,181,.45);border:3px solid #fff;transition:transform .15s}
+.tab.nav-add:active .nav-add-btn{transform:scale(.92)}
+.nav-add-btn svg{width:26px;height:26px;color:#fff}
+
+.subtabs{display:flex;gap:6px;background:#e2e8f0;border-radius:12px;padding:4px;margin:14px 0}
+.subtab{flex:1;background:none;border:none;text-align:center;font-size:14px;font-weight:700;padding:10px 8px;border-radius:9px;color:var(--ink-muted);position:relative;cursor:pointer;transition:all .15s ease}
+.subtab.on{background:#fff;color:var(--tiffany-dark);font-weight:900;box-shadow:0 2px 8px rgba(7,139,135,.18);border-bottom:3px solid var(--tiffany)}
+.subtab-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;background:var(--coral);color:#fff;border-radius:100px;font-size:9px;font-weight:900;padding:0 4px;border:1.5px solid #fff;margin-left:4px;vertical-align:middle;box-shadow:0 1px 3px rgba(224,91,91,.3)}
+
+/* ===== Tracking row ===== */
+.trow{background:#fff;border-radius:13px;padding:11px;margin-bottom:10px;display:flex;gap:11px;align-items:center;box-shadow:var(--shadow-card);cursor:pointer}
+.trow .tthumb{width:54px;height:54px;border-radius:10px;flex-shrink:0;background:var(--tiffany-light);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.trow .tthumb svg{width:24px;height:24px;color:var(--tiffany-mid)}
+.trow .tthumb img{width:100%;height:100%;object-fit:cover}
+.trow .tt{flex:1;min-width:0}
+.trow .tn{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .tsub{font-size:11px;color:var(--ink-muted)}
+
+/* ===== Claimant list (owner) ===== */
+.claim-list{background:var(--bg);border-radius:11px;margin:0 13px 12px;padding:2px 12px}
+.crow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.crow:last-child{border:none}
+.qnum{width:24px;height:24px;border-radius:50%;background:var(--tiffany-light);color:var(--tiffany-dark);font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.crow .cn{flex:1;font-size:13px;font-weight:700}
+.crow .cc{font-size:11px;color:var(--ink-muted)}
+.mini-btn{font-size:11px;font-weight:700;border:none;border-radius:8px;padding:6px 10px;background:var(--tiffany-light);color:var(--tiffany-dark)}
+.mini-btn.done{background:var(--green-light);color:var(--green)}
+
+/* ===== Form & Floating Label (Same as book.html) ===== */
+.page-title{font-size:20px;font-weight:900;margin:16px 0 18px}
+.form-section{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:18px 16px;margin-bottom:20px;box-shadow:var(--shadow-card);position:relative}
+.form-section.sec{padding-top:24px}
+.sechead{position:absolute;top:-12px;left:14px;display:flex;align-items:center;gap:6px;background:#fff;padding:0 8px;font-size:14px;font-weight:700;color:var(--tiffany-dark)}
+.sechead svg{width:16px;height:16px;color:var(--tiffany-dark);flex-shrink:0}
+
+.float{position:relative;display:flex;margin:16px 0 4px}
+.float>input,.float>textarea{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:14px 12px;font:inherit;font-size:16px;color:var(--ink);outline:none;transition:border-color .15s}
+.float>textarea{resize:none;line-height:1.45;min-height:80px}
+.float>label{position:absolute;left:12px;top:14px;color:var(--ink-soft);font-family:inherit;font-size:15px;font-weight:400;pointer-events:none;transition:all .15s ease;background:transparent;padding:0 5px}
+/* 有內容或聚焦時, label 上浮到框線上 */
+.float>input:focus+label,.float>input:not(:placeholder-shown)+label,
+.float>textarea:focus+label,.float>textarea:not(:placeholder-shown)+label{top:-11px;font-size:13px;font-weight:700;color:var(--tiffany-dark);background:#fff}
+.float>input:focus,.float>textarea:focus{border-color:var(--tiffany);box-shadow:0 0 0 3px rgba(10,186,181,.12)}
+.float>input.err,.float>textarea.err{border-color:var(--coral) !important;box-shadow:0 0 0 3px rgba(234,84,85,.15) !important}
+.float>input.err+label,.float>textarea.err+label{color:var(--coral) !important}
+.addr-row{display:flex;align-items:center;gap:6px}
+.addr-sel{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 8px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);outline:none}
+.addr-unit{font-size:13px;font-weight:700;color:var(--ink-soft)}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px}
+.photo-slot{aspect-ratio:1;border-radius:10px;border:1.5px dashed var(--tiffany-mid);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--tiffany-mid);background:var(--tiffany-light);position:relative;overflow:hidden}
+.photo-slot svg{width:17px;height:17px}
+.photo-slot span{font-size:9px;font-weight:700}
+.photo-slot.has-photo{border:none}
+.photo-slot.has-photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.rm-photo{position:absolute;top:3px;right:3px;width:19px;height:19px;background:var(--coral);color:#fff;border:1.5px solid #fff;border-radius:50%;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;z-index:2}
+.photo-count{font-size:11px;color:var(--ink-muted);text-align:right}
+#photoInput{display:none}
+
+/* ===== Empty ===== */
+.empty{text-align:center;padding:56px 20px}
+.empty-icon{width:64px;height:64px;background:var(--tiffany-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.empty-icon svg{width:28px;height:28px;color:var(--tiffany)}
+.empty h3{font-size:17px;font-weight:700;margin:0 0 6px}
+.empty p{font-size:14px;color:var(--ink-soft);margin:0;line-height:1.6}
+
+/* ===== Overlay / Sheet / Loading Mask ===== */
+.loadmask{position:fixed;inset:0;background:rgba(42,38,34,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:320;gap:12px;color:#fff;font-size:16px;font-weight:700}
+.spin-ico{width:48px;height:48px;-webkit-animation:spin 0.9s linear infinite;animation:spin 0.9s linear infinite}
+.inline-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 16px;gap:10px;color:var(--ink-muted);font-size:14px;font-weight:600}
+.inline-loading svg{width:40px;height:40px;-webkit-animation:spin 0.9s linear infinite;animation:spin 0.9s linear infinite;color:var(--tiffany-mid);transform-origin:center center;-webkit-transform-origin:center center}
+@-webkit-keyframes spin{0%{-webkit-transform:rotate(0deg)}100%{-webkit-transform:rotate(360deg)}}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(12,27,27,.5);display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+.sheet{background:#fff;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:12px 18px calc(18px + env(safe-area-inset-bottom,0px));animation:slideup .25s cubic-bezier(.2,.9,.3,1)}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:none}}
+.grab{width:38px;height:4px;background:var(--line);border-radius:100px;margin:0 auto 16px}
+.dhead{display:flex;gap:11px;align-items:center;margin-bottom:16px}
+.dicon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dicon svg{width:22px;height:22px}
+.dicon.teal{background:var(--tiffany-light);color:var(--tiffany-dark)}
+.dicon.coral{background:var(--coral-light);color:var(--coral)}
+.dhead .dt{font-size:18px;font-weight:900}
+.dhead .ds{font-size:12px;color:var(--ink-soft)}
+.note{font-size:12px;color:var(--ink-soft);line-height:1.6;background:var(--tiffany-light);border-radius:10px;padding:11px 13px;margin-bottom:14px}
+.note b{color:var(--tiffany-dark)}
+.note.warn{background:var(--coral-light);color:#B54545}
+.note.warn b{color:var(--coral-dark)}
+.dbtns{display:flex;gap:10px;margin-top:16px}
+.dbtn{flex:1;font-size:15px;font-weight:900;border:none;border-radius:12px;padding:14px}
+.dbtn.cancel{background:var(--slate-light);color:var(--slate);flex:0 0 34%}
+.dbtn.go{background:var(--tiffany);color:#fff}
+.dbtn.rm{background:var(--coral);color:#fff}
+
+/* ===== Success sheet ===== */
+.succ{text-align:center;padding:8px 6px 4px}
+.succ .ring{width:80px;height:80px;border-radius:50%;background:var(--tiffany);display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.succ .ring svg{width:38px;height:38px;color:#fff}
+.succ h2{font-size:21px;font-weight:900;margin:0 0 10px}
+.succ p{font-size:13px;color:var(--ink-soft);line-height:1.6;margin:0 0 14px}
+.succ .qbadge{display:inline-block;background:var(--amber-light);color:var(--amber);font-weight:900;font-size:14px;padding:8px 18px;border-radius:100px;margin-bottom:20px}
+
+/* ===== Toast (Full-width semi-transparent like book.html) ===== */
+.toast-overlay{position:fixed;left:0;right:0;bottom:0;z-index:300;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.toast-box{display:flex;align-items:center;justify-content:center;gap:12px;background:rgba(47,107,98,.75);backdrop-filter:blur(4px);color:#fff;width:100%;border-radius:0;box-shadow:0 -4px 16px rgba(0,0,0,.2);padding:18px 24px;font-size:22px;font-weight:700;letter-spacing:.05em;animation:toastUp .25s ease}
+.toast-box svg{width:28px;height:28px;flex-shrink:0}
+@keyframes toastUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <button class="back-btn" id="backBtn" onclick="goBack()" aria-label="返回"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+      <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="11" width="15" height="8.6" rx="1.3"/><path d="M12 11v8.6"/><path d="M12 11C8.6 8.4 8.2 6.4 9.6 5.4C10.5 4.8 11.5 5.1 12 6C12.5 5.1 13.5 4.8 14.4 5.4C15.8 6.4 15.4 8.4 12 11Z"/></svg></div>
+      <div><div class="brand-text" id="hTitle">林森苑好物分享</div></div>
+    </div>
+    <button id="loginBtn" class="loginbtn" onclick="openLogin()" aria-label="登入">
+      <span class="login-ico">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6v1H4z"/></svg>
+        <span class="login-dot hidden" id="loginDot"></span>
+      </span>
+      <span class="login-label" id="loginLabel">未登入</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ===== LIST ===== -->
+  <section class="page on" id="pageList">
+    <div style="margin:16px 0 14px">
+      <div class="searchgroup">
+        <div class="float"><input type="search" id="searchInput" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();performSearch(true);}"><label>輸入物品名稱關鍵字查詢</label></div>
+        <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center;border-radius:0 8px 8px 0" onclick="performSearch(true)">查詢</button>
+      </div>
+    </div>
+    <div class="sortline" style="margin-top:14px"><h2 id="listHeading">目前有 4 件</h2><button class="sort-btn" id="sortBtn" onclick="toggleSort()">最新<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></button></div>
+    <div id="itemList"></div>
+  </section>
+
+  <!-- ===== DETAIL ===== -->
+  <section class="page" id="pageDetail"></section>
+
+  <!-- ===== MY RECORDS ===== -->
+  <section class="page" id="pageRecords">
+    <div class="subtabs" style="margin-top:14px">
+      <button class="subtab on" id="subtabDonations" onclick="switchRecordTab('donations')">刊登物品</button>
+      <button class="subtab" id="subtabClaims" onclick="switchRecordTab('claims')">登記索取</button>
+      <button class="subtab" id="subtabMessages" onclick="switchRecordTab('messages')">我的訊息<span class="subtab-badge hidden" id="msgBadge"></span></button>
+    </div>
+    <div id="recordsContent"></div>
+  </section>
+
+</div>
+
+<!-- 全局 Loading 灰底遮罩 (Same as book.html) -->
+<div id="loadMask" class="loadmask hidden">
+  <svg class="spin-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+  <span>處理中…</span>
+</div>
+
+<!-- CTA bar (detail / donate) -->
+<div class="cta-bar hidden" id="ctaBar"><button class="cta" id="ctaBtn"></button></div>
+
+<!-- Bottom tab bar -->
+<nav class="tabbar" id="tabbar">
+  <button class="tab on" data-tab="list" onclick="goSearchPage()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <span>搜尋</span>
+  </button>
+  <button class="tab nav-add" data-tab="donate" onclick="openDonateSheet()">
+    <div class="nav-add-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    </div>
+    <span>刊登</span>
+  </button>
+  <button class="tab" data-tab="records" onclick="goRecordPage(true)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <span>記錄</span>
+    <span class="badge hidden" id="claimsBadge"></span>
+  </button>
+</nav>
+
+<!-- Overlays injected here -->
+<div id="overlayHost"></div>
+
+<!-- Toast (book.html 滿版半透明風格) -->
+<div id="toast" class="toast-overlay hidden"><div class="toast-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span id="toastText">成功</span></div></div>
+
+<script>
+/* ============================================================
+   林森苑物品分享 — 前端原型（資料在記憶體 / localStorage）
+   後端接點都集中在 notify() 與「TODO: 接 GAS」註解處。
+   ============================================================ */
+
+/* --- 社區設定（White 依實際情況調整）--- */
+const HAO_LIST = [95, 97, 99];          // 門牌「號」
+const LOU_RANGE = [2, 24];              // 「樓」範圍
+const ZHI_LIST = [1, 2, 3, 5];          // 「之」
+const DONG_MAP = {95:'A', 97:'B', 99:'C'}; // 號 → 對外顯示的「棟」（不露完整門牌）
+const ADDR_KEY = 'ls-share-addr';
+
+/* --- 狀態 --- */
+let items = [];
+let ui = { sort:'new', detailId:null, prevTab:'list' };
+let uploadedPhotos = [];
+let toastTimer = null;
+let dataLoaded = false;
+
+function showMask(msg){
+  const mask = document.getElementById('loadMask');
+  if(msg) mask.querySelector('span').textContent = msg;
+  mask.classList.remove('hidden');
+}
+function hideMask(){
+  document.getElementById('loadMask').classList.add('hidden');
+}
+
+/* ============================================================
+   身份 / 門牌
+   ============================================================ */
+function getLogin(){ try{ const s=JSON.parse(localStorage.getItem(ADDR_KEY)||'null'); return (s&&s.hao)?s:null; }catch(e){ return null; } }
+function setLogin(a){ try{ localStorage.setItem(ADDR_KEY, JSON.stringify(a)); }catch(e){} }
+function clearLogin(){ try{ localStorage.removeItem(ADDR_KEY); }catch(e){} }
+function me(){ return getLogin(); }
+function sameAddr(a,b){ return a&&b && a.hao==b.hao && a.lou==b.lou && a.zhi==b.zhi; }
+function fullAddr(a){ return a ? `${a.hao}號${a.lou}樓之${a.zhi}` : ''; }
+function dongLabel(a){ return a ? `${DONG_MAP[a.hao]||a.hao} 棟住戶` : ''; } // 對外顯示
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+const PAGES = ['list','detail','records'];
+let currentRecordSubtab = 'donations';
+
+function go(page, opts){
+  opts = opts || {};
+  if(page==='records' && !me()){ openLogin(); return; }
+  PAGES.forEach(p=>{
+    const el = document.getElementById('page'+cap(p));
+    if(el) el.classList.toggle('on', p===page);
+  });
+  // header
+  const isSub = (page==='detail');
+  document.getElementById('backBtn').style.display = isSub ? 'flex' : 'none';
+  document.getElementById('hTitle').textContent = page==='detail' ? '物品詳情' : '林森苑好物分享';
+  // tabbar highlight
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===page));
+  // tabbar / cta visibility
+  document.getElementById('tabbar').classList.toggle('hidden', isSub);
+  const showCta = (page==='detail');
+  document.getElementById('ctaBar').classList.toggle('hidden', !showCta);
+  // render
+  if(page==='list') renderList();
+  if(page==='records') renderRecords();
+  refreshBadges();
+  if(!isSub) ui.prevTab = page;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function goBack(){ go(ui.prevTab||'list'); }
+function goSearchPage(){
+  go('list');
+  loadBooksData();
+}
+function performSearch(forceReload){
+  renderList();
+  if(forceReload) loadBooksData();
+}
+function goRecordPage(forceReload){
+  if(!me()){ openLogin(); return; }
+  switchRecordTab(currentRecordSubtab || 'donations');
+  go('records');
+  if(forceReload) loadBooksData();
+}
+function switchRecordTab(tab){
+  currentRecordSubtab = tab;
+  document.getElementById('subtabDonations').classList.toggle('on', tab==='donations');
+  document.getElementById('subtabClaims').classList.toggle('on', tab==='claims');
+  document.getElementById('subtabMessages').classList.toggle('on', tab==='messages');
+  renderRecords();
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+/* ============================================================
+   List
+   ============================================================ */
+function statusOf(it){
+  if(it.status==='given') return {cls:'gone', label:'已送出'};
+  return {cls:'wait', label:`目前 ${it.claims.length} 人登記索取`};
+}
+function toggleSort(){ ui.sort = ui.sort==='new' ? 'want' : 'new'; document.getElementById('sortBtn').firstChild.textContent = ui.sort==='new'?'最新':'最多人想要'; renderList(); }
+
+function renderList(){
+  const q = (document.getElementById('searchInput').value||'').trim().toLowerCase();
+  let list = items
+    .filter(it=> it.status!=='given')
+    .filter(it=> !q || it.name.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q));
+  list.sort((a,b)=> ui.sort==='new' ? b.createdAt-a.createdAt : b.claims.length-a.claims.length);
+
+  const el = document.getElementById('itemList');
+  if(!dataLoaded){
+    document.getElementById('listHeading').textContent = '';
+    el.innerHTML = `<div class="inline-loading"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>`;
+    return;
+  }
+  document.getElementById('listHeading').textContent = `目前有 ${list.length} 件`;
+  if(!list.length){
+    el.innerHTML = emptyBlock('目前沒有物品');
+    return;
+  }
+  const my = me();
+  el.innerHTML = list.map(it=>{
+    const claimCount = it.claims.length;
+    const iClaimed = my && it.claims.some(c=>sameAddr(c.addr,my));
+    const isOwner = my && sameAddr(it.donor,my);
+    
+    // 左上角標籤 (book.html 風格)
+    let topTag = '';
+    if(isOwner){
+      topTag = `<div class="card-top-tag" style="border-color:var(--tiffany-dark);color:var(--tiffany-dark)">我的刊登物品</div>`;
+    } else if(iClaimed){
+      topTag = `<div class="card-top-tag">你已登記索取</div>`;
+    }
+    
+    // 右側按鈕區域
+    let rightBtn = '';
+    if(my && !isOwner){
+      if(iClaimed){
+        rightBtn = `<div class="card-right-btn"><button class="btn-action-right cancel" onclick="event.stopPropagation();cancelClaim('${it.id}')">取消<br>索取</button></div>`;
+      } else {
+        rightBtn = `<div class="card-right-btn"><button class="btn-action-right claim" onclick="event.stopPropagation();openClaim('${it.id}')">登記<br>索取</button></div>`;
+      }
+    }
+    
+    return `<div class="card ${(iClaimed||isOwner)?'claimed-card':''}">
+      ${topTag}
+      <div class="card-tap" onclick="openDetail('${it.id}')">
+        ${thumb(it)}
+        <div class="info">
+          <div class="iname">${esc(it.name)}</div>
+          <div class="idesc">${esc(it.desc||'')}</div>
+          ${isOwner && claimCount > 0
+            ? `<div style="margin-top:4px"><span onclick="event.stopPropagation();closeSheet();openClaimantsDialog('${it.id}')" style="font-size:13px;font-weight:700;color:var(--tiffany-dark);text-decoration:underline;cursor:pointer">查看登記索取清單（${claimCount}人）</span></div>`
+            : `<div class="donor">目前 ${claimCount} 人登記索取</div>`
+          }
+        </div>
+        ${rightBtn}
+      </div>
+    </div>`;
+  }).join('');
+}
+function stDot(cls){ return `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>`; }
+function thumb(it){
+  if(it.photos && it.photos[0]) return `<div class="thumb"><img src="${it.photos[0]}" alt=""></div>`;
+  return `<div class="thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`;
+}
+function emptyBlock(h,p){ return `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 22V7"/></svg></div><h3>${h}</h3>${p?`<p>${p}</p>`:''}</div>`; }
+function emptyText(t){ return `<div class="empty" style="padding:40px 16px"><h3 style="color:var(--ink-muted);font-weight:600">${t}</h3></div>`; }
+
+/* ============================================================
+   Detail
+   ============================================================ */
+function claimPos(it, addr){ const i = it.claims.findIndex(c=>sameAddr(c.addr,addr)); return i<0?0:i+1; }
+function openDetail(id){
+  ui.detailId = id;
+  const it = items.find(x=>x.id===id); if(!it) return;
+  const my = me();
+  const isOwner = my && sameAddr(it.donor,my);
+  const myPos = my ? claimPos(it,my) : 0;
+  const photos = it.photos||[];
+
+  // Hero image / photo strip
+  const heroImg = photos[0]
+    ? `<img src="${photos[0]}" alt="" style="width:100%;height:100%;object-fit:cover">`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="width:56px;height:56px;color:var(--tiffany-mid)"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+  const strip = photos.length>1 ? `<div class="thumb-strip" style="margin:0 0 14px">${photos.map(p=>`<img src="${p}" alt="">`).join('')}</div>` : '';
+
+
+
+  // CTA button HTML
+  let ctaHtml;
+  if(it.status==='given'){
+    ctaHtml = `<button class="dbtn" style="background:var(--slate-light);color:var(--slate);width:100%;margin-top:8px;cursor:default" disabled>此物品已送出</button>`;
+  } else if(isOwner){
+    ctaHtml = `<div class="dbtns" style="margin-top:8px">
+      <button class="dbtn cancel" style="flex:1" onclick="closeSheet()">關閉</button>
+      <button class="dbtn go" style="flex:1" onclick="closeSheet();openClaimantsDialog('${id}')">查看索取清單</button>
+    </div>`;
+  } else if(myPos){
+    ctaHtml = `<div class="dbtns" style="margin-top:8px">
+      <button class="dbtn cancel" style="flex:1" onclick="closeSheet()">關閉</button>
+      <button class="dbtn cancel" style="flex:1;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();cancelClaim('${id}')">取消索取</button>
+    </div>`;
+  } else {
+    ctaHtml = `<div class="dbtns" style="margin-top:8px">
+      <button class="dbtn cancel" style="flex:1" onclick="closeSheet()">關閉</button>
+      <button class="dbtn go" style="flex:1" onclick="closeSheet();openClaim('${id}')">登記索取</button>
+    </div>`;
+  }
+
+  showSheet(`
+    <div class="detail-hero" style="width:100%;height:200px;border-radius:14px;background:var(--tiffany-light);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:14px">${heroImg}</div>
+    ${strip}
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+      <h2 style="font-size:20px;font-weight:900;margin:0;color:var(--ink);line-height:1.2">${esc(it.name)}</h2>
+      <span class="pill ${statusOf(it).cls}" style="flex-shrink:0;margin-top:2px">${statusOf(it).label}</span>
+    </div>
+    <p style="font-size:14px;color:var(--ink-soft);line-height:1.65;margin:0 0 14px">${esc(it.desc||'（無描述）')}</p>
+    ${ctaHtml}
+  `);
+}
+
+/* ============================================================
+   Claim
+   ============================================================ */
+function openClaim(id){
+  if(!me()){ openLogin(); return; }
+  const it = items.find(x=>x.id===id); if(!it) return;
+  const pos = it.claims.length+1;
+  showSheet(`
+    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 22V7"/></svg></div><div><div class="dt">${esc(it.name)}</div></div></div>
+    <div class="float"><input type="text" id="claimContact" placeholder=" " value="${esc((me()&&me().contact)||'')}"><label>留下索取訊息（可以留下聯絡方式，例如 Line ID 或電話）</label></div>
+    <div class="dbtns" style="margin-top:16px"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitClaim('${id}')">確認登記索取</button></div>
+  `);
+}
+async function submitClaim(id){
+  const it = items.find(x=>x.id===id); if(!it) return;
+  const contact = document.getElementById('claimContact').value.trim();
+  showMask('登記中…');
+  it.claims.push({ addr:me(), contact, ts:Date.now(), notified:false });
+  const pos = it.claims.length;
+  await notify('claim', { itemId:id, itemName:it.name, donor:it.donor, claimant:me(), pos, contact });
+  hideMask();
+  closeSheet();
+  showToast('登記成功');
+  renderList();
+}
+async function cancelClaim(id){
+  const my = me(); if(!my) return;
+  const it = items.find(x=>x.id===id); if(!it) return;
+  showMask('取消登記中…');
+  it.claims = it.claims.filter(c=>!sameAddr(c.addr,my));
+  await notify('cancel_claim', { itemId:id, claimant:my });
+  hideMask();
+  showToast('已取消索取');
+  renderList();
+  if(document.getElementById('pageRecords').classList.contains('on')) renderRecords();
+}
+
+/* ============================================================
+   My Records (Donations, Claims & Messages)
+   ============================================================ */
+function renderRecords(){
+  const my = me();
+  const el = document.getElementById('recordsContent');
+  if(!el) return;
+  if(!my){ el.innerHTML = emptyText('尚未登入'); return; }
+  if(!dataLoaded){
+    el.innerHTML = `<div class="inline-loading"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div>`;
+    return;
+  }
+  
+  if(currentRecordSubtab === 'donations'){
+    const mine = items.filter(it=> sameAddr(it.donor,my)).sort((a,b)=>b.createdAt-a.createdAt);
+    if(!mine.length){ el.innerHTML = emptyText('尚未刊登物品'); return; }
+    el.innerHTML = mine.map(it=>{
+      const claims = it.claims || [];
+      const createStr = fmtFull(it.createdAt);
+      const expDate = new Date((it.createdAt || Date.now()) + 30 * 86400000);
+      const expStr = fmtFull(expDate);
+
+      if(it.status==='given'){
+        const givenStr = fmtFull(it.givenAt||it.createdAt);
+        return `<div class="card" style="opacity:.85">
+          <div class="card-tap" onclick="openDetail('${it.id}')">${thumb(it)}<div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${givenStr} 送出 &nbsp;(${expStr} 系統將自動移除)</div></div></div>
+          <div class="btn-row">
+            <button class="btn ghost" onclick="submitUngiven('${it.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>標示未送出</button>
+            <button class="btn danger" onclick="openRemove('${it.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>移除物品</button>
+          </div>
+        </div>`;
+      }
+      const hasClaims = claims.length > 0;
+      let claimLinkHtml = '';
+      if(!hasClaims){
+        claimLinkHtml = `<div style="font-size:13px;color:var(--ink-muted);margin-top:4px">還沒有人索取</div>`;
+      } else {
+        claimLinkHtml = `<div style="margin-top:4px"><span onclick="event.stopPropagation();openClaimantsDialog('${it.id}')" style="font-size:13px;font-weight:700;color:var(--tiffany-dark);text-decoration:underline;cursor:pointer">查看登記索取清單（${claims.length}人）</span></div>`;
+      }
+
+      return `<div class="card">
+        <div class="card-tap" onclick="openDetail('${it.id}')">${thumb(it)}<div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${createStr} 刊登 &nbsp;(${expStr} 系統將自動移除)</div>${claimLinkHtml}</div></div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="openGiven('${it.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>標記已送出</button>
+          <button class="btn danger" onclick="openRemove('${it.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>移除物品</button>
+        </div></div>`;
+    }).join('');
+
+  } else if(currentRecordSubtab === 'claims'){
+    const mine = items.filter(it=> (it.claims||[]).some(c=>sameAddr(c.addr,my)));
+    if(!mine.length){ el.innerHTML = emptyText('目前沒有索取物品'); return; }
+    el.innerHTML = mine.map(it=>{
+      const claims = it.claims || [];
+      const c = claims.find(x=>sameAddr(x.addr,my)) || {};
+      const pos = claimPos(it,my);
+      
+      let rightAction;
+      if(it.status==='given'){ 
+        rightAction = sameAddr(it.givenTo,my) ? `<span class="pill gone">已完成</span>` : `<span class="pill gone">已送出他人</span>`; 
+      } else if(c.notified){ 
+        rightAction = `<button class="btn-action-right claim" style="height:auto;padding:8px 12px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--tiffany-light);color:var(--tiffany-dark);border-color:var(--tiffany-mid)" onclick="event.stopPropagation();switchRecordTab('messages')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>查看訊息</button>`; 
+      } else { 
+        rightAction = `<button class="btn-action-right cancel" style="font-size:13px;height:40px;padding:0 12px" onclick="event.stopPropagation();cancelClaim('${it.id}')">取消<br>索取</button>`; 
+      }
+      
+      return `<div class="trow" onclick="openDetail('${it.id}')" style="display:flex;align-items:center;gap:12px;padding:12px;background:#fff;border-radius:12px;margin-bottom:10px">
+        ${trowThumb(it)}
+        <div class="tt" style="flex:1">
+          <div class="tn">${esc(it.name)}</div>
+          <div class="tsub" style="margin-top:2px">${c.ts?fmtFull(c.ts):fmtFull(Date.now())} 登記</div>
+        </div>
+        ${rightAction}
+      </div>`;
+    }).join('');
+
+  } else if(currentRecordSubtab === 'messages'){
+    // 找出 1. 我是索取者且收到贈送者通知 2. 我是贈送者且收到索取者回覆
+    const msgCards = [];
+    items.forEach(it=>{
+      const isOwner = sameAddr(it.donor, my);
+      (it.claims||[]).forEach((c, i)=>{
+        if(!isOwner && sameAddr(c.addr, my) && c.notified){
+          // 我是索取者，收到贈送者訊息
+          msgCards.push({
+            it, claimIndex: i, role: 'claimant',
+            otherAddr: fullAddr(it.donor),
+            roleTitle: '贈送者回覆',
+            msgBody: c.replyMsg ? esc(c.replyMsg) : '可以面交，請聯絡我面交時間',
+            isUnread: !c.read,
+            isReplied: !!c.replied,
+            myReply: c.donorMsg ? esc(c.donorMsg) : (c.contact ? esc(c.contact) : '')
+          });
+        } else if(isOwner && c.donorNotified){
+          // 我是贈送者，收到索取者回覆訊息
+          msgCards.push({
+            it, claimIndex: i, role: 'donor',
+            otherAddr: fullAddr(c.addr),
+            roleTitle: '索取者回覆',
+            msgBody: c.donorMsg ? esc(c.donorMsg) : (c.contact ? esc(c.contact) : '已留下索取訊息'),
+            isUnread: !c.donorRead,
+            isReplied: !!c.donorReplied,
+            myReply: c.replyMsg ? esc(c.replyMsg) : ''
+          });
+        }
+      });
+    });
+
+    if(!msgCards.length){
+      el.innerHTML = emptyText('目前沒有新訊息');
+      return;
+    }
+
+    el.innerHTML = msgCards.map(m=>{
+      const replyBtnClass = m.isReplied ? 'btn-action-right cancel' : 'btn-action-right claim';
+      const replyBtnStyle = m.isReplied ? 'height:38px;padding:0 12px;font-size:13px;color:var(--ink-soft);border-color:var(--line);background:var(--slate-light)' : 'height:38px;padding:0 12px;font-size:13px';
+
+      return `<div class="card ${m.isReplied ? 'claimed-card' : ''}">
+        ${m.isReplied ? `<div class="card-top-tag">已回覆</div>` : ''}
+        <div class="card-tap" style="cursor:default">
+          <div class="info">
+            <div class="iname">${esc(m.it.name)}</div>
+            <div class="donor" style="color:var(--tiffany-dark);font-weight:700;margin-bottom:3px">${m.otherAddr} (${m.roleTitle})</div>
+            <div class="idesc" style="color:var(--ink);margin-bottom:6px">${m.msgBody}</div>
+            
+            ${m.isReplied && m.myReply ? `
+              <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)">
+                <div style="font-size:12px;font-weight:700;color:var(--tiffany-dark);margin-bottom:2px">您的回覆</div>
+                <div style="font-size:13px;color:var(--ink-soft);line-height:1.4">${m.myReply}</div>
+              </div>
+            ` : ''}
+          </div>
+          <div class="card-right-btn" style="flex-direction:row;gap:6px">
+            <button class="${replyBtnClass}" style="${replyBtnStyle}" onclick="${m.role==='claimant' ? `openRecipientReplyDialog('${m.it.id}')` : `openNotifyMessageDialog('${m.it.id}',${m.claimIndex})`}">回覆</button>
+            ${m.isUnread ? `<button class="btn-action-right cancel" style="height:38px;padding:0 12px;font-size:13px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)" onclick="markMessageRead('${m.it.id}', '${m.role}', ${m.claimIndex})">已讀</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+function openClaimantsDialog(id){
+  const it = items.find(x=>x.id===id); if(!it) return;
+  const claims = it.claims || [];
+  const listHtml = claims.map((c,i)=>{
+    const msg = c.contact ? esc(c.contact) : '（無留言訊息）';
+    return `<div class="crow" style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px">
+      <span class="qnum">${i+1}</span>
+      <div style="flex:1;min-width:0">
+        <div class="cn" style="font-weight:700;font-size:14px;color:var(--ink);margin-bottom:2px">${fullAddr(c.addr)}</div>
+        <div style="font-size:12px;color:var(--ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${msg}</div>
+      </div>
+      ${c.notified ? `<span class="cc" style="margin-left:auto;font-size:12px;flex-shrink:0">已發送通知</span>` : `<button class="mini-btn" style="margin-left:auto;flex-shrink:0" onclick="openNotifyMessageDialog('${it.id}',${i})">發送通知</button>`}
+    </div>`;
+  }).join('');
+
+  showSheet(`
+    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="dt">${esc(it.name)}</div><div class="ds">登記索取名單（${claims.length}人）</div></div></div>
+    <div class="claim-list" style="margin:12px 0 16px;max-height:50vh;overflow-y:auto">${listHtml}</div>
+    <div class="dbtns"><button class="dbtn cancel" style="flex:1 !important;width:100% !important" onclick="closeSheet()">關閉</button></div>
+  `);
+}
+
+function openNotifyMessageDialog(id, i){
+  const it = items.find(x=>x.id===id); if(!it||!it.claims[i]) return;
+  const c = it.claims[i];
+  showSheet(`
+    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><div class="dt">發送通知</div><div class="ds">${esc(it.name)}</div></div></div>
+    
+    <div class="form-section sec" style="margin-top:16px;margin-bottom:20px">
+      <div class="sechead">${fullAddr(c.addr)}</div>
+      <div style="font-size:15px;color:var(--ink);padding:2px 0">${c.contact ? esc(c.contact) : '（無留言訊息）'}</div>
+    </div>
+    
+    <div class="float"><input type="text" id="notifyReplyMsg" placeholder=" " value=""><label>回覆訊息</label></div>
+    
+    <div class="dbtns" style="margin-top:16px">
+      <button class="dbtn cancel" onclick="openClaimantsDialog('${id}')">取消</button>
+      <button class="dbtn go" onclick="submitNotifyMessage('${id}',${i})">送出</button>
+    </div>
+  `);
+}
+
+async function submitNotifyMessage(id, i){
+  const it = items.find(x=>x.id===id); if(!it||!it.claims[i]) return;
+  const replyMsg = (document.getElementById('notifyReplyMsg').value||'').trim();
+  it.claims[i].notified = true;
+  it.claims[i].replyMsg = replyMsg;
+  
+  showMask('發送通知中…');
+  await notify('notify_claimant', { itemId:id, itemName:it.name, claimant:it.claims[i].addr, claimIndex:i, replyMsg });
+  hideMask();
+  renderRecords();
+  openClaimantsDialog(id);
+  showToast('已發送通知');
+}
+
+function openRecipientReplyDialog(id){
+  const my = me(); if(!my) return;
+  const it = items.find(x=>x.id===id); if(!it) return;
+  const c = (it.claims||[]).find(x=>sameAddr(x.addr,my)) || {};
+  const donorAddrStr = fullAddr(it.donor);
+  const msgBody = c.replyMsg ? esc(c.replyMsg) : '可以面交，請聯絡我面交時間';
+
+  showSheet(`
+    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><div class="dt">回覆訊息</div><div class="ds">${esc(it.name)}</div></div></div>
+    
+    <div class="form-section sec" style="margin-top:16px;margin-bottom:20px">
+      <div class="sechead">${donorAddrStr}</div>
+      <div style="font-size:15px;color:var(--ink);padding:2px 0">${msgBody}</div>
+    </div>
+    
+    <div class="float"><input type="text" id="recipientReplyInput" placeholder=" " value=""><label>回覆訊息</label></div>
+    
+    <div class="dbtns" style="margin-top:16px">
+      <button class="dbtn cancel" onclick="closeSheet()">取消</button>
+      <button class="dbtn go" onclick="submitRecipientReply('${id}')">送出</button>
+    </div>
+  `);
+}
+
+async function submitRecipientReply(id){
+  const my = me(); if(!my) return;
+  const it = items.find(x=>x.id===id); if(!it) return;
+  const text = (document.getElementById('recipientReplyInput').value||'').trim();
+  const c = (it.claims||[]).find(x=>sameAddr(x.addr,my));
+  if(c){
+    c.contact = text;
+    c.replied = true;
+    c.read = true;
+    c.donorMsg = text;
+    c.donorNotified = true;
+    c.donorRead = false;
+  }
+
+  showMask('發送訊息中…');
+  await notify('reply_to_donor', { itemId:id, itemName:it.name, donor:it.donor, claimant:my, donorMsg:text });
+  hideMask();
+  closeSheet();
+  showToast('訊息已送出');
+  renderRecords();
+  refreshBadges();
+}
+
+async function markMessageRead(id, role, claimIndex){
+  const my = me(); if(!my) return;
+  const it = items.find(x=>x.id===id); if(!it) return;
+  if(role === 'donor' && claimIndex !== undefined && it.claims[claimIndex]){
+    it.claims[claimIndex].donorRead = true;
+  } else {
+    const c = (it.claims||[]).find(x=>sameAddr(x.addr,my));
+    if(c) c.read = true;
+  }
+  renderRecords();
+  refreshBadges();
+  notify('mark_read', { itemId:id, claimant:my, role, claimIndex });
+}
+
+/* ============================================================
+   Mark as Given
+   ============================================================ */
+function openGiven(id){
+  const it = items.find(x=>x.id===id); if(!it) return;
+  showSheet(`
+    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div><div class="dt">${esc(it.name)}</div></div></div>
+    <div class="dbtns" style="margin-top:16px"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitGiven('${id}')">標記已送出</button></div>
+  `);
+}
+async function submitGiven(id){
+  const it = items.find(x=>x.id===id); if(!it) return;
+  const targetUser = (it.claims && it.claims[0]) ? it.claims[0].addr : { hao:0, lou:0, zhi:0, label:'社區住戶' };
+  const i = 0;
+  
+  it.status='given'; 
+  it.givenTo = targetUser; 
+  it.givenAt = Date.now();
+  
+  showMask('狀態更新中…');
+  await notify('given', { itemId:id, itemName:it.name, givenTo:it.givenTo, others:(it.claims||[]).filter((_,x)=>x!==i).map(c=>c.addr) });
+  hideMask();
+  closeSheet();
+  showToast('已標記為送出');
+  renderRecords();
+}
+
+async function submitUngiven(id){
+  const it = items.find(x=>x.id===id); if(!it) return;
+  it.status = 'open';
+  it.givenTo = null;
+  
+  showMask('狀態更新中…');
+  await notify('ungiven', { itemId:id, itemName:it.name });
+  hideMask();
+  showToast('已標示為未送出');
+  renderRecords();
+}
+
+/* ============================================================
+   Remove (owner only — 結構上只出現在「我贈送的」)
+   ============================================================ */
+function openRemove(id){
+  const it = items.find(x=>x.id===id); if(!it) return;
+  showSheet(`
+    <div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></div><div><div class="dt">${esc(it.name)}</div></div></div>
+    <div class="dbtns" style="margin-top:16px"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn rm" onclick="submitRemove('${id}')">確認移除</button></div>
+  `);
+}
+async function submitRemove(id){
+  const it = items.find(x=>x.id===id); if(!it) return;
+  if(!sameAddr(it.donor, me())){ closeSheet(); showToast('只有贈送者本人可以移除此物品'); return; }
+  
+  showMask('移除物品中…');
+  await notify('remove', { itemId:id, itemName:it.name, others:it.claims.map(c=>c.addr) });
+  items = items.filter(x=>x.id!==id);
+  hideMask();
+  closeSheet();
+  showToast('物品已移除');
+  renderRecords();
+}
+
+/* ============================================================
+   Donate form
+   ============================================================ */
+/* ============================================================
+   Donate Form (Sheet / Dialog Mode)
+   ============================================================ */
+function openDonateSheet(){
+  if(!me()){ openLogin(); return; }
+  uploadedPhotos = [];
+  const my = me() || {};
+  
+  // 計算 30 天後的日期
+  const expDate = new Date(Date.now() + 30 * 86400000);
+  const yyyy = expDate.getFullYear();
+  const mm = String(expDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(expDate.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}/${mm}/${dd}`;
+
+  showSheet(`
+    <div style="font-size:18px;font-weight:900;text-align:center;margin-bottom:16px">刊登物品</div>
+    
+    <div class="form-section sec" style="margin-top:14px">
+      <div class="sechead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10z"/><circle cx="7" cy="7" r="1"/></svg>物品資訊</div>
+      <div class="float"><input type="text" id="dName" placeholder=" "><label>物品名稱（必填）</label></div>
+      <div class="float"><textarea id="dDesc" placeholder=" "></textarea><label>物品描述（狀況、尺寸、使用年限等）</label></div>
+    </div>
+    
+    <div class="form-section sec">
+      <div class="sechead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>照片（最多 6 張，自動壓縮）</div>
+      <div class="photo-grid" id="photoGrid"></div>
+      <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotoUpload(event)">
+    </div>
+    
+    <div style="color:var(--coral);font-size:13px;font-weight:700;text-align:center;margin-bottom:12px">
+      刊登的資料於 ${dateStr} 會自動清除。
+    </div>
+    
+    <div class="dbtns">
+      <button class="dbtn cancel" onclick="closeSheet()">取消</button>
+      <button class="dbtn go" onclick="submitDonate()">確認</button>
+    </div>
+  `);
+  setTimeout(()=>renderPhotoGrid(), 50);
+}
+function renderPhotoGrid(){
+  const MAX=6, grid=document.getElementById('photoGrid'); grid.innerHTML='';
+  for(let i=0;i<MAX;i++){
+    const slot=document.createElement('div'); slot.className='photo-slot';
+    if(i<uploadedPhotos.length){ slot.classList.add('has-photo'); slot.innerHTML=`<img src="${uploadedPhotos[i]}" alt=""><button class="rm-photo" onclick="removePhoto(${i})">×</button>`; }
+    else{ slot.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>新增</span>`; if(uploadedPhotos.length<MAX) slot.onclick=()=>document.getElementById('photoInput').click(); }
+    grid.appendChild(slot);
+  }
+}
+function handlePhotoUpload(e){
+  const files=Array.from(e.target.files), remaining=6-uploadedPhotos.length;
+  files.slice(0,remaining).forEach(f=>compressImage(f, dataUrl=>{ uploadedPhotos.push(dataUrl); renderPhotoGrid(); }));
+  e.target.value='';
+}
+function removePhoto(i){ uploadedPhotos.splice(i,1); renderPhotoGrid(); }
+/* 前端壓縮：長邊 1200、JPEG 0.7 —— 上傳快、省 Drive 空間 */
+function compressImage(file, cb){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=1200; let{width:w,height:h}=img;
+      if(w>h && w>max){ h=h*max/w; w=max; } else if(h>max){ w=w*max/h; h=max; }
+      const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      cb(cv.toDataURL('image/jpeg',0.7));
+    };
+    img.onerror=()=>cb(e.target.result);
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+async function submitDonate(){
+  const dName = document.getElementById('dName');
+  const name = dName.value.trim();
+  if(!name){
+    dName.classList.add('err');
+    dName.focus();
+    dName.oninput = () => {
+      if(dName.value.trim()) dName.classList.remove('err');
+    };
+    return;
+  }
+  const my=me();
+  const it={ id:Date.now().toString(36), name, desc:document.getElementById('dDesc').value.trim(),
+    donor:my, photos:[...uploadedPhotos], status:'open', claims:[], givenTo:null, createdAt:Date.now() };
+  
+  showMask('刊登資料上傳中…');
+  items.unshift(it);
+  await notify('donate', { item:it });
+  uploadedPhotos=[];
+  hideMask();
+  closeSheet();
+  showToast('刊登成功');
+  renderList();
+  if(document.getElementById('pageRecords').classList.contains('on')) renderRecords();
+}
+
+/* ============================================================
+   Login (Same logic and presentation as book.html)
+   ============================================================ */
+function myAddrShort(){ const s=me(); return s ? `${s.hao}-${s.lou}F${s.zhi}` : ''; }
+
+function applyLoginUI(){
+  const logged = !!me();
+  document.getElementById('loginDot').classList.toggle('hidden', !logged);
+  document.getElementById('loginLabel').textContent = logged ? myAddrShort() : '未登入';
+}
+
+function openLogin(){
+  const s=me();
+  const opt=(arr,v)=>arr.map(x=>`<option value="${x}" ${x==v?'selected':''}>${x}</option>`).join('');
+  const lou=[]; for(let i=LOU_RANGE[0];i<=LOU_RANGE[1];i++) lou.push(i);
+  showSheet(`
+    <div style="font-size:18px;font-weight:900;text-align:center;margin-bottom:18px">請選擇您的門牌</div>
+    <div class="addr-row" style="margin-bottom:20px">
+      <select class="addr-sel" id="inHao">${opt(HAO_LIST, s&&s.hao)}</select><span class="addr-unit">號</span>
+      <select class="addr-sel" id="inLou">${opt(lou, s&&s.lou)}</select><span class="addr-unit">樓之</span>
+      <select class="addr-sel" id="inZhi">${opt(ZHI_LIST, s&&s.zhi)}</select>
+    </div>
+    <div class="dbtns">
+      <button class="dbtn cancel" onclick="closeSheet()">取消</button>
+      <button class="dbtn go" onclick="confirmLogin()">確認</button>
+    </div>
+    ${s?`<button class="logoutbtn" onclick="doLogout()">登出</button>`:''}
+  `);
+}
+
+function confirmLogin(){
+  const prev=me()||{};
+  const a={ hao:+document.getElementById('inHao').value, lou:+document.getElementById('inLou').value, zhi:+document.getElementById('inZhi').value, contact:prev.contact||'' };
+  setLogin(a); closeSheet(); applyLoginUI();
+  showToast(`歡迎！${fullAddr(a)}`);
+  renderList(); refreshBadges();
+}
+
+function doLogout(){ clearLogin(); closeSheet(); applyLoginUI(); go('list'); showToast('已登出'); }
+
+/* ============================================================
+   Badges
+   ============================================================ */
+function refreshBadges(showLoadingState){
+  const my=me(); 
+  const b=document.getElementById('claimsBadge');
+  const mb=document.getElementById('msgBadge');
+  if(!my){ 
+    if(b) b.classList.add('hidden'); 
+    if(mb) mb.classList.add('hidden'); 
+    return; 
+  }
+  
+  if(showLoadingState || !dataLoaded){
+    if(b){ b.textContent='..'; b.classList.remove('hidden'); }
+    if(mb){ mb.textContent='..'; mb.classList.remove('hidden'); }
+    return;
+  }
+
+  let unreadCount = 0;
+  items.forEach(it=>{
+    const isOwner = sameAddr(it.donor, my);
+    (it.claims||[]).forEach(c=>{
+      if(!isOwner && sameAddr(c.addr, my) && c.notified && !c.read) unreadCount++;
+      if(isOwner && c.donorNotified && !c.donorRead) unreadCount++;
+    });
+  });
+
+  if(unreadCount){ 
+    if(b){ b.textContent=unreadCount; b.classList.remove('hidden'); }
+    if(mb){ mb.textContent=unreadCount; mb.classList.remove('hidden'); }
+  } else {
+    if(b) b.classList.add('hidden');
+    if(mb) mb.classList.add('hidden');
+  }
+}
+
+/* ============================================================
+   Sheet / Success / Toast
+   ============================================================ */
+function showSheet(inner){
+  document.getElementById('overlayHost').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${inner}</div></div>`;
+}
+function closeSheet(){ document.getElementById('overlayHost').innerHTML=''; }
+function showSuccess(o){
+  showSheet(`<div class="succ"><div class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <h2>${o.title}</h2><p>${o.body}</p>${o.badge?`<div class="qbadge">${o.badge}</div>`:''}
+    <div class="dbtns" style="flex-direction:column"><button class="dbtn go" id="scP">${o.primary[0]}</button><button class="dbtn" style="background:var(--tiffany-light);color:var(--tiffany-dark)" id="scG">${o.ghost[0]}</button></div></div>`);
+  document.getElementById('scP').onclick=o.primary[1];
+  document.getElementById('scG').onclick=o.ghost[1];
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastText').textContent=msg;
+  t.classList.remove('hidden');
+  if(toastTimer) clearTimeout(toastTimer);
+  
+  const hide=()=>{
+    t.classList.add('hidden');
+    if(toastTimer) clearTimeout(toastTimer);
+    window.removeEventListener('scroll',hide);
+    window.removeEventListener('touchstart',hide);
+    window.removeEventListener('click',hide);
+    window.removeEventListener('mousedown',hide);
+  };
+  
+  // 立即與極短延遲註冊，確保畫面有任何 click 都能瞬間關閉
+  window.addEventListener('click', hide, {once:true});
+  window.addEventListener('mousedown', hide, {once:true});
+  window.addEventListener('touchstart', hide, {passive:true, once:true});
+  window.addEventListener('scroll', hide, {passive:true, once:true});
+  
+  toastTimer=setTimeout(hide, 4000);
+}
+
+/* ============================================================
+   通知與後端接口（支援 Google Apps Script / LINE / Email 通知）
+   若有設定 GAS_URL 則自動進行雲端同步與備份
+   ============================================================ */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxVlKNArVGTYz0vTSpcZHiAASasDYqXzSKwq035NteTWzhotLvppjLuNb2hhA4AwXxthQ/exec";
+
+async function loadBooksData(){
+  if(!GAS_URL){ dataLoaded=true; renderList(); refreshBadges(); return; }
+  refreshBadges(true);
+  try{
+    const r = await fetch(GAS_URL + "?action=list_items");
+    const j = await r.json();
+    if(Array.isArray(j)) items = j;
+  }catch(e){
+    console.log('後端讀取失敗，使用本地紀錄:', e);
+  }finally{
+    dataLoaded = true;
+    renderList();
+    refreshBadges();
+    if(document.getElementById('pageRecords').classList.contains('on')) renderRecords();
+  }
+}
+
+async function notify(event, payload){
+  console.log('[notify]', event, payload);
+  if(!GAS_URL) return;
+  try{
+    await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ event, payload, timestamp: Date.now() })
+    });
+  }catch(e){
+    console.log('通知後端失敗:', e);
+  }
+}
+
+/* ============================================================
+   Utils
+   ============================================================ */
+function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function ago(ts){ const d=Math.floor((Date.now()-ts)/86400000); return d<=0?'今天':d===1?'昨天':`${d} 天前`; }
+function fmt(ts){ const d=new Date(ts); return `${d.getMonth()+1}/${d.getDate()}`; }
+function fmtFull(ts){ const d=new Date(ts); const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}/${mm}/${dd}`; }
+function trowThumb(it){ return it.photos&&it.photos[0] ? `<div class="tthumb"><img src="${it.photos[0]}" alt=""></div>` : `<div class="tthumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`; }
+
+/* ============================================================
+   Boot
+   ============================================================ */
+(function init(){
+  applyLoginUI();
+  go('list');
+  loadBooksData();
+})();
+</script>
+</body>
+</html>
