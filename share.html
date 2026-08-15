@@ -402,6 +402,9 @@ let ui = { sort:'new', detailId:null, prevTab:'list' };
 let uploadedPhotos = [];
 let toastTimer = null;
 let dataLoaded = false;
+let lastNotifiedMsgTs = 0; // 已通知過的最新訊息時間點，避免輪詢時把舊訊息也重複跳出來
+let pollTimer = null;
+let isPolling = false;
 
 function showMask(msg){
   const mask = document.getElementById('loadMask');
@@ -596,21 +599,20 @@ function openDetail(id, photoIndex, viewOnly){
   const photos = it.photos||[];
   const activeIdx = (photoIndex !== undefined && photoIndex < photos.length) ? photoIndex : 0;
 
-  // Hero image (using contain to display full image without cropping;
-  // blurred/scaled copy of the same photo fills the letterbox area instead of leaving flat black bars)
+  // Hero image: simple cover-fit photo, no black letterbox background
   const currentPhoto = photos[activeIdx];
   const heroImg = currentPhoto
-    ? `<div class="detail-hero-bg" style="background-image:url('${currentPhoto}')"></div><img src="${currentPhoto}" alt="" style="position:relative;z-index:1;max-width:100%;max-height:100%;object-fit:contain;cursor:pointer" onclick="openPhotoViewerDialog('${it.id}', ${activeIdx})">`
+    ? `<img src="${currentPhoto}" alt="" style="width:100%;height:100%;object-fit:cover;cursor:pointer" onclick="openPhotoViewerDialog('${it.id}', ${activeIdx})">`
     : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="width:56px;height:56px;color:var(--tiffany-mid)"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
 
-  // Dots indicator & hint for switching photos in detail dialog
+  // Thumbnail strip below the hero image for switching between multiple photos
   let dotsHtml = '';
   if (photos.length > 1) {
     dotsHtml = `
-      <div style="display:flex;justify-content:center;align-items:center;gap:6px;margin:-4px 0 14px">
-        <span style="font-size:12px;color:var(--ink-muted);margin-right:4px">（點圖可以放大）</span>
+      <div style="text-align:center;font-size:12px;color:var(--ink-muted);margin:-4px 0 8px">（點縮圖可切換，點大圖可以放大）</div>
+      <div class="thumb-strip">
         ${photos.map((p, i) => `
-          <span onclick="openDetail('${id}', ${i})" style="width:${i===activeIdx?'20px':'8px'};height:8px;border-radius:4px;background:${i===activeIdx?'var(--tiffany)':'var(--line)'};cursor:pointer;transition:all .2s" title="切換第 ${i+1} 張照片"></span>
+          <img src="${p}" alt="" onclick="openDetail('${id}', ${i})" style="cursor:pointer;border-color:${i===activeIdx?'var(--tiffany)':'var(--line)'};border-width:${i===activeIdx?'2px':'1.5px'}" title="切換第 ${i+1} 張照片">
         `).join('')}
       </div>
     `;
@@ -646,7 +648,7 @@ function openDetail(id, photoIndex, viewOnly){
   }
 
   showSheet(`
-    <div class="detail-hero" style="width:100%;height:220px;border-radius:14px;background:#0f172a;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;position:relative">${heroImg}</div>
+    <div class="detail-hero" style="width:100%;height:220px;border-radius:14px;background:var(--tiffany-light);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px;position:relative">${heroImg}</div>
     ${dotsHtml}
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
       <h2 style="font-size:20px;font-weight:900;margin:0;color:var(--ink);line-height:1.2">${esc(it.name)}</h2>
@@ -1339,7 +1341,7 @@ function migrateLegacyMsgs(list){
 }
 
 async function loadBooksData(){
-  if(!GAS_URL){ migrateLegacyMsgs(items); dataLoaded=true; renderList(); refreshBadges(); return; }
+  if(!GAS_URL){ migrateLegacyMsgs(items); dataLoaded=true; renderList(); refreshBadges(); lastNotifiedMsgTs=maxDirectedMsgTs(items,me()); return; }
   refreshBadges(true);
   try{
     const r = await fetch(GAS_URL + "?action=list_items");
@@ -1353,6 +1355,8 @@ async function loadBooksData(){
     renderList();
     refreshBadges();
     if(document.getElementById('pageRecords').classList.contains('on')) renderRecords();
+    // 記錄目前寫給「我」的訊息中最新的時間點，之後輪詢只比對比這個更新的訊息，避免把舊訊息也跳出來
+    lastNotifiedMsgTs = maxDirectedMsgTs(items, me());
   }
 }
 
@@ -1368,6 +1372,80 @@ async function notify(event, payload){
   }catch(e){
     console.log('通知後端失敗:', e);
   }
+}
+
+/* ============================================================
+   輪詢式通知（每 2 分鐘檢查一次是否有新訊息）
+   ============================================================ */
+// 找出目前資料中，寫給指定使用者（my）的訊息裡，時間最新的一筆時間戳記
+function maxDirectedMsgTs(list, my){
+  if(!my) return Date.now();
+  let max = 0;
+  (list||[]).forEach(it=>{
+    const isOwner = sameAddr(it.donor, my);
+    (it.claims||[]).forEach(c=>{
+      const isMe = sameAddr(c.addr, my);
+      (c.msgs||[]).forEach(m=>{
+        const directedToMe = (isOwner && m.from==='claimant') || (isMe && m.from==='donor');
+        if(directedToMe && m.ts > max) max = m.ts;
+      });
+    });
+  });
+  return max;
+}
+
+async function pollForUpdates(){
+  if(!GAS_URL || isPolling) return;
+  const my = me();
+  if(!my) return; // 未登入不用輪詢
+  isPolling = true;
+  try{
+    const r = await fetch(GAS_URL + "?action=list_items");
+    const j = await r.json();
+    if(!Array.isArray(j)){ isPolling=false; return; }
+    migrateLegacyMsgs(j);
+
+    // 找出比上次已知時間點更新、且是寫給「我」的訊息
+    const newMsgs = [];
+    let maxTs = lastNotifiedMsgTs;
+    j.forEach(it=>{
+      const isOwner = sameAddr(it.donor, my);
+      (it.claims||[]).forEach(c=>{
+        const isMe = sameAddr(c.addr, my);
+        (c.msgs||[]).forEach(m=>{
+          const directedToMe = (isOwner && m.from==='claimant') || (isMe && m.from==='donor');
+          if(directedToMe){
+            if(m.ts > lastNotifiedMsgTs && !m.hidden) newMsgs.push({ itemName: it.name, text: m.text });
+            if(m.ts > maxTs) maxTs = m.ts;
+          }
+        });
+      });
+    });
+
+    items = j;
+    dataLoaded = true;
+    renderList();
+    refreshBadges();
+    if(document.getElementById('pageRecords').classList.contains('on')) renderRecords();
+    lastNotifiedMsgTs = maxTs;
+
+    if(newMsgs.length===1){
+      showToast(`💬 ${newMsgs[0].itemName}：${newMsgs[0].text || '有新的訊息'}`);
+    } else if(newMsgs.length>1){
+      showToast(`💬 收到 ${newMsgs.length} 則新訊息`);
+    }
+  }catch(e){
+    console.log('輪詢更新失敗:', e);
+  }finally{
+    isPolling = false;
+  }
+}
+
+function startPolling(){
+  if(pollTimer) return;
+  pollTimer = setInterval(pollForUpdates, 120000); // 每 2 分鐘輪詢一次
+  // 使用者切回這個分頁時也立刻檢查一次，體感更即時
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) pollForUpdates(); });
 }
 
 /* ============================================================
@@ -1389,6 +1467,7 @@ var DISC_KEY='share-disclaimer-agreed-v1';
   go('list');
   loadBooksData();
   checkDisclaimer();
+  startPolling();
 })();
 function checkDisclaimer(){
   var agreed=false;
