@@ -669,17 +669,33 @@ function openClaim(id){
   showSheet(`
     <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 22V7"/></svg></div><div><div class="dt">${esc(it.name)}</div></div></div>
     <div class="float"><input type="text" id="claimContact" placeholder=" " value="${esc((me()&&me().contact)||'')}"><label>留下索取訊息給贈與者 (例如電話或Line ID)</label></div>
+    <div class="float" style="margin-top:12px"><input type="email" id="claimEmail" placeholder=" " value="${esc((me()&&me().email)||'')}"><label>您的 Email（選填，贈與者回覆時會寄信通知您）</label></div>
     <div class="dbtns" style="margin-top:16px"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitClaim('${id}')">確認登記索取</button></div>
   `);
 }
 async function submitClaim(id){
   const it = items.find(x=>x.id===id); if(!it) return;
-  const contact = document.getElementById('claimContact').value.trim();
+  const claimContact = document.getElementById('claimContact');
+  const contact = claimContact.value.trim();
+  if(!contact){
+    claimContact.classList.add('err');
+    claimContact.focus();
+    claimContact.oninput = () => {
+      if(claimContact.value.trim()) claimContact.classList.remove('err');
+    };
+    return;
+  }
+  const email = document.getElementById('claimEmail').value.trim();
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showToast('Email 格式看起來不太對，請確認一下');
+    return;
+  }
   showMask('登記中…');
   const msgs = contact ? [{ from:'claimant', text:contact, ts:Date.now(), read:false, hidden:false }] : [];
-  it.claims.push({ addr:me(), ts:Date.now(), notified:false, msgs });
+  it.claims.push({ addr:me(), ts:Date.now(), notified:false, msgs, email });
   const pos = it.claims.length;
-  await notify('claim', { itemId:id, itemName:it.name, donor:it.donor, claimant:me(), pos, contact });
+  if(email){ setLogin({ ...me(), email }); } // 記住這次填的 Email，下次索取自動帶入
+  await notify('claim', { itemId:id, itemName:it.name, donor:it.donor, claimant:me(), pos, contact, email });
   hideMask();
   closeSheet();
   showToast('登記成功');
@@ -1120,6 +1136,7 @@ function openDonateSheet(){
       <div class="sechead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10z"/><circle cx="7" cy="7" r="1"/></svg>物品資訊</div>
       <div class="float" style="margin:12px 0 4px"><input type="text" id="dName" placeholder=" "><label>物品名稱（必填）</label></div>
       <div class="float" style="margin:12px 0 4px"><textarea id="dDesc" placeholder=" " style="min-height:60px"></textarea><label>物品描述（狀況、尺寸、使用年限等）</label></div>
+      <div class="float" style="margin:12px 0 4px"><input type="email" id="dEmail" placeholder=" " value="${esc((my&&my.email)||'')}"><label>您的 Email（有人索取時會寄信通知您）</label></div>
     </div>
     
     <div class="form-section sec" style="padding-top:20px">
@@ -1178,9 +1195,16 @@ async function submitDonate(){
     };
     return;
   }
+  const email = document.getElementById('dEmail').value.trim();
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showToast('Email 格式看起來不太對，請確認一下');
+    return;
+  }
   const my=me();
+  if(email){ setLogin({ ...my, email }); } // 記住這次填的 Email，下次刊登/索取自動帶入
+  const donor = { ...my, email: email || my.email || '' };
   const it={ id:Date.now().toString(36), name, desc:document.getElementById('dDesc').value.trim(),
-    donor:my, photos:[...uploadedPhotos], status:'open', claims:[], givenTo:null, createdAt:Date.now() };
+    donor, photos:[...uploadedPhotos], status:'open', claims:[], givenTo:null, createdAt:Date.now() };
   
   showMask('刊登資料上傳中…');
   items.unshift(it);
@@ -1225,7 +1249,7 @@ function openLogin(){
 
 function confirmLogin(){
   const prev=me()||{};
-  const a={ hao:+document.getElementById('inHao').value, lou:+document.getElementById('inLou').value, zhi:+document.getElementById('inZhi').value, contact:prev.contact||'' };
+  const a={ hao:+document.getElementById('inHao').value, lou:+document.getElementById('inLou').value, zhi:+document.getElementById('inZhi').value, contact:prev.contact||'', email:prev.email||'' };
   setLogin(a); closeSheet(); applyLoginUI();
   go('list');
   showToast(`歡迎！${fullAddr(a)}`);
