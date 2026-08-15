@@ -234,6 +234,16 @@ button.tealbtn{background:var(--tiffany);color:#fff}
 .sheet{background:#fff;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:12px 18px calc(18px + env(safe-area-inset-bottom,0px));animation:slideup .25s cubic-bezier(.2,.9,.3,1);box-shadow:0 -8px 30px rgba(0,0,0,.15)}
 .sheet.photo-sheet{max-height:94vh!important;overflow:hidden!important;padding-top:8px!important;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))!important}
 @keyframes slideup{from{transform:translateY(100%)}to{transform:none}}
+.disc-overlay{position:fixed;inset:0;z-index:400;background:rgba(7,80,78,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
+.disc-card{background:#fff;width:100%;max-width:440px;max-height:86vh;display:flex;flex-direction:column;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.3);overflow:hidden;animation:fade .25s}
+.disc-head{padding:18px 20px 12px;font-size:18px;font-weight:900;color:var(--tiffany-dark);text-align:center;border-bottom:1px solid var(--line)}
+.disc-body{padding:16px 20px;overflow-y:auto;font-size:13.5px;line-height:1.75;color:var(--ink)}
+.disc-body ol{margin:0;padding-left:18px}
+.disc-body li{margin-bottom:9px}
+.disc-body b{color:var(--tiffany-dark)}
+.disc-foot{padding:12px 20px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.disc-agree{width:100%;background:var(--tiffany);color:#fff;border:none;border-radius:10px;padding:14px;font:inherit;font-size:16px;font-weight:900;cursor:pointer}
+.disc-agree:active{opacity:.88}
 .grab{width:38px;height:4px;background:var(--line);border-radius:100px;margin:0 auto 16px}
 .dhead{display:flex;gap:11px;align-items:center;margin-bottom:16px}
 .dicon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -350,6 +360,28 @@ button.tealbtn{background:var(--tiffany);color:#fff}
 
 <!-- Toast (book.html 滿版半透明風格) -->
 <div id="toast" class="toast-overlay hidden"><div class="toast-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span id="toastText">成功</span></div></div>
+
+<!-- 首次使用免責聲明 -->
+<div id="discOverlay" class="disc-overlay hidden">
+  <div class="disc-card">
+    <div class="disc-head">林森苑好物分享使用聲明</div>
+    <div class="disc-body">
+      <ol>
+        <li><b>本平台性質</b>：本平台為住戶個人自行開發、無償提供之便民工具，<b>非社區管理委員會之官方系統，亦與管理委員會無涉</b>。</li>
+        <li><b>僅提供資訊媒合</b>：本平台僅供住戶間物品分享／贈與之資訊媒合，不介入、不參與實際交付或交易。</li>
+        <li><b>物品狀況自行確認</b>：物品之狀態、品質、安全性均由提供者自行描述，平台不作任何保證，索取者應自行確認後再取用。</li>
+        <li><b>交付與糾紛自負</b>：物品之聯繫、交付及相關事宜由雙方自行協調；因此所生之任何爭議或損害，均由當事人自行負責，本平台開發者不承擔任何責任。</li>
+        <li><b>服務不保證</b>：本平台為個人無償維護，不保證服務之持續性、正確性或資料之永久保存，並得隨時調整或停止，恕不另行通知。</li>
+        <li><b>個人資料</b>：使用即表示同意於媒合必要範圍內顯示門牌等聯繫資訊，請勿填寫非必要之敏感個人資料。</li>
+        <li><b>禁止事項</b>：不得刊登違法、危險、侵權或不當物品，不得用於營利、詐騙或騷擾。</li>
+        <li><b>同意條款</b>：繼續使用本平台，即表示您已閱讀並同意本聲明。</li>
+      </ol>
+    </div>
+    <div class="disc-foot">
+      <button class="disc-agree" onclick="agreeDisclaimer()">我已閱讀並同意</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ============================================================
@@ -1351,11 +1383,22 @@ function trowThumb(it){ return it.photos&&it.photos[0] ? `<div class="tthumb"><i
 /* ============================================================
    Boot
    ============================================================ */
+var DISC_KEY='share-disclaimer-agreed-v1';
 (function init(){
   applyLoginUI();
   go('list');
   loadBooksData();
+  checkDisclaimer();
 })();
+function checkDisclaimer(){
+  var agreed=false;
+  try{agreed=localStorage.getItem(DISC_KEY)==='1';}catch(e){}
+  if(!agreed)document.getElementById('discOverlay').classList.remove('hidden');
+}
+function agreeDisclaimer(){
+  try{localStorage.setItem(DISC_KEY,'1');}catch(e){}
+  document.getElementById('discOverlay').classList.add('hidden');
+}
 </script>
 </body>
 </html>
