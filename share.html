@@ -767,6 +767,7 @@ function renderRecords(){
             isUnread: !m.read,
             isReplied: !!reply,
             myReply: reply ? esc(reply.text) : '',
+            myReplyTs: reply ? reply.ts : null,
             itemRemoved: it.status === 'removed'
           });
         }
@@ -779,37 +780,57 @@ function renderRecords(){
       return;
     }
 
-    el.innerHTML = msgCards.map(m=>{
-      const replyBtnClass = m.isReplied ? 'btn-action-right cancel' : 'btn-action-right claim';
-      const replyBtnStyle = m.isReplied ? 'height:48px;padding:0 16px;font-size:14px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)' : 'height:48px;padding:0 16px;font-size:14px';
-      const shortName = m.it.name.length > 15 ? m.it.name.slice(0, 15) + '...' : m.it.name;
-      const replyAction = m.myRole==='claimant' ? `openRecipientReplyDialog('${m.it.id}')` : `openNotifyMessageDialog('${m.it.id}',${m.claimIndex},true)`;
+    // 依「物品」分組：每個物品一個外層區塊（左上角標示「物品：xxx」），
+    // 底下每一則訊息各自一張卡片，卡片本身不再重複顯示物品標籤。
+    const groups = [];
+    const groupMap = {};
+    msgCards.forEach(m=>{
+      let g = groupMap[m.it.id];
+      if(!g){
+        g = { it: m.it, itemRemoved: m.itemRemoved, msgs: [] };
+        groupMap[m.it.id] = g;
+        groups.push(g);
+      }
+      g.msgs.push(m);
+    });
 
-      const headerClickable = !m.itemRemoved;
-      const headerAttrs = headerClickable ? `style="color:var(--tiffany-dark);font-weight:700;font-size:12px;cursor:pointer;text-decoration:underline" onclick="openDetail('${m.it.id}', undefined, true)"` : `style="color:var(--tiffany-dark);font-weight:700;font-size:12px"`;
+    el.innerHTML = groups.map(g=>{
+      const shortName = g.it.name.length > 15 ? g.it.name.slice(0, 15) + '...' : g.it.name;
+      const headerClickable = !g.itemRemoved;
+      const headerAttrs = headerClickable ? `style="color:var(--tiffany-dark);font-weight:700;font-size:14px;cursor:pointer;text-decoration:underline" onclick="openDetail('${g.it.id}', undefined, true)"` : `style="color:var(--tiffany-dark);font-weight:700;font-size:14px"`;
 
-      return `<div class="card ${m.isReplied ? 'claimed-card' : ''} ${m.itemRemoved ? 'removed-card' : ''}" style="margin-top:16px;position:relative">
-        <div class="sechead" ${headerAttrs}>物品：${esc(shortName)}</div>
-        ${m.itemRemoved ? `<div class="card-top-tag" style="border-color:var(--slate);color:var(--slate)">物品已移除</div>` : ''}
-        <div class="card-tap" style="cursor:default;padding-top:14px">
-          <div class="info">
-            <div style="background:var(--tiffany-light);border-radius:10px;padding:10px 12px;${m.isReplied ? 'margin-bottom:8px' : ''}">
-              <div style="font-weight:700;font-size:14px;color:var(--tiffany-dark);margin-bottom:4px">${m.otherAddr} (${m.roleTitle})</div>
-              <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.msgBody}</div>
-            </div>
-            ${m.isReplied ? `
-              <div style="background:var(--slate-light);border-radius:10px;padding:10px 12px">
-                <div style="font-weight:700;font-size:14px;color:var(--ink-soft);margin-bottom:4px">您的回覆</div>
-                <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.myReply || '（無內容）'}</div>
+      const msgsHtml = g.msgs.map((m, idx)=>{
+        const replyBtnClass = m.isReplied ? 'btn-action-right cancel' : 'btn-action-right claim';
+        const replyBtnStyle = m.isReplied ? 'height:48px;padding:0 16px;font-size:14px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)' : 'height:48px;padding:0 16px;font-size:14px';
+        const replyAction = m.myRole==='claimant' ? `openRecipientReplyDialog('${m.it.id}')` : `openNotifyMessageDialog('${m.it.id}',${m.claimIndex},true)`;
+
+        return `<div class="card ${m.isReplied ? 'claimed-card' : ''}" style="${idx===0 ? 'margin-top:0' : 'margin-top:14px'}">
+          <div class="card-tap" style="cursor:default">
+            <div class="info">
+              <div style="background:var(--tiffany-light);border-radius:10px;padding:10px 12px;${m.isReplied ? 'margin-bottom:8px' : ''}">
+                <div style="margin-bottom:4px"><span style="font-weight:700;font-size:14px;color:var(--tiffany-dark)">${m.otherAddr} (${m.roleTitle})</span><span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${fmtDateTime(m.ts)}</span></div>
+                <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.msgBody}</div>
               </div>
-            ` : ''}
+              ${m.isReplied ? `
+                <div style="background:var(--slate-light);border-radius:10px;padding:10px 12px">
+                  <div style="margin-bottom:4px"><span style="font-weight:700;font-size:14px;color:var(--ink-soft)">您的回覆</span>${m.myReplyTs ? `<span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${fmtDateTime(m.myReplyTs)}</span>` : ''}</div>
+                  <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.myReply || '（無內容）'}</div>
+                </div>
+              ` : ''}
+            </div>
+            <div class="card-right-btn" style="flex-direction:row;gap:6px">
+              <button class="${replyBtnClass}" style="${replyBtnStyle}" onclick="${replyAction}">回覆<br>訊息</button>
+              ${m.isUnread ? `<button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)" onclick="markMessageRead('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">已讀<br>訊息</button>` : ''}
+              <button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--coral);border-color:var(--coral)" onclick="removeMessageCard('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">移除<br>訊息</button>
+            </div>
           </div>
-          <div class="card-right-btn" style="flex-direction:row;gap:6px">
-            <button class="${replyBtnClass}" style="${replyBtnStyle}" onclick="${replyAction}">回覆<br>訊息</button>
-            ${m.isUnread ? `<button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)" onclick="markMessageRead('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">已讀<br>訊息</button>` : ''}
-            <button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--coral);border-color:var(--coral)" onclick="removeMessageCard('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">移除<br>訊息</button>
-          </div>
-        </div>
+        </div>`;
+      }).join('');
+
+      return `<div class="form-section sec ${g.itemRemoved ? 'removed-card' : ''}" style="margin-top:20px;margin-bottom:16px;background:#fff;border:1.5px solid var(--tiffany);border-radius:12px;padding:14px 16px 16px">
+        <div class="sechead" ${headerAttrs}>物品：${esc(shortName)}</div>
+        ${g.itemRemoved ? `<div class="card-top-tag" style="border-color:var(--slate);color:var(--slate);left:auto;right:14px">物品已移除</div>` : ''}
+        ${msgsHtml}
       </div>`;
     }).join('');
   }
@@ -1321,10 +1342,11 @@ async function notify(event, payload){
 /* ============================================================
    Utils
    ============================================================ */
-function esc(s){ return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function esc(s){ return String(s===null||s===undefined?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function ago(ts){ const d=Math.floor((Date.now()-ts)/86400000); return d<=0?'今天':d===1?'昨天':`${d} 天前`; }
 function fmt(ts){ const d=new Date(ts); return `${d.getMonth()+1}/${d.getDate()}`; }
 function fmtFull(ts){ const d=new Date(ts); const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}/${mm}/${dd}`; }
+function fmtDateTime(ts){ const d=new Date(ts); const mm=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); const hh=String(d.getHours()).padStart(2,'0'); const mi=String(d.getMinutes()).padStart(2,'0'); return `${d.getFullYear()}/${mm}/${dd} ${hh}:${mi}`; }
 function trowThumb(it){ return it.photos&&it.photos[0] ? `<div class="tthumb"><img src="${it.photos[0]}" alt=""></div>` : `<div class="tthumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`; }
 
 /* ============================================================
