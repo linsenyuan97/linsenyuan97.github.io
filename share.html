@@ -101,6 +101,7 @@ button.tealbtn{background:var(--tiffany);color:#fff}
 .btn-action-right.claim{background:var(--tiffany);color:#fff;border:1.5px solid var(--tiffany)}
 .btn-action-right.cancel{background:#fff;color:var(--coral);border:1.5px solid var(--coral)}
 .btn-action-right:active{opacity:.85}
+.card-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;padding:0 16px 16px}
 
 /* ===== Detail ===== */
 .hero{width:100%;height:210px;border-radius:15px;background:var(--tiffany-light);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:12px}
@@ -686,12 +687,12 @@ function renderRecords(){
         const givenStr = fmtFull(it.givenAt||it.createdAt);
         return `<div class="card" style="opacity:.85">
           <div class="card-top-tag" style="border-color:var(--slate);color:var(--slate)">物品已下架</div>
-          <div class="card-tap" style="cursor:default" onclick="openDetail('${it.id}')">
+          <div class="card-tap" onclick="openDetail('${it.id}')">
             ${thumb(it)}
-            <div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${givenStr} 送出 &nbsp;(${expStr} 系統將自動移除)</div></div>
+            <div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${givenStr} 送出<br>(${expStr} 系統將自動移除)</div></div>
             <div class="card-right-btn" style="flex-direction:row;gap:6px">
-              <button class="btn-action-right" style="height:48px;padding:0 16px;font-size:14px;background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany)" onclick="event.stopPropagation();submitUngiven('${it.id}')">物品<br>上架</button>
-              <button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--coral);border-color:var(--coral)" onclick="event.stopPropagation();openRemove('${it.id}')">移除<br>物品</button>
+              <button class="btn-action-right" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany)" onclick="event.stopPropagation();submitUngiven('${it.id}')">物品<br>上架</button>
+              <button class="btn-action-right cancel" onclick="event.stopPropagation();openRemove('${it.id}')">移除<br>物品</button>
             </div>
           </div>
         </div>`;
@@ -705,14 +706,15 @@ function renderRecords(){
       }
 
       return `<div class="card">
-        <div class="card-tap" style="cursor:default" onclick="openDetail('${it.id}')">
+        <div class="card-tap" onclick="openDetail('${it.id}')">
           ${thumb(it)}
-          <div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${createStr} 刊登 &nbsp;(${expStr} 系統將自動移除)</div>${claimLinkHtml}</div>
+          <div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${createStr} 刊登<br>(${expStr} 系統將自動移除)</div>${claimLinkHtml}</div>
           <div class="card-right-btn" style="flex-direction:row;gap:6px">
-            <button class="btn-action-right claim" style="height:48px;padding:0 16px;font-size:14px" onclick="event.stopPropagation();openGiven('${it.id}')">物品<br>下架</button>
-            <button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--coral);border-color:var(--coral)" onclick="event.stopPropagation();openRemove('${it.id}')">移除<br>物品</button>
+            <button class="btn-action-right claim" onclick="event.stopPropagation();openGiven('${it.id}')">物品<br>下架</button>
+            <button class="btn-action-right cancel" onclick="event.stopPropagation();openRemove('${it.id}')">移除<br>物品</button>
           </div>
-        </div></div>`;
+        </div>
+      </div>`;
     }).join('');
 
   } else if(currentRecordSubtab === 'claims'){
@@ -801,28 +803,25 @@ function renderRecords(){
 
       const msgsHtml = g.msgs.map((m, idx)=>{
         const replyBtnClass = m.isReplied ? 'btn-action-right cancel' : 'btn-action-right claim';
-        const replyBtnStyle = m.isReplied ? 'height:48px;padding:0 16px;font-size:14px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)' : 'height:48px;padding:0 16px;font-size:14px';
         const replyAction = m.myRole==='claimant' ? `openRecipientReplyDialog('${m.it.id}')` : `openNotifyMessageDialog('${m.it.id}',${m.claimIndex},true)`;
 
         return `<div class="card ${m.isReplied ? 'claimed-card' : ''}" style="${idx===0 ? 'margin-top:0' : 'margin-top:14px'}">
-          <div class="card-tap" style="cursor:default">
-            <div class="info">
-              <div style="background:var(--tiffany-light);border-radius:10px;padding:10px 12px;${m.isReplied ? 'margin-bottom:8px' : ''}">
-                <div style="margin-bottom:4px"><span style="font-weight:700;font-size:14px;color:var(--tiffany-dark)">${m.otherAddr} (${m.roleTitle})</span><span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${fmtDateTime(m.ts)}</span></div>
-                <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.msgBody}</div>
+          <div style="padding:16px 16px 8px">
+            <div style="background:var(--tiffany-light);border-radius:10px;padding:10px 12px;${m.isReplied ? 'margin-bottom:8px' : ''}">
+              <div style="margin-bottom:4px"><span style="font-weight:700;font-size:14px;color:var(--tiffany-dark)">${m.otherAddr} (${m.roleTitle})</span><span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${fmtDateTime(m.ts)}</span></div>
+              <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.msgBody}</div>
+            </div>
+            ${m.isReplied ? `
+              <div style="background:var(--slate-light);border-radius:10px;padding:10px 12px">
+                <div style="margin-bottom:4px"><span style="font-weight:700;font-size:14px;color:var(--ink-soft)">您的回覆</span>${m.myReplyTs ? `<span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${fmtDateTime(m.myReplyTs)}</span>` : ''}</div>
+                <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.myReply || '（無內容）'}</div>
               </div>
-              ${m.isReplied ? `
-                <div style="background:var(--slate-light);border-radius:10px;padding:10px 12px">
-                  <div style="margin-bottom:4px"><span style="font-weight:700;font-size:14px;color:var(--ink-soft)">您的回覆</span>${m.myReplyTs ? `<span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${fmtDateTime(m.myReplyTs)}</span>` : ''}</div>
-                  <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.myReply || '（無內容）'}</div>
-                </div>
-              ` : ''}
-            </div>
-            <div class="card-right-btn" style="flex-direction:row;gap:6px">
-              <button class="${replyBtnClass}" style="${replyBtnStyle}" onclick="${replyAction}">回覆<br>訊息</button>
-              ${m.isUnread ? `<button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)" onclick="markMessageRead('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">已讀<br>訊息</button>` : ''}
-              <button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--coral);border-color:var(--coral)" onclick="removeMessageCard('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">移除<br>訊息</button>
-            </div>
+            ` : ''}
+          </div>
+          <div class="card-actions">
+            <button class="${replyBtnClass}" style="height:40px;padding:0 16px;font-size:13px;white-space:nowrap;${m.isReplied ? 'color:var(--tiffany-dark);border-color:var(--tiffany-mid)' : ''}" onclick="${replyAction}">回覆訊息</button>
+            ${m.isUnread ? `<button class="btn-action-right cancel" style="height:40px;padding:0 16px;font-size:13px;white-space:nowrap;color:var(--tiffany-dark);border-color:var(--tiffany-mid)" onclick="markMessageRead('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">已讀訊息</button>` : ''}
+            <button class="btn-action-right cancel" style="height:40px;padding:0 16px;font-size:13px;white-space:nowrap;color:var(--coral);border-color:var(--coral)" onclick="removeMessageCard('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">移除訊息</button>
           </div>
         </div>`;
       }).join('');
@@ -1077,25 +1076,25 @@ function openDonateSheet(){
   const dateStr = `${yyyy}/${mm}/${dd}`;
 
   showSheet(`
-    <div style="font-size:18px;font-weight:900;text-align:center;margin-bottom:16px">刊登物品</div>
+    <div style="font-size:18px;font-weight:900;text-align:center;margin-bottom:12px">刊登物品</div>
     
-    <div class="form-section sec" style="margin-top:14px">
+    <div class="form-section sec" style="margin-top:10px;padding-top:20px">
       <div class="sechead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10z"/><circle cx="7" cy="7" r="1"/></svg>物品資訊</div>
-      <div class="float"><input type="text" id="dName" placeholder=" "><label>物品名稱（必填）</label></div>
-      <div class="float"><textarea id="dDesc" placeholder=" "></textarea><label>物品描述（狀況、尺寸、使用年限等）</label></div>
+      <div class="float" style="margin:12px 0 4px"><input type="text" id="dName" placeholder=" "><label>物品名稱（必填）</label></div>
+      <div class="float" style="margin:12px 0 4px"><textarea id="dDesc" placeholder=" " style="min-height:60px"></textarea><label>物品描述（狀況、尺寸、使用年限等）</label></div>
     </div>
     
-    <div class="form-section sec">
-      <div class="sechead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>照片（最多 6 張，自動壓縮）</div>
+    <div class="form-section sec" style="padding-top:20px">
+      <div class="sechead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>照片（最多 6 張）</div>
       <div class="photo-grid" id="photoGrid"></div>
       <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotoUpload(event)">
     </div>
     
-    <div style="color:var(--coral);font-size:13px;font-weight:700;text-align:center;margin-bottom:12px">
+    <div style="color:var(--coral);font-size:13px;font-weight:700;text-align:center;margin-bottom:8px">
       刊登的資料於 ${dateStr} 會自動清除。
     </div>
     
-    <div class="dbtns">
+    <div class="dbtns" style="position:sticky;bottom:0;background:#fff;margin:8px -18px 0;padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 10px rgba(255,255,255,.92)">
       <button class="dbtn cancel" onclick="closeSheet()">取消</button>
       <button class="dbtn go" onclick="submitDonate()">確認</button>
     </div>
