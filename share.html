@@ -188,7 +188,7 @@ button.tealbtn{background:var(--tiffany);color:#fff}
 .page-title{font-size:20px;font-weight:900;margin:16px 0 18px}
 .form-section{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:18px 16px;margin-bottom:20px;box-shadow:var(--shadow-card);position:relative}
 .form-section.sec{padding-top:24px}
-.sechead{position:absolute;top:-12px;left:14px;display:flex;align-items:center;gap:6px;background:#fff;padding:0 8px;font-size:14px;font-weight:700;color:var(--tiffany-dark)}
+.sechead{position:absolute;top:-12px;left:14px;display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--tiffany);border-radius:6px;padding:2px 8px;font-size:14px;font-weight:700;color:var(--tiffany-dark);z-index:5;line-height:1.2}
 .sechead svg{width:16px;height:16px;color:var(--tiffany-dark);flex-shrink:0}
 
 .float{position:relative;display:flex;margin:16px 0 4px}
@@ -502,7 +502,7 @@ function renderList(){
           <div class="iname">${esc(it.name)}</div>
           <div class="idesc">${esc(it.desc||'')}</div>
           ${isOwner && claimCount > 0
-            ? `<div style="margin-top:4px"><span onclick="event.stopPropagation();closeSheet();openClaimantsDialog('${it.id}')" style="font-size:13px;font-weight:700;color:var(--tiffany-dark);text-decoration:underline;cursor:pointer">查看登記索取清單（${claimCount}人）</span></div>`
+            ? `<div style="margin-top:4px"><span onclick="event.stopPropagation();closeSheet();openClaimantsDialog('${it.id}')" style="font-size:17px;font-weight:700;color:var(--tiffany);text-decoration:underline;cursor:pointer">查看登記索取清單（${claimCount}人）</span></div>`
             : `<div class="donor">目前 ${claimCount} 人登記索取</div>`
           }
         </div>
@@ -553,7 +553,7 @@ function openPhotoViewerDialog(id, photoIndex){
   `, 'photo-sheet');
 }
 
-function openDetail(id, photoIndex){
+function openDetail(id, photoIndex, viewOnly){
   ui.detailId = id;
   const it = items.find(x=>x.id===id); if(!it) return;
   const my = me();
@@ -587,7 +587,11 @@ function openDetail(id, photoIndex){
 
   // CTA button HTML
   let ctaHtml;
-  if(it.status==='given'){
+  if(viewOnly){
+    ctaHtml = `<div class="dbtns" style="margin-top:8px">
+      <button class="dbtn cancel" style="flex:1 !important;width:100% !important" onclick="closeSheet()">關閉</button>
+    </div>`;
+  } else if(it.status==='given'){
     ctaHtml = `<button class="dbtn" style="background:var(--slate-light);color:var(--slate);width:100%;margin-top:8px;cursor:default" disabled>此物品已送出</button>`;
   } else if(isOwner){
     ctaHtml = `<div class="dbtns" style="margin-top:8px">
@@ -627,7 +631,7 @@ function openClaim(id){
   const pos = it.claims.length+1;
   showSheet(`
     <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 22V7"/></svg></div><div><div class="dt">${esc(it.name)}</div></div></div>
-    <div class="float"><input type="text" id="claimContact" placeholder=" " value="${esc((me()&&me().contact)||'')}"><label>留下索取訊息（可以留下聯絡方式，例如 Line ID 或電話）</label></div>
+    <div class="float"><input type="text" id="claimContact" placeholder=" " value="${esc((me()&&me().contact)||'')}"><label>留下索取訊息給贈與者 (例如電話或Line ID)</label></div>
     <div class="dbtns" style="margin-top:16px"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitClaim('${id}')">確認登記索取</button></div>
   `);
 }
@@ -635,7 +639,8 @@ async function submitClaim(id){
   const it = items.find(x=>x.id===id); if(!it) return;
   const contact = document.getElementById('claimContact').value.trim();
   showMask('登記中…');
-  it.claims.push({ addr:me(), contact, ts:Date.now(), notified:false });
+  const msgs = contact ? [{ from:'claimant', text:contact, ts:Date.now(), read:false, hidden:false }] : [];
+  it.claims.push({ addr:me(), ts:Date.now(), notified:false, msgs });
   const pos = it.claims.length;
   await notify('claim', { itemId:id, itemName:it.name, donor:it.donor, claimant:me(), pos, contact });
   hideMask();
@@ -680,10 +685,14 @@ function renderRecords(){
       if(it.status==='given'){
         const givenStr = fmtFull(it.givenAt||it.createdAt);
         return `<div class="card" style="opacity:.85">
-          <div class="card-tap" onclick="openDetail('${it.id}')">${thumb(it)}<div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${givenStr} 送出 &nbsp;(${expStr} 系統將自動移除)</div></div></div>
-          <div class="btn-row">
-            <button class="btn ghost" onclick="submitUngiven('${it.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>標示未送出</button>
-            <button class="btn danger" onclick="openRemove('${it.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>移除物品</button>
+          <div class="card-top-tag" style="border-color:var(--slate);color:var(--slate)">物品已下架</div>
+          <div class="card-tap" style="cursor:default" onclick="openDetail('${it.id}')">
+            ${thumb(it)}
+            <div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${givenStr} 送出 &nbsp;(${expStr} 系統將自動移除)</div></div>
+            <div class="card-right-btn" style="flex-direction:row;gap:6px">
+              <button class="btn-action-right" style="height:48px;padding:0 16px;font-size:14px;background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany)" onclick="event.stopPropagation();submitUngiven('${it.id}')">物品<br>上架</button>
+              <button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--coral);border-color:var(--coral)" onclick="event.stopPropagation();openRemove('${it.id}')">移除<br>物品</button>
+            </div>
           </div>
         </div>`;
       }
@@ -692,14 +701,17 @@ function renderRecords(){
       if(!hasClaims){
         claimLinkHtml = `<div style="font-size:13px;color:var(--ink-muted);margin-top:4px">還沒有人索取</div>`;
       } else {
-        claimLinkHtml = `<div style="margin-top:4px"><span onclick="event.stopPropagation();openClaimantsDialog('${it.id}')" style="font-size:13px;font-weight:700;color:var(--tiffany-dark);text-decoration:underline;cursor:pointer">查看登記索取清單（${claims.length}人）</span></div>`;
+        claimLinkHtml = `<div style="margin-top:4px"><span onclick="event.stopPropagation();openClaimantsDialog('${it.id}')" style="font-size:17px;font-weight:700;color:var(--tiffany);text-decoration:underline;cursor:pointer">查看登記索取清單（${claims.length}人）</span></div>`;
       }
 
       return `<div class="card">
-        <div class="card-tap" onclick="openDetail('${it.id}')">${thumb(it)}<div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${createStr} 刊登 &nbsp;(${expStr} 系統將自動移除)</div>${claimLinkHtml}</div></div>
-        <div class="btn-row">
-          <button class="btn primary" onclick="openGiven('${it.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>標記已送出</button>
-          <button class="btn danger" onclick="openRemove('${it.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>移除物品</button>
+        <div class="card-tap" style="cursor:default" onclick="openDetail('${it.id}')">
+          ${thumb(it)}
+          <div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${createStr} 刊登 &nbsp;(${expStr} 系統將自動移除)</div>${claimLinkHtml}</div>
+          <div class="card-right-btn" style="flex-direction:row;gap:6px">
+            <button class="btn-action-right claim" style="height:48px;padding:0 16px;font-size:14px" onclick="event.stopPropagation();openGiven('${it.id}')">物品<br>下架</button>
+            <button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--coral);border-color:var(--coral)" onclick="event.stopPropagation();openRemove('${it.id}')">移除<br>物品</button>
+          </div>
         </div></div>`;
     }).join('');
 
@@ -731,38 +743,36 @@ function renderRecords(){
     }).join('');
 
   } else if(currentRecordSubtab === 'messages'){
-    // 找出 1. 我是索取者且收到贈送者通知 2. 我是贈送者且收到索取者回覆
+    // 每一則「對方傳來的訊息」都是獨立卡片；若我已回覆，附帶顯示我的回覆內容，
+    // 之後對方若再傳新訊息，會再產生一張新的（未讀）卡片，不會互相覆蓋。
     const msgCards = [];
     items.forEach(it=>{
       const isOwner = sameAddr(it.donor, my);
-      (it.claims||[]).forEach((c, i)=>{
-        if(!isOwner && sameAddr(c.addr, my) && c.notified){
-          // 我是索取者，收到贈送者訊息
+      (it.claims||[]).forEach((c, ci)=>{
+        const myRole = isOwner ? 'donor' : (sameAddr(c.addr, my) ? 'claimant' : null);
+        if(!myRole) return;
+        const msgs = c.msgs || [];
+        for(let mi=0; mi<msgs.length; mi++){
+          const m = msgs[mi];
+          if(m.from === myRole) continue; // 自己發的訊息只會附掛在對方那則卡片下方，不另外成卡
+          if(m.hidden) continue;
+          let reply = null;
+          if(mi+1 < msgs.length && msgs[mi+1].from === myRole) reply = msgs[mi+1];
           msgCards.push({
-            it, claimIndex: i, role: 'claimant',
-            otherAddr: fullAddr(it.donor),
-            roleTitle: '贈送者回覆',
-            msgBody: c.replyMsg ? esc(c.replyMsg) : '可以面交，請聯絡我面交時間',
-            isUnread: !c.read,
-            isReplied: !!c.replied,
-            myReply: c.donorMsg ? esc(c.donorMsg) : (c.contact ? esc(c.contact) : ''),
-            itemRemoved: it.status === 'removed'
-          });
-        } else if(isOwner && c.donorNotified){
-          // 我是贈送者，收到索取者回覆訊息
-          msgCards.push({
-            it, claimIndex: i, role: 'donor',
-            otherAddr: fullAddr(c.addr),
-            roleTitle: '索取者回覆',
-            msgBody: c.donorMsg ? esc(c.donorMsg) : (c.contact ? esc(c.contact) : '已留下索取訊息'),
-            isUnread: !c.donorRead,
-            isReplied: !!c.donorReplied,
-            myReply: c.replyMsg ? esc(c.replyMsg) : '',
+            it, claimIndex: ci, msgIndex: mi, myRole,
+            ts: m.ts,
+            otherAddr: myRole==='claimant' ? fullAddr(it.donor) : fullAddr(c.addr),
+            roleTitle: myRole==='claimant' ? '贈送者訊息' : '索取者訊息',
+            msgBody: m.text ? esc(m.text) : (myRole==='claimant' ? '可以面交，請聯絡我面交時間' : '已留下索取訊息'),
+            isUnread: !m.read,
+            isReplied: !!reply,
+            myReply: reply ? esc(reply.text) : '',
             itemRemoved: it.status === 'removed'
           });
         }
       });
     });
+    msgCards.sort((a,b)=> b.ts - a.ts);
 
     if(!msgCards.length){
       el.innerHTML = emptyText('目前沒有新訊息');
@@ -771,85 +781,139 @@ function renderRecords(){
 
     el.innerHTML = msgCards.map(m=>{
       const replyBtnClass = m.isReplied ? 'btn-action-right cancel' : 'btn-action-right claim';
-      const replyBtnStyle = m.isReplied ? 'height:38px;padding:0 12px;font-size:13px;color:var(--ink-soft);border-color:var(--line);background:var(--slate-light)' : 'height:38px;padding:0 12px;font-size:13px';
+      const replyBtnStyle = m.isReplied ? 'height:48px;padding:0 16px;font-size:14px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)' : 'height:48px;padding:0 16px;font-size:14px';
+      const shortName = m.it.name.length > 15 ? m.it.name.slice(0, 15) + '...' : m.it.name;
+      const replyAction = m.myRole==='claimant' ? `openRecipientReplyDialog('${m.it.id}')` : `openNotifyMessageDialog('${m.it.id}',${m.claimIndex},true)`;
 
-      return `<div class="card ${m.isReplied ? 'claimed-card' : ''} ${m.itemRemoved ? 'removed-card' : ''}">
-        ${m.itemRemoved ? `<div class="card-top-tag" style="border-color:var(--slate);color:var(--slate)">物品已移除</div>` : (m.isReplied ? `<div class="card-top-tag">已回覆</div>` : '')}
-        <div class="card-tap" style="cursor:default">
+      const headerClickable = !m.itemRemoved;
+      const headerAttrs = headerClickable ? `style="color:var(--tiffany-dark);font-weight:700;font-size:12px;cursor:pointer;text-decoration:underline" onclick="openDetail('${m.it.id}', undefined, true)"` : `style="color:var(--tiffany-dark);font-weight:700;font-size:12px"`;
+
+      return `<div class="card ${m.isReplied ? 'claimed-card' : ''} ${m.itemRemoved ? 'removed-card' : ''}" style="margin-top:16px;position:relative">
+        <div class="sechead" ${headerAttrs}>物品：${esc(shortName)}</div>
+        ${m.itemRemoved ? `<div class="card-top-tag" style="border-color:var(--slate);color:var(--slate)">物品已移除</div>` : ''}
+        <div class="card-tap" style="cursor:default;padding-top:14px">
           <div class="info">
-            <div class="iname">${esc(m.it.name)}</div>
-            <div class="donor" style="color:var(--tiffany-dark);font-weight:700;margin-bottom:3px">${m.otherAddr} (${m.roleTitle})</div>
-            <div class="idesc" style="color:var(--ink);margin-bottom:6px">${m.msgBody}</div>
-            
-            ${m.isReplied && m.myReply ? `
-              <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)">
-                <div style="font-size:12px;font-weight:700;color:var(--tiffany-dark);margin-bottom:2px">您的回覆</div>
-                <div style="font-size:13px;color:var(--ink-soft);line-height:1.4">${m.myReply}</div>
+            <div style="background:var(--tiffany-light);border-radius:10px;padding:10px 12px;${m.isReplied ? 'margin-bottom:8px' : ''}">
+              <div style="font-weight:700;font-size:14px;color:var(--tiffany-dark);margin-bottom:4px">${m.otherAddr} (${m.roleTitle})</div>
+              <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.msgBody}</div>
+            </div>
+            ${m.isReplied ? `
+              <div style="background:var(--slate-light);border-radius:10px;padding:10px 12px">
+                <div style="font-weight:700;font-size:14px;color:var(--ink-soft);margin-bottom:4px">您的回覆</div>
+                <div style="font-size:15px;color:var(--ink);line-height:1.5">${m.myReply || '（無內容）'}</div>
               </div>
             ` : ''}
           </div>
           <div class="card-right-btn" style="flex-direction:row;gap:6px">
-            <button class="${replyBtnClass}" style="${replyBtnStyle}" onclick="${m.role==='claimant' ? `openRecipientReplyDialog('${m.it.id}')` : `openNotifyMessageDialog('${m.it.id}',${m.claimIndex})`}">回覆</button>
-            ${m.isUnread ? `<button class="btn-action-right cancel" style="height:38px;padding:0 12px;font-size:13px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)" onclick="markMessageRead('${m.it.id}', '${m.role}', ${m.claimIndex})">已讀</button>` : ''}
+            <button class="${replyBtnClass}" style="${replyBtnStyle}" onclick="${replyAction}">回覆<br>訊息</button>
+            ${m.isUnread ? `<button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--tiffany-dark);border-color:var(--tiffany-mid)" onclick="markMessageRead('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">已讀<br>訊息</button>` : ''}
+            <button class="btn-action-right cancel" style="height:48px;padding:0 16px;font-size:14px;color:var(--coral);border-color:var(--coral)" onclick="removeMessageCard('${m.it.id}', ${m.claimIndex}, ${m.msgIndex})">移除<br>訊息</button>
           </div>
         </div>
       </div>`;
     }).join('');
   }
 }
+
+function removeMessageCard(id, claimIndex, msgIndex){
+  const my = me(); if(!my) return;
+  const it = items.find(x=>x.id===id); if(!it) return;
+  showSheet(`
+    <div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></div><div><div class="dt">移除訊息</div><div class="ds">${esc(it.name)}</div></div></div>
+    <div class="note warn">移除後這則訊息將不再顯示，且<b>無法復原</b>，確定要移除嗎？</div>
+    <div class="dbtns" style="margin-top:16px"><button class="dbtn cancel" onclick="closeSheet();renderRecords()">取消</button><button class="dbtn rm" onclick="confirmRemoveMessageCard('${id}',${claimIndex},${msgIndex})">確認移除</button></div>
+  `);
+}
+function confirmRemoveMessageCard(id, claimIndex, msgIndex){
+  const my = me(); if(!my) return;
+  const it = items.find(x=>x.id===id); if(!it) return;
+  const c = it.claims[claimIndex];
+  if(c && c.msgs && c.msgs[msgIndex]) c.msgs[msgIndex].hidden = true;
+  closeSheet();
+  showToast('訊息卡片已移除');
+  renderRecords();
+  refreshBadges();
+}
 function openClaimantsDialog(id){
   const it = items.find(x=>x.id===id); if(!it) return;
   const claims = it.claims || [];
   const listHtml = claims.map((c,i)=>{
-    const msg = c.contact ? esc(c.contact) : '（無留言訊息）';
-    return `<div class="crow" style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px">
+    const firstMsg = (c.msgs||[]).find(m=>m.from==='claimant');
+    const msg = firstMsg ? esc(firstMsg.text) : (c.contact ? esc(c.contact) : '（無留言訊息）');
+    const isLast = i === claims.length - 1;
+    const borderStyle = isLast ? '' : 'border-bottom:1px solid var(--line);';
+    return `<div class="crow" style="padding:10px 0;${borderStyle}display:flex;align-items:center;gap:12px">
       <span class="qnum">${i+1}</span>
       <div style="flex:1;min-width:0">
         <div class="cn" style="font-weight:700;font-size:14px;color:var(--ink);margin-bottom:2px">${fullAddr(c.addr)}</div>
+        <div style="font-size:11px;color:var(--tiffany-dark);margin-bottom:3px">${fmtFull(c.ts)} 登記索取</div>
         <div style="font-size:12px;color:var(--ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${msg}</div>
       </div>
-      ${c.notified ? `<span class="cc" style="margin-left:auto;font-size:12px;flex-shrink:0">已發送通知</span>` : `<button class="mini-btn" style="margin-left:auto;flex-shrink:0" onclick="openNotifyMessageDialog('${it.id}',${i})">發送通知</button>`}
+      ${c.notified ? `<span class="cc" style="margin-left:auto;font-size:12px;flex-shrink:0;text-align:center;line-height:1.25;color:var(--ink-muted)">已發送<br>通知</span>` : `<button class="mini-btn" style="margin-left:auto;flex-shrink:0;padding:5px 10px;text-align:center;line-height:1.25" onclick="openNotifyMessageDialog('${it.id}',${i})">發送<br>通知</button>`}
     </div>`;
   }).join('');
 
   showSheet(`
-    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="dt">${esc(it.name)}</div><div class="ds">登記索取名單（${claims.length}人）</div></div></div>
-    <div class="claim-list" style="margin:12px 0 16px;max-height:50vh;overflow-y:auto">${listHtml}</div>
+    <div class="dhead" style="align-items:center;gap:12px">
+      <div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 22V7"/></svg></div>
+      <div>
+        <div class="dt" style="font-size:18px;font-weight:900;color:var(--ink)">${esc(it.name)}</div>
+      </div>
+    </div>
+
+    <div class="form-section sec" style="margin-top:20px;margin-bottom:16px;background:#fff;border:1.5px solid var(--tiffany);border-radius:12px;padding:14px 16px 6px">
+      <div class="sechead" style="color:var(--tiffany-dark);font-size:17px;font-weight:700">登記索取名單（${claims.length}人）</div>
+      <div class="claim-list-inner" style="max-height:45vh;overflow-y:auto">
+        ${listHtml || '<div style="text-align:center;padding:16px;color:var(--ink-muted);font-size:13px">目前尚無人登記索取</div>'}
+      </div>
+    </div>
+
     <div class="dbtns"><button class="dbtn cancel" style="flex:1 !important;width:100% !important" onclick="closeSheet()">關閉</button></div>
   `);
 }
 
-function openNotifyMessageDialog(id, i){
+function openNotifyMessageDialog(id, i, fromMessages){
   const it = items.find(x=>x.id===id); if(!it||!it.claims[i]) return;
   const c = it.claims[i];
+  const msgs = c.msgs || [];
+  const lastClaimantMsg = [...msgs].reverse().find(m=>m.from==='claimant');
+  const previewText = lastClaimantMsg ? esc(lastClaimantMsg.text) : (c.contact ? esc(c.contact) : '（無留言訊息）');
   showSheet(`
-    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><div class="dt">發送通知</div><div class="ds">${esc(it.name)}</div></div></div>
+    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><div class="dt">${esc(it.name)}</div></div></div>
     
     <div class="form-section sec" style="margin-top:16px;margin-bottom:20px">
-      <div class="sechead">${fullAddr(c.addr)}</div>
-      <div style="font-size:15px;color:var(--ink);padding:2px 0">${c.contact ? esc(c.contact) : '（無留言訊息）'}</div>
+      <div class="sechead">${fullAddr(c.addr)} 索取者：</div>
+      <div style="font-size:15px;color:var(--ink);padding:2px 0">${previewText}</div>
     </div>
     
-    <div class="float"><input type="text" id="notifyReplyMsg" placeholder=" " value=""><label>回覆訊息</label></div>
+    <div class="float"><input type="text" id="notifyReplyMsg" placeholder=" " value=""><label>您的回覆</label></div>
     
     <div class="dbtns" style="margin-top:16px">
-      <button class="dbtn cancel" onclick="openClaimantsDialog('${id}')">取消</button>
-      <button class="dbtn go" onclick="submitNotifyMessage('${id}',${i})">送出</button>
+      <button class="dbtn cancel" onclick="${fromMessages ? 'closeSheet()' : `openClaimantsDialog('${id}')`}">取消</button>
+      <button class="dbtn go" onclick="submitNotifyMessage('${id}',${i},${!!fromMessages})">送出訊息</button>
     </div>
   `);
 }
 
-async function submitNotifyMessage(id, i){
+async function submitNotifyMessage(id, i, fromMessages){
   const it = items.find(x=>x.id===id); if(!it||!it.claims[i]) return;
-  const replyMsg = (document.getElementById('notifyReplyMsg').value||'').trim();
-  it.claims[i].notified = true;
-  it.claims[i].replyMsg = replyMsg;
-  
+  const text = (document.getElementById('notifyReplyMsg').value||'').trim();
+  const c = it.claims[i];
+  if(!c.msgs) c.msgs = [];
+  c.msgs.forEach(m=>{ if(m.from==='claimant') m.read = true; }); // 送出等同已讀對方先前訊息
+  c.msgs.push({ from:'donor', text, ts:Date.now(), read:false, hidden:false });
+  c.notified = true;
+
   showMask('發送通知中…');
-  await notify('notify_claimant', { itemId:id, itemName:it.name, claimant:it.claims[i].addr, claimIndex:i, replyMsg });
+  await notify('notify_claimant', { itemId:id, itemName:it.name, claimant:c.addr, claimIndex:i, replyMsg:text });
   hideMask();
   renderRecords();
-  openClaimantsDialog(id);
+  refreshBadges();
+  if(fromMessages){
+    closeSheet();
+  } else {
+    openClaimantsDialog(id);
+  }
   showToast('已發送通知');
 }
 
@@ -858,21 +922,23 @@ function openRecipientReplyDialog(id){
   const it = items.find(x=>x.id===id); if(!it) return;
   const c = (it.claims||[]).find(x=>sameAddr(x.addr,my)) || {};
   const donorAddrStr = fullAddr(it.donor);
-  const msgBody = c.replyMsg ? esc(c.replyMsg) : '可以面交，請聯絡我面交時間';
+  const msgs = c.msgs || [];
+  const lastDonorMsg = [...msgs].reverse().find(m=>m.from==='donor');
+  const msgBody = lastDonorMsg ? esc(lastDonorMsg.text) : '可以面交，請聯絡我面交時間';
 
   showSheet(`
     <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div><div class="dt">回覆訊息</div><div class="ds">${esc(it.name)}</div></div></div>
     
     <div class="form-section sec" style="margin-top:16px;margin-bottom:20px">
-      <div class="sechead">${donorAddrStr}</div>
+      <div class="sechead">${donorAddrStr} 贈與者：</div>
       <div style="font-size:15px;color:var(--ink);padding:2px 0">${msgBody}</div>
     </div>
     
-    <div class="float"><input type="text" id="recipientReplyInput" placeholder=" " value=""><label>回覆訊息</label></div>
+    <div class="float"><input type="text" id="recipientReplyInput" placeholder=" " value=""><label>您的回覆</label></div>
     
     <div class="dbtns" style="margin-top:16px">
       <button class="dbtn cancel" onclick="closeSheet()">取消</button>
-      <button class="dbtn go" onclick="submitRecipientReply('${id}')">送出</button>
+      <button class="dbtn go" onclick="submitRecipientReply('${id}')">送出訊息</button>
     </div>
   `);
 }
@@ -883,12 +949,10 @@ async function submitRecipientReply(id){
   const text = (document.getElementById('recipientReplyInput').value||'').trim();
   const c = (it.claims||[]).find(x=>sameAddr(x.addr,my));
   if(c){
-    c.contact = text;
-    c.replied = true;
-    c.read = true;
-    c.donorMsg = text;
-    c.donorNotified = true;
-    c.donorRead = false;
+    if(!c.msgs) c.msgs = [];
+    c.msgs.forEach(m=>{ if(m.from==='donor') m.read = true; }); // 送出等同已讀對方先前訊息
+    c.msgs.push({ from:'claimant', text, ts:Date.now(), read:false, hidden:false });
+    c.contact = text; // 保留給索取名單頁顯示用
   }
 
   showMask('發送訊息中…');
@@ -900,18 +964,15 @@ async function submitRecipientReply(id){
   refreshBadges();
 }
 
-async function markMessageRead(id, role, claimIndex){
+async function markMessageRead(id, claimIndex, msgIndex){
   const my = me(); if(!my) return;
   const it = items.find(x=>x.id===id); if(!it) return;
-  if(role === 'donor' && claimIndex !== undefined && it.claims[claimIndex]){
-    it.claims[claimIndex].donorRead = true;
-  } else {
-    const c = (it.claims||[]).find(x=>sameAddr(x.addr,my));
-    if(c) c.read = true;
-  }
+  const c = it.claims[claimIndex];
+  const m = c && c.msgs && c.msgs[msgIndex];
+  if(m) m.read = true;
   renderRecords();
   refreshBadges();
-  notify('mark_read', { itemId:id, claimant:my, role, claimIndex });
+  if(c && m) notify('mark_read', { itemId:id, claimantAddr:c.addr, role:m.from, ts:m.ts });
 }
 
 /* ============================================================
@@ -921,7 +982,7 @@ function openGiven(id){
   const it = items.find(x=>x.id===id); if(!it) return;
   showSheet(`
     <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div><div class="dt">${esc(it.name)}</div></div></div>
-    <div class="dbtns" style="margin-top:16px"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitGiven('${id}')">標記已送出</button></div>
+    <div class="dbtns" style="margin-top:16px"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitGiven('${id}')">確定下架</button></div>
   `);
 }
 async function submitGiven(id){
@@ -937,7 +998,7 @@ async function submitGiven(id){
   await notify('given', { itemId:id, itemName:it.name, givenTo:it.givenTo, others:(it.claims||[]).filter((_,x)=>x!==i).map(c=>c.addr) });
   hideMask();
   closeSheet();
-  showToast('已標記為送出');
+  showToast('物品下架成功');
   renderRecords();
 }
 
@@ -949,7 +1010,7 @@ async function submitUngiven(id){
   showMask('狀態更新中…');
   await notify('ungiven', { itemId:id, itemName:it.name });
   hideMask();
-  showToast('已標示為未送出');
+  showToast('物品上架成功');
   renderRecords();
 }
 
@@ -1112,8 +1173,9 @@ function confirmLogin(){
   const prev=me()||{};
   const a={ hao:+document.getElementById('inHao').value, lou:+document.getElementById('inLou').value, zhi:+document.getElementById('inZhi').value, contact:prev.contact||'' };
   setLogin(a); closeSheet(); applyLoginUI();
+  go('list');
   showToast(`歡迎！${fullAddr(a)}`);
-  renderList(); refreshBadges();
+  loadBooksData();
 }
 
 function doLogout(){ clearLogin(); closeSheet(); applyLoginUI(); go('list'); showToast('已登出'); }
@@ -1141,8 +1203,13 @@ function refreshBadges(showLoadingState){
   items.forEach(it=>{
     const isOwner = sameAddr(it.donor, my);
     (it.claims||[]).forEach(c=>{
-      if(!isOwner && sameAddr(c.addr, my) && c.notified && !c.read) unreadCount++;
-      if(isOwner && c.donorNotified && !c.donorRead) unreadCount++;
+      const msgs = c.msgs || [];
+      if(!isOwner && sameAddr(c.addr, my)){
+        msgs.forEach(m=>{ if(m.from==='donor' && !m.read && !m.hidden) unreadCount++; });
+      }
+      if(isOwner){
+        msgs.forEach(m=>{ if(m.from==='claimant' && !m.read && !m.hidden) unreadCount++; });
+      }
     });
   });
 
@@ -1201,8 +1268,26 @@ function showToast(msg){
    ============================================================ */
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxVlKNArVGTYz0vTSpcZHiAASasDYqXzSKwq035NteTWzhotLvppjLuNb2hhA4AwXxthQ/exec";
 
+/* 舊資料相容：早期版本每筆索取紀錄只用單一欄位存訊息（會互相覆蓋），
+   這裡在載入時自動轉換成新的 msgs[] 陣列格式，讓既有訊息能重新顯示。 */
+function migrateLegacyMsgs(list){
+  (list||[]).forEach(it=>{
+    (it.claims||[]).forEach(c=>{
+      if(Array.isArray(c.msgs)) return; // 已是新格式，略過
+      const msgs = [];
+      if(c.replyMsg){
+        msgs.push({ from:'donor', text:c.replyMsg, ts:(c.ts||Date.now()), read: !!c.read, hidden: !!c.claimantHideMsg });
+      }
+      if(c.donorMsg){
+        msgs.push({ from:'claimant', text:c.donorMsg, ts:(c.ts||Date.now())+1, read: !!c.donorRead, hidden: !!c.donorHideMsg });
+      }
+      c.msgs = msgs;
+    });
+  });
+}
+
 async function loadBooksData(){
-  if(!GAS_URL){ dataLoaded=true; renderList(); refreshBadges(); return; }
+  if(!GAS_URL){ migrateLegacyMsgs(items); dataLoaded=true; renderList(); refreshBadges(); return; }
   refreshBadges(true);
   try{
     const r = await fetch(GAS_URL + "?action=list_items");
@@ -1211,6 +1296,7 @@ async function loadBooksData(){
   }catch(e){
     console.log('後端讀取失敗，使用本地紀錄:', e);
   }finally{
+    migrateLegacyMsgs(items);
     dataLoaded = true;
     renderList();
     refreshBadges();
