@@ -228,8 +228,8 @@ button.tealbtn{background:var(--tiffany);color:#fff}
 .inline-loading svg{width:40px;height:40px;-webkit-animation:spin 0.9s linear infinite;animation:spin 0.9s linear infinite;color:var(--tiffany-mid);transform-origin:center center;-webkit-transform-origin:center center}
 @-webkit-keyframes spin{0%{-webkit-transform:rotate(0deg)}100%{-webkit-transform:rotate(360deg)}}
 @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.overlay{position:fixed;inset:0;z-index:100;background:rgba(12,27,27,.5);display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
-.sheet{background:#fff;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:12px 18px calc(18px + env(safe-area-inset-bottom,0px));animation:slideup .25s cubic-bezier(.2,.9,.3,1)}
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(7,80,78,.35);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+.sheet{background:#fff;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:12px 18px calc(18px + env(safe-area-inset-bottom,0px));animation:slideup .25s cubic-bezier(.2,.9,.3,1);box-shadow:0 -8px 30px rgba(0,0,0,.15)}
 .sheet.photo-sheet{max-height:94vh!important;overflow:hidden!important;padding-top:8px!important;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))!important}
 @keyframes slideup{from{transform:translateY(100%)}to{transform:none}}
 .grab{width:38px;height:4px;background:var(--line);border-radius:100px;margin:0 auto 16px}
