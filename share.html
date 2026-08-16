@@ -536,7 +536,10 @@ function renderList(){
       <div class="card-tap" onclick="openDetail('${it.id}')">
         ${thumb(it)}
         <div class="info">
-          <div class="iname">${esc(it.name)}</div>
+          <div style="display:flex;align-items:center;gap:6px;min-width:0">
+            <div class="iname" style="min-width:0">${esc(it.name)}</div>
+            ${priceTag(it)}
+          </div>
           <div class="idesc">${esc(it.desc||'')}</div>
           ${isOwner && claimCount > 0
             ? `<div style="margin-top:4px"><span onclick="event.stopPropagation();closeSheet();openClaimantsDialog('${it.id}')" style="font-size:17px;font-weight:700;color:var(--tiffany);text-decoration:underline;cursor:pointer">查看登記索取清單（${claimCount}人）</span></div>`
@@ -549,6 +552,12 @@ function renderList(){
   }).join('');
 }
 function stDot(cls){ return `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>`; }
+function priceTag(it){
+  if(it.price && it.price > 0){
+    return `<span style="flex-shrink:0;font-size:12px;font-weight:700;color:#fff;background:var(--coral);border-radius:6px;padding:2px 7px;line-height:1.4">$${it.price.toLocaleString('en-US')}</span>`;
+  }
+  return `<span style="flex-shrink:0;font-size:12px;font-weight:700;color:var(--tiffany-dark);background:var(--tiffany-light);border-radius:6px;padding:2px 7px;line-height:1.4">免費</span>`;
+}
 function thumb(it){
   if(it.photos && it.photos[0]) return `<div class="thumb"><img src="${it.photos[0]}" alt=""></div>`;
   return `<div class="thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`;
@@ -675,7 +684,10 @@ function openDetail(id, photoIndex, viewOnly){
     ${dotsHtml}
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
       <h2 style="font-size:20px;font-weight:900;margin:0;color:var(--ink);line-height:1.2">${esc(it.name)}</h2>
-      <span class="pill ${statusOf(it).cls}" style="flex-shrink:0;margin-top:2px">${statusOf(it).label}</span>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-top:2px">
+        ${priceTag(it)}
+        <span class="pill ${statusOf(it).cls}">${statusOf(it).label}</span>
+      </div>
     </div>
     <p style="font-size:14px;color:var(--ink-soft);line-height:1.65;margin:0 0 14px">${esc(it.desc||'（無描述）')}</p>
     ${ctaHtml}
@@ -764,7 +776,7 @@ function renderRecords(){
           <div class="card-top-tag" style="border-color:var(--slate);color:var(--slate)">物品已下架</div>
           <div class="card-tap" onclick="openDetail('${it.id}')">
             ${thumb(it)}
-            <div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${givenStr} 送出<br>(${expStr} 系統將自動移除)</div></div>
+            <div class="info"><div style="display:flex;align-items:center;gap:6px;min-width:0"><div class="iname" style="min-width:0">${esc(it.name)}</div>${priceTag(it)}</div><div class="donor">${givenStr} 送出<br>(${expStr} 系統將自動移除)</div></div>
             <div class="card-right-btn" style="flex-direction:column;gap:6px">
               <button class="btn-action-right" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany)" onclick="event.stopPropagation();submitUngiven('${it.id}')">物品<br>上架</button>
               <button class="btn-action-right cancel" onclick="event.stopPropagation();openRemove('${it.id}')">移除<br>物品</button>
@@ -783,7 +795,7 @@ function renderRecords(){
       return `<div class="card">
         <div class="card-tap" onclick="openDetail('${it.id}')">
           ${thumb(it)}
-          <div class="info"><div class="iname">${esc(it.name)}</div><div class="donor">${createStr} 刊登<br>(${expStr} 系統將自動移除)</div>${claimLinkHtml}</div>
+          <div class="info"><div style="display:flex;align-items:center;gap:6px;min-width:0"><div class="iname" style="min-width:0">${esc(it.name)}</div>${priceTag(it)}</div><div class="donor">${createStr} 刊登<br>(${expStr} 系統將自動移除)</div>${claimLinkHtml}</div>
           <div class="card-right-btn" style="flex-direction:column;gap:6px">
             <button class="btn-action-right claim" onclick="event.stopPropagation();openGiven('${it.id}')">物品<br>下架</button>
             <button class="btn-action-right cancel" onclick="event.stopPropagation();openRemove('${it.id}')">移除<br>物品</button>
@@ -812,7 +824,7 @@ function renderRecords(){
       return `<div class="trow" onclick="openDetail('${it.id}')" style="display:flex;align-items:center;gap:12px;padding:12px;background:#fff;border-radius:12px;margin-bottom:10px">
         ${trowThumb(it)}
         <div class="tt" style="flex:1">
-          <div class="tn">${esc(it.name)}</div>
+          <div class="tn" style="display:flex;align-items:center;gap:6px;min-width:0"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.name)}</span>${priceTag(it)}</div>
           <div class="tsub" style="margin-top:2px">${c.ts?fmtFull(c.ts):fmtFull(Date.now())} 登記</div>
         </div>
         ${rightAction}
@@ -1138,6 +1150,10 @@ async function submitRemove(id){
 /* ============================================================
    Donate Form (Sheet / Dialog Mode)
    ============================================================ */
+function toggleDonatePriceField(){
+  const paid = document.getElementById('dModePaid').checked;
+  document.getElementById('dPriceWrap').style.display = paid ? '' : 'none';
+}
 function openDonateSheet(){
   if(!me()){ openLogin(); return; }
   uploadedPhotos = [];
@@ -1158,6 +1174,15 @@ function openDonateSheet(){
     <div class="form-section sec" style="margin-top:10px;padding-top:20px">
       <div class="sechead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10z"/><circle cx="7" cy="7" r="1"/></svg>物品資訊</div>
       <div class="float" style="margin:12px 0 4px"><input type="text" id="dName" placeholder=" "><label>物品名稱（必填）</label></div>
+      <div style="display:flex;gap:24px;align-items:center;margin:14px 0 4px;padding-left:2px">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:15px;font-weight:700;color:var(--tiffany-dark)">
+          <input type="radio" name="dMode" id="dModeFree" value="free" checked onchange="toggleDonatePriceField()" style="width:18px;height:18px;accent-color:var(--tiffany)">免費索取
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:15px;font-weight:700;color:var(--coral)">
+          <input type="radio" name="dMode" id="dModePaid" value="paid" onchange="toggleDonatePriceField()" style="width:18px;height:18px;accent-color:var(--coral)">付費索取
+        </label>
+      </div>
+      <div id="dPriceWrap" class="float" style="margin:8px 0 4px;display:none"><input type="text" inputmode="numeric" pattern="[0-9]*" id="dPrice" placeholder=" " oninput="this.value=this.value.replace(/[^0-9]/g,'')"><label>物品金額（必填）</label></div>
       <div class="float" style="margin:12px 0 4px"><textarea id="dDesc" placeholder=" " style="min-height:60px"></textarea><label>物品描述（狀況、尺寸、使用年限等）</label></div>
       <div class="float" style="margin:12px 0 4px"><input type="email" id="dEmail" placeholder=" " value="${esc((my&&my.email)||'')}"><label>您的 Email（選填，日後可用於接收系統通知）</label></div>
     </div>
@@ -1223,11 +1248,23 @@ async function submitDonate(){
     showToast('Email 格式看起來不太對，請確認一下');
     return;
   }
+  const isPaid = document.getElementById('dModePaid').checked;
+  let price = 0; // 0 代表贈送
+  if(isPaid){
+    const priceInput = document.getElementById('dPrice');
+    const priceVal = Number(priceInput.value);
+    if(!priceInput.value.trim() || !Number.isInteger(priceVal) || priceVal <= 0){
+      priceInput.focus();
+      showToast('請輸入大於 0 的整數金額');
+      return;
+    }
+    price = priceVal;
+  }
   const my=me();
   if(email){ setLogin({ ...my, email }); } // 記住這次填的 Email，下次刊登/索取自動帶入
   const donor = { ...my, email: email || my.email || '' };
   const it={ id:Date.now().toString(36), name, desc:document.getElementById('dDesc').value.trim(),
-    donor, photos:[...uploadedPhotos], status:'open', claims:[], givenTo:null, createdAt:Date.now() };
+    price, donor, photos:[...uploadedPhotos], status:'open', claims:[], givenTo:null, createdAt:Date.now() };
   
   showMask('刊登資料上傳中…');
   items.unshift(it);
