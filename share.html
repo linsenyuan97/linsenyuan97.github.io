@@ -1174,7 +1174,7 @@ function openDonateSheet(){
     <div class="form-section sec" style="margin-top:10px;padding-top:20px">
       <div class="sechead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10z"/><circle cx="7" cy="7" r="1"/></svg>物品資訊</div>
       <div class="float" style="margin:12px 0 4px"><input type="text" id="dName" placeholder=" "><label>物品名稱（必填）</label></div>
-      <div style="display:flex;gap:24px;align-items:center;margin:14px 0 4px;padding-left:2px">
+      <div style="display:flex;gap:24px;align-items:center;margin:14px 0 8px;padding-left:2px">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:15px;font-weight:700;color:var(--tiffany-dark)">
           <input type="radio" name="dMode" id="dModeFree" value="free" checked onchange="toggleDonatePriceField()" style="width:18px;height:18px;accent-color:var(--tiffany)">免費索取
         </label>
@@ -1182,7 +1182,7 @@ function openDonateSheet(){
           <input type="radio" name="dMode" id="dModePaid" value="paid" onchange="toggleDonatePriceField()" style="width:18px;height:18px;accent-color:var(--coral)">付費索取
         </label>
       </div>
-      <div id="dPriceWrap" class="float" style="margin:8px 0 4px;display:none"><input type="text" inputmode="numeric" pattern="[0-9]*" id="dPrice" placeholder=" " oninput="this.value=this.value.replace(/[^0-9]/g,'')"><label>物品金額（必填）</label></div>
+      <div id="dPriceWrap" class="float" style="margin:20px 0 4px;display:none"><input type="text" inputmode="numeric" pattern="[0-9]*" id="dPrice" placeholder=" " oninput="this.value=this.value.replace(/[^0-9]/g,'')"><label>物品金額（必填）</label></div>
       <div class="float" style="margin:12px 0 4px"><textarea id="dDesc" placeholder=" " style="min-height:60px"></textarea><label>物品描述（狀況、尺寸、使用年限等）</label></div>
       <div class="float" style="margin:12px 0 4px"><input type="email" id="dEmail" placeholder=" " value="${esc((my&&my.email)||'')}"><label>您的 Email（選填，日後可用於接收系統通知）</label></div>
     </div>
