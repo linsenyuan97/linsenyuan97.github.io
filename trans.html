@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>會議逐字稿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430;
+    --ink-soft:#3C4A5C;
+    --paper:#F3F5F4;
+    --paper-card:#FFFFFF;
+    --line:#DADFE0;
+    --amber:#C97A3D;
+    --amber-soft:#F1DFCB;
+    --ok:#3E7A5C;
+    --ok-bg:#E4EFE8;
+    --err:#B3503F;
+    --err-bg:#F6E4E0;
+    --wait-bg:#EFEAE0;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+    padding:48px 24px 96px;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:40px;
+  }
+  .wave{
+    display:flex;
+    align-items:flex-end;
+    gap:3px;
+    height:28px;
+    flex-shrink:0;
+  }
+  .wave span{
+    width:3px;
+    background:var(--amber);
+    border-radius:2px;
+    animation:bounce 1.4s ease-in-out infinite;
+  }
+  .wave span:nth-child(1){height:10px;animation-delay:0s;}
+  .wave span:nth-child(2){height:22px;animation-delay:0.15s;}
+  .wave span:nth-child(3){height:14px;animation-delay:0.3s;}
+  .wave span:nth-child(4){height:26px;animation-delay:0.45s;}
+  .wave span:nth-child(5){height:8px;animation-delay:0.6s;}
+  @keyframes bounce{
+    0%,100%{transform:scaleY(1);}
+    50%{transform:scaleY(0.4);}
+  }
+  header h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:28px;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  header p{
+    margin:2px 0 0;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+
+  /* ---------- Upload zone ---------- */
+  .dropzone{
+    border:1.5px dashed var(--line);
+    border-radius:var(--radius);
+    background:var(--paper-card);
+    padding:40px 24px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .dropzone.drag{
+    border-color:var(--amber);
+    background:var(--amber-soft);
+  }
+  .dropzone .icon{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--amber);
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .dropzone h2{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:18px;
+    margin:0 0 6px;
+  }
+  .dropzone p{
+    margin:0;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .dropzone input{display:none;}
+
+  .upload-progress{
+    margin-top:14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    display:none;
+  }
+  .upload-progress.show{display:block;}
+
+  /* ---------- Section divider ---------- */
+  .section-label{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin:44px 0 16px;
+  }
+  .section-label span.num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--amber);
+  }
+  .section-label h3{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:16px;
+    margin:0;
+  }
+  .section-label .rule{
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  /* ---------- Cards ---------- */
+  .empty{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper-card);
+    padding:32px 20px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13px;
+  }
+  .cards{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .card .fname{
+    font-weight:600;
+    font-size:14px;
+    margin:0 0 3px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .card .meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+  }
+  .card .info{flex:1;min-width:0;}
+
+  .badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.04em;
+    padding:4px 9px;
+    border-radius:20px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .badge.processing{background:var(--wait-bg);color:#7A6A3F;}
+  .badge.done{background:var(--ok-bg);color:var(--ok);}
+  .badge.error{background:var(--err-bg);color:var(--err);}
+
+  .btn-view{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:#fff;
+    padding:7px 14px;
+    border-radius:7px;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:opacity .15s ease;
+  }
+  .btn-view:disabled{
+    background:transparent;
+    color:var(--line);
+    border-color:var(--line);
+    cursor:not-allowed;
+  }
+  .btn-view:not(:disabled):hover{opacity:.85;}
+
+  /* ---------- Dialog ---------- */
+  dialog{
+    border:none;
+    border-radius:14px;
+    padding:0;
+    width:min(600px, 90vw);
+    max-height:80vh;
+    box-shadow:0 20px 60px rgba(27,36,48,.25);
+  }
+  dialog::backdrop{background:rgba(27,36,48,.45);}
+  .dialog-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    padding:20px 22px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  .dialog-head h4{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:17px;
+    margin:0 0 4px;
+  }
+  .dialog-head .meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+  }
+  .dialog-close{
+    border:none;
+    background:none;
+    font-size:20px;
+    line-height:1;
+    color:var(--ink-soft);
+    cursor:pointer;
+    padding:2px 4px;
+  }
+  .dialog-body{
+    padding:18px 22px 22px;
+    overflow-y:auto;
+    max-height:calc(80vh - 74px);
+    font-size:14px;
+    line-height:1.75;
+    white-space:pre-wrap;
+  }
+  .dialog-actions{
+    padding:0 22px 20px;
+    display:flex;
+    justify-content:flex-end;
+  }
+  .btn-copy{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    background:none;
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:6px 12px;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .btn-copy:hover{border-color:var(--ink-soft);color:var(--ink);}
+
+  @media (prefers-reduced-motion: reduce){
+    .wave span{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="wave"><span></span><span></span><span></span><span></span><span></span></div>
+    <div>
+      <h1>會議逐字稿</h1>
+      <p>上傳錄音，稍後回來查看辨識結果</p>
+    </div>
+  </header>
+
+  <label class="dropzone" id="dropzone">
+    <div class="icon">上傳音訊 / 影片</div>
+    <h2>拖放檔案到這裡，或點擊選擇</h2>
+    <p>支援 mp3、wav、m4a、mp4 等格式</p>
+    <input type="file" id="fileInput" accept="audio/*,video/*">
+    <div class="upload-progress" id="uploadProgress">上傳中…</div>
+  </label>
+
+  <div class="section-label">
+    <span class="num">02</span>
+    <h3>處理紀錄</h3>
+    <div class="rule"></div>
+  </div>
+
+  <div id="emptyState" class="empty">還沒有上傳過檔案</div>
+  <div class="cards" id="cardList"></div>
+</div>
+
+<dialog id="transcriptDialog">
+  <div class="dialog-head">
+    <div>
+      <h4 id="dialogTitle">逐字稿</h4>
+      <div class="meta" id="dialogMeta"></div>
+    </div>
+    <button class="dialog-close" id="dialogClose" aria-label="關閉">✕</button>
+  </div>
+  <div class="dialog-body" id="dialogBody"></div>
+  <div class="dialog-actions">
+    <button class="btn-copy" id="dialogCopy">複製全文</button>
+  </div>
+</dialog>
+
+<script>
+/* =========================================================================
+   設定區：部署自己的 Google Apps Script Web App 後，把網址填在這裡。
+   若留空，頁面會用「模擬模式」在瀏覽器內展示流程（僅供預覽介面用）。
+   ========================================================================= */
+const API_URL = ""; // 例如 "https://script.google.com/macros/s/AKfycb.../exec"
+
+const STORAGE_KEY = "transcript_tasks";
+let tasks = [];
+
+/* ---------- 初始化：讀取先前存的任務清單 ---------- */
+async function loadTasks(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    tasks = res ? JSON.parse(res.value) : [];
+  }catch(e){
+    tasks = [];
+  }
+  render();
+  // 對還在處理中的任務，輪詢一次最新狀態
+  tasks.filter(t => t.status === "processing").forEach(t => pollStatus(t.taskId));
+}
+
+async function saveTasks(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(tasks), false);
+  }catch(e){
+    console.error("儲存任務清單失敗", e);
+  }
+}
+
+/* ---------- 上傳 ---------- */
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+const uploadProgress = document.getElementById("uploadProgress");
+
+fileInput.addEventListener("change", () => {
+  if (fileInput.files[0]) handleUpload(fileInput.files[0]);
+});
+
+["dragover","dragenter"].forEach(evt =>
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add("drag"); })
+);
+["dragleave","drop"].forEach(evt =>
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove("drag"); })
+);
+dropzone.addEventListener("drop", e => {
+  const file = e.dataTransfer.files[0];
+  if (file) handleUpload(file);
+});
+
+async function handleUpload(file){
+  uploadProgress.classList.add("show");
+  uploadProgress.textContent = `上傳中… ${file.name}`;
+
+  const taskId = crypto.randomUUID();
+  const task = {
+    taskId,
+    fileName: file.name,
+    uploadedAt: new Date().toISOString(),
+    status: "processing",
+    transcript: ""
+  };
+  tasks.unshift(task);
+  await saveTasks();
+  render();
+
+  try{
+    if (API_URL) {
+      // ---- 正式模式：實際呼叫 Apps Script Web App ----
+      const formData = new FormData();
+      formData.append("action", "upload");
+      formData.append("taskId", taskId);
+      formData.append("file", file);
+
+      await fetch(API_URL, { method: "POST", body: formData });
+      pollStatus(taskId);
+    } else {
+      // ---- 模擬模式：僅供介面預覽，非真正辨識 ----
+      setTimeout(async () => {
+        const t = tasks.find(x => x.taskId === taskId);
+        if (!t) return;
+        t.status = "done";
+        t.transcript =
+          "【模擬模式提示】尚未設定 API_URL，這是示範文字，非真實辨識結果。\n\n" +
+          "設定 API_URL 後，這裡會顯示 GitHub Actions 辨識完成、寫回 Google Sheet 的實際逐字稿內容。\n\n" +
+          "00:00:03 主持人：那我們開始這次的會議。\n" +
+          "00:00:08 與會者A：好的，先確認一下上次會議的待辦事項進度。\n" +
+          "00:00:21 主持人：目前完成三項，還有兩項在進行中……";
+        await saveTasks();
+        render();
+      }, 4000);
+    }
+  } catch(err){
+    const t = tasks.find(x => x.taskId === taskId);
+    if (t) t.status = "error";
+    await saveTasks();
+    render();
+  } finally {
+    uploadProgress.classList.remove("show");
+    fileInput.value = "";
+  }
+}
+
+/* ---------- 查詢狀態（正式模式用，向 Apps Script doGet 查詢） ---------- */
+async function pollStatus(taskId){
+  if (!API_URL) return;
+  try{
+    const res = await fetch(`${API_URL}?action=status&taskId=${taskId}`);
+    const data = await res.json();
+    const t = tasks.find(x => x.taskId === taskId);
+    if (!t) return;
+
+    if (data.status === "done") {
+      t.status = "done";
+      t.transcript = data.transcript || "";
+      await saveTasks();
+      render();
+    } else if (data.status === "error") {
+      t.status = "error";
+      await saveTasks();
+      render();
+    } else {
+      // 仍處理中，30 秒後再查一次
+      setTimeout(() => pollStatus(taskId), 30000);
+    }
+  }catch(e){
+    setTimeout(() => pollStatus(taskId), 30000);
+  }
+}
+
+/* ---------- 卡片清單渲染 ---------- */
+const cardList = document.getElementById("cardList");
+const emptyState = document.getElementById("emptyState");
+
+function formatDate(iso){
+  const d = new Date(iso);
+  return d.toLocaleString("zh-TW", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+}
+
+const badgeText = { processing: "處理中", done: "已完成", error: "失敗" };
+
+function render(){
+  emptyState.style.display = tasks.length ? "none" : "block";
+  cardList.innerHTML = "";
+
+  tasks.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="info">
+        <p class="fname">${escapeHtml(t.fileName)}</p>
+        <div class="meta">上傳於 ${formatDate(t.uploadedAt)}</div>
+      </div>
+      <span class="badge ${t.status}">${badgeText[t.status] || t.status}</span>
+      <button class="btn-view" ${t.status !== "done" ? "disabled" : ""}>查看</button>
+    `;
+    card.querySelector(".btn-view").addEventListener("click", () => openDialog(t));
+    cardList.appendChild(card);
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ---------- Dialog ---------- */
+const dialog = document.getElementById("transcriptDialog");
+document.getElementById("dialogClose").addEventListener("click", () => dialog.close());
+dialog.addEventListener("click", e => { if (e.target === dialog) dialog.close(); });
+
+function openDialog(task){
+  document.getElementById("dialogTitle").textContent = task.fileName;
+  document.getElementById("dialogMeta").textContent = `上傳於 ${formatDate(task.uploadedAt)}`;
+  document.getElementById("dialogBody").textContent = task.transcript || "（無內容）";
+  dialog.showModal();
+}
+
+document.getElementById("dialogCopy").addEventListener("click", () => {
+  const text = document.getElementById("dialogBody").textContent;
+  navigator.clipboard.writeText(text);
+  const btn = document.getElementById("dialogCopy");
+  const original = btn.textContent;
+  btn.textContent = "已複製";
+  setTimeout(() => btn.textContent = original, 1500);
+});
+
+/* ---------- 啟動 ---------- */
+loadTasks();
+</script>
+
+</body>
+</html>
