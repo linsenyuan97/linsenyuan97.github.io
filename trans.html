@@ -159,16 +159,21 @@
   .cards{
     display:flex;
     flex-direction:column;
-    gap:10px;
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
   }
   .card{
     display:flex;
     align-items:center;
     gap:14px;
     background:var(--paper-card);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:14px 16px;
+    padding:16px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .card:last-child{
+    border-bottom:none;
   }
   .card .fname{
     font-weight:600;
@@ -565,6 +570,7 @@ const badgeText = { processing: "處理中", done: "已完成", error: "失敗" 
 
 function render(){
   emptyState.style.display = tasks.length ? "none" : "block";
+  cardList.style.display = tasks.length ? "flex" : "none";
   cardList.innerHTML = "";
 
   tasks.forEach(t => {
