@@ -416,10 +416,10 @@ function showToast(message){
 }
 
 /* ---------- 初始化：讀取先前存的任務清單 ---------- */
-async function loadTasks(){
+function loadTasks(){
   try{
-    const res = await window.storage.get(STORAGE_KEY, false);
-    tasks = res ? JSON.parse(res.value) : [];
+    const res = localStorage.getItem(STORAGE_KEY);
+    tasks = res ? JSON.parse(res) : [];
   }catch(e){
     tasks = [];
   }
@@ -428,9 +428,9 @@ async function loadTasks(){
   tasks.filter(t => t.status === "processing").forEach(t => pollStatus(t.taskId));
 }
 
-async function saveTasks(){
+function saveTasks(){
   try{
-    await window.storage.set(STORAGE_KEY, JSON.stringify(tasks), false);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
   }catch(e){
     console.error("儲存任務清單失敗", e);
   }
