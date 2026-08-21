@@ -2,8 +2,15 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>會議逐字稿</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="林森苑會議辨識">
+<meta name="theme-color" content="#C97A3D">
+<title>林森苑會議辨識字幕</title>
+<link rel="apple-touch-icon" href="icons/trans/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/trans/icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/trans/icon-192.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/trans/favicon-64.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -40,7 +47,7 @@
   header{
     display:flex;
     align-items:center;
-    gap:16px;
+    gap:14px;
     margin-bottom:40px;
   }
   .wave{
@@ -68,9 +75,10 @@
   header h1{
     font-family:'Fraunces',serif;
     font-weight:600;
-    font-size:28px;
+    font-size:24px;
     letter-spacing:-0.01em;
     margin:0;
+    color:var(--amber);
   }
   header p{
     margin:2px 0 0;
@@ -80,6 +88,7 @@
 
   /* ---------- Upload zone ---------- */
   .dropzone{
+    display:block;
     border:1.5px dashed var(--line);
     border-radius:var(--radius);
     background:var(--paper-card);
@@ -92,19 +101,15 @@
     border-color:var(--amber);
     background:var(--amber-soft);
   }
-  .dropzone .icon{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--amber);
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    margin-bottom:10px;
+  .dropzone-icon{
+    margin-bottom:12px;
   }
   .dropzone h2{
     font-family:'Fraunces',serif;
     font-weight:500;
     font-size:18px;
     margin:0 0 6px;
+    color:var(--amber);
   }
   .dropzone p{
     margin:0;
@@ -122,28 +127,23 @@
   }
   .upload-progress.show{display:block;}
 
-  /* ---------- Section divider ---------- */
-  .section-label{
-    display:flex;
-    align-items:baseline;
-    gap:10px;
-    margin:44px 0 16px;
+  /* ---------- Section label (壓在區塊邊框上) ---------- */
+  .record-section{
+    position:relative;
+    margin-top:44px;
   }
-  .section-label span.num{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--amber);
-  }
-  .section-label h3{
+  .record-label{
+    position:absolute;
+    top:-10px;
+    left:16px;
+    background:var(--paper);
+    padding:0 8px;
     font-family:'Fraunces',serif;
-    font-weight:500;
-    font-size:16px;
-    margin:0;
-  }
-  .section-label .rule{
-    flex:1;
-    height:1px;
-    background:var(--line);
+    font-weight:600;
+    font-size:18px;
+    color:var(--amber);
+    letter-spacing:.01em;
+    z-index:1;
   }
 
   /* ---------- Cards ---------- */
@@ -284,6 +284,52 @@
 
   @media (prefers-reduced-motion: reduce){
     .wave span{animation:none;}
+    .toast{transition:none !important;}
+  }
+
+  /* ---------- Toast 成功訊息 ---------- */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:28px;
+    transform:translate(-50%, 20px);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--ink);
+    color:#fff;
+    padding:13px 20px;
+    border-radius:10px;
+    font-size:13.5px;
+    font-weight:500;
+    box-shadow:0 10px 30px rgba(27,36,48,.28);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:50;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translate(-50%, 0);
+  }
+  .toast .tick{
+    width:18px;
+    height:18px;
+    border-radius:50%;
+    background:var(--amber);
+    flex-shrink:0;
+    position:relative;
+  }
+  .toast .tick::after{
+    content:"";
+    position:absolute;
+    left:5px;
+    top:3.5px;
+    width:5px;
+    height:9px;
+    border:solid #fff;
+    border-width:0 2px 2px 0;
+    transform:rotate(45deg);
   }
 </style>
 </head>
@@ -292,28 +338,42 @@
 <div class="wrap">
   <header>
     <div class="wave"><span></span><span></span><span></span><span></span><span></span></div>
-    <div>
-      <h1>會議逐字稿</h1>
-      <p>上傳錄音，稍後回來查看辨識結果</p>
-    </div>
+    <h1>林森苑會議辨識字幕</h1>
   </header>
 
   <label class="dropzone" id="dropzone">
-    <div class="icon">上傳音訊 / 影片</div>
-    <h2>拖放檔案到這裡，或點擊選擇</h2>
+    <svg class="dropzone-icon" width="46" height="46" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- 後方檔案（白底橘框) -->
+      <path d="M14 8C14 6.34315 15.3431 5 17 5H31L39 13V40C39 41.6569 37.6569 43 36 43H17C15.3431 43 14 41.6569 14 40V8Z" fill="var(--paper-card)" stroke="var(--amber)" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M31 5L39 13H33C31.8954 13 31 12.1046 31 11V5Z" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2" stroke-linejoin="round"/>
+      <!-- 後方檔案文字線條（放在露出的右側區域） -->
+      <line x1="31" y1="20" x2="37" y2="20" stroke="var(--amber-soft)" stroke-width="2" stroke-linecap="round"/>
+      <line x1="31" y1="26" x2="37" y2="26" stroke="var(--amber-soft)" stroke-width="2" stroke-linecap="round"/>
+      <line x1="31" y1="32" x2="37" y2="32" stroke="var(--amber-soft)" stroke-width="2" stroke-linecap="round"/>
+
+      <!-- 前方檔案（白底橘框，含折角) -->
+      <path d="M6 12C6 10.3431 7.34315 9 9 9H21L29 17V38C29 39.6569 27.6569 41 26 41H9C7.34315 41 6 39.6569 6 38V12Z" fill="var(--paper-card)" stroke="var(--amber)" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M21 9L29 17H23C21.8954 17 21 16.1046 21 15V9Z" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2" stroke-linejoin="round"/>
+
+      <!-- 喇叭圖示 -->
+      <g transform="translate(9.5, 20)">
+        <rect x="0" y="4.5" width="4" height="7" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="1.4" stroke-linejoin="round"/>
+        <path d="M4 4.5L10.5 0V16L4 11.5V4.5Z" fill="none" stroke="var(--amber)" stroke-width="1.4" stroke-linejoin="round"/>
+        <path d="M14 4.5C15.2 5.6 15.2 10.4 14 11.5" stroke="var(--amber)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        <path d="M16.3 2C18.6 4.4 18.6 11.6 16.3 14" stroke="var(--amber)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+      </g>
+    </svg>
+    <h2>拖放檔案到這裡，或點擊選擇音訊 / 影片</h2>
     <p>支援 mp3、wav、m4a、mp4 等格式</p>
     <input type="file" id="fileInput" accept="audio/*,video/*">
     <div class="upload-progress" id="uploadProgress">上傳中…</div>
   </label>
 
-  <div class="section-label">
-    <span class="num">02</span>
-    <h3>處理紀錄</h3>
-    <div class="rule"></div>
+  <div class="record-section">
+    <span class="record-label">辨識紀錄</span>
+    <div id="emptyState" class="empty">還沒有上傳過檔案</div>
+    <div class="cards" id="cardList"></div>
   </div>
-
-  <div id="emptyState" class="empty">還沒有上傳過檔案</div>
-  <div class="cards" id="cardList"></div>
 </div>
 
 <dialog id="transcriptDialog">
@@ -330,6 +390,11 @@
   </div>
 </dialog>
 
+<div class="toast" id="toast">
+  <span class="tick"></span>
+  <span id="toastText"></span>
+</div>
+
 <script>
 /* =========================================================================
    設定區：部署自己的 Google Apps Script Web App 後，把網址填在這裡。
@@ -339,6 +404,16 @@ const API_URL = ""; // 例如 "https://script.google.com/macros/s/AKfycb.../exec
 
 const STORAGE_KEY = "transcript_tasks";
 let tasks = [];
+
+/* ---------- Toast 訊息 ---------- */
+let toastTimer = null;
+function showToast(message){
+  const toast = document.getElementById("toast");
+  document.getElementById("toastText").textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
+}
 
 /* ---------- 初始化：讀取先前存的任務清單 ---------- */
 async function loadTasks(){
@@ -406,9 +481,11 @@ async function handleUpload(file){
       formData.append("file", file);
 
       await fetch(API_URL, { method: "POST", body: formData });
+      showToast("上傳檔案成功，稍後回來查看辨識結果");
       pollStatus(taskId);
     } else {
       // ---- 模擬模式：僅供介面預覽，非真正辨識 ----
+      showToast("上傳檔案成功，稍後回來查看辨識結果");
       setTimeout(async () => {
         const t = tasks.find(x => x.taskId === taskId);
         if (!t) return;
