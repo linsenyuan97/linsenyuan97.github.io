@@ -415,24 +415,24 @@ function showToast(message){
   toastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
 }
 
-/* ---------- 初始化：讀取先前存的任務清單 ---------- */
-function loadTasks(){
-  try{
-    const res = localStorage.getItem(STORAGE_KEY);
-    tasks = res ? JSON.parse(res) : [];
-  }catch(e){
-    tasks = [];
+/* ---------- 初始化：直接向 Google Sheet (Apps Script) 要求最新紀錄 ---------- */
+async function loadTasks(){
+  if (!API_URL) {
+    render();
+    return;
   }
-  render();
-  // 對還在處理中的任務，輪詢一次最新狀態
-  tasks.filter(t => t.status === "processing").forEach(t => pollStatus(t.taskId));
-}
-
-function saveTasks(){
   try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    const res = await fetch(`${API_URL}?action=list`);
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.tasks)) {
+      tasks = data.tasks;
+      render();
+      // 對處理中的任務啟動輪詢
+      tasks.filter(t => t.status === "processing").forEach(t => pollStatus(t.taskId));
+    }
   }catch(e){
-    console.error("儲存任務清單失敗", e);
+    console.error("讀取 Google Sheet 紀錄失敗", e);
+    render();
   }
 }
 
@@ -478,7 +478,6 @@ async function handleUpload(file){
     transcript: ""
   };
   tasks.unshift(task);
-  saveTasks();
   render();
 
   try{
@@ -510,14 +509,12 @@ async function handleUpload(file){
           "00:00:03 主持人：那我們開始這次的會議。\n" +
           "00:00:08 與會者A：好的，先確認一下上次會議的待辦事項進度。\n" +
           "00:00:21 主持人：目前完成三項，還有兩項在進行中……";
-        await saveTasks();
         render();
       }, 4000);
     }
   } catch(err){
     const t = tasks.find(x => x.taskId === taskId);
     if (t) t.status = "error";
-    await saveTasks();
     render();
   } finally {
     uploadProgress.classList.remove("show");
@@ -537,11 +534,13 @@ async function pollStatus(taskId){
     if (data.status === "done") {
       t.status = "done";
       t.transcript = data.transcript || "";
-      await saveTasks();
       render();
     } else if (data.status === "error") {
       t.status = "error";
-      await saveTasks();
+      render();
+    } else if (data.status === "not_found") {
+      // 若後端資料庫（Google Sheet）該筆資料已被刪除，從畫面中同步移除
+      tasks = tasks.filter(x => x.taskId !== taskId);
       render();
     } else {
       // 仍處理中，30 秒後再查一次
@@ -551,6 +550,7 @@ async function pollStatus(taskId){
     setTimeout(() => pollStatus(taskId), 30000);
   }
 }
+
 
 /* ---------- 卡片清單渲染 ---------- */
 const cardList = document.getElementById("cardList");
@@ -594,11 +594,26 @@ const dialog = document.getElementById("transcriptDialog");
 document.getElementById("dialogClose").addEventListener("click", () => dialog.close());
 dialog.addEventListener("click", e => { if (e.target === dialog) dialog.close(); });
 
-function openDialog(task){
+async function openDialog(task){
   document.getElementById("dialogTitle").textContent = task.fileName;
   document.getElementById("dialogMeta").textContent = `上傳於 ${formatDate(task.uploadedAt)}`;
-  document.getElementById("dialogBody").textContent = task.transcript || "（無內容）";
   dialog.showModal();
+
+  if (task.transcript) {
+    document.getElementById("dialogBody").textContent = task.transcript;
+  } else {
+    document.getElementById("dialogBody").textContent = "載入逐字稿中…";
+    if (API_URL) {
+      try {
+        const res = await fetch(`${API_URL}?action=status&taskId=${task.taskId}`);
+        const data = await res.json();
+        task.transcript = data.transcript || "（無內容）";
+        document.getElementById("dialogBody").textContent = task.transcript;
+      } catch(e) {
+        document.getElementById("dialogBody").textContent = "（讀取逐字稿失敗）";
+      }
+    }
+  }
 }
 
 document.getElementById("dialogCopy").addEventListener("click", () => {
