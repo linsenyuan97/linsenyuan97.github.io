@@ -156,6 +156,36 @@
     color:var(--ink-soft);
     font-size:13px;
   }
+  .loading-state{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper-card);
+    padding:32px 20px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+  }
+  .loading-dots{
+    display:inline-flex;
+    gap:4px;
+  }
+  .loading-dots span{
+    width:6px;
+    height:6px;
+    background:var(--amber);
+    border-radius:50%;
+    animation:dotPulse 1.2s infinite ease-in-out;
+  }
+  .loading-dots span:nth-child(2){ animation-delay:0.2s; }
+  .loading-dots span:nth-child(3){ animation-delay:0.4s; }
+  @keyframes dotPulse{
+    0%,80%,100%{ transform:scale(0.6); opacity:0.4; }
+    40%{ transform:scale(1.1); opacity:1; }
+  }
   .cards{
     display:flex;
     flex-direction:column;
@@ -376,8 +406,12 @@
 
   <div class="record-section">
     <span class="record-label">辨識紀錄</span>
-    <div id="emptyState" class="empty">還沒有上傳過檔案</div>
-    <div class="cards" id="cardList"></div>
+    <div id="loadingState" class="loading-state">
+      <span>載入紀錄中</span>
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div id="emptyState" class="empty" style="display:none;">還沒有上傳過檔案</div>
+    <div class="cards" id="cardList" style="display:none;"></div>
   </div>
 </div>
 
@@ -422,7 +456,10 @@ function showToast(message){
 
 /* ---------- 初始化：直接向 Google Sheet (Apps Script) 要求最新紀錄 ---------- */
 async function loadTasks(){
+  isLoading = true;
+  render();
   if (!API_URL) {
+    isLoading = false;
     render();
     return;
   }
@@ -431,12 +468,13 @@ async function loadTasks(){
     const data = await res.json();
     if (data.ok && Array.isArray(data.tasks)) {
       tasks = data.tasks;
-      render();
       // 對處理中的任務啟動輪詢
       tasks.filter(t => t.status === "processing").forEach(t => pollStatus(t.taskId));
     }
   }catch(e){
     console.error("讀取 Google Sheet 紀錄失敗", e);
+  }finally{
+    isLoading = false;
     render();
   }
 }
@@ -560,6 +598,7 @@ async function pollStatus(taskId){
 /* ---------- 卡片清單渲染 ---------- */
 const cardList = document.getElementById("cardList");
 const emptyState = document.getElementById("emptyState");
+const loadingState = document.getElementById("loadingState");
 
 function formatDate(iso){
   const d = new Date(iso);
@@ -569,6 +608,13 @@ function formatDate(iso){
 const badgeText = { processing: "處理中", done: "已完成", error: "失敗" };
 
 function render(){
+  if (isLoading) {
+    if (loadingState) loadingState.style.display = "flex";
+    emptyState.style.display = "none";
+    cardList.style.display = "none";
+    return;
+  }
+  if (loadingState) loadingState.style.display = "none";
   emptyState.style.display = tasks.length ? "none" : "block";
   cardList.style.display = tasks.length ? "flex" : "none";
   cardList.innerHTML = "";
