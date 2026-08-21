@@ -97,6 +97,11 @@
     cursor:pointer;
     transition:border-color .15s ease, background .15s ease;
   }
+  .dropzone.disabled{
+    pointer-events:none;
+    opacity:0.6;
+    cursor:not-allowed;
+  }
   .dropzone.drag{
     border-color:var(--amber);
     background:var(--amber-soft);
@@ -121,8 +126,9 @@
   .upload-progress{
     margin-top:14px;
     font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--ink-soft);
+    font-size:13px;
+    font-weight:600;
+    color:var(--err);
     display:none;
   }
   .upload-progress.show{display:block;}
@@ -229,6 +235,7 @@
     white-space:nowrap;
     flex-shrink:0;
   }
+  .badge.uploading{background:var(--err-bg);color:var(--err);}
   .badge.processing{background:var(--wait-bg);color:#7A6A3F;}
   .badge.done{background:var(--ok-bg);color:var(--ok);}
   .badge.error{background:var(--err-bg);color:var(--err);}
@@ -509,6 +516,8 @@ function fileToBase64(file){
 }
 
 async function handleUpload(file){
+  dropzone.classList.add("disabled");
+  fileInput.disabled = true;
   uploadProgress.classList.add("show");
   uploadProgress.textContent = `上傳中… ${file.name}`;
 
@@ -517,7 +526,7 @@ async function handleUpload(file){
     taskId,
     fileName: file.name,
     uploadedAt: new Date().toISOString(),
-    status: "processing",
+    status: "uploading",
     transcript: ""
   };
   tasks.unshift(task);
@@ -537,6 +546,12 @@ async function handleUpload(file){
           fileData: base64Data
         })
       });
+
+      // 上傳完成，狀態調整為「處理中」
+      const t = tasks.find(x => x.taskId === taskId);
+      if (t) t.status = "processing";
+      render();
+
       showToast("上傳檔案成功，稍後回來查看辨識結果");
       pollStatus(taskId);
     } else {
@@ -562,6 +577,8 @@ async function handleUpload(file){
   } finally {
     uploadProgress.classList.remove("show");
     fileInput.value = "";
+    fileInput.disabled = false;
+    dropzone.classList.remove("disabled");
   }
 }
 
@@ -605,7 +622,7 @@ function formatDate(iso){
   return d.toLocaleString("zh-TW", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" });
 }
 
-const badgeText = { processing: "處理中", done: "已完成", error: "失敗" };
+const badgeText = { uploading: "上傳中", processing: "處理中", done: "已完成", error: "失敗" };
 
 function render(){
   if (isLoading) {
