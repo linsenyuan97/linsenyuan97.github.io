@@ -13,6 +13,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/book/icon-192.png">
 <link rel="icon" type="image/png" sizes="64x64" href="icons/book/favicon-64.png">
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root{
     --paper:#EAE4D3;--paper-2:#F3EEE0;--ink:#2A2622;--ink-soft:#6B655B;
@@ -41,6 +42,8 @@
   .card.sec{padding-top:26px}
   label{display:block;font-family:"Courier New",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--stamp);margin-bottom:5px}
   input[type=text],input[type=number],input[type=search],textarea{width:100%;padding:13px 12px;line-height:1.5;border:1px solid var(--line);border-radius:2px;background:#fffdf7;font:inherit;font-size:18px;color:#1a56b8}
+  input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
   textarea{resize:none;line-height:1.4;min-height:44px;overflow:hidden}
   input::placeholder,textarea::placeholder{color:var(--ink-soft);opacity:.7}
   input:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:1px}
@@ -108,8 +111,6 @@
   .login-label{font:inherit;font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap}
   .login-dot{position:absolute;right:-2px;bottom:-1px;width:14px;height:14px;border-radius:50%;background:#2e9e5b;border:2px solid var(--paper-2)}
   .login-dot::after{content:"";position:absolute;left:3.5px;top:1.5px;width:3px;height:6px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
-  .loginnotice{position:fixed;left:0;right:0;bottom:0;z-index:150;width:100%;text-align:center;font-size:16px;font-weight:600;color:var(--ink);background:#F6EEDD;border-top:1px solid var(--line);padding:13px 5px;box-sizing:border-box;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .notice-ico{width:18px;height:18px;vertical-align:-4px;margin:0 3px}
   .logoutbtn{width:100%;margin-top:12px;padding:11px;background:transparent;border:1.5px solid var(--stamp);color:var(--stamp);border-radius:6px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
   .empty.big{font-size:40px;font-weight:700;padding:50px 10px;line-height:1.3}
   .status{font-size:13px;color:var(--teal);margin:0 0 14px;min-height:20px}
@@ -133,10 +134,47 @@
   .searchgroup input{border:1.5px solid #4A3F3B;border-radius:8px 0 0 8px;border-right:none;height:100%}
   .searchgroup input:focus{outline:none;border-color:#4A3F3B}
   .searchgroup button{border:1.5px solid #4A3F3B;border-left:none;border-radius:0 8px 8px 0}
+  /* ===== Bottom Tab Bar (Resident) ===== */
+  .btab-bar{position:fixed;bottom:0;left:0;right:0;z-index:44;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1.5px solid var(--line);display:flex;justify-content:center}
+  .btab-inner{display:flex;max-width:640px;width:100%;padding:8px 20px calc(8px + env(safe-area-inset-bottom,0px));gap:10px;overflow:visible}
+  .btab{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:inherit;font-size:13px;font-weight:700;color:var(--ink-soft);padding:10px 0 6px;position:relative;cursor:pointer;transition:background .3s,color .3s,border-radius .3s;border-radius:14px}
+  .btab .btab-ico{width:22px;height:22px;transition:opacity .25s,transform .25s}
+  .btab-circle{position:absolute;top:-24px;width:46px;height:46px;border-radius:50%;background:var(--teal);border:3px solid #fff;box-shadow:0 4px 14px rgba(47,107,98,.35);display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(6px) scale(.7);transition:all .35s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+  .btab-circle svg{width:22px;height:22px;color:#fff}
+  .btab.on{background:var(--teal);color:#fff}
+  .btab.on .btab-ico{opacity:0;transform:scale(.5)}
+  .btab.on .btab-circle{opacity:1;transform:translateY(0) scale(1)}
+  body.has-tabbar .wrap{padding-bottom:90px}
+  body.has-tabbar{padding-bottom:0!important}
+  /* ===== Donate Batch ===== */
+  #readerDonate{width:100%}
+  #readerDonate video{width:100%!important;display:block}
+  #readerDonate img{display:none}
+  .donate-item{display:flex;align-items:center;gap:12px;background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:10px 14px;margin-bottom:8px}
+  .donate-item .di-info{flex:1;min-width:0}
+  .donate-item .di-title{font-weight:700;font-size:16px;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .donate-item .di-meta{font-size:13px;color:var(--ink-soft)}
+  .donate-item .di-del{background:var(--stamp);color:#fff;border:none;border-radius:4px;padding:6px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;flex-shrink:0}
+  .batch-header{font-weight:700;font-size:15px;color:var(--ink);margin:16px 0 10px;display:flex;align-items:center;gap:6px}
+  .batch-header .bcount{background:var(--teal);color:#fff;border-radius:100px;padding:2px 10px;font-size:13px}
+  /* ===== Admin Review & Subtabs ===== */
+  .subtabs{display:flex;gap:6px;background:rgba(42,38,34,.08);border-radius:10px;padding:4px;margin:12px 0 16px}
+  .subtab{flex:1;background:none;border:none;text-align:center;font:inherit;font-size:14px;font-weight:700;padding:10px 8px;border-radius:8px;color:var(--ink-soft);cursor:pointer;transition:all .15s ease}
+  .subtab.on{background:#fff;color:var(--teal);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  .filter-row{display:flex;gap:8px;margin-bottom:14px}
+  .filter-row .addr-sel{flex:1;font-size:15px;padding:9px 24px 9px 10px;border-radius:6px}
+  .rev-card{position:relative;background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:4px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .rev-card .rev-title{font-size:18px;font-weight:700;color:var(--teal);margin-bottom:6px}
+  .rev-card .rev-meta{font-size:14px;color:var(--ink);line-height:1.7}
+  .rev-card .rev-badge{position:absolute;top:12px;right:12px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-size:12px;font-weight:700;border-radius:4px;padding:2px 8px}
+  .rev-actions{display:flex;gap:8px;margin-top:12px}
+  .rev-actions>button{flex:1;height:44px;font:inherit;font-size:15px;font-weight:700;border-radius:6px;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:6px}
+  .btn-approve{background:var(--teal);color:#fff}
+  .btn-reject{background:var(--stamp);color:#fff}
+  .rev-actions>button:active{opacity:.85}
 </style>
 </head>
 <body>
-<div class="loginnotice" id="loginNotice" onclick="openLogin()">請按右上方<svg class="notice-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6v1H4z"/></svg>或按這裡登入,才能借閱或歸還書籍。</div>
 <div class="wrap">
   <header>
     <div class="brand">
@@ -148,10 +186,7 @@
         <h1>林森苑書籍系統</h1>
       </div>
     </div>
-    <div class="tabs hidden" id="tabsBar" role="tablist">
-      <button class="tab" id="tab-add" role="tab" aria-selected="true" onclick="showTab('add')">新增</button>
-      <button class="tab" id="tab-remove" role="tab" aria-selected="false" onclick="showTab('remove')">移除</button>
-    </div>
+    <div class="tabs hidden" id="tabsBar" role="tablist"></div>
     <button id="loginBtn" class="loginbtn" onclick="openLogin()" aria-label="登入">
       <span class="login-ico">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6v1H4z"/></svg>
@@ -161,13 +196,31 @@
     </button>
   </header>
 
-  <!-- 管理員 -->
-  <section class="panel" id="panel-admin" role="tabpanel">
-    <div class="card sec" style="margin-top:19px;padding:20px 14px 12px">
-      <div class="sechead">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M12 9v6M9 12h6"/></svg>
-        新增書籍
+  <!-- 管理員：捐書審核 -->
+  <section class="panel" id="panel-review" role="tabpanel">
+    <div style="margin:16px 0 12px">
+      <div class="filter-row">
+        <select id="revAddrFilter" class="addr-sel" onchange="renderReviewList()">
+          <option value="">全部門牌</option>
+        </select>
+        <select id="revDateFilter" class="addr-sel" onchange="renderReviewList()">
+          <option value="">全部日期</option>
+        </select>
       </div>
+    </div>
+    <div id="reviewResults"></div>
+  </section>
+
+  <!-- 管理員：上架書籍 -->
+  <section class="panel" id="panel-add" role="tabpanel">
+    <div class="subtabs" style="margin-top:16px;margin-bottom:12px">
+      <button class="subtab on" id="atabScan" onclick="switchAdminAddMode('scan')">📷 掃描條碼</button>
+      <button class="subtab" id="atabIsbn" onclick="switchAdminAddMode('isbn')">⌨️ 輸入 ISBN</button>
+      <button class="subtab" id="atabManual" onclick="switchAdminAddMode('manual')">✏️ 手動填寫</button>
+    </div>
+
+    <!-- 模式 1: 相機掃描 -->
+    <div id="amodeScan">
       <button class="scanhero" id="liveBtn" onclick="toggleLive()">
         <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
         <svg class="scanicon" viewBox="0 0 56 36" aria-hidden="true"><g fill="currentColor">
@@ -180,17 +233,21 @@
         <span id="scanLabel">點擊此處，開啟相機掃描ISBN</span>
       </button>
       <div id="scanStage"><div id="reader"></div></div>
-      <div class="ordiv">或</div>
+    </div>
+
+    <!-- 模式 2: 輸入 ISBN -->
+    <div id="amodeIsbn" class="hidden">
       <div class="searchgroup">
-        <div class="float"><input type="number" id="manualIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}"><label>手動輸入 ISBN</label></div>
+        <div class="float"><input type="text" id="manualIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();submitManual();}"><label>輸入 10 或 13 碼 ISBN</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="submitManual()">查詢</button>
       </div>
     </div>
 
-    <div class="status" id="admStatus"></div>
+    <div class="status" id="admStatus" style="margin-top:10px"></div>
     <div id="loadingArea" class="hidden" style="text-align:center;padding:36px 0"><span class="spin-lg"></span></div>
 
-    <div class="card sec hidden" id="resultCard" style="margin-top:-4px">
+    <!-- 模式 3 / 查詢結果: 書籍資料表單 -->
+    <div class="card sec hidden" id="resultCard" style="margin-top:12px">
       <div class="sechead">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/></svg>
         書籍資料
@@ -207,15 +264,15 @@
       </button>
     </div>
 
-    <div class="helpbox" id="helpBox">💡 掃描 ISBN 或手動輸入,確認資料後即可存檔</div>
+    <div class="helpbox" id="helpBox" style="margin-top:12px">💡 掃描條碼、輸入 ISBN 或手動填寫資料即可直接上架存檔。</div>
   </section>
 
-  <!-- 移除 -->
+  <!-- 管理員：下架書籍 -->
   <section class="panel" id="panel-remove" role="tabpanel">
-    <div class="card sec" style="margin-top:19px;padding:20px 14px 12px">
+    <div class="card sec" style="margin-top:16px;padding:20px 14px 12px">
       <div class="sechead">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
-        移除書籍
+        下架與移除書籍
       </div>
       <button class="scanhero" id="liveBtnR" onclick="toggleLiveRemove()">
         <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
@@ -232,7 +289,7 @@
       <div class="status" id="rStatus"></div>
       <div class="ordiv">或</div>
       <div class="searchgroup">
-        <div class="float"><input type="number" id="rIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();removeByIsbn();}"><label>輸入 ISBN 查詢</label></div>
+        <div class="float"><input type="text" id="rIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();removeByIsbn();}"><label>輸入 ISBN 查詢</label></div>
         <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="removeByIsbn()">查詢</button>
       </div>
       <div class="status" id="rIsbnStatus"></div>
@@ -256,7 +313,103 @@
     <div id="results"></div>
   </section>
 
+  <!-- 捐書 -->
+  <section class="panel" id="panel-donate" role="tabpanel">
+    <!-- 輸入方式膠囊切換 -->
+    <div class="subtabs" style="margin-top:16px;margin-bottom:12px">
+      <button class="subtab on" id="dtabScan" onclick="switchDonateMode('scan')">📷 掃描條碼</button>
+      <button class="subtab" id="dtabIsbn" onclick="switchDonateMode('isbn')">⌨️ 輸入 ISBN</button>
+      <button class="subtab" id="dtabManual" onclick="switchDonateMode('manual')">✏️ 手動填寫</button>
+    </div>
+
+    <!-- 模式 1: 相機掃描 -->
+    <div id="dmodeScan">
+      <button class="scanhero" id="liveBtnD" onclick="toggleLiveDonate()">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <svg class="scanicon" viewBox="0 0 56 36" aria-hidden="true"><g fill="currentColor">
+          <rect x="10" y="9" width="2.5" height="18"/><rect x="14.5" y="9" width="1.2" height="18"/>
+          <rect x="17.5" y="9" width="3.2" height="18"/><rect x="22.5" y="9" width="1.2" height="18"/>
+          <rect x="25.5" y="9" width="2.2" height="18"/><rect x="29.5" y="9" width="3.2" height="18"/>
+          <rect x="34.5" y="9" width="1.2" height="18"/><rect x="37.5" y="9" width="2.5" height="18"/>
+          <rect x="42" y="9" width="1.2" height="18"/><rect x="44.8" y="9" width="1.2" height="18"/>
+        </g></svg>
+        <span id="scanLabelD">點擊此處，開啟相機掃描ISBN</span>
+      </button>
+      <div id="scanStageD" style="margin-top:10px;border-radius:4px;overflow:hidden;display:none;background:#000"><div id="readerDonate"></div></div>
+    </div>
+
+    <!-- 模式 2: 輸入 ISBN -->
+    <div id="dmodeIsbn" class="hidden">
+      <div class="searchgroup">
+        <div class="float"><input type="text" id="dIsbn" inputmode="numeric" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();donateAddIsbn();}"><label>輸入 10 或 13 碼 ISBN</label></div>
+        <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="donateAddIsbn()">加入</button>
+      </div>
+    </div>
+
+    <!-- 模式 3: 直接手動填寫 -->
+    <div id="dmodeManual" class="hidden">
+      <div class="card" style="margin-bottom:0;padding:14px">
+        <div class="float"><input type="text" id="dManualTitle" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();donateAddManual();}"><label>書名（必填）</label></div>
+        <div class="float" style="margin-top:12px"><input type="text" id="dManualAuthor" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();donateAddManual();}"><label>作者（選填）</label></div>
+        <button class="act tealbtn" style="margin-top:12px;padding:11px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="donateAddManual()">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          加入捐書清單
+        </button>
+      </div>
+    </div>
+
+    <div class="status" id="dStatus" style="margin-top:10px;margin-bottom:8px"></div>
+    <div id="dLoadArea" class="hidden" style="text-align:center;padding:24px 0"><span class="spin-lg"></span></div>
+
+    <!-- 捐書清單展示區 (主要視覺重心) -->
+    <div class="batch-header hidden" id="batchHeader" style="margin-top:14px">待提交捐書 <span class="bcount" id="batchCount">0</span></div>
+    <div id="donateBatch"></div>
+
+    <button class="act tealbtn hidden" id="donateSubmitBtn" style="margin:14px 0 10px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="submitDonation()" disabled>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span id="donateSubmitLabel">提交捐書並匯出 Excel</span>
+    </button>
+    <div class="helpbox" id="donateHelp" style="margin-top:14px">💡 選擇上方方式加入書籍，建立捐書清單後可一鍵提交並匯出 Excel。</div>
+  </section>
+
 </div>
+
+<!-- 住戶底部導覽列 -->
+<nav class="btab-bar hidden" id="residentTabbar">
+  <div class="btab-inner">
+    <button class="btab on" data-tab="search" onclick="switchBottomTab('search')">
+      <span class="btab-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+      <svg class="btab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <span>查書</span>
+    </button>
+    <button class="btab" data-tab="donate" onclick="switchBottomTab('donate')">
+      <span class="btab-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 22V7"/></svg></span>
+      <svg class="btab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 22V7"/></svg>
+      <span>捐書</span>
+    </button>
+  </div>
+</nav>
+
+<!-- 管理者底部導覽列 -->
+<nav class="btab-bar hidden" id="adminTabbar">
+  <div class="btab-inner">
+    <button class="btab on" data-tab="review" onclick="switchAdminBottomTab('review')">
+      <span class="btab-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+      <svg class="btab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>審核</span>
+    </button>
+    <button class="btab" data-tab="add" onclick="switchAdminBottomTab('add')">
+      <span class="btab-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      <svg class="btab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      <span>上架</span>
+    </button>
+    <button class="btab" data-tab="remove" onclick="switchAdminBottomTab('remove')">
+      <span class="btab-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></span>
+      <svg class="btab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+      <span>下架</span>
+    </button>
+  </div>
+</nav>
 
 <!-- 成功提示 toast -->
 <div id="loadMask" class="loadmask hidden"><span class="spin-lg"></span></div>
@@ -301,20 +454,24 @@ let books=[],backend="https://script.google.com/macros/s/AKfycbwXIFkIoYvosxL4_vq
 let toastTimer=null;
 let h5q=null,scanning=false;
 let h5qR=null,scanningR=false;
+let h5qD=null,scanningD=false;
+let donateBatch=[];
 const ADDR_KEY='borrower-addr';
 
 function bootResident(){
   try{
     const isAdmin=/[?&]admin\b/i.test(location.search);
     if(isAdmin){
-      document.getElementById('tabsBar').classList.remove('hidden');
+      document.getElementById('tabsBar').classList.add('hidden');
       document.getElementById('loginBtn').classList.add('hidden');
-      document.getElementById('loginNotice').classList.add('hidden');
-      document.body.style.paddingBottom='';
-      showTab('add');
+      document.getElementById('adminTabbar').classList.remove('hidden');
+      document.body.classList.add('has-tabbar');
+      switchAdminBottomTab('review');
     }else{
+      document.getElementById('residentTabbar').classList.remove('hidden');
+      document.body.classList.add('has-tabbar');
       applyLoginUI();
-      showTab('user');   // showTab('user') 內部會自動查詢一次
+      switchBottomTab('search');
     }
   }catch(e){ try{doResidentSearch();}catch(e2){} }
 }
@@ -361,16 +518,17 @@ async function loadBooksData(){
   if(backend){try{const r=await fetch(backend+"?action=list");const j=await r.json();if(Array.isArray(j))books=j;}catch(e){}}
 }
 
-/* ===== 分頁 ===== */
+/* ===== 分頁切換 ===== */
 function showTab(t){
-  document.getElementById('panel-admin').classList.toggle('on',t==='add');
-  document.getElementById('panel-remove').classList.toggle('on',t==='remove');
-  document.getElementById('panel-user').classList.toggle('on',t==='user');
-  const ta=document.getElementById('tab-add'),tr=document.getElementById('tab-remove');
-  if(ta)ta.setAttribute('aria-selected',t==='add');
-  if(tr)tr.setAttribute('aria-selected',t==='remove');
-  stopLive();stopLiveRemove();
-  if(t==='remove'){
+  var pr=document.getElementById('panel-review');if(pr)pr.classList.toggle('on',t==='review');
+  var pa=document.getElementById('panel-add');if(pa)pa.classList.toggle('on',t==='add');
+  var pm=document.getElementById('panel-remove');if(pm)pm.classList.toggle('on',t==='remove');
+  var pu=document.getElementById('panel-user');if(pu)pu.classList.toggle('on',t==='user');
+  var pd=document.getElementById('panel-donate');if(pd)pd.classList.toggle('on',t==='donate');
+  stopLive();stopLiveRemove();try{stopLiveDonate();}catch(e){}
+  if(t==='add'){
+    switchAdminAddMode('scan');
+  }else if(t==='remove'){
     document.getElementById('rIsbn').value='';
     document.getElementById('rKw').value='';
     document.getElementById('rStatus').innerHTML='';
@@ -378,6 +536,8 @@ function showTab(t){
     document.getElementById('removeResults').innerHTML='<div class="empty big">請查詢要移除的書籍資料</div>';
   }else if(t==='user'){
     doResidentSearch();
+  }else if(t==='review'){
+    loadAndRenderReview();
   }
 }
 
@@ -541,6 +701,36 @@ function showManual(isbn,info){
   autoGrow(document.getElementById('fTitle'));
 }
 
+function openManualAddForm(){
+  document.getElementById('admStatus').textContent='';
+  showManual('',{title:'',author:'',publishDate:''});
+  document.getElementById('fTitle').focus();
+}
+
+function switchAdminAddMode(mode){
+  document.getElementById('atabScan').classList.toggle('on', mode==='scan');
+  document.getElementById('atabIsbn').classList.toggle('on', mode==='isbn');
+  document.getElementById('atabManual').classList.toggle('on', mode==='manual');
+
+  document.getElementById('amodeScan').classList.toggle('hidden', mode!=='scan');
+  document.getElementById('amodeIsbn').classList.toggle('hidden', mode!=='isbn');
+
+  document.getElementById('admStatus').textContent='';
+  if(mode!=='scan'){
+    stopLive();
+  }
+  if(mode==='isbn'){
+    document.getElementById('resultCard').classList.add('hidden');
+    document.getElementById('helpBox').classList.remove('hidden');
+    setTimeout(function(){document.getElementById('manualIsbn').focus();},100);
+  }else if(mode==='manual'){
+    openManualAddForm();
+  }else if(mode==='scan'){
+    document.getElementById('resultCard').classList.add('hidden');
+    document.getElementById('helpBox').classList.remove('hidden');
+  }
+}
+
 /* ===== 存檔 ===== */
 async function saveBook(){
   const btn=document.getElementById('saveBtn');
@@ -589,7 +779,7 @@ async function runQuery(targetId, predicate, removable, emptyMsg){
 }
 function kwPredicate(q){
   q=(q||'').trim().toLowerCase();
-  return b=>!q||(b.title&&b.title.toLowerCase().includes(q))||(b.author&&b.author.toLowerCase().includes(q));
+  return b=> (!b.status || b.status==='active') && (!q || (b.title&&b.title.toLowerCase().includes(q)) || (b.author&&b.author.toLowerCase().includes(q)));
 }
 function isbnPredicate(isbn){
   isbn=(isbn||'').replace(/\D/g,'');
@@ -670,10 +860,8 @@ function myAddrShort(){const s=getLogin();return s?(s.hao+'-'+s.lou+'F'+s.zhi):'
 function applyLoginUI(){
   const logged=!!getLogin();
   document.getElementById('loginDot').classList.toggle('hidden',!logged);
-  document.getElementById('loginNotice').classList.toggle('hidden',logged);
   document.getElementById('logoutBtn').classList.toggle('hidden',!logged);
   document.getElementById('loginLabel').textContent = logged ? myAddrShort() : '未登入';
-  document.body.style.paddingBottom = logged ? '' : '64px';
 }
 function openLogin(){
   applyLoginUI();
@@ -752,6 +940,291 @@ async function doDelete(id){
   const kwV=(document.getElementById('rKw').value||'').trim();
   if(isbnV){await runQuery('removeResults', isbnPredicate(isbnV), true, '書庫中查無此 ISBN');}
   else{await runQuery('removeResults', kwPredicate(kwV), true, '沒有符合的書籍');}
+}
+/* ===== 住戶底部 Tab 切換 ===== */
+function switchBottomTab(tab){
+  var map={search:'user',donate:'donate'};
+  showTab(map[tab]||'user');
+  document.querySelectorAll('#residentTabbar .btab').forEach(function(t){t.classList.toggle('on',t.dataset.tab===tab);});
+  if(tab==='search')doResidentSearch();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== 管理者底部 Tab 切換 ===== */
+function switchAdminBottomTab(tab){
+  showTab(tab);
+  document.querySelectorAll('#adminTabbar .btab').forEach(function(t){t.classList.toggle('on',t.dataset.tab===tab);});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== 管理者：捐書審核列表與操作 ===== */
+async function loadAndRenderReview(){
+  const el = document.getElementById('reviewResults');
+  el.innerHTML = '<div style="text-align:center;padding:40px 0"><span class="spin-lg"></span></div>';
+  await loadBooksData();
+  populateReviewFilters();
+  renderReviewList();
+}
+
+function populateReviewFilters(){
+  const pendingBooks = books.filter(b => b.status === 'pending');
+  const addrs = Array.from(new Set(pendingBooks.map(b => b.donor).filter(Boolean))).sort();
+  const dates = Array.from(new Set(pendingBooks.map(b => fmtDate(b.filedDate)).filter(Boolean))).sort().reverse();
+
+  const addrSel = document.getElementById('revAddrFilter');
+  const dateSel = document.getElementById('revDateFilter');
+  const curAddr = addrSel.value;
+  const curDate = dateSel.value;
+
+  addrSel.innerHTML = '<option value="">全部門牌 (' + pendingBooks.length + '本)</option>' +
+    addrs.map(a => '<option value="' + a + '">' + a + '</option>').join('');
+  dateSel.innerHTML = '<option value="">全部日期</option>' +
+    dates.map(d => '<option value="' + d + '">' + d + '</option>').join('');
+
+  if(curAddr && addrs.includes(curAddr)) addrSel.value = curAddr;
+  if(curDate && dates.includes(curDate)) dateSel.value = curDate;
+}
+
+function renderReviewList(){
+  const el = document.getElementById('reviewResults');
+  const selAddr = document.getElementById('revAddrFilter').value;
+  const selDate = document.getElementById('revDateFilter').value;
+
+  const list = books.filter(b => {
+    if (b.status !== 'pending') return false;
+    if (selAddr && b.donor !== selAddr) return false;
+    if (selDate && fmtDate(b.filedDate) !== selDate) return false;
+    return true;
+  });
+
+  if (!list.length) {
+    el.innerHTML = '<div class="empty big">目前沒有符合條件的待審核捐書</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(b => {
+    return '<div class="rev-card" id="rev-' + b.id + '">' +
+      '<div class="rev-badge">待審核</div>' +
+      '<div class="rev-title">《' + esc(b.title) + '》</div>' +
+      '<div class="rev-meta">' +
+        (b.author ? '作者：<span class="mval">' + esc(b.author) + '</span><br>' : '') +
+        (b.isbn ? 'ISBN：<span class="isbnbadge">' + esc(b.isbn) + '</span><br>' : '') +
+        (b.donor ? '捐書門牌：<span class="mval"><b>' + esc(b.donor) + '</b></span><br>' : '') +
+        '建立日期：<span class="mval">' + esc(fmtDate(b.filedDate)) + '</span>' +
+      '</div>' +
+      '<div class="rev-actions">' +
+        '<button class="btn-approve" onclick="approveBook(\'' + b.id + '\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 同意上架</button>' +
+        '<button class="btn-reject" onclick="rejectBook(\'' + b.id + '\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 駁回</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function approveBook(id){
+  const bk = books.find(b => b.id === id);
+  if (!bk) return;
+  showMask();
+  if (backend) {
+    try {
+      await fetch(backend, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action: "approve", id: id })
+      });
+    } catch(e) {}
+  }
+  bk.status = 'active';
+  hideMask();
+  showToast('《' + bk.title + '》已同意上架！');
+  populateReviewFilters();
+  renderReviewList();
+}
+
+function rejectBook(id){
+  const bk = books.find(b => b.id === id);
+  if (!bk) return;
+  document.getElementById('delMsg').innerHTML = '是否駁回《<b>' + esc(bk.title) + '</b>》的捐書申請？';
+  document.getElementById('delOkBtn').onclick = async () => {
+    closeDelDialog();
+    showMask();
+    if (backend) {
+      try {
+        await fetch(backend, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ action: "delete", id: id })
+        });
+      } catch(e) {}
+    }
+    books = books.filter(b => b.id !== id);
+    hideMask();
+    showToast('已駁回該捐書');
+    populateReviewFilters();
+    renderReviewList();
+  };
+  document.getElementById('delOverlay').classList.remove('hidden');
+}
+
+/* ===== 住戶捐書模式膠囊切換 ===== */
+function switchDonateMode(mode){
+  document.getElementById('dtabScan').classList.toggle('on', mode==='scan');
+  document.getElementById('dtabIsbn').classList.toggle('on', mode==='isbn');
+  document.getElementById('dtabManual').classList.toggle('on', mode==='manual');
+
+  document.getElementById('dmodeScan').classList.toggle('hidden', mode!=='scan');
+  document.getElementById('dmodeIsbn').classList.toggle('hidden', mode!=='isbn');
+  document.getElementById('dmodeManual').classList.toggle('hidden', mode!=='manual');
+
+  document.getElementById('dStatus').textContent='';
+  if(mode!=='scan'){
+    stopLiveDonate();
+  }
+  if(mode==='isbn'){
+    setTimeout(function(){document.getElementById('dIsbn').focus();},100);
+  }else if(mode==='manual'){
+    setTimeout(function(){document.getElementById('dManualTitle').focus();},100);
+  }
+}
+
+/* ===== 捐書掃描器 ===== */
+function setScanLabelD(t){var e=document.getElementById('scanLabelD');if(e)e.textContent=t;}
+async function toggleLiveDonate(){
+  if(!myAddr()){openLogin();return;}
+  if(scanningD){stopLiveDonate();return;}
+  var st=document.getElementById('dStatus'),stage=document.getElementById('scanStageD');
+  if(!window.Html5Qrcode){st.className='status err';st.textContent='掃描元件載入失敗';return;}
+  stage.style.display='block';setScanLabelD('停止掃描');scanningD=true;
+  st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
+  try{
+    h5qD=new Html5Qrcode("readerDonate",{
+      formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A],
+      experimentalFeatures:{useBarCodeDetectorIfSupported:true}
+    });
+    var cfg={fps:15,qrbox:function(vw,vh){return{width:Math.floor(vw*0.92),height:Math.max(130,Math.floor(vh*0.5))}}};
+    await h5qD.start({facingMode:"environment"},cfg,function(text){
+      if(!scanningD)return;
+      var isbn=pickISBN([text]);
+      if(isbn){scanningD=false;stopLiveDonate();onDonateISBN(isbn);}
+    },function(){});
+  }catch(e){
+    scanningD=false;setScanLabelD('點擊此處，開啟相機掃描ISBN');stage.style.display='none';
+    st.className='status err';st.textContent='無法開啟相機，請用下方手動輸入 ISBN。';
+  }
+}
+function stopLiveDonate(){
+  scanningD=false;
+  setScanLabelD('點擊此處，開啟相機掃描ISBN');
+  if(h5qD){
+    var inst=h5qD;h5qD=null;
+    try{var p=inst.stop();if(p&&p.then){p.then(function(){try{inst.clear();}catch(e){}}).catch(function(){});}}catch(e){try{inst.clear();}catch(e2){}}
+  }
+  var stage=document.getElementById('scanStageD');if(stage)stage.style.display='none';
+}
+
+/* ===== 捐書批次管理 ===== */
+async function onDonateISBN(isbn){
+  if(donateBatch.some(function(b){return b.isbn===isbn;})){
+    var st=document.getElementById('dStatus');
+    st.className='status err';st.textContent='ISBN '+isbn+' 已在清單中';
+    return;
+  }
+  var st=document.getElementById('dStatus');
+  var load=document.getElementById('dLoadArea');
+  load.classList.remove('hidden');
+  st.className='status';st.innerHTML='查詢 ISBN：<span class="isbnbadge">'+isbn+'</span>';
+  var info=await fetchBook(isbn);
+  load.classList.add('hidden');
+  var book={isbn:isbn,title:(info&&info.title)?info.title:'',author:(info&&info.author)?info.author:'',publishDate:(info&&info.publishDate)?fmtDate(info.publishDate):''};
+  if(!book.title){
+    st.className='status err';
+    st.innerHTML='ISBN <span class="isbnbadge">'+isbn+'</span> 查無書目資料，無法加入。';
+    return;
+  }
+  donateBatch.push(book);
+  st.className='status';st.innerHTML='✓ 已加入：'+esc(book.title);
+  renderDonateBatch();
+}
+function donateAddIsbn(){
+  if(!myAddr()){openLogin();return;}
+  var raw=(document.getElementById('dIsbn').value||'').replace(/[^0-9Xx]/g,'');
+  var isbn=null;
+  if(raw.length===13&&(raw.startsWith('978')||raw.startsWith('979')))isbn=raw;
+  else if(raw.length===10)isbn=isbn10to13(raw);
+  if(!isbn){var st=document.getElementById('dStatus');st.className='status err';st.textContent='ISBN 格式不正確：請輸入 13 碼(978/979 開頭)或 10 碼。';return;}
+  document.getElementById('dIsbn').value='';
+  onDonateISBN(isbn);
+}
+function donateAddManual(){
+  if(!myAddr()){openLogin();return;}
+  var title=(document.getElementById('dManualTitle').value||'').trim();
+  var author=(document.getElementById('dManualAuthor').value||'').trim();
+  var st=document.getElementById('dStatus');
+  if(!title){
+    st.className='status err';
+    st.textContent='請填寫書名';
+    document.getElementById('dManualTitle').focus();
+    return;
+  }
+  var book={isbn:'',title:title,author:author,publishDate:''};
+  donateBatch.push(book);
+  document.getElementById('dManualTitle').value='';
+  document.getElementById('dManualAuthor').value='';
+  st.className='status';
+  st.innerHTML='✓ 已加入：'+esc(book.title);
+  renderDonateBatch();
+}
+function donateRemoveItem(idx){
+  donateBatch.splice(idx,1);
+  renderDonateBatch();
+}
+function renderDonateBatch(){
+  var el=document.getElementById('donateBatch');
+  var header=document.getElementById('batchHeader');
+  var countEl=document.getElementById('batchCount');
+  var submitBtn=document.getElementById('donateSubmitBtn');
+  var helpBox=document.getElementById('donateHelp');
+  if(!donateBatch.length){
+    el.innerHTML='';header.classList.add('hidden');submitBtn.classList.add('hidden');submitBtn.disabled=true;helpBox.classList.remove('hidden');return;
+  }
+  header.classList.remove('hidden');countEl.textContent=donateBatch.length;
+  submitBtn.classList.remove('hidden');submitBtn.disabled=false;helpBox.classList.add('hidden');
+  el.innerHTML=donateBatch.map(function(b,i){
+    return '<div class="donate-item"><div class="di-info"><div class="di-title">'+esc(b.title)+'</div><div class="di-meta">'+(b.author?esc(b.author):'')+(b.author&&b.isbn?' · ':'')+(b.isbn?'ISBN '+b.isbn:'')+'</div></div><button class="di-del" onclick="donateRemoveItem('+i+')">移除</button></div>';
+  }).join('');
+}
+
+/* ===== 提交捐書 + 匯出 Excel ===== */
+async function submitDonation(){
+  if(!donateBatch.length)return;
+  var addr=myAddr();if(!addr){openLogin();return;}
+  var btn=document.getElementById('donateSubmitBtn');
+  btn.disabled=true;document.getElementById('donateSubmitLabel').textContent='提交中…';
+  showMask();
+  var today=todayStr();
+  var records=donateBatch.map(function(b){
+    return{id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),isbn:b.isbn,title:b.title,author:b.author,publishDate:b.publishDate,filedDate:today,minAge:0,status:'pending',donor:addr};
+  });
+  if(backend){
+    try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"addBatch",books:records})});}catch(e){}
+  }
+  exportDonateExcel(records,addr,today);
+  donateBatch=[];renderDonateBatch();
+  hideMask();
+  btn.disabled=false;document.getElementById('donateSubmitLabel').textContent='提交捐書並匯出 Excel';
+  showToast('捐書提交成功');
+}
+function exportDonateExcel(records,addr,date){
+  if(!window.XLSX){alert('Excel 元件載入失敗');return;}
+  var data=records.map(function(r,i){
+    return{'序號':i+1,'捐書門牌':addr,'提交日期':date,'ISBN':r.isbn,'書名':r.title,'作者':r.author,'出版日期':r.publishDate,'審核狀態':'待審核'};
+  });
+  var ws=XLSX.utils.json_to_sheet(data);
+  ws['!cols']=[{wch:5},{wch:14},{wch:12},{wch:16},{wch:30},{wch:16},{wch:12},{wch:10}];
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'捐書清單');
+  var shortA=myAddrShort();
+  var fname='林森苑捐書單_'+shortA+'_'+date.replace(/\//g,'')+'.xlsx';
+  XLSX.writeFile(wb,fname);
 }
 </script>
 </body>
