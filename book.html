@@ -76,14 +76,15 @@
   .book h3{font-family:Georgia,"Noto Serif TC",serif;font-size:18px;margin:0 0 3px;color:var(--teal)}
   .meta{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;font-size:16px;color:#2C221E;line-height:1.7}
   .meta .mval{color:#2C221E}
-  .empty{text-align:center;color:var(--ink-soft);padding:30px 10px;font-size:14px}
+  .empty{text-align:center;color:var(--ink-soft);padding:36px 14px;font-size:16px;line-height:1.5}
+  .empty.big{text-align:center;color:var(--ink-soft);padding:42px 16px;font-size:40px;font-weight:700;line-height:1.5}
   .delbtn{background:var(--stamp);color:#fff;border:none;border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
   .borrowbtn{background:var(--teal);color:#fff;border:1.5px solid var(--teal);border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
   .returnbtn{background:#fffdf7;color:var(--teal);border:1.5px solid var(--teal);border-radius:4px;padding:0 20px;height:54px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
   .delbtn:active,.borrowbtn:active,.returnbtn:active{opacity:.8}
   .brwtag{position:absolute;top:-14px;left:12px;background:#fffdf7;color:var(--teal);border:1.5px solid var(--teal);border-radius:6px;padding:3px 10px;font-size:14px;font-weight:700;letter-spacing:.02em}
   .addr-row{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;margin-top:6px}
-  .addr-sel{-webkit-appearance:none;appearance:none;font:inherit;font-size:18px;font-weight:700;color:#1a56b8;padding:9px 26px 9px 12px;border:1.5px solid #4A3F3B;border-radius:8px;background-color:#fffdf7;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234A3F3B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 9px center;text-align:center;text-align-last:center;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .addr-sel{-webkit-appearance:none;appearance:none;font:inherit;font-size:18px;font-weight:700;color:var(--teal);padding:9px 26px 9px 12px;border:1.5px solid #4A3F3B;border-radius:8px;background-color:#fffdf7;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234A3F3B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 9px center;text-align:center;text-align-last:center;box-shadow:0 1px 2px rgba(0,0,0,.08)}
   .addr-sel:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 2px rgba(47,107,98,.25)}
   .addr-unit{font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap}
   .bookrow{display:flex;align-items:flex-end;gap:12px}
@@ -98,26 +99,26 @@
   .dlg-ok{background:var(--teal)}
   .dialog-btns>button:active{opacity:.85}
   .toast-overlay{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:300;pointer-events:none}
-  .toast-box{display:flex;align-items:center;justify-content:center;gap:12px;background:rgba(47,107,98,.65);color:#fff;width:100%;border-radius:0;box-shadow:0 -4px 16px rgba(0,0,0,.2);padding:20px 24px;font-size:22px;font-weight:700;letter-spacing:.05em;animation:toastUp .25s ease}
-  .toast-box svg{width:28px;height:28px;flex-shrink:0}
+  .toast-box{display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(47,107,98,.92);color:#fff;width:100%;border-radius:0;box-shadow:0 -4px 16px rgba(0,0,0,.25);padding:16px 20px;font-size:18px;font-weight:700;letter-spacing:.03em;animation:toastUp .25s cubic-bezier(.34,1.56,.64,1);pointer-events:auto;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .toast-box.error{background:rgba(178,58,46,.92)}
+  .toast-box svg{width:24px;height:24px;flex-shrink:0}
   @keyframes toastUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
-  .loadmask{position:fixed;inset:0;background:rgba(42,38,34,.45);display:flex;align-items:center;justify-content:center;z-index:320}
-  .loginbtn{display:flex;align-items:center;gap:6px;background:transparent;border:1.5px solid var(--line);border-radius:20px;padding:5px 12px 5px 8px;cursor:pointer;color:var(--ink);flex-shrink:0;align-self:center}
-  .login-ico{position:relative;line-height:0}
-  .loginbtn svg{width:26px;height:26px;display:block}
-  .login-label{font:inherit;font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap}
-  .login-dot{position:absolute;right:-2px;bottom:-1px;width:14px;height:14px;border-radius:50%;background:#2e9e5b;border:2px solid var(--paper-2)}
-  .login-dot::after{content:"";position:absolute;left:3.5px;top:1.5px;width:3px;height:6px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
-  .logoutbtn{width:100%;margin-top:12px;padding:11px;background:transparent;border:1.5px solid var(--stamp);color:var(--stamp);border-radius:6px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
-  .empty.big{font-size:40px;font-weight:700;padding:50px 10px;line-height:1.3}
-  .status{font-size:13px;color:var(--teal);margin:0 0 14px;min-height:20px}
-  .status:empty{display:none;margin:0;min-height:0}
-  .status.saved{text-align:center;font-size:17px;font-weight:700}
-  .status.err{color:var(--stamp)}
+  .status.err::before{content:"⚠️ ";margin-right:2px}
+  .skeleton-card{background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:4px;padding:16px;margin-bottom:12px;opacity:.75;animation:skelPulse 1.2s infinite ease-in-out}
+  .skeleton-line{height:16px;background:rgba(42,38,34,.1);border-radius:4px;margin-bottom:8px}
+  .skeleton-line.short{width:40%}
+  .skeleton-line.mid{width:65%}
+  @keyframes skelPulse{0%,100%{opacity:.4}50%{opacity:.8}}
   .spin{display:inline-block;width:15px;height:15px;border:2px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
   .spin-lg{display:inline-block;width:36px;height:36px;border:3px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  .loginbtn{display:flex;align-items:center;gap:6px;background:var(--paper-2);border:1.5px solid var(--line);border-radius:20px;padding:4px 14px 4px 8px;cursor:pointer;color:var(--ink);flex-shrink:0;margin-bottom:-1.5px;position:relative;z-index:2}
+  .login-ico{position:relative;line-height:0}
+  .loginbtn svg{width:24px;height:24px;display:block;color:var(--ink)}
+  .login-label{font:inherit;font-size:17px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .login-dot{position:absolute;right:-2px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#2e9e5b;border:2px solid var(--paper-2)}
+  .login-dot::after{content:"";position:absolute;left:3px;top:1px;width:3px;height:5px;border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(45deg)}
   .brand{display:flex;align-items:center;gap:11px;min-width:0;position:relative;bottom:6px}
   .brand .logo{width:34px;height:34px;flex-shrink:0;color:var(--teal)}
   .brand .btext{min-width:0}
@@ -149,12 +150,13 @@
   #readerDonate{width:100%}
   #readerDonate video{width:100%!important;display:block}
   #readerDonate img{display:none}
-  .donate-item{display:flex;align-items:center;gap:12px;background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:2px;padding:10px 14px;margin-bottom:8px}
+  .donate-item{display:flex;align-items:center;gap:12px;background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:4px;padding:12px 14px;margin-bottom:10px}
   .donate-item .di-info{flex:1;min-width:0}
   .donate-item .di-title{font-weight:700;font-size:16px;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .donate-item .di-meta{font-size:13px;color:var(--ink-soft)}
-  .donate-item .di-del{background:var(--stamp);color:#fff;border:none;border-radius:4px;padding:6px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;flex-shrink:0}
-  .donate-item .di-edit{background:var(--teal);color:#fff;border:none;border-radius:4px;padding:6px 12px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;flex-shrink:0}
+  .donate-item .di-meta{font-size:13px;color:var(--ink-soft);margin-top:2px}
+  .donate-item .di-del{background:var(--stamp);color:#fff;border:none;border-radius:6px;padding:0 14px;height:44px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .donate-item .di-edit{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:0 14px;height:44px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .donate-item .di-del:active,.donate-item .di-edit:active{opacity:.85}
   .batch-box{background:rgba(255,255,255,.7);border:1.5px solid var(--line);border-radius:8px;padding:14px;margin-top:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
   .batch-header-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
   .batch-title{font-weight:700;font-size:16px;color:var(--ink);display:flex;align-items:center;gap:6px}
@@ -431,12 +433,12 @@
   </div>
 </nav>
 
-<!-- 成功提示 toast -->
+<!-- 訊息提示 toast -->
 <div id="loadMask" class="loadmask hidden"><span class="spin-lg"></span></div>
 
 <div id="toast" class="toast-overlay hidden">
-  <div class="toast-box">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+  <div class="toast-box success" id="toastBox">
+    <span id="toastIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
     <span id="toastText">成功</span>
   </div>
 </div>
@@ -555,25 +557,33 @@ function fmtDate(s){
 }
 function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function autoGrow(el){el.style.height='auto';el.style.height=(el.scrollHeight)+'px';}
-function showToast(msg){
-  const t=document.getElementById('toast');
-  document.getElementById('toastText').textContent=msg;
+function showToast(msg, type){
+  type = type || 'success';
+  const t = document.getElementById('toast');
+  const box = document.getElementById('toastBox');
+  const ico = document.getElementById('toastIcon');
+  document.getElementById('toastText').textContent = msg;
+  box.className = 'toast-box ' + (type === 'error' ? 'error' : 'success');
+  if(type === 'error'){
+    ico.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  }else{
+    ico.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  }
   t.classList.remove('hidden');
-  if(toastTimer)clearTimeout(toastTimer);
-  const hide=()=>{
+  if(toastTimer) clearTimeout(toastTimer);
+  const hide = () => {
     t.classList.add('hidden');
-    if(toastTimer)clearTimeout(toastTimer);
-    window.removeEventListener('scroll',hide);
-    window.removeEventListener('touchstart',hide);
-    window.removeEventListener('click',hide);
+    if(toastTimer) clearTimeout(toastTimer);
+    window.removeEventListener('scroll', hide);
+    window.removeEventListener('touchstart', hide);
+    window.removeEventListener('click', hide);
   };
-  // 點擊或滑動就立即消失(延遲掛載,避免觸發當下那次操作)
-  setTimeout(()=>{
-    window.addEventListener('scroll',hide,{passive:true});
-    window.addEventListener('touchstart',hide,{passive:true});
-    window.addEventListener('click',hide);
-  },50);
-  toastTimer=setTimeout(hide,5000);
+  setTimeout(() => {
+    window.addEventListener('scroll', hide, {passive:true});
+    window.addEventListener('touchstart', hide, {passive:true});
+    window.addEventListener('click', hide);
+  }, 50);
+  toastTimer = setTimeout(hide, 3500);
 }
 
 /* ===== 資料讀取(後端) ===== */
@@ -822,7 +832,11 @@ async function saveBook(){
   const btn=document.getElementById('saveBtn');
   if(btn.disabled)return;
   const title=document.getElementById('fTitle').value.trim();
-  if(!title){alert("請至少填寫書名");return;}
+  if(!title){
+    showToast("請至少填寫書名", "error");
+    document.getElementById('fTitle').focus();
+    return;
+  }
   btn.disabled=true;document.getElementById('saveLabel').textContent='存檔中…';
   const rec={id:Date.now().toString(36),isbn:document.getElementById('resultCard').dataset.isbn||"",title,
     author:document.getElementById('fAuthor').value.trim(),publishDate:fmtDate(document.getElementById('fPub').value),
@@ -857,7 +871,8 @@ async function saveBook(){
 // 通用:抓最新資料 → 依條件篩選 → 渲染到指定容器
 async function runQuery(targetId, predicate, removable, emptyMsg){
   const el=document.getElementById(targetId);
-  el.innerHTML='<div style="text-align:center;padding:40px 0"><span class="spin-lg"></span></div>';
+  const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(3);
+  el.innerHTML=skelHTML;
   await loadBooksData();
   const list=books.filter(predicate);
   if(!list.length){el.innerHTML='<div class="empty big">'+emptyMsg+'</div>';return;}
@@ -878,7 +893,7 @@ function isbnPredicate(isbn){
 }
 // 住戶查詢(書名/作者,無刪除)
 async function doResidentSearch(){
-  await runQuery('results', kwPredicate(document.getElementById('qTitle').value), false, '沒有符合的書籍');
+  await runQuery('results', kwPredicate(document.getElementById('qTitle').value), false, '目前沒有符合條件的書籍');
 }
 /* ===== 管理者：下架模式切換 ===== */
 function switchRemoveMode(mode){
@@ -906,7 +921,7 @@ function switchRemoveMode(mode){
 // 移除頁:關鍵字查
 async function removeByKeyword(){
   document.getElementById('rIsbnStatus').innerHTML='';
-  await runQuery('removeResults', kwPredicate(document.getElementById('rKw').value), true, '沒有符合的書籍');
+  await runQuery('removeResults', kwPredicate(document.getElementById('rKw').value), true, '目前沒有符合條件的書籍');
 }
 // 移除頁:輸入 ISBN 查(本地書庫比對)
 function removeByIsbn(){
@@ -990,7 +1005,7 @@ function renderCurrent(){
   const y=window.scrollY;
   const q=(document.getElementById('qTitle').value||'');
   const list=books.filter(kwPredicate(q));
-  el.innerHTML=list.length?list.map(b=>bookCard(b,false)).join(''):'<div class="empty big">沒有符合的書籍</div>';
+  el.innerHTML=list.length?list.map(b=>bookCard(b,false)).join(''):'<div class="empty big">目前沒有符合條件的書籍</div>';
   window.scrollTo(0,y);
 }
 function confirmLogin(){
@@ -1054,7 +1069,7 @@ async function doDelete(id){
   const isbnV=(document.getElementById('rIsbn').value||'').replace(/\D/g,'');
   const kwV=(document.getElementById('rKw').value||'').trim();
   if(isbnV){await runQuery('removeResults', isbnPredicate(isbnV), true, '書庫中查無此 ISBN');}
-  else{await runQuery('removeResults', kwPredicate(kwV), true, '沒有符合的書籍');}
+  else{await runQuery('removeResults', kwPredicate(kwV), true, '目前沒有符合條件的書籍');}
 }
 /* ===== 住戶底部 Tab 切換 ===== */
 function switchBottomTab(tab){
@@ -1075,7 +1090,8 @@ function switchAdminBottomTab(tab){
 /* ===== 管理者：捐書審核列表與操作 ===== */
 async function loadAndRenderReview(){
   const el = document.getElementById('reviewResults');
-  el.innerHTML = '<div style="text-align:center;padding:40px 0"><span class="spin-lg"></span></div>';
+  const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(3);
+  el.innerHTML = skelHTML;
   await loadBooksData();
   populateReviewFilters();
   renderReviewList();
@@ -1299,7 +1315,11 @@ function donateEditItem(idx){
   document.getElementById('editDonateAuthor').value=item.author||'';
   document.getElementById('editDonateSaveBtn').onclick=function(){
     var nt=(document.getElementById('editDonateTitle').value||'').trim();
-    if(!nt){alert('請輸入書名');return;}
+    if(!nt){
+      showToast('請輸入書名', 'error');
+      document.getElementById('editDonateTitle').focus();
+      return;
+    }
     item.title=nt;
     item.author=(document.getElementById('editDonateAuthor').value||'').trim();
     closeEditDonateDialog();
@@ -1329,7 +1349,7 @@ function renderDonateBatch(){
   submitBtn.disabled=false;
   helpBox.classList.add('hidden');
   el.innerHTML=donateBatch.map(function(b,i){
-    return '<div class="donate-item"><div class="di-info"><div class="di-title">'+esc(b.title)+'</div><div class="di-meta">'+(b.author?esc(b.author):'')+(b.author&&b.isbn?' · ':'')+(b.isbn?'ISBN '+b.isbn:'')+'</div></div><div style="display:flex;gap:6px;flex-shrink:0"><button class="di-edit" onclick="donateEditItem('+i+')">編輯</button><button class="di-del" onclick="donateRemoveItem('+i+')">移除</button></div></div>';
+    return '<div class="donate-item"><div class="di-info"><div class="di-title">'+esc(b.title)+'</div><div class="di-meta">'+(b.author?esc(b.author):'')+(b.author&&b.isbn?' · ':'')+(b.isbn?'ISBN '+b.isbn:'')+'</div></div><div style="display:flex;gap:8px;flex-shrink:0"><button class="di-edit" onclick="donateEditItem('+i+')">編輯</button><button class="di-del" onclick="donateRemoveItem('+i+')">移除</button></div></div>';
   }).join('');
 }
 
@@ -1344,17 +1364,25 @@ async function submitDonation(){
   var records=donateBatch.map(function(b){
     return{id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),isbn:b.isbn,title:b.title,author:b.author,publishDate:b.publishDate,filedDate:today,minAge:0,status:'pending',donor:addr};
   });
+  var backendOk=true;
   if(backend){
-    try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"addBatch",books:records})});}catch(e){}
+    try{
+      var res=await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"addBatch",books:records})});
+      if(!res.ok) backendOk=false;
+    }catch(e){ backendOk=false; }
   }
   exportDonateExcel(records,addr,today);
   donateBatch=[];renderDonateBatch();
   hideMask();
   btn.disabled=false;document.getElementById('donateSubmitLabel').textContent='提交捐書並匯出 Excel';
-  showToast('捐書提交成功');
+  if(backendOk){
+    showToast('捐書提交成功，Excel 已匯出！', 'success');
+  }else{
+    showToast('後端同步失敗，但 Excel 已順利匯出存檔！', 'error');
+  }
 }
 function exportDonateExcel(records,addr,date){
-  if(!window.XLSX){alert('Excel 元件載入失敗');return;}
+  if(!window.XLSX){showToast('Excel 元件載入失敗', 'error');return;}
   var data=records.map(function(r,i){
     return{'序號':i+1,'捐書門牌':addr,'提交日期':date,'ISBN':r.isbn,'書名':r.title,'作者':r.author,'出版日期':r.publishDate,'審核狀態':'待審核'};
   });
