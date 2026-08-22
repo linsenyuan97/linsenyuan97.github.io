@@ -98,6 +98,8 @@
   .dlg-cancel{background:var(--stamp)}
   .dlg-ok{background:var(--teal)}
   .dialog-btns>button:active{opacity:.85}
+  .logoutbtn{display:block;width:100%;margin-top:10px;background:none;border:1.5px solid var(--stamp);border-radius:6px;font:inherit;font-size:16px;font-weight:700;color:var(--stamp);cursor:pointer;padding:13px 0;text-align:center}
+  .logoutbtn:active{opacity:.75}
   .toast-overlay{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:300;pointer-events:none}
   .toast-box{display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(47,107,98,.92);color:#fff;width:100%;border-radius:0;box-shadow:0 -4px 16px rgba(0,0,0,.25);padding:16px 20px;font-size:18px;font-weight:700;letter-spacing:.03em;animation:toastUp .25s cubic-bezier(.34,1.56,.64,1);pointer-events:auto;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   .toast-box.error{background:rgba(178,58,46,.92)}
@@ -1073,6 +1075,10 @@ async function doDelete(id){
 }
 /* ===== 住戶底部 Tab 切換 ===== */
 function switchBottomTab(tab){
+  if(tab==='donate' && !myAddr()){
+    openLogin();
+    return;
+  }
   var map={search:'user',donate:'donate'};
   showTab(map[tab]||'user');
   document.querySelectorAll('#residentTabbar .btab').forEach(function(t){t.classList.toggle('on',t.dataset.tab===tab);});
