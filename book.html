@@ -469,6 +469,18 @@
   </div>
 </div>
 
+<!-- ISBN 重複確認對話框 -->
+<div id="dupIsbnOverlay" class="overlay hidden" onclick="if(event.target===this)closeDupIsbnDialog()">
+  <div class="dialog">
+    <div class="dialog-msg" id="dupIsbnMsg">此書籍已存在，是否上架此書籍？</div>
+    <div class="dialog-btns">
+      <button class="dlg-cancel" onclick="closeDupIsbnDialog()">取消</button>
+      <button class="dlg-ok" id="dupIsbnOkBtn">仍要上架</button>
+    </div>
+  </div>
+</div>
+<!-- 上面 checkDupIsbn() 沿用此對話框，動態改寫 dupIsbnMsg 與 dupIsbnOkBtn 的行為 -->
+
 <!-- 門牌登入對話框 -->
 <div id="loginOverlay" class="overlay hidden" onclick="if(event.target===this)closeLogin()">
   <div class="dialog">
@@ -830,7 +842,7 @@ function switchAdminAddMode(mode){
 }
 
 /* ===== 存檔 ===== */
-async function saveBook(){
+function saveBook(){
   const btn=document.getElementById('saveBtn');
   if(btn.disabled)return;
   const title=document.getElementById('fTitle').value.trim();
@@ -839,8 +851,13 @@ async function saveBook(){
     document.getElementById('fTitle').focus();
     return;
   }
+  const isbn=document.getElementById('resultCard').dataset.isbn||"";
+  checkDupIsbn(isbn, null, ()=>doSaveBook(title, isbn));
+}
+async function doSaveBook(title, isbn){
+  const btn=document.getElementById('saveBtn');
   btn.disabled=true;document.getElementById('saveLabel').textContent='存檔中…';
-  const rec={id:Date.now().toString(36),isbn:document.getElementById('resultCard').dataset.isbn||"",title,
+  const rec={id:Date.now().toString(36),isbn,title,
     author:document.getElementById('fAuthor').value.trim(),publishDate:fmtDate(document.getElementById('fPub').value),
     filedDate:todayStr(),minAge:0};
   const st=document.getElementById('admStatus');
@@ -893,6 +910,26 @@ function isbnPredicate(isbn){
   isbn=(isbn||'').replace(/\D/g,'');
   return b=>isbn&&b.isbn&&String(b.isbn).replace(/\D/g,'')===isbn;
 }
+/* ===== ISBN 重複檢查（共用：上架、審核皆呼叫） ===== */
+// isbn: 待檢查的 ISBN；excludeId: 排除自己（審核時該筆申請本身也在 books 陣列裡）
+// onConfirm: 使用者選擇「仍要上架」後要執行的動作
+function checkDupIsbn(isbn, excludeId, onConfirm){
+  const norm=(isbn||'').replace(/\D/g,'');
+  if(!norm){ onConfirm(); return; } // 沒填 ISBN，不比對，直接放行
+  const existing = books.find(b =>
+    b.id!==excludeId && b.status==='active' && b.isbn &&
+    String(b.isbn).replace(/\D/g,'')===norm
+  );
+  if(!existing){ onConfirm(); return; }
+  document.getElementById('dupIsbnMsg').innerHTML =
+    '《<b>'+esc(existing.title)+'</b>》已在架上（同一 ISBN），是否仍要上架此書籍？';
+  document.getElementById('dupIsbnOkBtn').onclick = ()=>{
+    closeDupIsbnDialog();
+    onConfirm();
+  };
+  document.getElementById('dupIsbnOverlay').classList.remove('hidden');
+}
+function closeDupIsbnDialog(){document.getElementById('dupIsbnOverlay').classList.add('hidden');}
 // 住戶查詢(書名/作者,無刪除)
 async function doResidentSearch(){
   await runQuery('results', kwPredicate(document.getElementById('qTitle').value), false, '目前沒有符合條件的書籍');
@@ -1157,7 +1194,12 @@ function renderReviewList(){
   }).join('');
 }
 
-async function approveBook(id){
+function approveBook(id){
+  const bk = books.find(b => b.id === id);
+  if (!bk) return;
+  checkDupIsbn(bk.isbn, id, ()=>doApproveBook(id));
+}
+async function doApproveBook(id){
   const bk = books.find(b => b.id === id);
   if (!bk) return;
   showMask();
