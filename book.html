@@ -208,7 +208,15 @@
 
   <!-- 管理員：捐書審核 -->
   <section class="panel" id="panel-review" role="tabpanel">
-    <div style="margin:16px 0 12px">
+    <div class="card" style="margin:16px 0 14px;padding:14px 16px">
+      <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px">借閱／歸還模式</div>
+      <div style="display:flex;background:var(--paper);border-radius:10px;padding:3px;gap:3px" id="modeSwitch">
+        <button data-mode="resident" onclick="setBorrowMode('resident')" style="flex:1;text-align:center;padding:9px 4px;border:none;border-radius:8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:none;color:var(--ink-soft)">住戶自助</button>
+        <button data-mode="staff" onclick="setBorrowMode('staff')" style="flex:1;text-align:center;padding:9px 4px;border:none;border-radius:8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:none;color:var(--ink-soft)">物業代辦</button>
+      </div>
+      <div style="font-size:11px;color:var(--ink-soft);margin-top:8px;line-height:1.5">切換為「物業代辦」後，住戶端的查書畫面會拿掉借閱／歸還按鈕，底部改為出現「借閱」「歸還」兩個管理分頁。</div>
+    </div>
+    <div style="margin:0 0 12px">
       <div class="filter-row">
         <select id="revAddrFilter" class="addr-sel" onchange="renderReviewList()">
           <option value="">全部門牌</option>
@@ -318,6 +326,73 @@
     <div class="status" id="rIsbnStatus" style="margin-bottom:8px"></div>
 
     <div id="removeResults"></div>
+  </section>
+
+  <!-- 管理員：物業代辦借閱 -->
+  <section class="panel" id="panel-borrow" role="tabpanel">
+    <div style="font-size:15px;font-weight:700;color:var(--ink);margin:16px 0 8px">① 借閱門牌</div>
+    <div class="addr-row">
+      <select id="sHao" class="addr-sel" onchange="onStaffAddrChange()"></select><span class="addr-unit">號</span>
+      <select id="sLou" class="addr-sel" onchange="onStaffAddrChange()"></select><span class="addr-unit">樓之</span>
+      <select id="sZhi" class="addr-sel" onchange="onStaffAddrChange()"></select>
+    </div>
+
+    <div style="font-size:15px;font-weight:700;color:var(--ink);margin:22px 0 8px">② 找書：掃描條碼或手動查詢</div>
+    <div class="subtabs" style="margin-bottom:12px">
+      <button class="subtab on" id="sbtabScan" onclick="switchStaffBorrowMode('scan')">📷 掃描條碼</button>
+      <button class="subtab" id="sbtabKw" onclick="switchStaffBorrowMode('kw')">🔍 手動查詢</button>
+    </div>
+
+    <div id="sbmodeScan">
+      <button class="scanhero" id="liveBtnB" onclick="toggleLiveBorrow()">
+        <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+        <svg class="scanicon" viewBox="0 0 56 36" aria-hidden="true"><g fill="currentColor">
+          <rect x="10" y="9" width="2.5" height="18"/><rect x="14.5" y="9" width="1.2" height="18"/>
+          <rect x="17.5" y="9" width="3.2" height="18"/><rect x="22.5" y="9" width="1.2" height="18"/>
+          <rect x="25.5" y="9" width="2.2" height="18"/><rect x="29.5" y="9" width="3.2" height="18"/>
+          <rect x="34.5" y="9" width="1.2" height="18"/><rect x="37.5" y="9" width="2.5" height="18"/>
+          <rect x="42" y="9" width="1.2" height="18"/><rect x="44.8" y="9" width="1.2" height="18"/>
+        </g></svg>
+        <span id="scanLabelB">點擊此處，開啟相機掃描ISBN</span>
+      </button>
+      <div id="scanStageB" style="margin-top:10px;border-radius:4px;overflow:hidden;display:none;background:#000"><div id="readerBorrow"></div></div>
+    </div>
+
+    <div id="sbmodeKw" class="hidden">
+      <div class="searchgroup">
+        <div class="float"><input type="search" id="sKw" placeholder=" " onkeydown="if(event.key==='Enter'||event.keyCode===13){event.preventDefault();staffSearchBooks();}"><label>輸入書名或作者查詢在架書籍</label></div>
+        <button class="act tealbtn" style="width:auto;padding:0 24px;white-space:nowrap;display:flex;align-items:center;justify-content:center" onclick="staffSearchBooks()">查詢</button>
+      </div>
+      <div id="sKwResults" style="margin-top:12px"></div>
+    </div>
+
+    <div class="status" id="sbStatus" style="margin-top:10px"></div>
+
+    <!-- 掃到／選到書後的確認卡：掃一本、確認一本 -->
+    <div class="card sec hidden" id="borrowConfirmCard" style="margin-top:14px">
+      <div class="sechead">確認借出</div>
+      <div id="borrowConfirmInfo" style="margin-top:14px;font-size:15px;line-height:1.7"></div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="act" style="flex:1;background:#fffdf7;border:1.5px solid var(--line);color:var(--ink);border-radius:4px;height:48px;font:inherit;font-weight:700;font-size:14px;cursor:pointer" onclick="cancelBorrowConfirm()">重新掃描</button>
+        <button class="act tealbtn" style="flex:1;border-radius:4px;height:48px;font:inherit;font-weight:700;font-size:14px;cursor:pointer" onclick="confirmStaffBorrow()">確認借出</button>
+      </div>
+    </div>
+
+    <div style="font-size:15px;font-weight:700;color:var(--ink);margin:26px 0 8px">③ 該門牌目前已借閱書籍</div>
+    <div id="staffBorrowedList"></div>
+  </section>
+
+  <!-- 管理員：物業代辦歸還 -->
+  <section class="panel" id="panel-return" role="tabpanel">
+    <div style="font-size:15px;font-weight:700;color:var(--ink);margin:16px 0 8px">① 歸還門牌</div>
+    <div class="addr-row">
+      <select id="rtHao" class="addr-sel" onchange="onStaffReturnAddrChange()"></select><span class="addr-unit">號</span>
+      <select id="rtLou" class="addr-sel" onchange="onStaffReturnAddrChange()"></select><span class="addr-unit">樓之</span>
+      <select id="rtZhi" class="addr-sel" onchange="onStaffReturnAddrChange()"></select>
+    </div>
+
+    <div style="font-size:15px;font-weight:700;color:var(--ink);margin:22px 0 8px">② 該門牌目前已借閱書籍</div>
+    <div id="staffReturnList"></div>
   </section>
 
   <!-- 使用者 -->
@@ -432,6 +507,16 @@
       <svg class="btab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
       <span>下架</span>
     </button>
+    <button class="btab hidden" id="adminTabBorrow" data-tab="borrow" onclick="switchAdminBottomTab('borrow')">
+      <span class="btab-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+      <svg class="btab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <span>借閱</span>
+    </button>
+    <button class="btab hidden" id="adminTabReturn" data-tab="return" onclick="switchAdminBottomTab('return')">
+      <span class="btab-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></span>
+      <svg class="btab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+      <span>歸還</span>
+    </button>
   </div>
 </nav>
 
@@ -479,7 +564,6 @@
     </div>
   </div>
 </div>
-<!-- 上面 checkDupIsbn() 沿用此對話框，動態改寫 dupIsbnMsg 與 dupIsbnOkBtn 的行為 -->
 
 <!-- 門牌登入對話框 -->
 <div id="loginOverlay" class="overlay hidden" onclick="if(event.target===this)closeLogin()">
@@ -504,8 +588,16 @@ let toastTimer=null;
 let h5q=null,scanning=false;
 let h5qR=null,scanningR=false;
 let h5qD=null,scanningD=false;
+let h5qB=null,scanningB=false;
 let donateBatch=[];
+let pendingBorrowId=null;
 const ADDR_KEY='borrower-addr';
+const MODE_KEY='borrow-mode';
+// borrowMode: 'resident'(住戶自助借還) | 'staff'(物業代辦借還)
+// 這裡的 localStorage 只是「後端還沒回應前」的暫時預設值/離線備援；
+// 真正的來源是後端「設定」分頁，見下方 loadConfigData()，頁面載入時會用雲端值蓋過這裡。
+let borrowMode=(function(){try{return localStorage.getItem(MODE_KEY)==='staff'?'staff':'resident';}catch(e){return 'resident';}})();
+function isStaffMode(){return borrowMode==='staff';}
 
 function bootResident(){
   try{
@@ -514,6 +606,7 @@ function bootResident(){
       document.getElementById('loginBtn').classList.add('hidden');
       document.getElementById('adminTabbar').classList.remove('hidden');
       document.body.classList.add('has-tabbar');
+      applyBorrowModeUI();
       switchAdminBottomTab('review');
     }else{
       document.getElementById('residentTabbar').classList.remove('hidden');
@@ -523,8 +616,11 @@ function bootResident(){
     }
   }catch(e){ try{doResidentSearch();}catch(e2){} }
 }
-(function init(){
+(async function init(){
   try{initAddrSelects();}catch(e){}
+  try{initStaffAddrSelects();}catch(e){}
+  try{await loadConfigData();}catch(e){}
+  try{applyBorrowModeUI();}catch(e){}
   bootResident();
 })();
 
@@ -604,6 +700,19 @@ function showToast(msg, type){
 async function loadBooksData(){
   if(backend){try{const r=await fetch(backend+"?action=list");const j=await r.json();if(Array.isArray(j))books=j;}catch(e){}}
 }
+// 從後端「設定」分頁抓取系統設定（目前只有 borrowMode），蓋過本機 localStorage 的舊值，
+// 讓所有裝置載入頁面時看到的都是雲端最新設定，而不是各自裝置各自為政。
+async function loadConfigData(){
+  if(!backend)return;
+  try{
+    const r=await fetch(backend+"?action=config");
+    const j=await r.json();
+    if(j&&(j.borrowMode==='staff'||j.borrowMode==='resident')){
+      borrowMode=j.borrowMode;
+      try{localStorage.setItem(MODE_KEY,borrowMode);}catch(e){}
+    }
+  }catch(e){} // 抓不到就沿用本機上次的設定，不阻擋頁面繼續載入
+}
 
 /* ===== 分頁切換 ===== */
 function showTab(t){
@@ -612,7 +721,9 @@ function showTab(t){
   var pm=document.getElementById('panel-remove');if(pm)pm.classList.toggle('on',t==='remove');
   var pu=document.getElementById('panel-user');if(pu)pu.classList.toggle('on',t==='user');
   var pd=document.getElementById('panel-donate');if(pd)pd.classList.toggle('on',t==='donate');
-  stopLive();stopLiveRemove();try{stopLiveDonate();}catch(e){}
+  var pbo=document.getElementById('panel-borrow');if(pbo)pbo.classList.toggle('on',t==='borrow');
+  var pre=document.getElementById('panel-return');if(pre)pre.classList.toggle('on',t==='return');
+  stopLive();stopLiveRemove();try{stopLiveDonate();}catch(e){}try{stopLiveBorrow();}catch(e){}
   if(t==='add'){
     switchAdminAddMode('scan');
   }else if(t==='remove'){
@@ -624,6 +735,14 @@ function showTab(t){
     doResidentSearch();
   }else if(t==='review'){
     loadAndRenderReview();
+  }else if(t==='borrow'){
+    switchStaffBorrowMode('scan');
+    cancelBorrowConfirm();
+    var sk=document.getElementById('sKw');if(sk)sk.value='';
+    var skr=document.getElementById('sKwResults');if(skr)skr.innerHTML='';
+    renderStaffBorrowedList(staffAddr(),'staffBorrowedList');
+  }else if(t==='return'){
+    renderStaffBorrowedList(staffReturnAddr(),'staffReturnList');
   }
 }
 
@@ -842,7 +961,7 @@ function switchAdminAddMode(mode){
 }
 
 /* ===== 存檔 ===== */
-function saveBook(){
+async function saveBook(){
   const btn=document.getElementById('saveBtn');
   if(btn.disabled)return;
   const title=document.getElementById('fTitle').value.trim();
@@ -851,13 +970,8 @@ function saveBook(){
     document.getElementById('fTitle').focus();
     return;
   }
-  const isbn=document.getElementById('resultCard').dataset.isbn||"";
-  checkDupIsbn(isbn, null, ()=>doSaveBook(title, isbn));
-}
-async function doSaveBook(title, isbn){
-  const btn=document.getElementById('saveBtn');
   btn.disabled=true;document.getElementById('saveLabel').textContent='存檔中…';
-  const rec={id:Date.now().toString(36),isbn,title,
+  const rec={id:Date.now().toString(36),isbn:document.getElementById('resultCard').dataset.isbn||"",title,
     author:document.getElementById('fAuthor').value.trim(),publishDate:fmtDate(document.getElementById('fPub').value),
     filedDate:todayStr(),minAge:0};
   const st=document.getElementById('admStatus');
@@ -910,26 +1024,6 @@ function isbnPredicate(isbn){
   isbn=(isbn||'').replace(/\D/g,'');
   return b=>isbn&&b.isbn&&String(b.isbn).replace(/\D/g,'')===isbn;
 }
-/* ===== ISBN 重複檢查（共用：上架、審核皆呼叫） ===== */
-// isbn: 待檢查的 ISBN；excludeId: 排除自己（審核時該筆申請本身也在 books 陣列裡）
-// onConfirm: 使用者選擇「仍要上架」後要執行的動作
-function checkDupIsbn(isbn, excludeId, onConfirm){
-  const norm=(isbn||'').replace(/\D/g,'');
-  if(!norm){ onConfirm(); return; } // 沒填 ISBN，不比對，直接放行
-  const existing = books.find(b =>
-    b.id!==excludeId && b.status==='active' && b.isbn &&
-    String(b.isbn).replace(/\D/g,'')===norm
-  );
-  if(!existing){ onConfirm(); return; }
-  document.getElementById('dupIsbnMsg').innerHTML =
-    '《<b>'+esc(existing.title)+'</b>》已在架上（同一 ISBN），是否仍要上架此書籍？';
-  document.getElementById('dupIsbnOkBtn').onclick = ()=>{
-    closeDupIsbnDialog();
-    onConfirm();
-  };
-  document.getElementById('dupIsbnOverlay').classList.remove('hidden');
-}
-function closeDupIsbnDialog(){document.getElementById('dupIsbnOverlay').classList.add('hidden');}
 // 住戶查詢(書名/作者,無刪除)
 async function doResidentSearch(){
   await runQuery('results', kwPredicate(document.getElementById('qTitle').value), false, '目前沒有符合條件的書籍');
@@ -991,21 +1085,24 @@ function bookCard(b,removable){
   }
   // 住戶檢視
   const me=myAddr();
+  const staffMode=isStaffMode();
   if(b.borrower){
     // 借閱中:本人顯示「你已借閱」,其他/未登入顯示「已借出」
     const isMine=(me&&b.borrower===me);
     h='<div class="book borrowed"><div class="brwtag">'+(isMine?'你已借閱':'已借出')+'</div><h3>'+esc(b.title)+'</h3>';
-    if(isMine){
+    if(isMine&&!staffMode){
       h+='<div class="bookrow">'+meta+'<button class="returnbtn" onclick="returnBook(\''+b.id+'\')">歸還</button></div>';
     }else{
       h+=meta;
+      if(staffMode)h+='<div style="font-size:12px;color:var(--ink-soft);margin-top:6px">如需歸還請洽物業櫃檯</div>';
     }
   }else{
-    // 在架:登入才給借閱鈕;未登入不顯示按鈕
-    if(me){
+    // 在架:住戶自助模式下,登入才給借閱鈕;物業代辦模式下,不提供操作按鈕
+    if(me&&!staffMode){
       h+='<div class="bookrow">'+meta+'<button class="borrowbtn" onclick="borrowBook(\''+b.id+'\')">借閱</button></div>';
     }else{
       h+=meta;
+      if(staffMode)h+='<div style="font-size:12px;color:var(--ink-soft);margin-top:6px">如需借閱請洽物業櫃檯</div>';
     }
   }
   return h+'</div>';
@@ -1110,6 +1207,199 @@ async function doDelete(id){
   if(isbnV){await runQuery('removeResults', isbnPredicate(isbnV), true, '書庫中查無此 ISBN');}
   else{await runQuery('removeResults', kwPredicate(kwV), true, '目前沒有符合條件的書籍');}
 }
+
+/* ===== 借閱／歸還模式切換（住戶自助 vs 物業代辦） ===== */
+async function setBorrowMode(mode){
+  const newMode=(mode==='staff')?'staff':'resident';
+  borrowMode=newMode;
+  try{localStorage.setItem(MODE_KEY,borrowMode);}catch(e){}
+  applyBorrowModeUI();
+  if(!backend){
+    showToast(newMode==='staff'?'已切換為「物業代辦」模式':'已切換為「住戶自助」模式');
+    return;
+  }
+  try{
+    const res=await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"setConfig",key:"borrowMode",value:newMode})});
+    const j=await res.json();
+    if(!j||!j.ok)throw new Error('setConfig failed');
+    showToast(newMode==='staff'?'已切換為「物業代辦」模式':'已切換為「住戶自助」模式');
+  }catch(e){
+    // 這裡刻意不吞掉錯誤：這個設定會影響全社區所有裝置看到的介面，
+    // 物業必須知道有沒有真的存進雲端，不能只顯示「成功」的假訊息。
+    showToast('本機已切換，但同步到雲端失敗，其他裝置可能還看不到這次變更，請確認網路後再切一次','error');
+  }
+}
+function applyBorrowModeUI(){
+  const staff=isStaffMode();
+  document.querySelectorAll('#modeSwitch [data-mode]').forEach(function(b){
+    const on=b.dataset.mode===borrowMode;
+    b.style.background=on?'var(--teal)':'none';
+    b.style.color=on?'#fff':'var(--ink-soft)';
+  });
+  const tb=document.getElementById('adminTabBorrow'),tr=document.getElementById('adminTabReturn');
+  if(tb)tb.classList.toggle('hidden',!staff);
+  if(tr)tr.classList.toggle('hidden',!staff);
+  // 若目前正停在被隱藏的借閱/歸還分頁，切回審核分頁
+  const activeBtn=document.querySelector('#adminTabbar .btab.on');
+  if(activeBtn&&(activeBtn.dataset.tab==='borrow'||activeBtn.dataset.tab==='return')&&!staff){
+    switchAdminBottomTab('review');
+  }
+}
+
+/* ===== 物業代辦：門牌選單（借閱頁／歸還頁各一組） ===== */
+function initStaffAddrSelects(){
+  const hao=[95,97,99],zhi=[1,2,3,5];
+  const lou=[];for(let i=2;i<=24;i++)lou.push(i);
+  const fill=(id,arr)=>{const el=document.getElementById(id);if(el)el.innerHTML=arr.map(v=>'<option value="'+v+'">'+v+'</option>').join('');};
+  fill('sHao',hao);fill('sLou',lou);fill('sZhi',zhi);
+  fill('rtHao',hao);fill('rtLou',lou);fill('rtZhi',zhi);
+}
+function staffAddr(){
+  const h=document.getElementById('sHao'),l=document.getElementById('sLou'),z=document.getElementById('sZhi');
+  if(!h||!l||!z)return'';
+  return h.value+'號'+l.value+'樓之'+z.value;
+}
+function staffReturnAddr(){
+  const h=document.getElementById('rtHao'),l=document.getElementById('rtLou'),z=document.getElementById('rtZhi');
+  if(!h||!l||!z)return'';
+  return h.value+'號'+l.value+'樓之'+z.value;
+}
+function onStaffAddrChange(){
+  cancelBorrowConfirm();
+  renderStaffBorrowedList(staffAddr(),'staffBorrowedList');
+}
+function onStaffReturnAddrChange(){
+  renderStaffBorrowedList(staffReturnAddr(),'staffReturnList');
+}
+// 顯示某門牌目前借閱中的書籍，每筆附一個歸還按鈕
+function renderStaffBorrowedList(addr,elId){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  const list=books.filter(b=>b.borrower===addr);
+  if(!list.length){el.innerHTML='<div class="empty">目前沒有借閱中的書籍</div>';return;}
+  el.innerHTML=list.map(function(b){
+    return '<div class="book"><h3>'+esc(b.title)+'</h3><div class="bookrow"><div class="meta">'
+      +(b.author?('作者　<span class="mval">'+esc(b.author)+'</span>'):'')
+      +'</div><button class="returnbtn" onclick="staffReturnBook(\''+b.id+'\')">歸還</button></div></div>';
+  }).join('');
+}
+
+/* ===== 物業代辦：借閱頁 找書模式切換 ===== */
+function switchStaffBorrowMode(mode){
+  document.getElementById('sbtabScan').classList.toggle('on',mode==='scan');
+  document.getElementById('sbtabKw').classList.toggle('on',mode==='kw');
+  document.getElementById('sbmodeScan').classList.toggle('hidden',mode!=='scan');
+  document.getElementById('sbmodeKw').classList.toggle('hidden',mode!=='kw');
+  document.getElementById('sbStatus').innerHTML='';
+  if(mode!=='scan')stopLiveBorrow();
+  if(mode==='kw'){setTimeout(function(){const el=document.getElementById('sKw');if(el)el.focus();},100);}
+}
+
+/* ---- 借閱頁的相機掃描：掃到後不自動借出，停下來跳確認卡（掃一本、確認一本） ---- */
+function setScanLabelB(t){const e=document.getElementById('scanLabelB');if(e)e.textContent=t;}
+async function toggleLiveBorrow(){
+  if(scanningB){stopLiveBorrow();return;}
+  const st=document.getElementById('sbStatus'),stage=document.getElementById('scanStageB');
+  if(!window.Html5Qrcode){st.className='status err';st.textContent='掃描元件載入失敗，請改用手動查詢。';return;}
+  stage.style.display='block';setScanLabelB('停止掃描');scanningB=true;
+  st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
+  try{
+    h5qB=new Html5Qrcode("readerBorrow",{
+      formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A],
+      experimentalFeatures:{useBarCodeDetectorIfSupported:true}
+    });
+    const cfg={fps:15,qrbox:(vw,vh)=>({width:Math.floor(vw*0.92),height:Math.max(130,Math.floor(vh*0.5))})};
+    await h5qB.start({facingMode:"environment"},cfg,(text)=>{
+      if(!scanningB)return;
+      const isbn=pickISBN([text]);
+      if(isbn){scanningB=false;stopLiveBorrow();onBorrowISBN(isbn);}
+    },()=>{});
+  }catch(e){
+    scanningB=false;setScanLabelB('點擊此處，開啟相機掃描ISBN');stage.style.display='none';
+    st.className='status err';st.textContent='無法開啟相機，請到瀏覽器允許相機權限，或改用手動查詢。';
+  }
+}
+function stopLiveBorrow(){
+  scanningB=false;
+  setScanLabelB('點擊此處，開啟相機掃描ISBN');
+  if(h5qB){
+    const inst=h5qB;h5qB=null;
+    try{const p=inst.stop();if(p&&p.then){p.then(()=>{try{inst.clear();}catch(e){}}).catch(()=>{});}}catch(e){try{inst.clear();}catch(e2){}}
+  }
+  const stage=document.getElementById('scanStageB');if(stage)stage.style.display='none';
+}
+function onBorrowISBN(isbn){
+  const st=document.getElementById('sbStatus');
+  const bk=books.find(b=>b.isbn&&String(b.isbn).replace(/\D/g,'')===isbn);
+  if(!bk){
+    st.className='status err';
+    st.innerHTML='書庫中查無此 ISBN，請確認書籍是否已上架，或改用手動查詢。';
+    return;
+  }
+  if(bk.borrower){
+    st.className='status err';
+    st.innerHTML='《'+esc(bk.title)+'》目前已借出中，無法再借。';
+    return;
+  }
+  st.innerHTML='';
+  showBorrowConfirm(bk);
+}
+// 手動查詢：只列出在架、目前沒被借走的書
+function staffSearchBooks(){
+  const q=(document.getElementById('sKw').value||'').trim().toLowerCase();
+  const list=books.filter(b=>(!b.status||b.status==='active')&&!b.borrower&&(!q||
+    (b.title&&b.title.toLowerCase().includes(q))||(b.author&&b.author.toLowerCase().includes(q))));
+  const el=document.getElementById('sKwResults');
+  if(!list.length){el.innerHTML='<div class="empty">查無在架且可借閱的書籍</div>';return;}
+  el.innerHTML=list.map(function(b){
+    return '<div class="book"><h3>'+esc(b.title)+'</h3><div class="bookrow"><div class="meta">'
+      +(b.author?('作者　<span class="mval">'+esc(b.author)+'</span>'):'')
+      +'</div><button class="borrowbtn" onclick="staffPickBook(\''+b.id+'\')">選這本</button></div></div>';
+  }).join('');
+}
+function staffPickBook(id){
+  const bk=books.find(b=>b.id===id);if(!bk)return;
+  showBorrowConfirm(bk);
+}
+// 跳出確認卡：物業核對手上的書跟畫面顯示的是否一致，確認後才真正寫入借閱紀錄
+function showBorrowConfirm(bk){
+  pendingBorrowId=bk.id;
+  document.getElementById('borrowConfirmInfo').innerHTML=
+    '<div style="font-weight:700;font-size:16px">'+esc(bk.title)+'</div>'
+    +(bk.author?('<div style="font-size:13px;color:var(--ink-soft);margin-top:2px">'+esc(bk.author)+'</div>'):'')
+    +'<div style="margin-top:10px">借給　<b style="color:var(--teal)">'+esc(staffAddr())+'</b></div>';
+  document.getElementById('borrowConfirmCard').classList.remove('hidden');
+}
+function cancelBorrowConfirm(){
+  pendingBorrowId=null;
+  const c=document.getElementById('borrowConfirmCard');if(c)c.classList.add('hidden');
+}
+async function confirmStaffBorrow(){
+  if(!pendingBorrowId)return;
+  const id=pendingBorrowId,addr=staffAddr();
+  showMask();
+  if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"borrow",id:id,borrower:addr})});}catch(e){}}
+  const bk=books.find(x=>x.id===id);if(bk)bk.borrower=addr;
+  hideMask();
+  cancelBorrowConfirm();
+  const skEl=document.getElementById('sKw');if(skEl)skEl.value='';
+  const skrEl=document.getElementById('sKwResults');if(skrEl)skrEl.innerHTML='';
+  showToast('已借出：'+(bk?bk.title:''));
+  renderStaffBorrowedList(addr,'staffBorrowedList');
+}
+// 歸還：借閱頁的③區塊、歸還頁的②區塊都呼叫這個共用函式
+async function staffReturnBook(id){
+  const bk=books.find(x=>x.id===id);if(!bk)return;
+  const addr=bk.borrower;
+  showMask();
+  if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"return",id:id})});}catch(e){}}
+  bk.borrower='';
+  hideMask();
+  showToast('歸還成功：'+bk.title);
+  renderStaffBorrowedList(addr,'staffBorrowedList');
+  renderStaffBorrowedList(addr,'staffReturnList');
+}
+
 /* ===== 住戶底部 Tab 切換 ===== */
 function switchBottomTab(tab){
   if(tab==='donate' && !myAddr()){
@@ -1194,12 +1484,7 @@ function renderReviewList(){
   }).join('');
 }
 
-function approveBook(id){
-  const bk = books.find(b => b.id === id);
-  if (!bk) return;
-  checkDupIsbn(bk.isbn, id, ()=>doApproveBook(id));
-}
-async function doApproveBook(id){
+async function approveBook(id){
   const bk = books.find(b => b.id === id);
   if (!bk) return;
   showMask();
