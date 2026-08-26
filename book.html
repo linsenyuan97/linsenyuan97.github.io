@@ -12,8 +12,8 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icons/book/icon-512.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/book/icon-192.png">
 <link rel="icon" type="image/png" sizes="64x64" href="icons/book/favicon-64.png">
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- html5-qrcode、xlsx 兩個函式庫改成需要時才動態載入（見 ensureHtml5Qrcode()／ensureXLSX()），
+     不再放行內聯外部函式庫標籤，避免首次開啟頁面時被這兩包(尤其 xlsx)卡住渲染。 -->
 <style>
   :root{
     --paper:#EAE4D3;--paper-2:#F3EEE0;--ink:#2A2622;--ink-soft:#6B655B;
@@ -618,6 +618,34 @@ const MODE_KEY='borrow-mode';
 let borrowMode=(function(){try{return localStorage.getItem(MODE_KEY)==='staff'?'staff':'resident';}catch(e){return 'resident';}})();
 function isStaffMode(){return borrowMode==='staff';}
 
+/* ===== 函式庫延遲載入：只有真的要掃描/匯出 Excel 時才去抓，首頁不再被這兩包卡住 ===== */
+let _html5QrcodeLoading=null;
+function ensureHtml5Qrcode(){
+  if(window.Html5Qrcode)return Promise.resolve();
+  if(_html5QrcodeLoading)return _html5QrcodeLoading;
+  _html5QrcodeLoading=new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+    s.onload=()=>resolve();
+    s.onerror=()=>{_html5QrcodeLoading=null;reject(new Error('load html5-qrcode failed'));};
+    document.head.appendChild(s);
+  });
+  return _html5QrcodeLoading;
+}
+let _xlsxLoading=null;
+function ensureXLSX(){
+  if(window.XLSX)return Promise.resolve();
+  if(_xlsxLoading)return _xlsxLoading;
+  _xlsxLoading=new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload=()=>resolve();
+    s.onerror=()=>{_xlsxLoading=null;reject(new Error('load xlsx failed'));};
+    document.head.appendChild(s);
+  });
+  return _xlsxLoading;
+}
+
 function bootResident(){
   try{
     const isAdmin=/[?&]admin\b/i.test(location.search);
@@ -639,7 +667,9 @@ function bootResident(){
 (async function init(){
   try{initAddrSelects();}catch(e){}
   try{initStaffAddrSelects();}catch(e){}
-  try{await loadConfigData();}catch(e){}
+  // 設定跟書籍清單同時打給後端，等待時間是取「較久的那個」，不是兩個相加。
+  try{await Promise.all([loadConfigData(), loadBooksData()]);}catch(e){}
+  booksFreshFromBoot=true; // 上面已經抓過一次書籍清單了，接下來第一次渲染沿用，不要重複打
   try{applyBorrowModeUI();}catch(e){}
   bootResident();
 })();
@@ -717,7 +747,12 @@ function showToast(msg, type){
 }
 
 /* ===== 資料讀取(後端) ===== */
+// 開機時已經在 init() 裡跟設定一起平行抓過一次書籍清單了；
+// 開機後第一個呼叫 loadBooksData() 的地方（doResidentSearch 或 loadAndRenderReview 內的 runQuery）
+// 直接沿用那次結果，不要再多打一次後端。之後使用者的每個操作仍會照常重新抓取最新資料。
+let booksFreshFromBoot=false;
 async function loadBooksData(){
+  if(booksFreshFromBoot){booksFreshFromBoot=false;return;}
   if(backend){try{const r=await fetch(backend+"?action=list");const j=await r.json();if(Array.isArray(j))books=j;}catch(e){}}
 }
 // 從後端「設定」分頁抓取系統設定（目前只有 borrowMode），蓋過本機 localStorage 的舊值，
@@ -777,7 +812,12 @@ function setScanLabel(t){const e=document.getElementById('scanLabel');if(e)e.tex
 async function toggleLive(){
   if(scanning){stopLive();return;}
   const st=document.getElementById('admStatus'),stage=document.getElementById('scanStage');
-  if(!window.Html5Qrcode){st.className='status err';st.textContent='掃描元件載入失敗,請確認網路後重新整理,或用下方手動輸入 ISBN。';return;}
+  if(!window.Html5Qrcode){
+    st.className='status';st.innerHTML='<span class="spin"></span>載入掃描元件中…';
+    try{await ensureHtml5Qrcode();}catch(e){
+      st.className='status err';st.textContent='掃描元件載入失敗,請確認網路後重新整理,或用下方手動輸入 ISBN。';return;
+    }
+  }
   stage.style.display='block';setScanLabel('停止掃描');scanning=true;
   st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
   try{
@@ -815,7 +855,12 @@ function setScanLabelR(t){const e=document.getElementById('scanLabelR');if(e)e.t
 async function toggleLiveRemove(){
   if(scanningR){stopLiveRemove();return;}
   const st=document.getElementById('rStatus'),stage=document.getElementById('scanStageR');
-  if(!window.Html5Qrcode){st.className='status err';st.textContent='掃描元件載入失敗,請確認網路後重新整理,或用下方輸入 ISBN。';return;}
+  if(!window.Html5Qrcode){
+    st.className='status';st.innerHTML='<span class="spin"></span>載入掃描元件中…';
+    try{await ensureHtml5Qrcode();}catch(e){
+      st.className='status err';st.textContent='掃描元件載入失敗,請確認網路後重新整理,或用下方輸入 ISBN。';return;
+    }
+  }
   stage.style.display='block';setScanLabelR('停止掃描');scanningR=true;
   st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
   try{
@@ -1343,7 +1388,12 @@ function setScanLabelB(t){const e=document.getElementById('scanLabelB');if(e)e.t
 async function toggleLiveBorrow(){
   if(scanningB){stopLiveBorrow();return;}
   const st=document.getElementById('sbStatus'),stage=document.getElementById('scanStageB');
-  if(!window.Html5Qrcode){st.className='status err';st.textContent='掃描元件載入失敗，請改用手動查詢。';return;}
+  if(!window.Html5Qrcode){
+    st.className='status';st.innerHTML='<span class="spin"></span>載入掃描元件中…';
+    try{await ensureHtml5Qrcode();}catch(e){
+      st.className='status err';st.textContent='掃描元件載入失敗，請改用手動查詢。';return;
+    }
+  }
   stage.style.display='block';setScanLabelB('停止掃描');scanningB=true;
   st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
   try{
@@ -1598,7 +1648,12 @@ function setScanLabelD(t){var e=document.getElementById('scanLabelD');if(e)e.tex
 async function toggleLiveDonate(){
   if(scanningD){stopLiveDonate();return;}
   var st=document.getElementById('dStatus'),stage=document.getElementById('scanStageD');
-  if(!window.Html5Qrcode){st.className='status err';st.textContent='掃描元件載入失敗';return;}
+  if(!window.Html5Qrcode){
+    st.className='status';st.innerHTML='<span class="spin"></span>載入掃描元件中…';
+    try{await ensureHtml5Qrcode();}catch(e){
+      st.className='status err';st.textContent='掃描元件載入失敗';return;
+    }
+  }
   stage.style.display='block';setScanLabelD('停止掃描');scanningD=true;
   st.className='status';st.innerHTML='<span class="spin"></span>對準條碼中…';
   try{
@@ -1747,18 +1802,24 @@ async function submitDonation(){
       if(!res.ok) backendOk=false;
     }catch(e){ backendOk=false; }
   }
-  exportDonateExcel(records,addr,today);
+  var excelOk=await exportDonateExcel(records,addr,today);
   donateBatch=[];renderDonateBatch();
   hideMask();
   btn.disabled=false;document.getElementById('donateSubmitLabel').textContent='提交捐書並匯出 Excel';
-  if(backendOk){
+  if(backendOk&&excelOk){
     showToast('捐書提交成功，Excel 已匯出！', 'success');
-  }else{
+  }else if(!backendOk&&excelOk){
     showToast('後端同步失敗，但 Excel 已順利匯出存檔！', 'error');
+  }else if(backendOk&&!excelOk){
+    showToast('捐書已提交成功，但 Excel 匯出失敗，請自行到後台確認資料', 'error');
+  }else{
+    showToast('後端同步失敗，Excel 也匯出失敗，請截圖聯絡管理員', 'error');
   }
 }
-function exportDonateExcel(records,addr,date){
-  if(!window.XLSX){showToast('Excel 元件載入失敗', 'error');return;}
+async function exportDonateExcel(records,addr,date){
+  if(!window.XLSX){
+    try{await ensureXLSX();}catch(e){return false;}
+  }
   var data=records.map(function(r,i){
     return{'序號':i+1,'捐書門牌':addr,'提交日期':date,'ISBN':r.isbn,'書名':r.title,'作者':r.author,'出版日期':r.publishDate,'審核狀態':'待審核'};
   });
@@ -1769,6 +1830,7 @@ function exportDonateExcel(records,addr,date){
   var shortA=myAddrShort();
   var fname='林森苑捐書單_'+shortA+'_'+date.replace(/\//g,'')+'.xlsx';
   XLSX.writeFile(wb,fname);
+  return true;
 }
 </script>
 </body>
