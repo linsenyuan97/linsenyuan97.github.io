@@ -121,6 +121,11 @@
   .login-label{font:inherit;font-size:17px;font-weight:700;color:var(--ink);white-space:nowrap}
   .login-dot{position:absolute;right:-2px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#2e9e5b;border:2px solid var(--paper-2)}
   .login-dot::after{content:"";position:absolute;left:3px;top:1px;width:3px;height:5px;border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(45deg)}
+  .header-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+  .gearbtn{display:flex;align-items:center;gap:6px;background:var(--paper-2);border:1.5px solid var(--line);border-radius:20px;padding:6px 12px 6px 8px;cursor:pointer;color:var(--ink);flex-shrink:0;font:inherit}
+  .gearbtn svg{width:19px;height:19px;display:block;color:var(--teal);flex-shrink:0}
+  .gearbtn span{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap}
+  @media (max-width:520px){.gearbtn span{display:none}.gearbtn{padding:6px}}
   .brand{display:flex;align-items:center;gap:11px;min-width:0;position:relative;bottom:6px}
   .brand .logo{width:34px;height:34px;flex-shrink:0;color:var(--teal)}
   .brand .btext{min-width:0}
@@ -188,13 +193,19 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">
-      <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 6.5C10.5 5 7.5 4.5 4 5v13c3.5-.5 6.5 0 8 1.5 1.5-1.5 4.5-2 8-1.5V5c-3.5-.5-6.5 0-8 1.5z"/>
-        <path d="M12 6.5v13"/>
-      </svg>
-      <div class="btext">
-        <h1>林森苑書籍系統</h1>
+    <div class="header-left">
+      <button id="adminGearBtn" class="gearbtn hidden" onclick="openModeDialog()" aria-label="借閱／歸還模式設定">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82A1.65 1.65 0 0 0 3 13.09H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span id="gearLabel">借閱／歸還模式：住戶自助</span>
+      </button>
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 6.5C10.5 5 7.5 4.5 4 5v13c3.5-.5 6.5 0 8 1.5 1.5-1.5 4.5-2 8-1.5V5c-3.5-.5-6.5 0-8 1.5z"/>
+          <path d="M12 6.5v13"/>
+        </svg>
+        <div class="btext">
+          <h1>林森苑書籍系統</h1>
+        </div>
       </div>
     </div>
     <button id="loginBtn" class="loginbtn" onclick="openLogin()" aria-label="登入">
@@ -206,17 +217,25 @@
     </button>
   </header>
 
+  <!-- 借閱／歸還模式設定 dialog -->
+  <div id="modeOverlay" class="overlay hidden" onclick="if(event.target===this)closeModeDialog()">
+    <div class="dialog">
+      <div class="dialog-msg" style="font-weight:700;font-size:16px;margin-bottom:14px">借閱／歸還模式</div>
+      <div style="display:flex;background:var(--paper);border-radius:10px;padding:3px;gap:3px" id="modeSwitch">
+        <button data-mode="resident" onclick="selectModeOption('resident')" style="flex:1;text-align:center;padding:9px 4px;border:none;border-radius:8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:none;color:var(--ink-soft)">住戶自助</button>
+        <button data-mode="staff" onclick="selectModeOption('staff')" style="flex:1;text-align:center;padding:9px 4px;border:none;border-radius:8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:none;color:var(--ink-soft)">物業代辦</button>
+      </div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:10px;line-height:1.6">切換為「物業代辦」後，住戶端的查書畫面會拿掉借閱／歸還按鈕，底部改為出現「借閱」「歸還」兩個管理分頁。</div>
+      <div class="dialog-btns" style="margin-top:20px">
+        <button class="dlg-cancel" onclick="closeModeDialog()">取消</button>
+        <button class="dlg-ok" onclick="confirmModeDialog()">確認</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 管理員：捐書審核 -->
   <section class="panel" id="panel-review" role="tabpanel">
-    <div class="card" style="margin:16px 0 14px;padding:14px 16px">
-      <div style="font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px">借閱／歸還模式</div>
-      <div style="display:flex;background:var(--paper);border-radius:10px;padding:3px;gap:3px" id="modeSwitch">
-        <button data-mode="resident" onclick="setBorrowMode('resident')" style="flex:1;text-align:center;padding:9px 4px;border:none;border-radius:8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:none;color:var(--ink-soft)">住戶自助</button>
-        <button data-mode="staff" onclick="setBorrowMode('staff')" style="flex:1;text-align:center;padding:9px 4px;border:none;border-radius:8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:none;color:var(--ink-soft)">物業代辦</button>
-      </div>
-      <div style="font-size:11px;color:var(--ink-soft);margin-top:8px;line-height:1.5">切換為「物業代辦」後，住戶端的查書畫面會拿掉借閱／歸還按鈕，底部改為出現「借閱」「歸還」兩個管理分頁。</div>
-    </div>
-    <div style="margin:0 0 12px">
+    <div style="margin:16px 0 12px">
       <div class="filter-row">
         <select id="revAddrFilter" class="addr-sel" onchange="renderReviewList()">
           <option value="">全部門牌</option>
@@ -604,6 +623,7 @@ function bootResident(){
     const isAdmin=/[?&]admin\b/i.test(location.search);
     if(isAdmin){
       document.getElementById('loginBtn').classList.add('hidden');
+      document.getElementById('adminGearBtn').classList.remove('hidden');
       document.getElementById('adminTabbar').classList.remove('hidden');
       document.body.classList.add('has-tabbar');
       applyBorrowModeUI();
@@ -1209,6 +1229,32 @@ async function doDelete(id){
 }
 
 /* ===== 借閱／歸還模式切換（住戶自助 vs 物業代辦） ===== */
+let pendingModeSelection='resident';
+function highlightModeSwitch(mode){
+  document.querySelectorAll('#modeSwitch [data-mode]').forEach(function(b){
+    const on=b.dataset.mode===mode;
+    b.style.background=on?'var(--teal)':'none';
+    b.style.color=on?'#fff':'var(--ink-soft)';
+  });
+}
+function openModeDialog(){
+  pendingModeSelection=borrowMode;
+  highlightModeSwitch(pendingModeSelection);
+  document.getElementById('modeOverlay').classList.remove('hidden');
+}
+function closeModeDialog(){
+  document.getElementById('modeOverlay').classList.add('hidden');
+}
+function selectModeOption(mode){
+  pendingModeSelection=(mode==='staff')?'staff':'resident';
+  highlightModeSwitch(pendingModeSelection);
+}
+async function confirmModeDialog(){
+  closeModeDialog();
+  await setBorrowMode(pendingModeSelection); // 按了確認才真正套用、才同步到雲端
+}
+// 真正套用模式：更新畫面 + 寫回雲端。只在 confirmModeDialog() 裡被呼叫，
+// 選項按鈕本身(selectModeOption)只改暫存值，不會直接生效。
 async function setBorrowMode(mode){
   const newMode=(mode==='staff')?'staff':'resident';
   borrowMode=newMode;
@@ -1231,11 +1277,8 @@ async function setBorrowMode(mode){
 }
 function applyBorrowModeUI(){
   const staff=isStaffMode();
-  document.querySelectorAll('#modeSwitch [data-mode]').forEach(function(b){
-    const on=b.dataset.mode===borrowMode;
-    b.style.background=on?'var(--teal)':'none';
-    b.style.color=on?'#fff':'var(--ink-soft)';
-  });
+  const gl=document.getElementById('gearLabel');
+  if(gl)gl.textContent='借閱／歸還模式：'+(staff?'物業代辦':'住戶自助');
   const tb=document.getElementById('adminTabBorrow'),tr=document.getElementById('adminTabReturn');
   if(tb)tb.classList.toggle('hidden',!staff);
   if(tr)tr.classList.toggle('hidden',!staff);
