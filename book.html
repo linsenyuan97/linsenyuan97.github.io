@@ -220,12 +220,18 @@
   <!-- 借閱／歸還模式設定 dialog -->
   <div id="modeOverlay" class="overlay hidden" onclick="if(event.target===this)closeModeDialog()">
     <div class="dialog">
-      <div class="dialog-msg" style="font-weight:700;font-size:16px;margin-bottom:14px">借閱／歸還模式</div>
+      <div class="dialog-msg" style="font-weight:700;font-size:16px;margin-bottom:14px">借閱設定</div>
+      <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px">借閱／歸還模式</div>
       <div style="display:flex;background:var(--paper);border-radius:10px;padding:3px;gap:3px" id="modeSwitch">
         <button data-mode="resident" onclick="selectModeOption('resident')" style="flex:1;text-align:center;padding:9px 4px;border:none;border-radius:8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:none;color:var(--ink-soft)">住戶自助</button>
         <button data-mode="staff" onclick="selectModeOption('staff')" style="flex:1;text-align:center;padding:9px 4px;border:none;border-radius:8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;background:none;color:var(--ink-soft)">物業代辦</button>
       </div>
       <div style="font-size:12px;color:var(--ink-soft);margin-top:10px;line-height:1.6">切換為「物業代辦」後，住戶端的查書畫面會拿掉借閱／歸還按鈕，底部改為出現「借閱」「歸還」兩個管理分頁。</div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--ink);margin:20px 0 6px">每戶最多可借閱本數</div>
+      <input type="number" id="maxBorrowInput" min="0" step="1" placeholder="0" style="width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit;font-size:15px;color:var(--ink);background:#fffdf7">
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.6">填 0 或留空＝不限制。有設定的話，不管是住戶自助還是物業代辦，同一門牌借到這個數量後，都會先擋下來、無法再借，要先歸還才能繼續借。</div>
+
       <div class="dialog-btns" style="margin-top:20px">
         <button class="dlg-cancel" onclick="closeModeDialog()">取消</button>
         <button class="dlg-ok" onclick="confirmModeDialog()">確認</button>
@@ -612,11 +618,15 @@ let donateBatch=[];
 let pendingBorrowId=null;
 const ADDR_KEY='borrower-addr';
 const MODE_KEY='borrow-mode';
+const MAXB_KEY='max-borrow-per-addr';
 // borrowMode: 'resident'(住戶自助借還) | 'staff'(物業代辦借還)
 // 這裡的 localStorage 只是「後端還沒回應前」的暫時預設值/離線備援；
 // 真正的來源是後端「設定」分頁，見下方 loadConfigData()，頁面載入時會用雲端值蓋過這裡。
 let borrowMode=(function(){try{return localStorage.getItem(MODE_KEY)==='staff'?'staff':'resident';}catch(e){return 'resident';}})();
+// maxBorrowPerAddr: 每戶最多可借閱本數，0＝不限制
+let maxBorrowPerAddr=(function(){try{const v=parseInt(localStorage.getItem(MAXB_KEY),10);return (v>0)?v:0;}catch(e){return 0;}})();
 function isStaffMode(){return borrowMode==='staff';}
+function countBorrowedByAddr(addr){return books.filter(b=>b.borrower===addr).length;}
 
 /* ===== 函式庫延遲載入：只有真的要掃描/匯出 Excel 時才去抓，首頁不再被這兩包卡住 ===== */
 let _html5QrcodeLoading=null;
@@ -765,6 +775,11 @@ async function loadConfigData(){
     if(j&&(j.borrowMode==='staff'||j.borrowMode==='resident')){
       borrowMode=j.borrowMode;
       try{localStorage.setItem(MODE_KEY,borrowMode);}catch(e){}
+    }
+    if(j&&j.maxBorrowPerAddr!==undefined&&j.maxBorrowPerAddr!==''){
+      const v=parseInt(j.maxBorrowPerAddr,10);
+      maxBorrowPerAddr=(v>0)?v:0;
+      try{localStorage.setItem(MAXB_KEY,String(maxBorrowPerAddr));}catch(e){}
     }
   }catch(e){} // 抓不到就沿用本機上次的設定，不阻擋頁面繼續載入
 }
@@ -1226,6 +1241,13 @@ function doLogout(){
 }
 async function borrowBook(id){
   const addr=myAddr();if(!addr){openLogin();return;}
+  if(maxBorrowPerAddr>0){
+    const current=countBorrowedByAddr(addr);
+    if(current>=maxBorrowPerAddr){
+      showToast('您已借閱 '+current+' 本，已達每戶最多可借閱 '+maxBorrowPerAddr+' 本的上限，請先歸還後再借閱','error');
+      return;
+    }
+  }
   showMask();
   if(backend){try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"borrow",id:id,borrower:addr})});}catch(e){}}
   const bk=books.find(x=>x.id===id);if(bk)bk.borrower=addr;
@@ -1285,6 +1307,8 @@ function highlightModeSwitch(mode){
 function openModeDialog(){
   pendingModeSelection=borrowMode;
   highlightModeSwitch(pendingModeSelection);
+  const mi=document.getElementById('maxBorrowInput');
+  if(mi)mi.value=maxBorrowPerAddr>0?maxBorrowPerAddr:'';
   document.getElementById('modeOverlay').classList.remove('hidden');
 }
 function closeModeDialog(){
@@ -1295,29 +1319,40 @@ function selectModeOption(mode){
   highlightModeSwitch(pendingModeSelection);
 }
 async function confirmModeDialog(){
+  const newMode=pendingModeSelection;
+  const raw=parseInt(document.getElementById('maxBorrowInput').value,10);
+  const newMax=(raw>0)?raw:0; // 空白／0／非數字／負數，一律當作「不限制」
   closeModeDialog();
-  await setBorrowMode(pendingModeSelection); // 按了確認才真正套用、才同步到雲端
+  await applyBorrowSettings(newMode,newMax); // 按了確認才真正套用、才同步到雲端
 }
-// 真正套用模式：更新畫面 + 寫回雲端。只在 confirmModeDialog() 裡被呼叫，
-// 選項按鈕本身(selectModeOption)只改暫存值，不會直接生效。
-async function setBorrowMode(mode){
-  const newMode=(mode==='staff')?'staff':'resident';
+// 真正套用設定：更新畫面 + 平行寫回雲端兩個 key。只在 confirmModeDialog() 裡被呼叫，
+// 對話框裡點選項目、打數字(selectModeOption/輸入框)都只是暫存值，不會直接生效。
+async function applyBorrowSettings(newMode,newMax){
+  const modeChanged=(newMode!==borrowMode),maxChanged=(newMax!==maxBorrowPerAddr);
   borrowMode=newMode;
+  maxBorrowPerAddr=newMax;
   try{localStorage.setItem(MODE_KEY,borrowMode);}catch(e){}
+  try{localStorage.setItem(MAXB_KEY,String(maxBorrowPerAddr));}catch(e){}
   applyBorrowModeUI();
   if(!backend){
-    showToast(newMode==='staff'?'已切換為「物業代辦」模式':'已切換為「住戶自助」模式');
+    showToast('設定已更新');
     return;
   }
+  if(!modeChanged&&!maxChanged){
+    showToast('設定未變更');
+    return;
+  }
+  const calls=[];
+  if(modeChanged)calls.push(fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"setConfig",key:"borrowMode",value:newMode})}).then(r=>r.json()));
+  if(maxChanged)calls.push(fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"setConfig",key:"maxBorrowPerAddr",value:String(newMax)})}).then(r=>r.json()));
   try{
-    const res=await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"setConfig",key:"borrowMode",value:newMode})});
-    const j=await res.json();
-    if(!j||!j.ok)throw new Error('setConfig failed');
-    showToast(newMode==='staff'?'已切換為「物業代辦」模式':'已切換為「住戶自助」模式');
+    const results=await Promise.all(calls);
+    if(results.some(r=>!r||!r.ok))throw new Error('setConfig failed');
+    showToast('設定已更新並同步到雲端');
   }catch(e){
-    // 這裡刻意不吞掉錯誤：這個設定會影響全社區所有裝置看到的介面，
+    // 這裡刻意不吞掉錯誤：這兩個設定會影響全社區所有裝置看到的介面與借閱規則，
     // 物業必須知道有沒有真的存進雲端，不能只顯示「成功」的假訊息。
-    showToast('本機已切換，但同步到雲端失敗，其他裝置可能還看不到這次變更，請確認網路後再切一次','error');
+    showToast('本機已更新，但同步到雲端失敗，其他裝置可能還看不到這次變更，請確認網路後再試一次','error');
   }
 }
 function applyBorrowModeUI(){
@@ -1456,11 +1491,21 @@ function staffPickBook(id){
 }
 // 跳出確認卡：物業核對手上的書跟畫面顯示的是否一致，確認後才真正寫入借閱紀錄
 function showBorrowConfirm(bk){
+  const addr=staffAddr();
+  if(maxBorrowPerAddr>0){
+    const current=countBorrowedByAddr(addr);
+    if(current>=maxBorrowPerAddr){
+      const st=document.getElementById('sbStatus');
+      st.className='status err';
+      st.innerHTML='「'+esc(addr)+'」目前已借閱 '+current+' 本，已達每戶最多可借閱 '+maxBorrowPerAddr+' 本的上限，請先歸還後再借閱。';
+      return;
+    }
+  }
   pendingBorrowId=bk.id;
   document.getElementById('borrowConfirmInfo').innerHTML=
     '<div style="font-weight:700;font-size:16px">'+esc(bk.title)+'</div>'
     +(bk.author?('<div style="font-size:13px;color:var(--ink-soft);margin-top:2px">'+esc(bk.author)+'</div>'):'')
-    +'<div style="margin-top:10px">借給　<b style="color:var(--teal)">'+esc(staffAddr())+'</b></div>';
+    +'<div style="margin-top:10px">借給　<b style="color:var(--teal)">'+esc(addr)+'</b></div>';
   document.getElementById('borrowConfirmCard').classList.remove('hidden');
 }
 function cancelBorrowConfirm(){
