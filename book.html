@@ -97,6 +97,7 @@
   .dialog-btns>button{flex:1;padding:13px 0;border:none;border-radius:6px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;color:#fff}
   .dlg-cancel{background:var(--stamp)}
   .dlg-ok{background:var(--teal)}
+  .dlg-export-outline{background:#fffdf7!important;color:var(--teal)!important;border:1.5px solid var(--teal)!important}
   .dialog-btns>button:active{opacity:.85}
   .logoutbtn{display:block;width:100%;margin-top:10px;background:none;border:1.5px solid var(--stamp);border-radius:6px;font:inherit;font-size:16px;font-weight:700;color:var(--stamp);cursor:pointer;padding:13px 0;text-align:center}
   .logoutbtn:active{opacity:.75}
@@ -157,10 +158,15 @@
   #readerDonate{width:100%}
   #readerDonate video{width:100%!important;display:block}
   #readerDonate img{display:none}
-  .donate-item{display:flex;align-items:center;gap:12px;background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:4px;padding:12px 14px;margin-bottom:10px}
+  .donate-item{position:relative;display:flex;align-items:center;gap:12px;background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:4px;padding:12px 14px;margin-bottom:12px}
+  .donate-item.has-missing{margin-top:20px;border-left-color:var(--stamp)}
+  .di-missing-tag{position:absolute;top:-14px;left:12px;background:#fffdf7;border:1.5px solid var(--stamp);border-radius:6px;padding:2px 10px;display:flex;align-items:center;gap:5px;box-shadow:0 1px 3px rgba(0,0,0,.08);line-height:1.4;z-index:2}
+  .di-missing-tag .warn-bang{color:var(--stamp);font-weight:900;font-size:15px;line-height:1}
+  .di-missing-tag .warn-text{color:var(--teal);font-weight:700;font-size:13px;letter-spacing:.02em}
   .donate-item .di-info{flex:1;min-width:0}
   .donate-item .di-title{font-weight:700;font-size:16px;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .donate-item .di-meta{font-size:13px;color:var(--ink-soft);margin-top:2px}
+  .donate-item-actions{display:flex;gap:8px;flex-shrink:0;align-self:center}
   .donate-item .di-del{background:var(--stamp);color:#fff;border:none;border-radius:6px;padding:0 14px;height:44px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
   .donate-item .di-edit{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:0 14px;height:44px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
   .donate-item .di-del:active,.donate-item .di-edit:active{opacity:.85}
@@ -296,8 +302,9 @@
         書籍資料
       </div>
       <div class="float" style="margin-top:16px"><textarea id="fTitle" rows="1" placeholder=" " oninput="autoGrow(this)"></textarea><label>書名（必填）</label></div>
-      <div class="float"><input type="text" id="fAuthor" placeholder=" "><label>作者</label></div>
-      <div class="float"><input type="text" id="fPub" placeholder=" "><label>出版日期</label></div>
+      <div class="float"><input type="text" id="fAuthor" placeholder=" "><label>作者（必填）</label></div>
+      <div class="float"><input type="text" id="fPub" placeholder=" "><label>出版日期（必填）</label></div>
+      <div class="float"><input type="text" id="fPublisher" placeholder=" "><label>出版社（必填）</label></div>
       <button class="act tealbtn" id="saveBtn" style="margin:14px 0 10px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="saveBook()">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
         <span id="saveLabel">確認並存檔</span>
@@ -468,7 +475,9 @@
     <div id="dmodeManual" class="hidden">
       <div class="card" style="margin-bottom:0;padding:14px">
         <div class="float"><input type="text" id="dManualTitle" placeholder=" " onkeydown="if(event.key==='Enter'||event.keyCode===13){event.preventDefault();donateAddManual();}"><label>書名（必填）</label></div>
-        <div class="float" style="margin-top:12px"><input type="text" id="dManualAuthor" placeholder=" " onkeydown="if(event.key==='Enter'||event.keyCode===13){event.preventDefault();donateAddManual();}"><label>作者（選填）</label></div>
+        <div class="float" style="margin-top:12px"><input type="text" id="dManualAuthor" placeholder=" " onkeydown="if(event.key==='Enter'||event.keyCode===13){event.preventDefault();donateAddManual();}"><label>作者（必填）</label></div>
+        <div class="float" style="margin-top:12px"><input type="text" id="dManualPub" placeholder=" " onkeydown="if(event.key==='Enter'||event.keyCode===13){event.preventDefault();donateAddManual();}"><label>出版日期（必填）</label></div>
+        <div class="float" style="margin-top:12px"><input type="text" id="dManualPublisher" placeholder=" " onkeydown="if(event.key==='Enter'||event.keyCode===13){event.preventDefault();donateAddManual();}"><label>出版社（必填）</label></div>
         <button class="act tealbtn" style="margin-top:12px;padding:11px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="donateAddManual()">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
           加入捐書清單
@@ -570,8 +579,10 @@
 <div id="editDonateOverlay" class="overlay hidden" onclick="if(event.target===this)closeEditDonateDialog()">
   <div class="dialog">
     <div class="dialog-msg" style="font-size:17px;margin-bottom:14px">修改捐書資料</div>
-    <div class="float" style="margin-top:10px"><input type="text" id="editDonateTitle" placeholder=" "><label>書名</label></div>
-    <div class="float" style="margin-top:16px"><input type="text" id="editDonateAuthor" placeholder=" "><label>作者</label></div>
+    <div class="float" style="margin-top:10px"><input type="text" id="editDonateTitle" placeholder=" "><label>書名（必填）</label></div>
+    <div class="float" style="margin-top:16px"><input type="text" id="editDonateAuthor" placeholder=" "><label>作者（必填）</label></div>
+    <div class="float" style="margin-top:16px"><input type="text" id="editDonatePub" placeholder=" "><label>出版日期（必填）</label></div>
+    <div class="float" style="margin-top:16px"><input type="text" id="editDonatePublisher" placeholder=" "><label>出版社（必填）</label></div>
     <div class="dialog-btns" style="margin-top:20px">
       <button class="dlg-cancel" onclick="closeEditDonateDialog()">取消</button>
       <button class="dlg-ok" id="editDonateSaveBtn">保存修改</button>
@@ -586,6 +597,19 @@
     <div class="dialog-btns">
       <button class="dlg-cancel" onclick="closeDupIsbnDialog()">取消</button>
       <button class="dlg-ok" id="dupIsbnOkBtn">仍要上架</button>
+    </div>
+  </div>
+</div>
+
+<!-- 捐書未填妥提示對話框 -->
+<div id="incompleteDonateOverlay" class="overlay hidden" onclick="if(event.target===this)closeIncompleteDonateDialog()">
+  <div class="dialog">
+    <div class="dialog-msg" style="font-size:17px;line-height:1.6;margin-bottom:20px;text-align:center">
+      清單中有書籍尚未填妥完整資料（<span style="color:var(--stamp);font-weight:900">!</span><span style="color:var(--teal);font-weight:700">有欄位未填寫</span>）<br><br>是否繼續「編輯」補齊後再提交？
+    </div>
+    <div class="dialog-btns">
+      <button class="dlg-ok" onclick="onIncompleteGoEdit()">編輯</button>
+      <button class="dlg-export-outline" onclick="closeIncompleteDonateDialog();_doSubmitDonation();">匯出</button>
     </div>
   </div>
 </div>
@@ -660,7 +684,7 @@ function ensureXLSX(){
 // 讓分頁列跟 loading 骨架馬上出現，不要讓使用者對著空白畫面等資料。
 function showBootShell(){
   const isAdmin=/[?&]admin\b/i.test(location.search);
-  const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(3);
+  const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(6);
   if(isAdmin){
     document.getElementById('loginBtn').classList.add('hidden');
     document.getElementById('adminGearBtn').classList.remove('hidden');
@@ -970,6 +994,7 @@ async function onISBN(isbn){
   else{showManual(isbn,{});st.className='status err';st.innerHTML='ISBN <span class="isbnbadge">'+isbn+'</span> 查無資料,請手動填書名。';}
   document.getElementById('resultCard').scrollIntoView({behavior:'smooth',block:'center'});
 }
+const GOOGLE_KEY = 'AIzaSyAWt8saUQMTjvCnbUO0d3SOqT5sk2lMypU';
 function hasCJK(s){return /[\u3400-\u9FFF]/.test(s||"");}
 async function fetchBook(isbn){
   let best=null;
@@ -978,13 +1003,13 @@ async function fetchBook(isbn){
     try{
       const ctrl=new AbortController();
       const tid=setTimeout(()=>ctrl.abort(),3000);
-      const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn+extra,{signal:ctrl.signal});
+      const r=await fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn+extra+'&key='+GOOGLE_KEY,{signal:ctrl.signal});
       clearTimeout(tid);
       const j=await r.json();
       if(j.items&&j.items.length){
         for(const it of j.items){
           const v=it.volumeInfo||{};
-          const cand={title:v.title||'',author:(v.authors||[]).join('、'),publishDate:v.publishedDate||''};
+          const cand={title:v.title||'',author:(v.authors||[]).join('、'),publishDate:v.publishedDate||'',publisher:v.publisher||''};
           if(hasCJK(cand.title))return cand;
           if(!best&&cand.title)best=cand;
         }
@@ -1000,8 +1025,8 @@ async function fetchBook(isbn){
       clearTimeout(tid);
       const j=await r.json();
       if(j&&j.title){
-        if(hasCJK(j.title))return{title:j.title,author:j.author||'',publishDate:j.publishDate||''};
-        if(!best)best={title:j.title,author:j.author||'',publishDate:j.publishDate||''};
+        if(hasCJK(j.title))return{title:j.title,author:j.author||'',publishDate:j.publishDate||'',publisher:j.publisher||''};
+        if(!best)best={title:j.title,author:j.author||'',publishDate:j.publishDate||'',publisher:j.publisher||''};
       }
     }catch(e){}
   }
@@ -1017,7 +1042,8 @@ async function fetchBook(isbn){
         if(d.authors&&d.authors[0]&&d.authors[0].key){
           try{const a=await fetch('https://openlibrary.org'+d.authors[0].key+'.json');author=(await a.json()).name||'';}catch(e){}
         }
-        const cand={title:d.title||'',author,publishDate:d.publish_date||''};
+        let publisher = (d.publishers && d.publishers[0]) ? (typeof d.publishers[0] === 'string' ? d.publishers[0] : (d.publishers[0].name || '')) : '';
+        const cand={title:d.title||'',author,publishDate:d.publish_date||'',publisher};
         if(!best&&cand.title)best=cand;
       }
     }catch(e){}
@@ -1030,6 +1056,7 @@ function showManual(isbn,info){
   document.getElementById('fTitle').value=info.title||"";
   document.getElementById('fAuthor').value=info.author||"";
   document.getElementById('fPub').value=fmtDate(info.publishDate||"");
+  document.getElementById('fPublisher').value=info.publisher||"";
   document.getElementById('resultCard').dataset.isbn=isbn||"";
   document.getElementById('resultCard').classList.remove('hidden');
   document.getElementById('helpBox').classList.add('hidden');
@@ -1038,7 +1065,7 @@ function showManual(isbn,info){
 
 function openManualAddForm(){
   document.getElementById('admStatus').textContent='';
-  showManual('',{title:'',author:'',publishDate:''});
+  showManual('',{title:'',author:'',publishDate:'',publisher:''});
   document.getElementById('fTitle').focus();
 }
 
@@ -1067,20 +1094,12 @@ function switchAdminAddMode(mode){
 }
 
 /* ===== 存檔 ===== */
-async function saveBook(){
-  const btn=document.getElementById('saveBtn');
-  if(btn.disabled)return;
-  const title=document.getElementById('fTitle').value.trim();
-  if(!title){
-    showToast("請至少填寫書名", "error");
-    document.getElementById('fTitle').focus();
-    return;
-  }
-  btn.disabled=true;document.getElementById('saveLabel').textContent='存檔中…';
-  const rec={id:Date.now().toString(36),isbn:document.getElementById('resultCard').dataset.isbn||"",title,
-    author:document.getElementById('fAuthor').value.trim(),publishDate:fmtDate(document.getElementById('fPub').value),
-    filedDate:todayStr(),minAge:0};
+function closeDupIsbnDialog(){document.getElementById('dupIsbnOverlay').classList.add('hidden');}
+
+async function _doSaveBook(rec){
   const st=document.getElementById('admStatus');
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=true;document.getElementById('saveLabel').textContent='存檔中…';
   if(backend){
     st.className='status';st.innerHTML='<span class="spin"></span>寫入 Google 試算表中…';
     try{await fetch(backend,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"add",book:rec})});}
@@ -1091,12 +1110,12 @@ async function saveBook(){
     st.className='status saved';
     st.innerHTML = rec.isbn
       ? '✓ ISBN：<span class="isbnbadge">'+rec.isbn+'</span> 已存檔。'
-      : '✓《'+esc(title)+'》已存檔。';
+      : '✓《'+esc(rec.title)+'》已存檔。';
     showToast('新增成功');
-    // 清空欄位並隱藏,回到乾淨狀態
     document.getElementById('fTitle').value='';
     document.getElementById('fAuthor').value='';
     document.getElementById('fPub').value='';
+    document.getElementById('fPublisher').value='';
     document.getElementById('resultCard').dataset.isbn='';
     document.getElementById('resultCard').classList.add('hidden');
     document.getElementById('helpBox').classList.remove('hidden');
@@ -1105,12 +1124,59 @@ async function saveBook(){
   btn.disabled=false;document.getElementById('saveLabel').textContent='確認並存檔';
 }
 
+async function saveBook(){
+  const btn=document.getElementById('saveBtn');
+  if(btn.disabled)return;
+  const title=document.getElementById('fTitle').value.trim();
+  const author=document.getElementById('fAuthor').value.trim();
+  const pubRaw=document.getElementById('fPub').value.trim();
+  const publisher=document.getElementById('fPublisher').value.trim();
+  if(!title){
+    showToast("請填寫書名","error");
+    document.getElementById('fTitle').focus();
+    return;
+  }
+  if(!author){
+    showToast("請填寫作者","error");
+    document.getElementById('fAuthor').focus();
+    return;
+  }
+  if(!pubRaw){
+    showToast("請填寫出版日期","error");
+    document.getElementById('fPub').focus();
+    return;
+  }
+  if(!publisher){
+    showToast("請填寫出版社","error");
+    document.getElementById('fPublisher').focus();
+    return;
+  }
+  const rec={id:Date.now().toString(36),isbn:document.getElementById('resultCard').dataset.isbn||"",title,
+    author:author,publishDate:fmtDate(pubRaw),
+    publisher:publisher,
+    filedDate:todayStr(),minAge:0};
+
+  // ISBN 重複檢查：書庫中已有相同 ISBN 且狀態為 active
+  if(rec.isbn){
+    const isbnClean=rec.isbn.replace(/\D/g,'');
+    const dup=books.find(b=>b.status==='active'&&b.isbn&&String(b.isbn).replace(/\D/g,'')===isbnClean);
+    if(dup){
+      document.getElementById('dupIsbnMsg').innerHTML=
+        '書庫中已存在《<b>'+esc(dup.title)+'</b>》<br>ISBN <span class="isbnbadge">'+rec.isbn+'</span><br>是否仍要重複上架？';
+      document.getElementById('dupIsbnOkBtn').onclick=()=>{closeDupIsbnDialog();_doSaveBook(rec);};
+      document.getElementById('dupIsbnOverlay').classList.remove('hidden');
+      return;
+    }
+  }
+  await _doSaveBook(rec);
+}
+
 /* ===== 顯示 ===== */
 // 住戶查詢:按下按鈕才查,先顯示 loading、抓最新資料再篩選
 // 通用:抓最新資料 → 依條件篩選 → 渲染到指定容器
 async function runQuery(targetId, predicate, removable, emptyMsg){
   const el=document.getElementById(targetId);
-  const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(3);
+  const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(6);
   el.innerHTML=skelHTML;
   const ok=await loadBooksData();
   if(!ok&&books.length===0){
@@ -1187,6 +1253,8 @@ function bookCard(b,removable){
   let meta='<div class="meta">'
     +(b.author?('作者　<span class="mval">'+esc(b.author)+'</span><br>'):'')
     +(b.publishDate?('出版日期　<span class="mval">'+esc(fmtDate(b.publishDate))+'</span><br>'):'')
+    +(!removable&&b.filedDate?('管理者上架日期　<span class="mval">'+esc(fmtDate(b.filedDate))+'</span><br>'):'')
+    +(removable&&b.publisher?('出版社　<span class="mval">'+esc(b.publisher)+'</span><br>'):'')
     +(removable&&b.filedDate?('建檔日期　<span class="mval">'+esc(fmtDate(b.filedDate))+'</span>'):'')
     +'</div>';
   let h='<div class="book"><h3>'+esc(b.title)+'</h3>';
@@ -1593,7 +1661,7 @@ function switchAdminBottomTab(tab){
 /* ===== 管理者：捐書審核列表與操作 ===== */
 async function loadAndRenderReview(){
   const el = document.getElementById('reviewResults');
-  const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(3);
+  const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(6);
   el.innerHTML = skelHTML;
   const ok=await loadBooksData();
   if(!ok&&books.length===0){
@@ -1646,6 +1714,8 @@ function renderReviewList(){
       '<div class="rev-title">《' + esc(b.title) + '》</div>' +
       '<div class="rev-meta">' +
         (b.author ? '作者：<span class="mval">' + esc(b.author) + '</span><br>' : '') +
+        (b.publishDate ? '出版日期：<span class="mval">' + esc(fmtDate(b.publishDate)) + '</span><br>' : '') +
+        (b.publisher ? '出版社：<span class="mval">' + esc(b.publisher) + '</span><br>' : '') +
         (b.isbn ? 'ISBN：<span class="isbnbadge">' + esc(b.isbn) + '</span><br>' : '') +
         (b.donor ? '捐書門牌：<span class="mval"><b>' + esc(b.donor) + '</b></span><br>' : '') +
         '建立日期：<span class="mval">' + esc(fmtDate(b.filedDate)) + '</span>' +
@@ -1658,16 +1728,14 @@ function renderReviewList(){
   }).join('');
 }
 
-async function approveBook(id){
-  const bk = books.find(b => b.id === id);
-  if (!bk) return;
+async function _doApproveBook(bk){
   showMask();
   if (backend) {
     try {
       await fetch(backend, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "approve", id: id })
+        body: JSON.stringify({ action: "approve", id: bk.id })
       });
     } catch(e) {}
   }
@@ -1676,6 +1744,25 @@ async function approveBook(id){
   showToast('《' + bk.title + '》已同意上架！');
   populateReviewFilters();
   renderReviewList();
+}
+
+async function approveBook(id){
+  const bk = books.find(b => b.id === id);
+  if (!bk) return;
+
+  // ISBN 重複檢查：書庫中已有相同 ISBN 且狀態為 active
+  if(bk.isbn){
+    const isbnClean=String(bk.isbn).replace(/\D/g,'');
+    const dup=books.find(b=>b.id!==id&&b.status==='active'&&b.isbn&&String(b.isbn).replace(/\D/g,'')===isbnClean);
+    if(dup){
+      document.getElementById('dupIsbnMsg').innerHTML=
+        '書庫中已存在《<b>'+esc(dup.title)+'</b>》<br>ISBN <span class="isbnbadge">'+bk.isbn+'</span><br>是否仍要上架此捐書？';
+      document.getElementById('dupIsbnOkBtn').onclick=()=>{closeDupIsbnDialog();_doApproveBook(bk);};
+      document.getElementById('dupIsbnOverlay').classList.remove('hidden');
+      return;
+    }
+  }
+  await _doApproveBook(bk);
 }
 
 function rejectBook(id){
@@ -1781,7 +1868,8 @@ async function onDonateISBN(isbn){
   var bookTitle = info.title;
   var bookAuthor = info.author || '';
   var bookPub = info.publishDate ? fmtDate(info.publishDate) : '';
-  var book = {isbn: isbn, title: bookTitle, author: bookAuthor, publishDate: bookPub};
+  var bookPublisher = info.publisher || '';
+  var book = {isbn: isbn, title: bookTitle, author: bookAuthor, publishDate: bookPub, publisher: bookPublisher};
   donateBatch.push(book);
   st.className='status';
   st.innerHTML='✓ 已加入：'+esc(book.title);
@@ -1801,6 +1889,8 @@ function donateAddIsbn(){
 function donateAddManual(){
   var title=(document.getElementById('dManualTitle').value||'').trim();
   var author=(document.getElementById('dManualAuthor').value||'').trim();
+  var pub=(document.getElementById('dManualPub').value||'').trim();
+  var publisher=(document.getElementById('dManualPublisher').value||'').trim();
   var st=document.getElementById('dStatus');
   if(!title){
     st.className='status err';
@@ -1808,10 +1898,30 @@ function donateAddManual(){
     document.getElementById('dManualTitle').focus();
     return;
   }
-  var book={isbn:'',title:title,author:author,publishDate:''};
+  if(!author){
+    st.className='status err';
+    st.textContent='請填寫作者';
+    document.getElementById('dManualAuthor').focus();
+    return;
+  }
+  if(!pub){
+    st.className='status err';
+    st.textContent='請填寫出版日期';
+    document.getElementById('dManualPub').focus();
+    return;
+  }
+  if(!publisher){
+    st.className='status err';
+    st.textContent='請填寫出版社';
+    document.getElementById('dManualPublisher').focus();
+    return;
+  }
+  var book={isbn:'',title:title,author:author,publishDate:fmtDate(pub),publisher:publisher};
   donateBatch.push(book);
   document.getElementById('dManualTitle').value='';
   document.getElementById('dManualAuthor').value='';
+  document.getElementById('dManualPub').value='';
+  document.getElementById('dManualPublisher').value='';
   st.className='status';
   st.innerHTML='✓ 已加入：'+esc(book.title);
   renderDonateBatch();
@@ -1825,15 +1935,37 @@ function donateEditItem(idx){
   if(!item)return;
   document.getElementById('editDonateTitle').value=item.title||'';
   document.getElementById('editDonateAuthor').value=item.author||'';
+  document.getElementById('editDonatePub').value=fmtDate(item.publishDate||'');
+  document.getElementById('editDonatePublisher').value=item.publisher||'';
   document.getElementById('editDonateSaveBtn').onclick=function(){
     var nt=(document.getElementById('editDonateTitle').value||'').trim();
+    var na=(document.getElementById('editDonateAuthor').value||'').trim();
+    var np=(document.getElementById('editDonatePub').value||'').trim();
+    var npub=(document.getElementById('editDonatePublisher').value||'').trim();
     if(!nt){
       showToast('請輸入書名', 'error');
       document.getElementById('editDonateTitle').focus();
       return;
     }
+    if(!na){
+      showToast('請輸入作者', 'error');
+      document.getElementById('editDonateAuthor').focus();
+      return;
+    }
+    if(!np){
+      showToast('請輸入出版日期', 'error');
+      document.getElementById('editDonatePub').focus();
+      return;
+    }
+    if(!npub){
+      showToast('請輸入出版社', 'error');
+      document.getElementById('editDonatePublisher').focus();
+      return;
+    }
     item.title=nt;
-    item.author=(document.getElementById('editDonateAuthor').value||'').trim();
+    item.author=na;
+    item.publishDate=fmtDate(np);
+    item.publisher=npub;
     closeEditDonateDialog();
     renderDonateBatch();
     showToast('已更新書籍資料');
@@ -1861,12 +1993,51 @@ function renderDonateBatch(){
   submitBtn.disabled=false;
   helpBox.classList.add('hidden');
   el.innerHTML=donateBatch.map(function(b,i){
-    return '<div class="donate-item"><div class="di-info"><div class="di-title">'+esc(b.title)+'</div><div class="di-meta">'+(b.author?esc(b.author):'')+(b.author&&b.isbn?' · ':'')+(b.isbn?'ISBN '+b.isbn:'')+'</div></div><div style="display:flex;gap:8px;flex-shrink:0"><button class="di-edit" onclick="donateEditItem('+i+')">編輯</button><button class="di-del" onclick="donateRemoveItem('+i+')">移除</button></div></div>';
+    var hasMissing = !b.title || !b.author || !b.publishDate || !b.publisher;
+    var tagHtml = hasMissing ? '<div class="di-missing-tag"><span class="warn-bang">!</span><span class="warn-text">有欄位未填寫</span></div>' : '';
+    var metaParts = [];
+    if(b.author) metaParts.push(esc(b.author));
+    if(b.publishDate) metaParts.push('出版：' + esc(fmtDate(b.publishDate)));
+    if(b.publisher) metaParts.push('出版社：' + esc(b.publisher));
+    if(b.isbn) metaParts.push('ISBN ' + b.isbn);
+    return '<div class="donate-item' + (hasMissing ? ' has-missing' : '') + '">' +
+      tagHtml +
+      '<div class="di-info">' +
+        '<div class="di-title">' + esc(b.title || '（未填寫書名）') + '</div>' +
+        '<div class="di-meta">' + (metaParts.length ? metaParts.join(' · ') : '尚未填寫完整資料') + '</div>' +
+      '</div>' +
+      '<div class="donate-item-actions">' +
+        '<button class="di-edit" onclick="donateEditItem(' + i + ')">編輯</button>' +
+        '<button class="di-del" onclick="donateRemoveItem(' + i + ')">移除</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
 /* ===== 提交捐書 + 匯出 Excel ===== */
+function closeIncompleteDonateDialog(){
+  document.getElementById('incompleteDonateOverlay').classList.add('hidden');
+}
+function onIncompleteGoEdit(){
+  closeIncompleteDonateDialog();
+  var missingIdx = donateBatch.findIndex(function(b){ return !b.title || !b.author || !b.publishDate || !b.publisher; });
+  if(missingIdx !== -1){
+    donateEditItem(missingIdx);
+  }
+}
+
 async function submitDonation(){
+  if(!donateBatch.length)return;
+  var addr=myAddr();if(!addr){openLogin();return;}
+  var missingIdx = donateBatch.findIndex(function(b){ return !b.title || !b.author || !b.publishDate || !b.publisher; });
+  if(missingIdx !== -1){
+    document.getElementById('incompleteDonateOverlay').classList.remove('hidden');
+    return;
+  }
+  await _doSubmitDonation();
+}
+
+async function _doSubmitDonation(){
   if(!donateBatch.length)return;
   var addr=myAddr();if(!addr){openLogin();return;}
   var btn=document.getElementById('donateSubmitBtn');
@@ -1874,7 +2045,7 @@ async function submitDonation(){
   showMask();
   var today=todayStr();
   var records=donateBatch.map(function(b){
-    return{id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),isbn:b.isbn,title:b.title,author:b.author,publishDate:b.publishDate,filedDate:today,minAge:0,status:'pending',donor:addr};
+    return{id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),isbn:b.isbn,title:b.title,author:b.author,publishDate:b.publishDate,publisher:b.publisher||'',filedDate:today,minAge:0,status:'pending',donor:addr};
   });
   var backendOk=true;
   if(backend){
@@ -1902,10 +2073,10 @@ async function exportDonateExcel(records,addr,date){
     try{await ensureXLSX();}catch(e){return false;}
   }
   var data=records.map(function(r,i){
-    return{'序號':i+1,'捐書門牌':addr,'提交日期':date,'ISBN':r.isbn,'書名':r.title,'作者':r.author,'出版日期':r.publishDate,'審核狀態':'待審核'};
+    return{'序號':i+1,'捐書門牌':addr,'提交日期':date,'ISBN':r.isbn,'書名':r.title,'作者':r.author,'出版日期':r.publishDate,'出版社':r.publisher||'','審核狀態':'待審核'};
   });
   var ws=XLSX.utils.json_to_sheet(data);
-  ws['!cols']=[{wch:5},{wch:14},{wch:12},{wch:16},{wch:30},{wch:16},{wch:12},{wch:10}];
+  ws['!cols']=[{wch:5},{wch:14},{wch:12},{wch:16},{wch:30},{wch:16},{wch:12},{wch:16},{wch:10}];
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'捐書清單');
   var shortA=myAddrShort();
