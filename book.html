@@ -678,8 +678,10 @@ function bootResident(){
   try{initAddrSelects();}catch(e){}
   try{initStaffAddrSelects();}catch(e){}
   // 設定跟書籍清單同時打給後端，等待時間是取「較久的那個」，不是兩個相加。
-  try{await Promise.all([loadConfigData(), loadBooksData()]);}catch(e){}
-  booksFreshFromBoot=true; // 上面已經抓過一次書籍清單了，接下來第一次渲染沿用，不要重複打
+  const results=await Promise.allSettled([loadConfigData(), loadBooksData()]);
+  // 只有書籍清單「真的抓成功」，才讓接下來第一次渲染沿用不重打；
+  // 抓失敗的話旗標維持 false，runQuery 會照樣重新打一次，不會誤把空陣列當成正確結果顯示「沒有資料」。
+  booksFreshFromBoot=(results[1].status==='fulfilled'&&results[1].value===true);
   try{applyBorrowModeUI();}catch(e){}
   bootResident();
 })();
@@ -760,10 +762,18 @@ function showToast(msg, type){
 // 開機時已經在 init() 裡跟設定一起平行抓過一次書籍清單了；
 // 開機後第一個呼叫 loadBooksData() 的地方（doResidentSearch 或 loadAndRenderReview 內的 runQuery）
 // 直接沿用那次結果，不要再多打一次後端。之後使用者的每個操作仍會照常重新抓取最新資料。
+// 注意：只有開機那次「真的抓成功」才會設這個旗標；抓失敗的話旗標維持 false，
+// 讓接下來第一次的 loadBooksData() 照樣重新打一次，而不是誤把空陣列當成「已經是最新資料」。
 let booksFreshFromBoot=false;
 async function loadBooksData(){
-  if(booksFreshFromBoot){booksFreshFromBoot=false;return;}
-  if(backend){try{const r=await fetch(backend+"?action=list");const j=await r.json();if(Array.isArray(j))books=j;}catch(e){}}
+  if(booksFreshFromBoot){booksFreshFromBoot=false;return true;}
+  if(!backend)return false;
+  try{
+    const r=await fetch(backend+"?action=list");
+    const j=await r.json();
+    if(Array.isArray(j)){books=j;return true;}
+    return false;
+  }catch(e){return false;} // 抓失敗回傳 false，讓呼叫端（runQuery）知道這不是「真的沒資料」
 }
 // 從後端「設定」分頁抓取系統設定（目前只有 borrowMode），蓋過本機 localStorage 的舊值，
 // 讓所有裝置載入頁面時看到的都是雲端最新設定，而不是各自裝置各自為政。
@@ -1086,7 +1096,13 @@ async function runQuery(targetId, predicate, removable, emptyMsg){
   const el=document.getElementById(targetId);
   const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(3);
   el.innerHTML=skelHTML;
-  await loadBooksData();
+  const ok=await loadBooksData();
+  if(!ok&&books.length===0){
+    // 抓失敗、手上又完全沒有舊資料可以顯示：明確告訴使用者是連線問題，不要顯示成「沒有符合條件的書籍」，
+    // 不然使用者會誤以為書庫真的是空的，而不是網路/伺服器一時連不上。
+    el.innerHTML='<div class="empty big">⚠️ 無法連線到伺服器，請檢查網路後重新整理再試一次</div>';
+    return;
+  }
   const list=books.filter(predicate);
   if(!list.length){el.innerHTML='<div class="empty big">'+emptyMsg+'</div>';return;}
   el.innerHTML=list.map(b=>bookCard(b,removable)).join('');
@@ -1563,7 +1579,11 @@ async function loadAndRenderReview(){
   const el = document.getElementById('reviewResults');
   const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(3);
   el.innerHTML = skelHTML;
-  await loadBooksData();
+  const ok=await loadBooksData();
+  if(!ok&&books.length===0){
+    el.innerHTML='<div class="empty big">⚠️ 無法連線到伺服器，請檢查網路後重新整理再試一次</div>';
+    return;
+  }
   populateReviewFilters();
   renderReviewList();
 }
