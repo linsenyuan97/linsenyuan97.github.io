@@ -656,19 +656,35 @@ function ensureXLSX(){
   return _xlsxLoading;
 }
 
+// 階段一：畫殼，完全不依賴網路，一進頁面就能立刻執行——
+// 讓分頁列跟 loading 骨架馬上出現，不要讓使用者對著空白畫面等資料。
+function showBootShell(){
+  const isAdmin=/[?&]admin\b/i.test(location.search);
+  const skelHTML='<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line short"></div></div>'.repeat(3);
+  if(isAdmin){
+    document.getElementById('loginBtn').classList.add('hidden');
+    document.getElementById('adminGearBtn').classList.remove('hidden');
+    document.getElementById('adminTabbar').classList.remove('hidden');
+    document.body.classList.add('has-tabbar');
+    document.querySelectorAll('#adminTabbar .btab').forEach(function(t){t.classList.toggle('on',t.dataset.tab==='review');});
+    const pr=document.getElementById('panel-review');if(pr)pr.classList.add('on');
+    const rr=document.getElementById('reviewResults');if(rr)rr.innerHTML=skelHTML;
+  }else{
+    document.getElementById('residentTabbar').classList.remove('hidden');
+    document.body.classList.add('has-tabbar');
+    document.querySelectorAll('#residentTabbar .btab').forEach(function(t){t.classList.toggle('on',t.dataset.tab==='search');});
+    const res=document.getElementById('results');if(res)res.innerHTML=skelHTML;
+  }
+  return isAdmin;
+}
+// 階段二：資料到位後才執行——套用設定、觸發真正的查詢渲染，把骨架換成真實內容。
 function bootResident(){
   try{
     const isAdmin=/[?&]admin\b/i.test(location.search);
     if(isAdmin){
-      document.getElementById('loginBtn').classList.add('hidden');
-      document.getElementById('adminGearBtn').classList.remove('hidden');
-      document.getElementById('adminTabbar').classList.remove('hidden');
-      document.body.classList.add('has-tabbar');
       applyBorrowModeUI();
       switchAdminBottomTab('review');
     }else{
-      document.getElementById('residentTabbar').classList.remove('hidden');
-      document.body.classList.add('has-tabbar');
       applyLoginUI();
       switchBottomTab('search');
     }
@@ -677,12 +693,12 @@ function bootResident(){
 (async function init(){
   try{initAddrSelects();}catch(e){}
   try{initStaffAddrSelects();}catch(e){}
+  try{showBootShell();}catch(e){} // 立刻顯示殼層＋loading骨架，不等網路
   // 設定跟書籍清單同時打給後端，等待時間是取「較久的那個」，不是兩個相加。
   const results=await Promise.allSettled([loadConfigData(), loadBooksData()]);
   // 只有書籍清單「真的抓成功」，才讓接下來第一次渲染沿用不重打；
   // 抓失敗的話旗標維持 false，runQuery 會照樣重新打一次，不會誤把空陣列當成正確結果顯示「沒有資料」。
   booksFreshFromBoot=(results[1].status==='fulfilled'&&results[1].value===true);
-  try{applyBorrowModeUI();}catch(e){}
   bootResident();
 })();
 
