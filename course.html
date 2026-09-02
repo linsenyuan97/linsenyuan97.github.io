@@ -122,6 +122,9 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .dow-chips{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 10px}
 .dow-chip{width:38px;height:38px;border-radius:50%;background:#fff;border:1.5px solid var(--line);color:var(--ink-soft);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .dow-chip.on{background:var(--tiffany);border-color:var(--tiffany);color:#fff}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 14px}
+.type-btn{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 4px;font:inherit;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;text-align:center;transition:all .15s;white-space:nowrap}
+.type-btn.on{background:var(--tiffany-light);border-color:var(--tiffany);color:var(--tiffany-dark);font-weight:900;box-shadow:0 2px 8px rgba(124,92,252,.14)}
 .step-bar{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:14px}
 .step-dot{height:8px;border-radius:4px;background:var(--line);transition:all .2s}
 .step-dot.on{width:24px;background:var(--tiffany)}
@@ -212,7 +215,6 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
       <button class="chip" onclick="setCatFilter('運動健身')">運動健身</button>
       <button class="chip" onclick="setCatFilter('兒童才藝')">兒童才藝</button>
       <button class="chip" onclick="setCatFilter('手作烘焙')">手作烘焙</button>
-      <button class="chip" onclick="setCatFilter('樂齡長者')">樂齡長者</button>
       <button class="chip" onclick="setCatFilter('語言學習')">語言學習</button>
       <button class="chip" onclick="setCatFilter('其他')">其他</button>
     </div>
@@ -291,7 +293,8 @@ const ZHI_LIST = [1,2,3,5];
 const DONG_MAP = {95:'A',97:'B',99:'C'};
 const ADDR_KEY = 'ls-course-addr';
 const DISC_KEY = 'course-disclaimer-v1';
-const CATEGORIES = ['運動健身','兒童才藝','手作烘焙','樂齡長者','語言學習','其他'];
+const CATEGORIES = ['運動健身','兒童才藝','手作烘焙','語言學習','其他'];
+const LOCATIONS = ['韻律室','健身房','戶外泳池','籃球場','綜合球室','網球場','戶外遊戲區','親子遊戲室','影音劇院','宴會廳','廚藝教室','其他'];
 const DOW_NAMES = ['日','一','二','三','四','五','六'];
 
 let courses = [];
@@ -560,7 +563,7 @@ function showCreateStep(step){
   showSheet(html);
   setTimeout(()=>{
     if(step===1)restoreStep1();
-    if(step===2){restoreStep2();onRecTypeChange();onEndTypeChange();updateSessionPreview();}
+    if(step===2){restoreStep2();onEndTypeChange();updateSessionPreview();}
     if(step===3){restoreStep3();onFeeTypeChange();}
   },60);
 }
@@ -587,60 +590,221 @@ function gotoStep2(){
 }
 
 /* Step 2 */
-function step2HTML(){return `${stepBar(2)}<div class="step-title">時間、場地與人數</div>
+let currentRecType = 'none';
+
+function step2HTML(){
+  return `${stepBar(2)}<div class="step-title">時間、場地與人數</div>
 <div class="form-section sec" style="margin-top:6px;padding-top:22px"><div class="sechead">開課排程</div>
-<div style="margin:10px 0 6px;font-size:12px;font-weight:700;color:var(--ink-soft)">開課模式</div>
-<div class="radio-group">
-<label class="radio-row"><input type="radio" name="recType" value="none" checked onchange="onRecTypeChange()"> 單次特定日期</label>
-<label class="radio-row"><input type="radio" name="recType" value="weekly" onchange="onRecTypeChange()"> 每週固定（可選多天）</label>
-<label class="radio-row"><input type="radio" name="recType" value="biweekly" onchange="onRecTypeChange()"> 每雙週</label>
-<label class="radio-row"><input type="radio" name="recType" value="monthly_day" onchange="onRecTypeChange()"> 每月固定幾號</label>
-<label class="radio-row"><input type="radio" name="recType" value="monthly_weekday" onchange="onRecTypeChange()"> 每月第N個週幾</label>
+<div style="font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">開課方式</div>
+<div class="type-grid">
+  <button type="button" class="type-btn on" data-type="none" onclick="selectRecType('none')">單次課程</button>
+  <button type="button" class="type-btn" data-type="weekly" onclick="selectRecType('weekly')">每週固定</button>
+  <button type="button" class="type-btn" data-type="biweekly" onclick="selectRecType('biweekly')">每兩週</button>
+  <button type="button" class="type-btn" data-type="monthly_day" onclick="selectRecType('monthly_day')">每月固定</button>
 </div>
-<div id="recSingle"><div class="f-label" style="margin-top:8px">上課日期</div><input type="date" id="singleDate" class="f-input" onchange="updateSessionPreview()"></div>
-<div id="recWeekdays" style="display:none"><div class="f-label" style="margin-top:8px">上課星期（可多選）</div><div class="dow-chips" id="dowChips">${[0,1,2,3,4,5,6].map(d=>`<button class="dow-chip" data-day="${d}" onclick="toggleDow(${d})">${DOW_NAMES[d]}</button>`).join('')}</div></div>
-<div id="recMonthDay" style="display:none"><div class="f-label" style="margin-top:8px">每月幾號（1～31）</div><input type="number" id="dayOfMonth" min="1" max="31" class="f-input" placeholder="例：15" onchange="updateSessionPreview()"></div>
-<div id="recMonthWeekday" style="display:none"><div class="sel-row"><div class="sel-wrap"><div class="f-label">第幾週</div><select id="weekOfMonth" class="f-input" onchange="updateSessionPreview()"><option value="1">第 1 週</option><option value="2">第 2 週</option><option value="3">第 3 週</option><option value="4">第 4 週</option></select></div><div class="sel-wrap"><div class="f-label">星期幾</div><select id="weekdayOfMonth" class="f-input" onchange="updateSessionPreview()">${[0,1,2,3,4,5,6].map(d=>`<option value="${d}">週${DOW_NAMES[d]}</option>`).join('')}</select></div></div></div>
-<div class="sel-row" style="margin-top:12px"><div class="sel-wrap"><div class="f-label">開始時間</div><input type="time" id="timeStart" value="09:00" class="f-input" onchange="updateSessionPreview()"></div><div class="sel-wrap"><div class="f-label">結束時間</div><input type="time" id="timeEnd" value="11:00" class="f-input" onchange="updateSessionPreview()"></div></div>
-<div id="recStartDate" style="display:none;margin-top:8px"><div class="f-label">第一堂開始日期</div><input type="date" id="dateStart" class="f-input" onchange="updateSessionPreview()"></div>
-<div id="recEndCond" style="display:none;margin-top:12px">
-<div class="f-label">結束條件</div>
-<div style="display:flex;gap:20px;margin:8px 0"><label class="radio-row"><input type="radio" name="endType" value="count" checked onchange="onEndTypeChange()"> 共幾堂</label><label class="radio-row"><input type="radio" name="endType" value="date" onchange="onEndTypeChange()"> 到某日期</label></div>
-<div id="endCountWrap"><input type="number" id="endCount" min="1" max="52" value="8" class="f-input" placeholder="共幾堂" onchange="updateSessionPreview()"></div>
-<div id="endDateWrap" style="display:none"><input type="date" id="endDate" class="f-input" onchange="updateSessionPreview()"></div>
+
+<!-- 模式 1：單次課程 -->
+<div id="fieldSingle">
+  <div class="f-label">上課日期</div>
+  <input type="date" id="singleDate" class="f-input" onchange="updateSessionPreview()">
 </div>
+
+<!-- 模式 2 & 3 & 4 共用：開始日期 -->
+<div id="fieldStartDate" style="display:none">
+  <div class="f-label">第一堂開始日期</div>
+  <input type="date" id="dateStart" class="f-input" onchange="updateSessionPreview()">
+</div>
+
+<!-- 模式 2 (每週) & 模式 3 (每兩週)：星期選擇 -->
+<div id="fieldWeekdays" style="display:none;margin-top:10px">
+  <div class="f-label" id="dowLabel">上課星期（可多選）</div>
+  <div class="dow-chips" id="dowChips">
+    ${[0,1,2,3,4,5,6].map(d=>`<button type="button" class="dow-chip" data-day="${d}" onclick="toggleDow(${d})">${DOW_NAMES[d]}</button>`).join('')}
+  </div>
+</div>
+
+<!-- 模式 4：每月固定 (幾號 或 第N個星期幾) -->
+<div id="fieldMonthly" style="display:none;margin-top:10px">
+  <div style="display:flex;gap:16px;margin-bottom:8px">
+    <label class="radio-row"><input type="radio" name="monthRule" value="day" checked onchange="onMonthRuleChange()"> 每月固定幾號</label>
+    <label class="radio-row"><input type="radio" name="monthRule" value="weekday" onchange="onMonthRuleChange()"> 每月第N個星期幾</label>
+  </div>
+  <div id="mRuleDay">
+    <div class="f-label">每月幾號（1～31）</div>
+    <input type="number" id="dayOfMonth" min="1" max="31" class="f-input" placeholder="例：15" onchange="updateSessionPreview()">
+  </div>
+  <div id="mRuleWeekday" style="display:none">
+    <div class="sel-row">
+      <div class="sel-wrap"><div class="f-label">第幾週</div><select id="weekOfMonth" class="f-input" onchange="updateSessionPreview()"><option value="1">第 1 週</option><option value="2">第 2 週</option><option value="3">第 3 週</option><option value="4">第 4 週</option></select></div>
+      <div class="sel-wrap"><div class="f-label">星期幾</div><select id="weekdayOfMonth" class="f-input" onchange="updateSessionPreview()">${[0,1,2,3,4,5,6].map(d=>`<option value="${d}">週${DOW_NAMES[d]}</option>`).join('')}</select></div>
+    </div>
+  </div>
+</div>
+
+<!-- 上課時段 (全部模式共用) -->
+<div class="sel-row" style="margin-top:12px">
+  <div class="sel-wrap"><div class="f-label">開始時間</div><input type="time" id="timeStart" value="10:00" class="f-input" onchange="updateSessionPreview()"></div>
+  <div class="sel-wrap"><div class="f-label">結束時間</div><input type="time" id="timeEnd" value="12:00" class="f-input" onchange="updateSessionPreview()"></div>
+</div>
+
+<!-- 結束條件 (週期模式 2、3、4 共用) -->
+<div id="fieldEndCond" style="display:none;margin-top:12px">
+  <div class="f-label">結束條件</div>
+  <div style="display:flex;gap:20px;margin:8px 0">
+    <label class="radio-row"><input type="radio" name="endType" value="count" checked onchange="onEndTypeChange()"> 共幾堂</label>
+    <label class="radio-row"><input type="radio" name="endType" value="date" onchange="onEndTypeChange()"> 到某日期</label>
+  </div>
+  <div id="endCountWrap"><input type="number" id="endCount" min="1" max="52" value="8" class="f-input" placeholder="共幾堂" onchange="updateSessionPreview()"></div>
+  <div id="endDateWrap" style="display:none"><input type="date" id="endDate" class="f-input" onchange="updateSessionPreview()"></div>
+</div>
+
+<!-- 即時排程預覽 -->
 <div id="sessionPreview" style="margin-top:12px"></div>
 </div>
-<div class="form-section sec" style="padding-top:22px"><div class="sechead">上課地點</div><div class="float" style="margin-top:10px"><input type="text" id="cLocation" placeholder=" " maxlength="50"><label>地點（如：B1韻律教室、中庭花園）</label></div></div>
+
+<div class="form-section sec" style="padding-top:22px">
+  <div class="sechead">上課地點</div>
+  <div style="margin-top:8px">
+    <div class="f-label">選擇地點（必填）</div>
+    <select id="locSelect" class="f-input" onchange="onLocChange()">
+      <option value="" disabled selected>請選擇地點</option>
+      ${LOCATIONS.map(l => `<option value="${l}">${l}</option>`).join('')}
+    </select>
+  </div>
+  <div id="locCustomWrap" style="display:none;margin-top:10px">
+    <div class="f-label">自訂地點名稱</div>
+    <input type="text" id="locCustom" class="f-input" placeholder="例如：中庭花園、A棟大廳" maxlength="50">
+  </div>
+</div>
+
 <div class="form-section sec" style="padding-top:22px"><div class="sechead">成團規則</div>
 <div class="sel-row" style="margin-top:10px"><div class="sel-wrap"><div class="f-label">最低成團人數（必填）</div><input type="number" id="cMinP" min="2" max="100" class="f-input" placeholder="例：6"></div><div class="sel-wrap"><div class="f-label">人數上限（必填）</div><input type="number" id="cMaxP" min="2" max="100" class="f-input" placeholder="例：12"></div></div>
 <div style="margin-top:12px"><div class="f-label">報名截止時間（必填）</div><input type="datetime-local" id="cRegEnd" class="f-input"></div>
 </div>
-<div class="sticky-bar"><div class="dbtns" style="margin:0"><button class="dbtn cancel" onclick="showCreateStep(1)">← 上一步</button><button class="dbtn go" onclick="gotoStep3()">下一步 →</button></div></div>`;}
-
-function restoreStep2(){
-  const rec=createData.recurrence||{},type=rec.type||'none';
-  document.querySelectorAll('input[name="recType"]').forEach(r=>{r.checked=r.value===type;});
-  if(rec.singleDate)sv('singleDate',rec.singleDate);if(rec.timeStart)sv('timeStart',rec.timeStart);if(rec.timeEnd)sv('timeEnd',rec.timeEnd);if(rec.dateStart)sv('dateStart',rec.dateStart);if(rec.dayOfMonth)sv('dayOfMonth',rec.dayOfMonth);if(rec.weekOfMonth)sv('weekOfMonth',rec.weekOfMonth);if(type==='monthly_weekday'&&rec.dayOfWeek&&rec.dayOfWeek[0]!=null)sv('weekdayOfMonth',rec.dayOfWeek[0]);
-  const endType=rec.endType||'count';document.querySelectorAll('input[name="endType"]').forEach(r=>{r.checked=r.value===endType;});if(rec.endCount)sv('endCount',rec.endCount);if(rec.endDate)sv('endDate',rec.endDate);
-  if(rec.dayOfWeek&&(type==='weekly'||type==='biweekly'))document.querySelectorAll('.dow-chip').forEach(c=>c.classList.toggle('on',rec.dayOfWeek.includes(+c.dataset.day)));
-  if(createData.location)sv('cLocation',createData.location);if(createData.minParticipants)sv('cMinP',createData.minParticipants);if(createData.maxParticipants)sv('cMaxP',createData.maxParticipants);
-  if(createData.registrationEnd){const d=new Date(createData.registrationEnd);sv('cRegEnd',new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16));}
+<div class="sticky-bar"><div class="dbtns" style="margin:0"><button class="dbtn cancel" onclick="showCreateStep(1)">← 上一步</button><button class="dbtn go" onclick="gotoStep3()">下一步 →</button></div></div>`;
 }
-function onRecTypeChange(){
-  const type=(document.querySelector('input[name="recType"]:checked')||{}).value||'none';
-  show('recSingle',type==='none');show('recWeekdays',type==='weekly'||type==='biweekly');show('recMonthDay',type==='monthly_day');show('recMonthWeekday',type==='monthly_weekday');show('recStartDate',type!=='none');show('recEndCond',type!=='none');
+
+function onLocChange(){
+  const sel = gv('locSelect');
+  show('locCustomWrap', sel === '其他');
+  if (sel === '其他') {
+    const cust = document.getElementById('locCustom');
+    if (cust) cust.focus();
+  }
+}
+
+function selectRecType(type){
+  currentRecType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('on', b.dataset.type === type));
+  
+  const isSingle = type === 'none';
+  show('fieldSingle', isSingle);
+  show('fieldStartDate', !isSingle);
+  show('fieldWeekdays', type === 'weekly' || type === 'biweekly');
+  show('fieldMonthly', type === 'monthly_day' || type === 'monthly_weekday');
+  show('fieldEndCond', !isSingle);
+  
+  const dowLbl = document.getElementById('dowLabel');
+  if (dowLbl) dowLbl.textContent = type === 'biweekly' ? '星期' : '上課星期（可多選）';
+  
   updateSessionPreview();
 }
-function onEndTypeChange(){const t=(document.querySelector('input[name="endType"]:checked')||{}).value||'count';show('endCountWrap',t==='count');show('endDateWrap',t==='date');updateSessionPreview();}
-function toggleDow(day){if(!createData.recurrence)createData.recurrence={};if(!createData.recurrence.dayOfWeek)createData.recurrence.dayOfWeek=[];const arr=createData.recurrence.dayOfWeek,idx=arr.indexOf(day);if(idx>=0)arr.splice(idx,1);else arr.push(day);document.querySelectorAll('.dow-chip').forEach(c=>c.classList.toggle('on',arr.includes(+c.dataset.day)));updateSessionPreview();}
+
+function onMonthRuleChange(){
+  const rule = (document.querySelector('input[name="monthRule"]:checked')||{}).value || 'day';
+  show('mRuleDay', rule === 'day');
+  show('mRuleWeekday', rule === 'weekday');
+  currentRecType = rule === 'day' ? 'monthly_day' : 'monthly_weekday';
+  updateSessionPreview();
+}
+
+function restoreStep2(){
+  const rec = createData.recurrence || {};
+  let type = rec.type || 'none';
+  if (type === 'monthly_day' || type === 'monthly_weekday') {
+    selectRecType('monthly_day');
+    const isWk = type === 'monthly_weekday';
+    document.querySelectorAll('input[name="monthRule"]').forEach(r => { r.checked = (isWk ? r.value === 'weekday' : r.value === 'day'); });
+    onMonthRuleChange();
+  } else {
+    selectRecType(type);
+  }
+  
+  if(rec.singleDate)sv('singleDate',rec.singleDate);
+  if(rec.timeStart)sv('timeStart',rec.timeStart);
+  if(rec.timeEnd)sv('timeEnd',rec.timeEnd);
+  if(rec.dateStart)sv('dateStart',rec.dateStart);
+  if(rec.dayOfMonth)sv('dayOfMonth',rec.dayOfMonth);
+  if(rec.weekOfMonth)sv('weekOfMonth',rec.weekOfMonth);
+  if(rec.dayOfWeek&&rec.dayOfWeek[0]!=null)sv('weekdayOfMonth',rec.dayOfWeek[0]);
+  
+  const endType=rec.endType||'count';
+  document.querySelectorAll('input[name="endType"]').forEach(r=>{r.checked=r.value===endType;});
+  if(rec.endCount)sv('endCount',rec.endCount);
+  if(rec.endDate)sv('endDate',rec.endDate);
+  
+  if(rec.dayOfWeek&&(type==='weekly'||type==='biweekly')){
+    document.querySelectorAll('.dow-chip').forEach(c=>c.classList.toggle('on',rec.dayOfWeek.includes(+c.dataset.day)));
+  }
+  
+  if(createData.location){
+    if(LOCATIONS.includes(createData.location) && createData.location !== '其他'){
+      sv('locSelect', createData.location);
+      show('locCustomWrap', false);
+    } else {
+      sv('locSelect', '其他');
+      show('locCustomWrap', true);
+      sv('locCustom', createData.location);
+    }
+  }
+  if(createData.minParticipants)sv('cMinP',createData.minParticipants);
+  if(createData.maxParticipants)sv('cMaxP',createData.maxParticipants);
+  if(createData.registrationEnd){
+    const d=new Date(createData.registrationEnd);
+    sv('cRegEnd',new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16));
+  }
+}
+
+function onEndTypeChange(){
+  const t=(document.querySelector('input[name="endType"]:checked')||{}).value||'count';
+  show('endCountWrap',t==='count');
+  show('endDateWrap',t==='date');
+  updateSessionPreview();
+}
+
+function toggleDow(day){
+  if(!createData.recurrence)createData.recurrence={};
+  if(!createData.recurrence.dayOfWeek)createData.recurrence.dayOfWeek=[];
+  const arr=createData.recurrence.dayOfWeek;
+  const idx=arr.indexOf(day);
+  if(idx>=0)arr.splice(idx,1);else arr.push(day);
+  document.querySelectorAll('.dow-chip').forEach(c=>c.classList.toggle('on',arr.includes(+c.dataset.day)));
+  updateSessionPreview();
+}
+
 function collectRec(){
-  const type=(document.querySelector('input[name="recType"]:checked')||{}).value;if(!type)return null;
-  const rec={type,timeStart:gv('timeStart'),timeEnd:gv('timeEnd')};
-  if(type==='none'){rec.singleDate=gv('singleDate');}
-  else{rec.dateStart=gv('dateStart');rec.endType=(document.querySelector('input[name="endType"]:checked')||{}).value||'count';if(rec.endType==='count')rec.endCount=parseInt(gv('endCount'))||8;else rec.endDate=gv('endDate');if(type==='weekly'||type==='biweekly')rec.dayOfWeek=[...document.querySelectorAll('.dow-chip.on')].map(c=>+c.dataset.day);else if(type==='monthly_day')rec.dayOfMonth=parseInt(gv('dayOfMonth'))||1;else if(type==='monthly_weekday'){rec.weekOfMonth=parseInt(gv('weekOfMonth'))||1;rec.dayOfWeek=[parseInt(gv('weekdayOfMonth'))||6];}}
+  const type = currentRecType || 'none';
+  const rec = {type, timeStart:gv('timeStart'), timeEnd:gv('timeEnd')};
+  if(type === 'none'){
+    rec.singleDate = gv('singleDate');
+  } else {
+    rec.dateStart = gv('dateStart');
+    rec.endType = (document.querySelector('input[name="endType"]:checked')||{}).value || 'count';
+    if(rec.endType === 'count') rec.endCount = parseInt(gv('endCount')) || 8;
+    else rec.endDate = gv('endDate');
+    
+    if(type === 'weekly' || type === 'biweekly'){
+      rec.dayOfWeek = [...document.querySelectorAll('.dow-chip.on')].map(c=>+c.dataset.day);
+    } else if(type === 'monthly_day'){
+      rec.dayOfMonth = parseInt(gv('dayOfMonth')) || 1;
+    } else if(type === 'monthly_weekday'){
+      rec.weekOfMonth = parseInt(gv('weekOfMonth')) || 1;
+      rec.dayOfWeek = [parseInt(gv('weekdayOfMonth')) || 6];
+    }
+  }
   return rec;
 }
+
 function updateSessionPreview(){
   const p=document.getElementById('sessionPreview');if(!p)return;
   const rec=collectRec();if(!rec){p.innerHTML='';return;}
@@ -649,12 +813,27 @@ function updateSessionPreview(){
   const total=rec.endType==='count'?rec.endCount:dates.length;
   p.innerHTML=`<div class="note" style="background:var(--green-light);color:var(--ink);margin-top:0"><b style="color:var(--green)">📅 課程日期預覽（共 ${total} 堂）</b><br>${dates.slice(0,6).map((d,i)=>`第${i+1}堂：${fmtDate(d)}`).join('<br>')}${dates.length>6?'<br>…':''}</div>`;
 }
+
 function gotoStep3(){
-  const rec=collectRec();if(!rec){showToast('請選擇開課模式');return;}
+  const rec=collectRec();if(!rec){showToast('請選擇開課方式');return;}
   if(rec.type==='none'&&!rec.singleDate){showToast('請選擇上課日期');return;}
-  if(rec.type!=='none'){if((rec.type==='weekly'||rec.type==='biweekly')&&(!rec.dayOfWeek||!rec.dayOfWeek.length)){showToast('請選擇上課星期幾');return;}if(!rec.dateStart){showToast('請填寫第一堂開始日期');return;}if(rec.endType==='date'&&!rec.endDate){showToast('請填寫結束日期');return;}}
+  if(rec.type!=='none'){
+    if((rec.type==='weekly'||rec.type==='biweekly')&&(!rec.dayOfWeek||!rec.dayOfWeek.length)){showToast('請選擇上課星期');return;}
+    if(!rec.dateStart){showToast('請填寫第一堂開始日期');return;}
+    if(rec.endType==='date'&&!rec.endDate){showToast('請填寫結束日期');return;}
+  }
   if(!rec.timeStart||!rec.timeEnd){showToast('請填寫上課時段');return;}
-  const location=(gv('cLocation')||'').trim();if(!location){showToast('請填寫上課地點');return;}
+  
+  const locSel = gv('locSelect');
+  let location = '';
+  if(!locSel){ showToast('請選擇上課地點'); return; }
+  if(locSel === '其他'){
+    location = (gv('locCustom')||'').trim();
+    if(!location){ showToast('請輸入自訂地點名稱'); return; }
+  } else {
+    location = locSel;
+  }
+  
   const minP=parseInt(gv('cMinP'))||0,maxP=parseInt(gv('cMaxP'))||0,regEndStr=gv('cRegEnd')||'';
   if(minP<2){showToast('最低成團人數至少 2 人');return;}if(maxP<minP){showToast('人數上限需大於等於最低人數');return;}if(!regEndStr){showToast('請填寫報名截止時間');return;}
   createData.recurrence=rec;createData.location=location;createData.minParticipants=minP;createData.maxParticipants=maxP;createData.registrationEnd=new Date(regEndStr).getTime();
