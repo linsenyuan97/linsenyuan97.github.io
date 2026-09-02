@@ -71,6 +71,8 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .card:active{transform:scale(.99)}
 .card-top-tag{position:absolute;top:-10px;left:12px;background:#fff;border:1.5px solid var(--tiffany);border-radius:6px;padding:1px 8px;font-size:11px;font-weight:700;color:var(--tiffany-dark);z-index:5}
 .card-top-tag.green{border-color:var(--green);color:var(--green)}
+.card-cancel-btn{background:transparent;border:1.5px solid var(--coral);color:var(--coral);border-radius:8px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.card-cancel-btn:active{background:var(--coral-light);transform:scale(.95)}
 .card-body{padding:14px 16px;cursor:pointer}
 .card-title{font-size:16px;font-weight:700;margin:0 0 4px;color:var(--tiffany-dark);display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;line-height:1.3}
 .card-title .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -441,13 +443,17 @@ function renderList(){
     const iOrg=my&&sameAddr(course.organizer&&course.organizer.addr,my);
     const iReg=my&&(course.registrations||[]).some(r=>sameAddr(r.addr,my));
     const tag=iOrg?'<div class="card-top-tag">我發起的</div>':iReg?'<div class="card-top-tag green">已報名</div>':'';
+    const canCancel=iOrg&&!['cancelled','completed'].includes(course.status);
     return `<div class="card" style="${(iOrg||iReg)?'margin-top:20px':''}">
       ${tag}
       <div class="card-body" onclick="openCourseDetail('${course.id}')">
         <div class="card-title"><span class="tt">${esc(course.title)}</span><span class="pill ${st.cls}">${esc(st.label)}</span><span class="pill teal" style="font-size:10px;padding:2px 7px">${esc(course.category)}</span></div>
         <div class="card-meta"><span>📍 ${esc(course.location||'地點待定')}</span><br><span>🗓️ ${esc(formatRecurrence(course.recurrence))}</span></div>
         <div class="progress-track"><div class="progress-fill ${prog.fillCls}" style="width:${prog.pct}%"></div></div>
-        <div class="progress-label">${prog.count}/${prog.min}人（門檻）｜上限${prog.max}人｜${deadlineText(course.registrationEnd)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px">
+          <div class="progress-label" style="flex:1">${prog.count}/${prog.min}人（門檻）｜上限${prog.max}人｜${deadlineText(course.registrationEnd)}</div>
+          ${canCancel?`<button type="button" class="card-cancel-btn" onclick="event.stopPropagation();openCancelCourse('${course.id}')">取消揪團</button>`:''}
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -484,8 +490,8 @@ function openCourseDetail(id){
     <div class="dfield"><span class="k">費用</span><span class="v">${esc(feeText(course))}</span></div>
     ${course.feeNote?`<div class="dfield"><span class="k">費用說明</span><span class="v">${esc(course.feeNote)}</span></div>`:''}
     ${course.instructorInfo?`<div class="dfield"><span class="k">講師介紹</span><span class="v">${esc(course.instructorInfo)}</span></div>`:''}
-    <div class="dfield"><span class="k">發起人</span><span class="v">${esc((course.organizer&&course.organizer.name)||'')}（${esc(dongLabel(course.organizer&&course.organizer.addr))}棟住戶）</span></div>
-    <div class="dfield" style="border:none"><span class="k">聯絡方式</span><span class="v">${esc((course.organizer&&course.organizer.contact)||'')}</span></div>
+    <div class="dfield"><span class="k">發起人</span><span class="v">${esc((course.organizer&&course.organizer.name)?`${course.organizer.name}（${dongLabel(course.organizer.addr)}棟住戶）`:`${dongLabel(course.organizer&&course.organizer.addr)}棟住戶`)}</span></div>
+    ${(course.organizer&&course.organizer.contact)?`<div class="dfield" style="border:none"><span class="k">聯絡方式</span><span class="v">${esc(course.organizer.contact)}</span></div>`:''}
     ${ctaHtml}
   `);
 }
@@ -548,8 +554,22 @@ function renderRecords(){
     el.innerHTML=mine.map(course=>{const st=statusOf(course);const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>報名時間：${reg?fmtDateTime(reg.ts):''}</div></div><span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span></div>`;}).join('');
   }else{
     const mine=courses.filter(c=>sameAddr(c.organizer&&c.organizer.addr,my));
-    if(!mine.length){el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></div><h3>尚未發起任何揪團</h3><p>點下方「揪團」按鈕開始吧！</p></div>`;return;}
-    el.innerHTML=mine.map(course=>{const st=statusOf(course),count=(course.registrations||[]).length;return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>已報名 ${count}/${course.minParticipants} 人</div></div><span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span></div>`;}).join('');
+    if(!mine.length){
+      el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></div><h3>尚未發起任何揪團</h3><p>點下方「揪團」按鈕開始吧！</p></div>`;
+      return;
+    }
+    el.innerHTML=mine.map(course=>{
+      const st=statusOf(course),count=(course.registrations||[]).length;
+      const canCancel=!['cancelled','completed'].includes(course.status);
+      return `<div class="trow" style="align-items:flex-start" onclick="openCourseDetail('${course.id}')">
+        <div class="tt">
+          <div class="tn">${esc(course.title)}</div>
+          <div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>已報名 ${count}/${course.minParticipants} 人</div>
+          ${canCancel?`<div style="margin-top:8px"><button type="button" class="card-cancel-btn" onclick="event.stopPropagation();openCancelCourse('${course.id}')">取消揪團</button></div>`:''}
+        </div>
+        <span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span>
+      </div>`;
+    }).join('');
   }
 }
 
@@ -855,8 +875,8 @@ function step3HTML(){return `${stepBar(3)}<div class="step-title">費用與發�
 <div class="float" style="margin-top:12px"><input type="text" id="feeNote" placeholder=" " maxlength="80"><label>費用說明（選填，如：確定成團後告知繳費方式）</label></div>
 </div>
 <div class="form-section sec" style="padding-top:22px"><div class="sechead">發起人資訊</div>
-<div class="float" style="margin-top:10px"><input type="text" id="orgName" placeholder=" " maxlength="20"><label>姓名 / 暱稱（必填）</label></div>
-<div class="float"><input type="text" id="orgContact" placeholder=" " maxlength="50"><label>聯絡方式：LINE ID / 電話（必填）</label></div>
+<div class="float" style="margin-top:10px"><input type="text" id="orgName" placeholder=" " maxlength="20"><label>姓名 / 暱稱（選填）</label></div>
+<div class="float"><input type="text" id="orgContact" placeholder=" " maxlength="50"><label>聯絡方式：LINE ID / 電話（選填）</label></div>
 </div>
 <div class="sticky-bar"><div class="dbtns" style="margin:0"><button class="dbtn cancel" onclick="showCreateStep(2)">← 上一步</button><button class="dbtn go" onclick="submitCreateCourse()">確認發布</button></div></div>`;}
 
@@ -870,7 +890,6 @@ async function submitCreateCourse(){
   let feeAmount=0;
   if(feeType!=='free'){feeAmount=parseInt(gv('feeAmount'))||0;if(feeAmount<=0){showToast('請填寫費用金額');return;}}
   const feeNote=(gv('feeNote')||'').trim(),orgName=(gv('orgName')||'').trim(),orgContact=(gv('orgContact')||'').trim();
-  if(!orgName){markErr('orgName');showToast('請填寫發起人姓名');return;}if(!orgContact){markErr('orgContact');showToast('請填寫聯絡方式');return;}
   createData.feeType=feeType;createData.feeAmount=feeAmount;createData.feeNote=feeNote;createData.organizerName=orgName;createData.organizerContact=orgContact;
   const my=me();
   const course={id:Date.now().toString(36),title:createData.title,category:createData.category,description:createData.description||'',instructorInfo:createData.instructorInfo||'',recurrence:createData.recurrence,location:createData.location,minParticipants:createData.minParticipants,maxParticipants:createData.maxParticipants,registrationEnd:createData.registrationEnd,feeType,feeAmount,feeNote,organizer:{name:orgName,addr:my,contact:orgContact},status:'recruiting',registrations:[],createdAt:Date.now()};
