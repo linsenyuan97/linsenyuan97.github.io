@@ -527,12 +527,18 @@ function renderList(){
     const canCancel=iOrg&&!['cancelled','completed'].includes(course.status);
     // 費用標籤
     const feeParts = course.feeType==='fixed'?`💰 每人 $${Number(course.feeAmount||0).toLocaleString()}`:course.feeType==='split'?`💰 總額 $${Number(course.feeAmount||0).toLocaleString()} 平攤`:'💰 免費';
-    // 堂數
-    const cardSessions=generateSessionDates(course.recurrence);
-    const totalCardSess=course.recurrence&&course.recurrence.endType==='count'?(course.recurrence.endCount||cardSessions.length):cardSessions.length;
-    const sessCountStr=totalCardSess>1?`（共 ${totalCardSess} 堂）`:'';
+    // 堂數（安全呼叫）
+    let sessCountStr='';
+    try{
+      const rec=course.recurrence;
+      const totalCardSess=rec&&rec.endType==='count'?(rec.endCount||0):0;
+      sessCountStr=totalCardSess>1?`（共 ${totalCardSess} 堂）`:'';
+    }catch(e){}
     // 進度：分母改用上限
     const cardCount=(course.registrations||[]).length,cardMax=course.maxParticipants||course.minParticipants||2;
+    // detailHint 替換（安全）
+    const rawHint=st.detailHint||'';
+    const cardHint=rawHint.replace(/\(已報名 \d+\/\d+人\)/,`(已報名 ${cardCount}/${cardMax}人)`);
     return `<div class="card" style="${(iOrg||iReg)?'margin-top:20px':''}">
       ${tag}
       <div class="card-body" onclick="openCourseDetail('${course.id}')">
@@ -542,7 +548,7 @@ function renderList(){
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;flex-wrap:wrap">
           <div class="progress-hint ${st.cls}" style="flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <span class="pill ${st.cls}" style="font-size:10px;padding:2px 7px">${esc(st.label)}</span>
-            <span>${st.detailHint.replace(/\(已報名 \d+\/\d+人\)/,`(已報名 ${cardCount}/${cardMax}人)`)}</span>
+            <span>${cardHint}</span>
             <span style="font-size:11px;color:var(--ink-muted);font-weight:normal">｜ ${deadlineText(course.registrationEnd)}</span>
           </div>
           ${canCancel?`<div style="display:flex;gap:6px;flex-shrink:0">
