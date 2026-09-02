@@ -8,6 +8,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="林森苑課程揪團">
 
+<!-- Open Graph / LINE 預覽卡片 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="林森苑課程揪團｜社區共學平台">
+<meta property="og:description" content="林森苑住戶專屬課程揪團平台，運動健身、兒童才藝、手作烘焙、語言學習，一起揪團成團！">
+<meta property="og:image" content="icons/course/icon-512.png">
+
 <!-- App 圖示：主畫面/捷徑/分頁 -->
 <link rel="apple-touch-icon" href="icons/course/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/course/icon-512.png">
@@ -466,11 +472,13 @@ function openCourseDetail(id){
   const sessions=generateSessionDates(course.recurrence).slice(0,8);
   const totalSessions=course.recurrence&&course.recurrence.endType==='count'?(course.recurrence.endCount||sessions.length):sessions.length;
   let ctaHtml;
-  if(iOrg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn rm" onclick="closeSheet();openCancelCourse('${id}')">取消揪團</button></div>`;
-  else if(iReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${canReg?`<button class="dbtn" style="flex:1;background:#fff;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();openCancelRegister('${id}')">取消報名</button>`:''}</div>`;
-  else if(!my)ctaHtml=canReg?`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn go" onclick="closeSheet();openLogin()">登入後報名</button></div>`:`<div class="dbtns"><button class="dbtn cancel" style="flex:1;width:100%" onclick="closeSheet()">關閉（${esc(st.label)}）</button></div>`;
-  else if(canReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn go" onclick="closeSheet();openRegister('${id}')">立即報名</button></div>`;
-  else ctaHtml=`<div class="dbtns"><button class="dbtn cancel" style="flex:1;width:100%" onclick="closeSheet()">關閉（${esc(st.label)}）</button></div>`;
+  const shareBtn = `<button class="dbtn" style="flex:0 0 42%;background:#06C755;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px" onclick="shareToLine('${id}')"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg><span>LINE 分享</span></button>`;
+
+  if(iOrg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${shareBtn}<button class="dbtn rm" style="flex:1" onclick="closeSheet();openCancelCourse('${id}')">取消揪團</button></div>`;
+  else if(iReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${shareBtn}${canReg?`<button class="dbtn" style="flex:1;background:#fff;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();openCancelRegister('${id}')">取消報名</button>`:''}</div>`;
+  else if(!my)ctaHtml=canReg?`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${shareBtn}<button class="dbtn go" onclick="closeSheet();openLogin()">登入報名</button></div>`:`<div class="dbtns"><button class="dbtn cancel" style="flex:1" onclick="closeSheet()">關閉（${esc(st.label)}）</button>${shareBtn}</div>`;
+  else if(canReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${shareBtn}<button class="dbtn go" onclick="closeSheet();openRegister('${id}')">立即報名</button></div>`;
+  else ctaHtml=`<div class="dbtns"><button class="dbtn cancel" style="flex:1" onclick="closeSheet()">關閉（${esc(st.label)}）</button>${shareBtn}</div>`;
   const sessHtml=sessions.length?`<div style="font-size:12px;color:var(--ink-muted);line-height:1.9;margin-top:2px">${sessions.map((d,i)=>`第${i+1}堂：${fmtDateShort(d)}`).join('　')}${totalSessions>8?'…':''}</div>`:'';
   showSheet(`
     <div class="dhead">
@@ -491,7 +499,8 @@ function openCourseDetail(id){
     ${course.feeNote?`<div class="dfield"><span class="k">費用說明</span><span class="v">${esc(course.feeNote)}</span></div>`:''}
     ${course.instructorInfo?`<div class="dfield"><span class="k">講師介紹</span><span class="v">${esc(course.instructorInfo)}</span></div>`:''}
     <div class="dfield"><span class="k">發起人</span><span class="v">${esc((course.organizer&&course.organizer.name)?`${course.organizer.name}（${dongLabel(course.organizer.addr)}棟住戶）`:`${dongLabel(course.organizer&&course.organizer.addr)}棟住戶`)}</span></div>
-    ${(course.organizer&&course.organizer.contact)?`<div class="dfield" style="border:none"><span class="k">聯絡方式</span><span class="v">${esc(course.organizer.contact)}</span></div>`:''}
+    ${(course.organizer&&course.organizer.contact)?`<div class="dfield"><span class="k">聯絡方式</span><span class="v">${esc(course.organizer.contact)}</span></div>`:''}
+    ${(course.organizer&&course.organizer.lineGroup)?`<div class="dfield" style="border:none"><span class="k">LINE 群組</span><span class="v"><a href="${esc(course.organizer.lineGroup)}" target="_blank" rel="noopener" style="color:#06C755;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg>點此加入課程群 ↗</a></span></div>`:''}
     ${ctaHtml}
   `);
 }
@@ -877,22 +886,23 @@ function step3HTML(){return `${stepBar(3)}<div class="step-title">費用與發�
 <div class="form-section sec" style="padding-top:22px"><div class="sechead">發起人資訊</div>
 <div class="float" style="margin-top:10px"><input type="text" id="orgName" placeholder=" " maxlength="20"><label>姓名 / 暱稱（選填）</label></div>
 <div class="float"><input type="text" id="orgContact" placeholder=" " maxlength="50"><label>聯絡方式：LINE ID / 電話（選填）</label></div>
+<div class="float"><input type="url" id="orgLineGroup" placeholder=" " maxlength="250"><label>課程 LINE 群組連結（選填，成團後加入）</label></div>
 </div>
 <div class="sticky-bar"><div class="dbtns" style="margin:0"><button class="dbtn cancel" onclick="showCreateStep(2)">← 上一步</button><button class="dbtn go" onclick="submitCreateCourse()">確認發布</button></div></div>`;}
 
 function restoreStep3(){
   if(createData.feeType)document.querySelectorAll('input[name="feeType"]').forEach(r=>{r.checked=r.value===createData.feeType;});
-  if(createData.feeAmount)sv('feeAmount',createData.feeAmount);if(createData.feeNote)sv('feeNote',createData.feeNote);if(createData.organizerName)sv('orgName',createData.organizerName);if(createData.organizerContact)sv('orgContact',createData.organizerContact);
+  if(createData.feeAmount)sv('feeAmount',createData.feeAmount);if(createData.feeNote)sv('feeNote',createData.feeNote);if(createData.organizerName)sv('orgName',createData.organizerName);if(createData.organizerContact)sv('orgContact',createData.organizerContact);if(createData.organizerLineGroup)sv('orgLineGroup',createData.organizerLineGroup);
 }
 function onFeeTypeChange(){const t=(document.querySelector('input[name="feeType"]:checked')||{}).value||'free';show('feeAmountWrap',t!=='free');const lbl=document.getElementById('feeAmtLabel');if(lbl)lbl.textContent=t==='split'?'總費用金額（元）':'每人費用金額（元）';}
 async function submitCreateCourse(){
   const feeType=(document.querySelector('input[name="feeType"]:checked')||{}).value||'free';
   let feeAmount=0;
   if(feeType!=='free'){feeAmount=parseInt(gv('feeAmount'))||0;if(feeAmount<=0){showToast('請填寫費用金額');return;}}
-  const feeNote=(gv('feeNote')||'').trim(),orgName=(gv('orgName')||'').trim(),orgContact=(gv('orgContact')||'').trim();
-  createData.feeType=feeType;createData.feeAmount=feeAmount;createData.feeNote=feeNote;createData.organizerName=orgName;createData.organizerContact=orgContact;
+  const feeNote=(gv('feeNote')||'').trim(),orgName=(gv('orgName')||'').trim(),orgContact=(gv('orgContact')||'').trim(),orgLineGroup=(gv('orgLineGroup')||'').trim();
+  createData.feeType=feeType;createData.feeAmount=feeAmount;createData.feeNote=feeNote;createData.organizerName=orgName;createData.organizerContact=orgContact;createData.organizerLineGroup=orgLineGroup;
   const my=me();
-  const course={id:Date.now().toString(36),title:createData.title,category:createData.category,description:createData.description||'',instructorInfo:createData.instructorInfo||'',recurrence:createData.recurrence,location:createData.location,minParticipants:createData.minParticipants,maxParticipants:createData.maxParticipants,registrationEnd:createData.registrationEnd,feeType,feeAmount,feeNote,organizer:{name:orgName,addr:my,contact:orgContact},status:'recruiting',registrations:[],createdAt:Date.now()};
+  const course={id:Date.now().toString(36),title:createData.title,category:createData.category,description:createData.description||'',instructorInfo:createData.instructorInfo||'',recurrence:createData.recurrence,location:createData.location,minParticipants:createData.minParticipants,maxParticipants:createData.maxParticipants,registrationEnd:createData.registrationEnd,feeType,feeAmount,feeNote,organizer:{name:orgName,addr:my,contact:orgContact,lineGroup:orgLineGroup},status:'recruiting',registrations:[],createdAt:Date.now()};
   showMask('發布揪團中…');courses.unshift(course);await notify('create_course',{course});hideMask();closeSheet();showToast('揪團發布成功！🎉');go('list');
 }
 
@@ -913,14 +923,53 @@ function doLogout(){clearLogin();closeSheet();applyLoginUI();go('list');showToas
 function checkDisclaimer(){var a=false;try{a=localStorage.getItem(DISC_KEY)==='1';}catch(e){}if(!a)document.getElementById('discOverlay').classList.remove('hidden');}
 function agreeDisclaimer(){try{localStorage.setItem(DISC_KEY,'1');}catch(e){}document.getElementById('discOverlay').classList.add('hidden');}
 
+function shareToLine(id){
+  const course = courses.find(c => c.id === id); if(!course) return;
+  const count = (course.registrations||[]).length;
+  const url = window.location.origin + window.location.pathname + '?id=' + id;
+  const msg = `📢【林森苑課程揪團】${course.title}\n🗓️ 排程：${formatRecurrence(course.recurrence)}\n📍 地點：${course.location||'社區公設'}\n👥 進度：已報名 ${count}/${course.minParticipants} 人（上限 ${course.maxParticipants} 人）\n⏰ 截止：${deadlineText(course.registrationEnd)}\n\n👉 點此直接查看詳情與報名：\n${url}`;
+  
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(msg).then(() => {
+      showToast('已複製揪團訊息與專屬連結！📋');
+    }).catch(() => {
+      window.open('https://line.me/R/msg/text/?' + encodeURIComponent(msg), '_blank');
+    });
+  } else {
+    window.open('https://line.me/R/msg/text/?' + encodeURIComponent(msg), '_blank');
+  }
+}
+
 /* ---- GAS ---- */
 // ← 部署 GAS 後，將 Web App URL 填入此處
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxbf-OMsY-QTqaD3gx0Owl0Soj8NKPpjCeFsUF0mJ69aEcvkb5sYNbq6UTBAJot9XK7/exec";
 
 async function loadCoursesData(){
-  if(!GAS_URL){dataLoaded=true;renderList();if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();return;}
-  try{const r=await fetch(GAS_URL+"?action=list_courses");const j=await r.json();if(Array.isArray(j))courses=j;}catch(e){console.log('後端讀取失敗:',e);}
-  finally{dataLoaded=true;renderList();if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();}
+  if(!GAS_URL){
+    dataLoaded=true;renderList();
+    if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();
+    checkDirectOpen();
+    return;
+  }
+  try{
+    const r=await fetch(GAS_URL+"?action=list_courses");
+    const j=await r.json();
+    if(Array.isArray(j))courses=j;
+  }catch(e){console.log('後端讀取失敗:',e);}
+  finally{
+    dataLoaded=true;renderList();
+    if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();
+    checkDirectOpen();
+  }
+}
+
+function checkDirectOpen(){
+  try{
+    const id = new URLSearchParams(window.location.search).get('id');
+    if(id && courses.some(c => c.id === id)){
+      openCourseDetail(id);
+    }
+  }catch(e){}
 }
 async function notify(event,payload){
   console.log('[notify]',event,payload);if(!GAS_URL)return;
