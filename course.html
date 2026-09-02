@@ -231,8 +231,17 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
       <button class="chip" onclick="setCatFilter('語言學習')">語言學習</button>
       <button class="chip" onclick="setCatFilter('其他')">其他</button>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 10px">
-      <h2 style="font-size:13px;font-weight:700;color:var(--ink-soft);margin:0" id="listHeading"></h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 10px;gap:8px">
+      <h2 style="font-size:13px;font-weight:700;color:var(--ink-soft);margin:0;white-space:nowrap" id="listHeading"></h2>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <label for="statusFilter" style="font-size:12px;color:var(--ink-muted);font-weight:600;white-space:nowrap">狀態</label>
+        <select id="statusFilter" onchange="setStatusFilter(this.value)" style="border:1.5px solid var(--tiffany);border-radius:20px;background:#fff;color:var(--tiffany-dark);font:inherit;font-size:12px;font-weight:700;padding:4px 10px 4px 10px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 8%22><path d=%22M1 1l5 5 5-5%22 stroke=%22%237C5CFC%22 stroke-width=%221.8%22 fill=%22none%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;background-size:10px;padding-right:24px">
+          <option value="all">全部狀態</option>
+          <option value="recruiting">🌱 招募集氣中</option>
+          <option value="confirmed">🎉 確定已成團</option>
+          <option value="available">⚡ 可報名</option>
+        </select>
+      </div>
     </div>
     <div id="courseList"></div>
   </section>
@@ -311,7 +320,7 @@ const LOCATIONS = ['韻律室','健身房','戶外泳池','籃球場','綜合球
 const DOW_NAMES = ['日','一','二','三','四','五','六'];
 
 let courses = [];
-let ui = {catFilter:''};
+let ui = {catFilter:'', statusFilter:'all'};
 let createData = {};
 let currentRecordSubtab = 'regs';
 let toastTimer = null;
@@ -473,12 +482,36 @@ function setCatFilter(cat){
   document.querySelectorAll('#catFilter .chip').forEach(c=>c.classList.toggle('on',c.textContent===cat||(cat===''&&c.textContent==='全部')));
   renderList();
 }
+function setStatusFilter(val){
+  ui.statusFilter=val;
+  renderList();
+}
 function renderList(){
   const q=(document.getElementById('searchInput')?document.getElementById('searchInput').value:'').trim().toLowerCase();
   const cat=ui.catFilter;
+  const sf=ui.statusFilter||'all';
   let list=courses.filter(c=>{
     if(cat&&c.category!==cat)return false;
     if(q&&!c.title.toLowerCase().includes(q)&&!(c.description||'').toLowerCase().includes(q))return false;
+    if(sf!=='all'){
+      const st=statusOf(c);
+      const now=Date.now();
+      const count=(c.registrations||[]).length;
+      const min=c.minParticipants||2;
+      if(sf==='recruiting'){
+        // 招募集氣中：報名未截止 且 未達最低門檻
+        if(now>c.registrationEnd||count>=min)return false;
+      } else if(sf==='confirmed'){
+        // 確定已成團：已達最低門檻 且 未額滿 且 未截止（或已截止且成團）
+        if(count<min)return false;
+        if(['cancelled','completed'].includes(c.status))return false;
+      } else if(sf==='available'){
+        // 可報名：未截止 且 未額滿 且 未取消/完課
+        if(['cancelled','completed'].includes(c.status))return false;
+        if(now>c.registrationEnd)return false;
+        if(count>=(c.maxParticipants||min))return false;
+      }
+    }
     return true;
   }).sort((a,b)=>b.createdAt-a.createdAt);
   const el=document.getElementById('courseList');
