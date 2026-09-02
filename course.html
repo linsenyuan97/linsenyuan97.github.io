@@ -67,12 +67,13 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .chips::-webkit-scrollbar{display:none}
 .chip{font-size:13px;font-weight:700;padding:7px 13px;border-radius:100px;background:#fff;border:1.5px solid var(--line);color:var(--ink-soft);white-space:nowrap;cursor:pointer;flex-shrink:0}
 .chip.on{background:var(--tiffany);border-color:var(--tiffany);color:#fff}
-.pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap}
-.pill.amber{background:var(--amber-light);color:var(--amber)}
-.pill.green{background:var(--green-light);color:var(--green)}
-.pill.coral{background:var(--coral-light);color:var(--coral)}
-.pill.gone{background:var(--slate-light);color:var(--slate)}
-.pill.teal{background:var(--tiffany-light);color:var(--tiffany-dark)}
+.pill{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap;transition:all .2s}
+.pill.p-seed{background:#F3EFFF;color:#7C5CFC;border:1px solid #E8E2F4}
+.pill.p-boost{background:#EDE9FE;color:#6D28D9;border:1px solid #C4B5FD;font-weight:900}
+.pill.p-success{background:#7C5CFC;color:#FFFFFF;font-weight:900;box-shadow:0 2px 8px rgba(124,92,252,.32)}
+.pill.p-full{background:#4C1D95;color:#FFFFFF;font-weight:900}
+.pill.p-closed{background:#F1F5F9;color:#64748B}
+.pill.cat-tag{background:var(--tiffany-light);color:var(--tiffany-dark);font-size:10px;padding:2px 8px}
 .card{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow-card);margin-bottom:14px;border:1px solid var(--line);border-left:4px solid var(--tiffany);position:relative}
 .card:active{transform:scale(.99)}
 .card-top-tag{position:absolute;top:-10px;left:12px;background:#fff;border:1.5px solid var(--tiffany);border-radius:6px;padding:1px 8px;font-size:11px;font-weight:700;color:var(--tiffany-dark);z-index:5}
@@ -83,13 +84,17 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .card-title{font-size:16px;font-weight:700;margin:0 0 4px;color:var(--tiffany-dark);display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;line-height:1.3}
 .card-title .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-meta{font-size:13px;color:var(--ink-soft);margin-bottom:8px;line-height:1.55}
-.progress-track{background:var(--line);border-radius:4px;height:6px;overflow:hidden;margin:6px 0 3px}
-.progress-fill{height:100%;border-radius:4px;transition:width .3s}
-.progress-fill.amber{background:var(--amber)}
-.progress-fill.green{background:var(--green)}
-.progress-fill.coral{background:var(--coral)}
-.progress-fill.gone{background:var(--slate)}
-.progress-fill.teal{background:var(--tiffany)}
+.progress-track{background:var(--line);border-radius:4px;height:7px;overflow:hidden;margin:6px 0 4px}
+.progress-fill{height:100%;border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.progress-fill.p-seed{background:#DDD6FE}
+.progress-fill.p-boost{background:linear-gradient(90deg,#C4B5FD,#A78BFA)}
+.progress-fill.p-success{background:linear-gradient(90deg,#8B5CF6,#7C5CFC);box-shadow:0 0 8px rgba(124,92,252,.4)}
+.progress-fill.p-full{background:#4C1D95}
+.progress-fill.p-closed{background:#94A3B8}
+.progress-hint{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.4}
+.progress-hint b{color:var(--tiffany-dark)}
+.progress-hint.p-success b{color:var(--tiffany);font-weight:900}
+.progress-hint.p-boost b{color:#6D28D9;font-weight:900}
 .progress-label{font-size:11px;color:var(--ink-muted)}
 .tabbar{position:fixed;bottom:0;left:0;right:0;z-index:44;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1.5px solid var(--line);display:flex;padding:10px 4px calc(6px + env(safe-area-inset-bottom,0px));overflow:visible}
 .tab{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:700;color:var(--ink-muted);padding:0}
@@ -352,15 +357,35 @@ function switchRecordTab(tab){currentRecordSubtab=tab;document.getElementById('s
 
 /* ---- Status ---- */
 function statusOf(c){
-  const now=Date.now(),count=(c.registrations||[]).length,min=c.minParticipants,max=c.maxParticipants;
-  if(c.status==='completed')return{cls:'teal',label:'已完課'};
-  if(c.status==='cancelled')return{cls:'gone',label:'已取消'};
-  if(now>c.registrationEnd)return count>=min?{cls:'teal',label:'已截止（成團）'}:{cls:'gone',label:'已流團'};
-  if(count>=max)return{cls:'coral',label:'已額滿'};
-  if(count>=min)return{cls:'green',label:`已成團 ${count}/${max}人`};
-  return{cls:'amber',label:`集氣中 ${count}/${min}人`};
+  const now = Date.now(), count = (c.registrations || []).length, min = c.minParticipants || 2, max = c.maxParticipants || min;
+  if (c.status === 'completed') return { cls: 'p-closed', fillCls: 'p-closed', label: '已完課', pct: 100, hint: '課程已圓滿完課' };
+  if (c.status === 'cancelled') return { cls: 'p-closed', fillCls: 'p-closed', label: '已取消', pct: 0, hint: '此揪團已取消' };
+  if (now > c.registrationEnd) {
+    return count >= min
+      ? { cls: 'p-closed', fillCls: 'p-closed', label: '已截止（成團）', pct: 100, hint: `已截止（共 ${count} 人報名）` }
+      : { cls: 'p-closed', fillCls: 'p-closed', label: '已流團', pct: Math.round((count / min) * 100), hint: `未達最低門檻 ${min} 人` };
+  }
+  if (count >= max) {
+    return { cls: 'p-full', fillCls: 'p-full', label: '🈵 已額滿', pct: 100, hint: `已額滿（共 ${count} 人）` };
+  }
+  if (count >= min) {
+    const left = max - count;
+    const pct = Math.min(100, Math.round((count / max) * 100));
+    return { cls: 'p-success', fillCls: 'p-success', label: '🎉 已成團', pct, hint: `<b>🎉 已確定開課！剩 ${left} 個名額</b>` };
+  }
+  const need = min - count;
+  const pct = Math.round((count / min) * 100);
+  if (need <= 2) {
+    return { cls: 'p-boost', fillCls: 'p-boost', label: `⚡ 差 ${need} 人成團`, pct, hint: `<b>⚡ 只差最後 ${need} 人即開課！</b>` };
+  }
+  return { cls: 'p-seed', fillCls: 'p-seed', label: '🌱 集氣中', pct, hint: `還差 <b>${need}</b> 人成團（已報名 ${count}/${min} 人）` };
 }
-function progressOf(c){const count=(c.registrations||[]).length,min=c.minParticipants,max=c.maxParticipants,pct=Math.min(100,Math.round(count/min*100)),st=statusOf(c);const m={coral:'coral',green:'green',teal:'teal',gone:'gone',amber:'amber'};return{pct,fillCls:m[st.cls]||'amber',count,min,max};}
+
+function progressOf(c){
+  const count = (c.registrations || []).length, min = c.minParticipants || 2, max = c.maxParticipants || min;
+  const st = statusOf(c);
+  return { pct: st.pct, fillCls: st.fillCls, hint: st.hint, count, min, max, cls: st.cls };
+}
 function canRegister(c){return!['completed','cancelled'].includes(c.status)&&Date.now()<=c.registrationEnd&&(c.registrations||[]).length<c.maxParticipants;}
 function isRegistered(c){const my=me();if(!my)return false;return(c.registrations||[]).some(r=>sameAddr(r.addr,my));}
 function isOrganizer(c){const my=me();if(!my)return false;return sameAddr(c.organizer&&c.organizer.addr,my);}
@@ -453,11 +478,11 @@ function renderList(){
     return `<div class="card" style="${(iOrg||iReg)?'margin-top:20px':''}">
       ${tag}
       <div class="card-body" onclick="openCourseDetail('${course.id}')">
-        <div class="card-title"><span class="tt">${esc(course.title)}</span><span class="pill ${st.cls}">${esc(st.label)}</span><span class="pill teal" style="font-size:10px;padding:2px 7px">${esc(course.category)}</span></div>
+        <div class="card-title"><span class="tt">${esc(course.title)}</span><span class="pill ${st.cls}">${esc(st.label)}</span><span class="pill cat-tag">${esc(course.category)}</span></div>
         <div class="card-meta"><span>📍 ${esc(course.location||'地點待定')}</span><br><span>🗓️ ${esc(formatRecurrence(course.recurrence))}</span></div>
         <div class="progress-track"><div class="progress-fill ${prog.fillCls}" style="width:${prog.pct}%"></div></div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px">
-          <div class="progress-label" style="flex:1">${prog.count}/${prog.min}人（門檻）｜上限${prog.max}人｜${deadlineText(course.registrationEnd)}</div>
+          <div class="progress-hint ${st.cls}" style="flex:1">${st.hint} <span style="font-size:11px;color:var(--ink-muted);font-weight:normal">｜ ${deadlineText(course.registrationEnd)}</span></div>
           ${canCancel?`<button type="button" class="card-cancel-btn" onclick="event.stopPropagation();openCancelCourse('${course.id}')">取消揪團</button>`:''}
         </div>
       </div>
@@ -488,7 +513,8 @@ function openCourseDetail(id){
     </div>
     <div style="margin-bottom:12px">
       <div class="progress-track" style="height:8px"><div class="progress-fill ${prog.fillCls}" style="width:${prog.pct}%"></div></div>
-      <div class="progress-label" style="font-size:12px;margin-top:4px">已報名 <b>${prog.count}</b> 人　最低成團 <b>${prog.min}</b> 人　上限 <b>${prog.max}</b> 人</div>
+      <div class="progress-hint ${st.cls}" style="font-size:13px;margin-top:6px">${st.hint}</div>
+      <div style="font-size:11px;color:var(--ink-muted);margin-top:2px">已報名 <b>${prog.count}</b> 人 ｜ 最低成團 <b>${prog.min}</b> 人 ｜ 上限 <b>${prog.max}</b> 人</div>
     </div>
     ${course.description?`<p style="font-size:14px;color:var(--ink-soft);line-height:1.65;margin:0 0 12px">${esc(course.description)}</p>`:''}
     <div class="dfield"><span class="k">上課安排</span><span class="v">${esc(formatRecurrence(course.recurrence))}</span></div>
