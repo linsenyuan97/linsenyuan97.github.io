@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>林森苑課程揪團</title>
+<meta name="theme-color" content="#0ABAB5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="林森苑課程揪團">
+
+<!-- App 圖示：主畫面/捷徑/分頁 -->
+<link rel="apple-touch-icon" href="icons/course/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/course/icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/course/icon-192.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/course/favicon-64.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tiffany:#0ABAB5;--tiffany-dark:#078B87;--tiffany-light:#E0F7F6;--tiffany-mid:#5DD4CF;
+  --coral:#E05B5B;--coral-dark:#C44A4A;--coral-light:#FDECEC;
+  --green:#16A34A;--green-light:#E5F6EC;
+  --amber:#D97706;--amber-light:#FBF0DF;
+  --slate:#64748B;--slate-light:#EEF1F5;
+  --ink:#1A2B2B;--ink-soft:#5F7B7B;--ink-muted:#94ABAB;
+  --surface:#fff;--bg:#F0F8F8;--line:#DCE8E8;
+  --radius:16px;--radius-sm:11px;
+  --shadow-card:0 4px 18px rgba(10,186,181,.11);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-tap-highlight-color:transparent;min-height:100dvh}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.header-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:58px;gap:12px;padding:0 16px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-icon svg{width:32px;height:32px;color:var(--tiffany)}
+.brand-text{font-size:20px;font-weight:500;line-height:1.1}
+.loginbtn{display:flex;align-items:center;gap:6px;background:transparent;border:1.5px solid var(--line);border-radius:20px;padding:5px 12px 5px 8px;cursor:pointer;color:var(--ink);flex-shrink:0}
+.login-ico{position:relative;line-height:0}
+.loginbtn svg{width:24px;height:24px;display:block}
+.login-label{font:inherit;font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap}
+.login-dot{position:absolute;right:-2px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#2e9e5b;border:2px solid #fff}
+.login-dot::after{content:"";position:absolute;left:3px;top:1px;width:3px;height:6px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.logoutbtn{width:100%;margin-top:12px;padding:11px;background:transparent;border:1.5px solid var(--coral);color:var(--coral);border-radius:8px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px 120px}
+.page{display:none}
+.page.on{display:block;animation:fade .2s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.searchgroup{display:flex;width:100%;align-items:stretch;margin:14px 0 8px}
+.searchgroup .float{flex:1;margin:0}
+.searchgroup .float>input{border:1.5px solid var(--tiffany);border-radius:8px 0 0 8px;border-right:none;width:100%;background:#fff;padding:14px 12px;font:inherit;font-size:16px;color:var(--ink);outline:none}
+.searchgroup .float>label{position:absolute;left:12px;top:14px;color:var(--ink-soft);font-size:15px;pointer-events:none;transition:all .15s;background:transparent;padding:0 4px}
+.searchgroup .float>input:focus+label,.searchgroup .float>input:not(:placeholder-shown)+label{top:-11px;font-size:12px;font-weight:700;color:var(--tiffany-dark);background:#fff}
+.searchgroup button{border:1.5px solid var(--tiffany);border-radius:0 8px 8px 0;background:var(--tiffany);color:#fff;padding:0 20px;font:inherit;font-size:15px;font-weight:700;white-space:nowrap}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{font-size:13px;font-weight:700;padding:7px 13px;border-radius:100px;background:#fff;border:1.5px solid var(--line);color:var(--ink-soft);white-space:nowrap;cursor:pointer;flex-shrink:0}
+.chip.on{background:var(--tiffany);border-color:var(--tiffany);color:#fff}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;white-space:nowrap}
+.pill.amber{background:var(--amber-light);color:var(--amber)}
+.pill.green{background:var(--green-light);color:var(--green)}
+.pill.coral{background:var(--coral-light);color:var(--coral)}
+.pill.gone{background:var(--slate-light);color:var(--slate)}
+.pill.teal{background:var(--tiffany-light);color:var(--tiffany-dark)}
+.card{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow-card);margin-bottom:14px;border:1px solid var(--line);border-left:4px solid var(--tiffany);position:relative}
+.card:active{transform:scale(.99)}
+.card-top-tag{position:absolute;top:-10px;left:12px;background:#fff;border:1.5px solid var(--tiffany);border-radius:6px;padding:1px 8px;font-size:11px;font-weight:700;color:var(--tiffany-dark);z-index:5}
+.card-top-tag.green{border-color:var(--green);color:var(--green)}
+.card-body{padding:14px 16px;cursor:pointer}
+.card-title{font-size:16px;font-weight:700;margin:0 0 4px;color:var(--tiffany-dark);display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;line-height:1.3}
+.card-title .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-meta{font-size:13px;color:var(--ink-soft);margin-bottom:8px;line-height:1.55}
+.progress-track{background:var(--line);border-radius:4px;height:6px;overflow:hidden;margin:6px 0 3px}
+.progress-fill{height:100%;border-radius:4px;transition:width .3s}
+.progress-fill.amber{background:var(--amber)}
+.progress-fill.green{background:var(--green)}
+.progress-fill.coral{background:var(--coral)}
+.progress-fill.gone{background:var(--slate)}
+.progress-fill.teal{background:var(--tiffany)}
+.progress-label{font-size:11px;color:var(--ink-muted)}
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:44;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1.5px solid var(--line);display:flex;padding:10px 4px calc(6px + env(safe-area-inset-bottom,0px));overflow:visible}
+.tab{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:700;color:var(--ink-muted);padding:0}
+.tab svg{width:22px;height:22px}
+.tab.on{color:var(--tiffany-dark)}
+.tab.nav-add{position:relative;top:-34px;margin-bottom:-24px}
+.nav-add-btn{width:50px;height:50px;border-radius:50%;background:var(--tiffany);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(10,186,181,.45);border:3px solid #fff;transition:transform .15s}
+.tab.nav-add:active .nav-add-btn{transform:scale(.92)}
+.nav-add-btn svg{width:26px;height:26px}
+.subtabs{display:flex;gap:6px;background:#e2e8f0;border-radius:12px;padding:4px;margin:14px 0}
+.subtab{flex:1;background:none;border:none;text-align:center;font-size:14px;font-weight:700;padding:10px 8px;border-radius:9px;color:var(--ink-muted);cursor:pointer}
+.subtab.on{background:#fff;color:var(--tiffany-dark);font-weight:900;box-shadow:0 2px 8px rgba(7,139,135,.18);border-bottom:3px solid var(--tiffany)}
+.trow{background:#fff;border-radius:13px;padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow-card);cursor:pointer}
+.trow .tt{flex:1;min-width:0}
+.trow .tn{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .tsub{font-size:11px;color:var(--ink-muted);line-height:1.4}
+.form-section{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:18px 16px;margin-bottom:16px;box-shadow:var(--shadow-card);position:relative}
+.form-section.sec{padding-top:24px}
+.sechead{position:absolute;top:-12px;left:14px;background:#fff;border:1.5px solid var(--tiffany);border-radius:6px;padding:2px 10px;font-size:13px;font-weight:700;color:var(--tiffany-dark);z-index:5;line-height:1.2}
+.float{position:relative;display:flex;margin:14px 0 4px}
+.float>input,.float>textarea{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:14px 12px;font:inherit;font-size:16px;color:var(--ink);outline:none}
+.float>textarea{resize:none;line-height:1.45;min-height:72px}
+.float>label{position:absolute;left:12px;top:14px;color:var(--ink-soft);font-size:15px;pointer-events:none;transition:all .15s;background:transparent;padding:0 4px}
+.float>input:focus+label,.float>input:not(:placeholder-shown)+label,.float>textarea:focus+label,.float>textarea:not(:placeholder-shown)+label{top:-11px;font-size:12px;font-weight:700;color:var(--tiffany-dark);background:#fff}
+.float>input:focus,.float>textarea:focus{border-color:var(--tiffany);box-shadow:0 0 0 3px rgba(10,186,181,.12)}
+.float>input.err{border-color:var(--coral)!important}
+.float>input.err+label{color:var(--coral)!important}
+.addr-row{display:flex;align-items:center;gap:6px}
+.addr-sel{flex:1;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 8px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);outline:none}
+.f-input{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:12px;font:inherit;font-size:15px;color:var(--ink);outline:none;background:#fff}
+.f-input:focus{border-color:var(--tiffany)}
+.f-label{font-size:12px;font-weight:700;color:var(--tiffany-dark);margin-bottom:4px}
+.sel-row{display:flex;gap:10px;margin:6px 0}
+.sel-wrap{flex:1}
+.radio-group{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+.radio-row{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px}
+.radio-row input[type=radio]{width:18px;height:18px;accent-color:var(--tiffany);flex-shrink:0}
+.dow-chips{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 10px}
+.dow-chip{width:38px;height:38px;border-radius:50%;background:#fff;border:1.5px solid var(--line);color:var(--ink-soft);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.dow-chip.on{background:var(--tiffany);border-color:var(--tiffany);color:#fff}
+.step-bar{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:14px}
+.step-dot{height:8px;border-radius:4px;background:var(--line);transition:all .2s}
+.step-dot.on{width:24px;background:var(--tiffany)}
+.step-dot:not(.on){width:8px}
+.step-title{font-size:18px;font-weight:900;text-align:center;margin-bottom:14px}
+.dfield{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;padding:10px 0;border-bottom:1px solid var(--line);gap:10px}
+.dfield .k{color:var(--ink-muted);flex-shrink:0}
+.dfield .v{font-weight:700;text-align:right;word-break:break-word}
+.loadmask{position:fixed;inset:0;background:rgba(42,38,34,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:320;gap:12px;color:#fff;font-size:16px;font-weight:700}
+.spin-ico{width:48px;height:48px;animation:spin .9s linear infinite}
+.inline-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 16px;gap:10px;color:var(--ink-muted);font-size:14px;font-weight:600}
+.inline-loading svg{width:40px;height:40px;animation:spin .9s linear infinite;color:var(--tiffany-mid)}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(7,80,78,.35);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+.sheet{background:#fff;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:12px 18px calc(20px + env(safe-area-inset-bottom,0px));animation:slideup .25s cubic-bezier(.2,.9,.3,1)}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:none}}
+.grab{width:38px;height:4px;background:var(--line);border-radius:100px;margin:0 auto 14px}
+.dhead{display:flex;gap:11px;align-items:center;margin-bottom:12px}
+.dicon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dicon svg{width:22px;height:22px}
+.dicon.teal{background:var(--tiffany-light);color:var(--tiffany-dark)}
+.dicon.coral{background:var(--coral-light);color:var(--coral)}
+.dhead .dt{font-size:17px;font-weight:900;line-height:1.2}
+.dhead .ds{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.note{font-size:12px;color:var(--ink-soft);line-height:1.6;background:var(--tiffany-light);border-radius:10px;padding:11px 13px;margin-bottom:12px}
+.note b{color:var(--tiffany-dark)}
+.note.warn{background:var(--coral-light);color:#B54545}
+.note.warn b{color:var(--coral-dark)}
+.dbtns{display:flex;gap:10px;margin-top:14px}
+.dbtn{flex:1;font-size:15px;font-weight:900;border:none;border-radius:12px;padding:14px;cursor:pointer}
+.dbtn.cancel{background:var(--slate-light);color:var(--slate);flex:0 0 34%}
+.dbtn.go{background:var(--tiffany);color:#fff}
+.dbtn.rm{background:var(--coral);color:#fff}
+.sticky-bar{position:sticky;bottom:0;background:#fff;margin:10px -18px 0;padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 12px rgba(255,255,255,.95)}
+.disc-overlay{position:fixed;inset:0;z-index:400;background:rgba(7,80,78,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
+.disc-card{background:#fff;width:100%;max-width:440px;max-height:86vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;animation:fade .25s}
+.disc-head{padding:18px 20px 12px;font-size:18px;font-weight:900;color:var(--tiffany-dark);text-align:center;border-bottom:1px solid var(--line)}
+.disc-body{padding:16px 20px;overflow-y:auto;font-size:13px;line-height:1.8;color:var(--ink)}
+.disc-body ol{margin:0;padding-left:18px}
+.disc-body li{margin-bottom:8px}
+.disc-body b{color:var(--tiffany-dark)}
+.disc-foot{padding:12px 20px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.disc-agree{width:100%;background:var(--tiffany);color:#fff;border:none;border-radius:10px;padding:14px;font:inherit;font-size:16px;font-weight:900;cursor:pointer}
+.toast-overlay{position:fixed;left:0;right:0;bottom:0;z-index:300;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.toast-box{display:flex;align-items:center;gap:12px;background:rgba(47,107,98,.82);backdrop-filter:blur(4px);color:#fff;width:100%;padding:18px 24px;font-size:20px;font-weight:700;animation:toastUp .25s ease}
+.toast-box svg{width:24px;height:24px;flex-shrink:0}
+@keyframes toastUp{from{opacity:0;transform:translateY(40%)}to{opacity:1;transform:translateY(0)}}
+.empty{text-align:center;padding:52px 20px}
+.empty-icon{width:64px;height:64px;background:var(--tiffany-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.empty-icon svg{width:28px;height:28px;color:var(--tiffany)}
+.empty h3{font-size:17px;font-weight:700;margin:0 0 6px}
+.empty p{font-size:13px;color:var(--ink-soft);margin:0;line-height:1.6}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>
+        </svg>
+      </div>
+      <div class="brand-text" id="hTitle">林森苑課程揪團</div>
+    </div>
+    <button id="loginBtn" class="loginbtn" onclick="openLogin()">
+      <span class="login-ico">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6v1H4z"/></svg>
+        <span class="login-dot hidden" id="loginDot"></span>
+      </span>
+      <span class="login-label" id="loginLabel">未登入</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- LIST PAGE -->
+  <section class="page on" id="pageList">
+    <div class="searchgroup">
+      <div class="float"><input type="search" id="searchInput" placeholder=" " onkeydown="if(event.key==='Enter'){event.preventDefault();renderList();}"><label>搜尋課程名稱</label></div>
+      <button onclick="renderList()">搜尋</button>
+    </div>
+    <div class="chips" id="catFilter">
+      <button class="chip on" onclick="setCatFilter('')">全部</button>
+      <button class="chip" onclick="setCatFilter('運動健身')">運動健身</button>
+      <button class="chip" onclick="setCatFilter('兒童才藝')">兒童才藝</button>
+      <button class="chip" onclick="setCatFilter('手作烘焙')">手作烘焙</button>
+      <button class="chip" onclick="setCatFilter('樂齡長者')">樂齡長者</button>
+      <button class="chip" onclick="setCatFilter('語言學習')">語言學習</button>
+      <button class="chip" onclick="setCatFilter('其他')">其他</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 10px">
+      <h2 style="font-size:13px;font-weight:700;color:var(--ink-soft);margin:0" id="listHeading"></h2>
+    </div>
+    <div id="courseList"></div>
+  </section>
+
+  <!-- RECORDS PAGE -->
+  <section class="page" id="pageRecords">
+    <div class="subtabs" style="margin-top:14px">
+      <button class="subtab on" id="subtabRegs" onclick="switchRecordTab('regs')">我報名的</button>
+      <button class="subtab" id="subtabMine" onclick="switchRecordTab('mine')">我發起的</button>
+    </div>
+    <div id="recordsContent"></div>
+  </section>
+</div>
+
+<div id="loadMask" class="loadmask hidden">
+  <svg class="spin-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+  <span>處理中…</span>
+</div>
+
+<nav class="tabbar">
+  <button class="tab on" data-tab="list" onclick="goSearchPage()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <span>查詢</span>
+  </button>
+  <button class="tab nav-add" data-tab="create" onclick="openCreateSheet()">
+    <div class="nav-add-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    </div>
+    <span>揪團</span>
+  </button>
+  <button class="tab" data-tab="records" onclick="goRecordPage()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span>已報名</span>
+  </button>
+</nav>
+
+<div id="overlayHost"></div>
+
+<div id="toast" class="toast-overlay hidden">
+  <div class="toast-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+    <span id="toastText">成功</span>
+  </div>
+</div>
+
+<div id="discOverlay" class="disc-overlay hidden">
+  <div class="disc-card">
+    <div class="disc-head">林森苑課程揪團使用聲明</div>
+    <div class="disc-body">
+      <ol>
+        <li><b>本平台性質</b>：本平台為住戶個人自行開發、無償提供之便民工具，<b>非社區管理委員會之官方系統</b>。</li>
+        <li><b>揪團性質</b>：僅供社區住戶自行發起課程揪團及媒合有意願的住戶，不介入實際課程安排、費用收取或場地申請。</li>
+        <li><b>成團不保證</b>：揪團能否順利開課，取決於報名人數是否達到最低成團門檻，平台不作任何保證。</li>
+        <li><b>費用與糾紛自負</b>：課程費用、退費及相關事宜由發起人與參與者自行協調，所生之任何爭議由當事人自行負責，本平台開發者不承擔任何責任。</li>
+        <li><b>服務不保證</b>：本平台為個人無償維護，不保證服務之持續性，並得隨時調整或停止，恕不另行通知。</li>
+        <li><b>個人資料</b>：使用即表示同意於媒合必要範圍內顯示棟別等資訊，請勿填寫非必要之敏感個人資料。</li>
+      </ol>
+    </div>
+    <div class="disc-foot"><button class="disc-agree" onclick="agreeDisclaimer()">我已閱讀並同意</button></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   林森苑課程揪團 — 前端腳本
+   ============================================================ */
+
+const HAO_LIST = [95,97,99];
+const LOU_RANGE = [2,24];
+const ZHI_LIST = [1,2,3,5];
+const DONG_MAP = {95:'A',97:'B',99:'C'};
+const ADDR_KEY = 'ls-course-addr';
+const DISC_KEY = 'course-disclaimer-v1';
+const CATEGORIES = ['運動健身','兒童才藝','手作烘焙','樂齡長者','語言學習','其他'];
+const DOW_NAMES = ['日','一','二','三','四','五','六'];
+
+let courses = [];
+let ui = {catFilter:''};
+let createData = {};
+let currentRecordSubtab = 'regs';
+let toastTimer = null;
+let dataLoaded = false;
+let pollTimer = null;
+let isPolling = false;
+
+/* ---- UI utils ---- */
+function showMask(m){const el=document.getElementById('loadMask');el.querySelector('span').textContent=m||'處理中…';el.classList.remove('hidden');}
+function hideMask(){document.getElementById('loadMask').classList.add('hidden');}
+function showSheet(inner){document.getElementById('overlayHost').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet"><div class="grab"></div>${inner}</div></div>`;}
+function closeSheet(){document.getElementById('overlayHost').innerHTML='';}
+function showToast(msg){const t=document.getElementById('toast');document.getElementById('toastText').textContent=msg;t.classList.remove('hidden');if(toastTimer)clearTimeout(toastTimer);const hide=()=>t.classList.add('hidden');setTimeout(()=>{window.addEventListener('click',hide,{once:true});window.addEventListener('touchstart',hide,{passive:true,once:true});},150);toastTimer=setTimeout(hide,3500);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function gv(id){const e=document.getElementById(id);return e?e.value:'';}
+function sv(id,val){const e=document.getElementById(id);if(e&&val!=null)e.value=val;}
+function show(id,v){const e=document.getElementById(id);if(e)e.style.display=v?'':'none';}
+function markErr(id){const e=document.getElementById(id);if(e){e.classList.add('err');e.oninput=()=>e.classList.remove('err');e.focus();}}
+
+/* ---- Auth ---- */
+function getLogin(){try{const s=JSON.parse(localStorage.getItem(ADDR_KEY)||'null');return(s&&s.hao)?s:null;}catch(e){return null;}}
+function setLogin(a){try{localStorage.setItem(ADDR_KEY,JSON.stringify(a));}catch(e){}}
+function clearLogin(){try{localStorage.removeItem(ADDR_KEY);}catch(e){}}
+function me(){return getLogin();}
+function sameAddr(a,b){return a&&b&&a.hao==b.hao&&a.lou==b.lou&&a.zhi==b.zhi;}
+function fullAddr(a){return a?`${a.hao}號${a.lou}樓之${a.zhi}`:''}
+function dongLabel(a){return a?(DONG_MAP[a.hao]||a.hao)+'棟':'';}
+function myAddrShort(){const s=me();return s?`${DONG_MAP[s.hao]||s.hao}-${s.lou}F${s.zhi}`:'';}
+
+/* ---- Nav ---- */
+function go(page){
+  if(page==='records'&&!me()){openLogin();return;}
+  ['list','records'].forEach(p=>{const el=document.getElementById('page'+p.charAt(0).toUpperCase()+p.slice(1));if(el)el.classList.toggle('on',p===page);});
+  document.getElementById('hTitle').textContent=page==='records'?'我的報名與揪團':'林森苑課程揪團';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===(page==='records'?'records':'list')));
+  if(page==='list')renderList();
+  if(page==='records')renderRecords();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goSearchPage(){go('list');loadCoursesData();}
+function goRecordPage(){if(!me()){openLogin();return;}switchRecordTab(currentRecordSubtab||'regs');go('records');loadCoursesData();}
+function switchRecordTab(tab){currentRecordSubtab=tab;document.getElementById('subtabRegs').classList.toggle('on',tab==='regs');document.getElementById('subtabMine').classList.toggle('on',tab==='mine');renderRecords();}
+
+/* ---- Status ---- */
+function statusOf(c){
+  const now=Date.now(),count=(c.registrations||[]).length,min=c.minParticipants,max=c.maxParticipants;
+  if(c.status==='completed')return{cls:'teal',label:'已完課'};
+  if(c.status==='cancelled')return{cls:'gone',label:'已取消'};
+  if(now>c.registrationEnd)return count>=min?{cls:'teal',label:'已截止（成團）'}:{cls:'gone',label:'已流團'};
+  if(count>=max)return{cls:'coral',label:'已額滿'};
+  if(count>=min)return{cls:'green',label:`已成團 ${count}/${max}人`};
+  return{cls:'amber',label:`集氣中 ${count}/${min}人`};
+}
+function progressOf(c){const count=(c.registrations||[]).length,min=c.minParticipants,max=c.maxParticipants,pct=Math.min(100,Math.round(count/min*100)),st=statusOf(c);const m={coral:'coral',green:'green',teal:'teal',gone:'gone',amber:'amber'};return{pct,fillCls:m[st.cls]||'amber',count,min,max};}
+function canRegister(c){return!['completed','cancelled'].includes(c.status)&&Date.now()<=c.registrationEnd&&(c.registrations||[]).length<c.maxParticipants;}
+function isRegistered(c){const my=me();if(!my)return false;return(c.registrations||[]).some(r=>sameAddr(r.addr,my));}
+function isOrganizer(c){const my=me();if(!my)return false;return sameAddr(c.organizer&&c.organizer.addr,my);}
+
+/* ---- Date/Format ---- */
+function parseLocalDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function fmtDate(d){const mm=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return `${d.getFullYear()}/${mm}/${dd}（${DOW_NAMES[d.getDay()]}）`;}
+function fmtDateShort(d){return `${d.getMonth()+1}/${d.getDate()}（${DOW_NAMES[d.getDay()]}）`;}
+function fmtDateTime(ts){const d=new Date(ts),mm=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0'),hh=String(d.getHours()).padStart(2,'0'),mi=String(d.getMinutes()).padStart(2,'0');return `${d.getFullYear()}/${mm}/${dd} ${hh}:${mi}`;}
+function deadlineText(ts){const diff=ts-Date.now();if(diff<=0)return'已截止';const days=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000);if(days>0)return`${days}天後截止`;if(h>0)return`${h}小時後截止`;return'即將截止';}
+function feeText(c){if(c.feeType==='fixed')return`每人 $${Number(c.feeAmount||0).toLocaleString()}`;if(c.feeType==='split')return`總費用 $${Number(c.feeAmount||0).toLocaleString()} 平攤`;return'免費';}
+function formatRecurrence(rec){
+  if(!rec)return'時間未設定';
+  const time=rec.timeStart&&rec.timeEnd?`${rec.timeStart}～${rec.timeEnd}`:'';
+  if(rec.type==='none'){if(!rec.singleDate)return'時間未設定';return `${fmtDate(parseLocalDate(rec.singleDate))} ${time}`;}
+  const endStr=rec.endType==='count'?`共${rec.endCount||'?'}堂`:(rec.endDate?`到${rec.endDate}`:'長期');
+  if(rec.type==='weekly'){const days=(rec.dayOfWeek||[]).map(d=>`週${DOW_NAMES[d]}`).join('、');return `每週${days} ${time}，${endStr}`;}
+  if(rec.type==='biweekly'){const days=(rec.dayOfWeek||[]).map(d=>`週${DOW_NAMES[d]}`).join('、');return `每雙週${days} ${time}，${endStr}`;}
+  if(rec.type==='monthly_day')return `每月${rec.dayOfMonth}號 ${time}，${endStr}`;
+  if(rec.type==='monthly_weekday'){const w=rec.dayOfWeek&&rec.dayOfWeek[0]!=null?rec.dayOfWeek[0]:6;return `每月第${rec.weekOfMonth}個週${DOW_NAMES[w]} ${time}，${endStr}`;}
+  return '';
+}
+
+/* ---- Session date generation ---- */
+function generateSessionDates(rec){
+  if(!rec)return[];const MAX=52,dates=[];
+  if(rec.type==='none'){if(rec.singleDate)dates.push(parseLocalDate(rec.singleDate));return dates;}
+  if(!rec.dateStart)return dates;
+  const start=parseLocalDate(rec.dateStart);
+  const endDate=(rec.endType==='date'&&rec.endDate)?parseLocalDate(rec.endDate):null;
+  const maxCount=rec.endType==='count'?(rec.endCount||8):MAX;
+  if(rec.type==='weekly'||rec.type==='biweekly'){
+    const interval=rec.type==='biweekly'?14:7;
+    const dows=[...(rec.dayOfWeek||[])].sort((a,b)=>a-b);
+    if(!dows.length)return dates;
+    const ws=new Date(start);ws.setDate(ws.getDate()-ws.getDay());
+    for(let week=0;dates.length<maxCount&&week<200;week++){
+      const wo=week*interval;
+      for(const dow of dows){
+        const d=new Date(ws);d.setDate(ws.getDate()+wo+dow);
+        if(d<start)continue;if(endDate&&d>endDate)return dates;if(dates.length>=maxCount)return dates;
+        dates.push(new Date(d));
+      }
+      const cd=new Date(ws);cd.setDate(ws.getDate()+wo);if(endDate&&cd>endDate)break;
+    }
+    return dates;
+  }
+  if(rec.type==='monthly_day'){
+    const dom=rec.dayOfMonth||1;let y=start.getFullYear(),m=start.getMonth();
+    let d=new Date(y,m,dom);if(d<start){m++;if(m>11){m=0;y++;}d=new Date(y,m,dom);}
+    while(dates.length<maxCount&&dates.length<MAX){if(endDate&&d>endDate)break;dates.push(new Date(d));m++;if(m>11){m=0;y++;}d=new Date(y,m,dom);}
+    return dates;
+  }
+  if(rec.type==='monthly_weekday'){
+    const wom=rec.weekOfMonth||1,wd=rec.dayOfWeek&&rec.dayOfWeek[0]!=null?rec.dayOfWeek[0]:6;
+    function getNth(y,m,n,dow){let d=new Date(y,m,1),cnt=0;while(d.getMonth()===m){if(d.getDay()===dow){cnt++;if(cnt===n)return new Date(d);}d.setDate(d.getDate()+1);}return null;}
+    let y=start.getFullYear(),m=start.getMonth();
+    let d=getNth(y,m,wom,wd);if(!d||d<start){m++;if(m>11){m=0;y++;}d=getNth(y,m,wom,wd);}
+    while(d&&dates.length<maxCount&&dates.length<MAX){if(endDate&&d>endDate)break;dates.push(new Date(d));m++;if(m>11){m=0;y++;}d=getNth(y,m,wom,wd);}
+    return dates;
+  }
+  return dates;
+}
+
+/* ---- List ---- */
+function setCatFilter(cat){
+  ui.catFilter=cat;
+  document.querySelectorAll('#catFilter .chip').forEach(c=>c.classList.toggle('on',c.textContent===cat||(cat===''&&c.textContent==='全部')));
+  renderList();
+}
+function renderList(){
+  const q=(document.getElementById('searchInput')?document.getElementById('searchInput').value:'').trim().toLowerCase();
+  const cat=ui.catFilter;
+  let list=courses.filter(c=>{
+    if(cat&&c.category!==cat)return false;
+    if(q&&!c.title.toLowerCase().includes(q)&&!(c.description||'').toLowerCase().includes(q))return false;
+    return true;
+  }).sort((a,b)=>b.createdAt-a.createdAt);
+  const el=document.getElementById('courseList');
+  if(!dataLoaded){document.getElementById('listHeading').textContent='';el.innerHTML=`<div class="inline-loading"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>載入中…</div>`;return;}
+  document.getElementById('listHeading').textContent=`共 ${list.length} 個揪團`;
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><h3>目前沒有課程揪團</h3><p>點下方「揪團」按鈕發起第一個！</p></div>`;return;}
+  const my=me();
+  el.innerHTML=list.map(course=>{
+    const st=statusOf(course),prog=progressOf(course);
+    const iOrg=my&&sameAddr(course.organizer&&course.organizer.addr,my);
+    const iReg=my&&(course.registrations||[]).some(r=>sameAddr(r.addr,my));
+    const tag=iOrg?'<div class="card-top-tag">我發起的</div>':iReg?'<div class="card-top-tag green">已報名</div>':'';
+    return `<div class="card" style="${(iOrg||iReg)?'margin-top:20px':''}">
+      ${tag}
+      <div class="card-body" onclick="openCourseDetail('${course.id}')">
+        <div class="card-title"><span class="tt">${esc(course.title)}</span><span class="pill ${st.cls}">${esc(st.label)}</span><span class="pill teal" style="font-size:10px;padding:2px 7px">${esc(course.category)}</span></div>
+        <div class="card-meta"><span>📍 ${esc(course.location||'地點待定')}</span><br><span>🗓️ ${esc(formatRecurrence(course.recurrence))}</span></div>
+        <div class="progress-track"><div class="progress-fill ${prog.fillCls}" style="width:${prog.pct}%"></div></div>
+        <div class="progress-label">${prog.count}/${prog.min}人（門檻）｜上限${prog.max}人｜${deadlineText(course.registrationEnd)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ---- Detail ---- */
+function openCourseDetail(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  const my=me(),iOrg=isOrganizer(course),iReg=isRegistered(course),st=statusOf(course),prog=progressOf(course),canReg=canRegister(course);
+  const sessions=generateSessionDates(course.recurrence).slice(0,8);
+  const totalSessions=course.recurrence&&course.recurrence.endType==='count'?(course.recurrence.endCount||sessions.length):sessions.length;
+  let ctaHtml;
+  if(iOrg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn rm" onclick="closeSheet();openCancelCourse('${id}')">取消揪團</button></div>`;
+  else if(iReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${canReg?`<button class="dbtn" style="flex:1;background:#fff;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();openCancelRegister('${id}')">取消報名</button>`:''}</div>`;
+  else if(!my)ctaHtml=canReg?`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn go" onclick="closeSheet();openLogin()">登入後報名</button></div>`:`<div class="dbtns"><button class="dbtn cancel" style="flex:1;width:100%" onclick="closeSheet()">關閉（${esc(st.label)}）</button></div>`;
+  else if(canReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn go" onclick="closeSheet();openRegister('${id}')">立即報名</button></div>`;
+  else ctaHtml=`<div class="dbtns"><button class="dbtn cancel" style="flex:1;width:100%" onclick="closeSheet()">關閉（${esc(st.label)}）</button></div>`;
+  const sessHtml=sessions.length?`<div style="font-size:12px;color:var(--ink-muted);line-height:1.9;margin-top:2px">${sessions.map((d,i)=>`第${i+1}堂：${fmtDateShort(d)}`).join('　')}${totalSessions>8?'…':''}</div>`:'';
+  showSheet(`
+    <div class="dhead">
+      <div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M8 18h.01M12 18h.01"/></svg></div>
+      <div style="flex:1;min-width:0"><div class="dt" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(course.title)}</div><div class="ds">${esc(course.category)}</div></div>
+      <span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="progress-track" style="height:8px"><div class="progress-fill ${prog.fillCls}" style="width:${prog.pct}%"></div></div>
+      <div class="progress-label" style="font-size:12px;margin-top:4px">已報名 <b>${prog.count}</b> 人　最低成團 <b>${prog.min}</b> 人　上限 <b>${prog.max}</b> 人</div>
+    </div>
+    ${course.description?`<p style="font-size:14px;color:var(--ink-soft);line-height:1.65;margin:0 0 12px">${esc(course.description)}</p>`:''}
+    <div class="dfield"><span class="k">上課安排</span><span class="v">${esc(formatRecurrence(course.recurrence))}</span></div>
+    ${sessHtml?`<div style="padding:4px 0 10px;border-bottom:1px solid var(--line)">${sessHtml}</div>`:''}
+    <div class="dfield"><span class="k">上課地點</span><span class="v">${esc(course.location||'待確認')}</span></div>
+    <div class="dfield"><span class="k">報名截止</span><span class="v">${fmtDateTime(course.registrationEnd)}<br><span style="color:${Date.now()>course.registrationEnd?'var(--coral)':'var(--amber)'}">${deadlineText(course.registrationEnd)}</span></span></div>
+    <div class="dfield"><span class="k">費用</span><span class="v">${esc(feeText(course))}</span></div>
+    ${course.feeNote?`<div class="dfield"><span class="k">費用說明</span><span class="v">${esc(course.feeNote)}</span></div>`:''}
+    ${course.instructorInfo?`<div class="dfield"><span class="k">講師介紹</span><span class="v">${esc(course.instructorInfo)}</span></div>`:''}
+    <div class="dfield"><span class="k">發起人</span><span class="v">${esc((course.organizer&&course.organizer.name)||'')}（${esc(dongLabel(course.organizer&&course.organizer.addr))}棟住戶）</span></div>
+    <div class="dfield" style="border:none"><span class="k">聯絡方式</span><span class="v">${esc((course.organizer&&course.organizer.contact)||'')}</span></div>
+    ${ctaHtml}
+  `);
+}
+
+/* ---- Register ---- */
+function openRegister(id){
+  if(!me()){openLogin();return;}
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  showSheet(`
+    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="dt">報名課程</div><div class="ds">${esc(course.title)}</div></div></div>
+    <div class="note">報名後請留意課程是否成團。成團後請依發起人指示繳費。</div>
+    <div class="float"><input type="text" id="regName" placeholder=" " maxlength="20"><label>您的姓名（必填）</label></div>
+    <div class="float"><input type="text" id="regContact" placeholder=" " maxlength="50"><label>聯絡方式（LINE ID / 電話，選填）</label></div>
+    <div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitRegister('${id}')">確認報名</button></div>
+  `);
+}
+async function submitRegister(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  const my=me();if(!my)return;
+  const nameEl=document.getElementById('regName');
+  const name=nameEl.value.trim();
+  if(!name){nameEl.classList.add('err');nameEl.oninput=()=>nameEl.classList.remove('err');nameEl.focus();showToast('請填寫姓名');return;}
+  const contact=document.getElementById('regContact').value.trim();
+  const reg={addr:my,name,contact,ts:Date.now()};
+  if(!course.registrations)course.registrations=[];
+  course.registrations.push(reg);
+  showMask('報名中…');await notify('register',{courseId:id,registration:reg});hideMask();closeSheet();showToast('報名成功！🎉');renderList();
+  if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();
+}
+function openCancelRegister(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div><div class="dt">取消報名</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定取消報名嗎？若課程接近成團門檻，取消可能影響其他住戶。</div><div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">不取消</button><button class="dbtn rm" onclick="submitCancelRegister('${id}')">確認取消</button></div>`);
+}
+async function submitCancelRegister(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  const my=me();if(!my)return;
+  course.registrations=(course.registrations||[]).filter(r=>!sameAddr(r.addr,my));
+  showMask('取消中…');await notify('cancel_register',{courseId:id,addr:my});hideMask();closeSheet();showToast('已取消報名');renderList();
+  if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();
+}
+function openCancelCourse(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></div><div><div class="dt">取消揪團</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定取消這個揪團嗎？已報名住戶<b>不會收到系統通知</b>，請自行聯繫。</div><div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">不取消</button><button class="dbtn rm" onclick="submitCancelCourse('${id}')">確認取消</button></div>`);
+}
+async function submitCancelCourse(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  course.status='cancelled';
+  showMask('取消中…');await notify('cancel_course',{courseId:id});hideMask();closeSheet();showToast('揪團已取消');renderList();
+  if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();
+}
+
+/* ---- Records ---- */
+function renderRecords(){
+  const my=me(),el=document.getElementById('recordsContent');if(!el)return;
+  if(!my){el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6v1H4z"/></svg></div><h3>請先登入</h3><p>點右上角人像圖示選擇門牌</p></div>`;return;}
+  if(!dataLoaded){el.innerHTML=`<div class="inline-loading"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>載入中…</div>`;return;}
+  if(currentRecordSubtab==='regs'){
+    const mine=courses.filter(c=>(c.registrations||[]).some(r=>sameAddr(r.addr,my)));
+    if(!mine.length){el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>尚未報名任何課程</h3><p>去「查詢」找感興趣的課程吧！</p></div>`;return;}
+    el.innerHTML=mine.map(course=>{const st=statusOf(course);const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>報名時間：${reg?fmtDateTime(reg.ts):''}</div></div><span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span></div>`;}).join('');
+  }else{
+    const mine=courses.filter(c=>sameAddr(c.organizer&&c.organizer.addr,my));
+    if(!mine.length){el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></div><h3>尚未發起任何揪團</h3><p>點下方「揪團」按鈕開始吧！</p></div>`;return;}
+    el.innerHTML=mine.map(course=>{const st=statusOf(course),count=(course.registrations||[]).length;return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>已報名 ${count}/${course.minParticipants} 人</div></div><span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span></div>`;}).join('');
+  }
+}
+
+/* ============================================================
+   揪團 — 3 步驟表單
+   ============================================================ */
+function openCreateSheet(){if(!me()){openLogin();return;}createData={};showCreateStep(1);}
+function stepBar(n){return `<div class="step-bar">${[1,2,3].map(i=>`<div class="step-dot ${i===n?'on':''}"></div>`).join('')}</div>`;}
+function showCreateStep(step){
+  const html=step===1?step1HTML():step===2?step2HTML():step3HTML();
+  showSheet(html);
+  setTimeout(()=>{
+    if(step===1)restoreStep1();
+    if(step===2){restoreStep2();onRecTypeChange();onEndTypeChange();updateSessionPreview();}
+    if(step===3){restoreStep3();onFeeTypeChange();}
+  },60);
+}
+
+/* Step 1 */
+function step1HTML(){return `${stepBar(1)}<div class="step-title">課程基本資訊</div>
+<div class="form-section sec" style="margin-top:6px;padding-top:22px"><div class="sechead">第一步</div>
+<div class="float"><input type="text" id="cTitle" placeholder=" " maxlength="40"><label>課程名稱（必填）</label></div>
+<div style="margin:12px 0 8px;font-size:13px;font-weight:700;color:var(--ink-soft)">課程類別（必填）</div>
+<div class="chips" id="catChips" style="padding:0;flex-wrap:wrap;gap:8px">${CATEGORIES.map(c=>`<button class="chip" onclick="selectCat('${c}')">${c}</button>`).join('')}</div>
+<div class="float" style="margin-top:14px"><textarea id="cDesc" placeholder=" " style="min-height:64px"></textarea><label>課程簡介（選填）</label></div>
+<div class="float"><input type="text" id="cInstructor" placeholder=" " maxlength="100"><label>講師介紹（選填）</label></div>
+</div>
+<div class="sticky-bar"><div class="dbtns" style="margin:0"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="gotoStep2()">下一步 →</button></div></div>`;}
+
+function restoreStep1(){sv('cTitle',createData.title);sv('cDesc',createData.description);sv('cInstructor',createData.instructorInfo);if(createData.category)document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.toggle('on',c.textContent===createData.category));}
+function selectCat(cat){createData.category=cat;document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.toggle('on',c.textContent===cat));}
+function gotoStep2(){
+  const title=(gv('cTitle')||'').trim();
+  if(!title){markErr('cTitle');showToast('請輸入課程名稱');return;}
+  if(!createData.category){showToast('請選擇課程類別');return;}
+  createData.title=title;createData.description=(gv('cDesc')||'').trim();createData.instructorInfo=(gv('cInstructor')||'').trim();
+  showCreateStep(2);
+}
+
+/* Step 2 */
+function step2HTML(){return `${stepBar(2)}<div class="step-title">時間、場地與人數</div>
+<div class="form-section sec" style="margin-top:6px;padding-top:22px"><div class="sechead">開課排程</div>
+<div style="margin:10px 0 6px;font-size:12px;font-weight:700;color:var(--ink-soft)">開課模式</div>
+<div class="radio-group">
+<label class="radio-row"><input type="radio" name="recType" value="none" checked onchange="onRecTypeChange()"> 單次特定日期</label>
+<label class="radio-row"><input type="radio" name="recType" value="weekly" onchange="onRecTypeChange()"> 每週固定（可選多天）</label>
+<label class="radio-row"><input type="radio" name="recType" value="biweekly" onchange="onRecTypeChange()"> 每雙週</label>
+<label class="radio-row"><input type="radio" name="recType" value="monthly_day" onchange="onRecTypeChange()"> 每月固定幾號</label>
+<label class="radio-row"><input type="radio" name="recType" value="monthly_weekday" onchange="onRecTypeChange()"> 每月第N個週幾</label>
+</div>
+<div id="recSingle"><div class="f-label" style="margin-top:8px">上課日期</div><input type="date" id="singleDate" class="f-input" onchange="updateSessionPreview()"></div>
+<div id="recWeekdays" style="display:none"><div class="f-label" style="margin-top:8px">上課星期（可多選）</div><div class="dow-chips" id="dowChips">${[0,1,2,3,4,5,6].map(d=>`<button class="dow-chip" data-day="${d}" onclick="toggleDow(${d})">${DOW_NAMES[d]}</button>`).join('')}</div></div>
+<div id="recMonthDay" style="display:none"><div class="f-label" style="margin-top:8px">每月幾號（1～31）</div><input type="number" id="dayOfMonth" min="1" max="31" class="f-input" placeholder="例：15" onchange="updateSessionPreview()"></div>
+<div id="recMonthWeekday" style="display:none"><div class="sel-row"><div class="sel-wrap"><div class="f-label">第幾週</div><select id="weekOfMonth" class="f-input" onchange="updateSessionPreview()"><option value="1">第 1 週</option><option value="2">第 2 週</option><option value="3">第 3 週</option><option value="4">第 4 週</option></select></div><div class="sel-wrap"><div class="f-label">星期幾</div><select id="weekdayOfMonth" class="f-input" onchange="updateSessionPreview()">${[0,1,2,3,4,5,6].map(d=>`<option value="${d}">週${DOW_NAMES[d]}</option>`).join('')}</select></div></div></div>
+<div class="sel-row" style="margin-top:12px"><div class="sel-wrap"><div class="f-label">開始時間</div><input type="time" id="timeStart" value="09:00" class="f-input" onchange="updateSessionPreview()"></div><div class="sel-wrap"><div class="f-label">結束時間</div><input type="time" id="timeEnd" value="11:00" class="f-input" onchange="updateSessionPreview()"></div></div>
+<div id="recStartDate" style="display:none;margin-top:8px"><div class="f-label">第一堂開始日期</div><input type="date" id="dateStart" class="f-input" onchange="updateSessionPreview()"></div>
+<div id="recEndCond" style="display:none;margin-top:12px">
+<div class="f-label">結束條件</div>
+<div style="display:flex;gap:20px;margin:8px 0"><label class="radio-row"><input type="radio" name="endType" value="count" checked onchange="onEndTypeChange()"> 共幾堂</label><label class="radio-row"><input type="radio" name="endType" value="date" onchange="onEndTypeChange()"> 到某日期</label></div>
+<div id="endCountWrap"><input type="number" id="endCount" min="1" max="52" value="8" class="f-input" placeholder="共幾堂" onchange="updateSessionPreview()"></div>
+<div id="endDateWrap" style="display:none"><input type="date" id="endDate" class="f-input" onchange="updateSessionPreview()"></div>
+</div>
+<div id="sessionPreview" style="margin-top:12px"></div>
+</div>
+<div class="form-section sec" style="padding-top:22px"><div class="sechead">上課地點</div><div class="float" style="margin-top:10px"><input type="text" id="cLocation" placeholder=" " maxlength="50"><label>地點（如：B1韻律教室、中庭花園）</label></div></div>
+<div class="form-section sec" style="padding-top:22px"><div class="sechead">成團規則</div>
+<div class="sel-row" style="margin-top:10px"><div class="sel-wrap"><div class="f-label">最低成團人數（必填）</div><input type="number" id="cMinP" min="2" max="100" class="f-input" placeholder="例：6"></div><div class="sel-wrap"><div class="f-label">人數上限（必填）</div><input type="number" id="cMaxP" min="2" max="100" class="f-input" placeholder="例：12"></div></div>
+<div style="margin-top:12px"><div class="f-label">報名截止時間（必填）</div><input type="datetime-local" id="cRegEnd" class="f-input"></div>
+</div>
+<div class="sticky-bar"><div class="dbtns" style="margin:0"><button class="dbtn cancel" onclick="showCreateStep(1)">← 上一步</button><button class="dbtn go" onclick="gotoStep3()">下一步 →</button></div></div>`;}
+
+function restoreStep2(){
+  const rec=createData.recurrence||{},type=rec.type||'none';
+  document.querySelectorAll('input[name="recType"]').forEach(r=>{r.checked=r.value===type;});
+  if(rec.singleDate)sv('singleDate',rec.singleDate);if(rec.timeStart)sv('timeStart',rec.timeStart);if(rec.timeEnd)sv('timeEnd',rec.timeEnd);if(rec.dateStart)sv('dateStart',rec.dateStart);if(rec.dayOfMonth)sv('dayOfMonth',rec.dayOfMonth);if(rec.weekOfMonth)sv('weekOfMonth',rec.weekOfMonth);if(type==='monthly_weekday'&&rec.dayOfWeek&&rec.dayOfWeek[0]!=null)sv('weekdayOfMonth',rec.dayOfWeek[0]);
+  const endType=rec.endType||'count';document.querySelectorAll('input[name="endType"]').forEach(r=>{r.checked=r.value===endType;});if(rec.endCount)sv('endCount',rec.endCount);if(rec.endDate)sv('endDate',rec.endDate);
+  if(rec.dayOfWeek&&(type==='weekly'||type==='biweekly'))document.querySelectorAll('.dow-chip').forEach(c=>c.classList.toggle('on',rec.dayOfWeek.includes(+c.dataset.day)));
+  if(createData.location)sv('cLocation',createData.location);if(createData.minParticipants)sv('cMinP',createData.minParticipants);if(createData.maxParticipants)sv('cMaxP',createData.maxParticipants);
+  if(createData.registrationEnd){const d=new Date(createData.registrationEnd);sv('cRegEnd',new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16));}
+}
+function onRecTypeChange(){
+  const type=(document.querySelector('input[name="recType"]:checked')||{}).value||'none';
+  show('recSingle',type==='none');show('recWeekdays',type==='weekly'||type==='biweekly');show('recMonthDay',type==='monthly_day');show('recMonthWeekday',type==='monthly_weekday');show('recStartDate',type!=='none');show('recEndCond',type!=='none');
+  updateSessionPreview();
+}
+function onEndTypeChange(){const t=(document.querySelector('input[name="endType"]:checked')||{}).value||'count';show('endCountWrap',t==='count');show('endDateWrap',t==='date');updateSessionPreview();}
+function toggleDow(day){if(!createData.recurrence)createData.recurrence={};if(!createData.recurrence.dayOfWeek)createData.recurrence.dayOfWeek=[];const arr=createData.recurrence.dayOfWeek,idx=arr.indexOf(day);if(idx>=0)arr.splice(idx,1);else arr.push(day);document.querySelectorAll('.dow-chip').forEach(c=>c.classList.toggle('on',arr.includes(+c.dataset.day)));updateSessionPreview();}
+function collectRec(){
+  const type=(document.querySelector('input[name="recType"]:checked')||{}).value;if(!type)return null;
+  const rec={type,timeStart:gv('timeStart'),timeEnd:gv('timeEnd')};
+  if(type==='none'){rec.singleDate=gv('singleDate');}
+  else{rec.dateStart=gv('dateStart');rec.endType=(document.querySelector('input[name="endType"]:checked')||{}).value||'count';if(rec.endType==='count')rec.endCount=parseInt(gv('endCount'))||8;else rec.endDate=gv('endDate');if(type==='weekly'||type==='biweekly')rec.dayOfWeek=[...document.querySelectorAll('.dow-chip.on')].map(c=>+c.dataset.day);else if(type==='monthly_day')rec.dayOfMonth=parseInt(gv('dayOfMonth'))||1;else if(type==='monthly_weekday'){rec.weekOfMonth=parseInt(gv('weekOfMonth'))||1;rec.dayOfWeek=[parseInt(gv('weekdayOfMonth'))||6];}}
+  return rec;
+}
+function updateSessionPreview(){
+  const p=document.getElementById('sessionPreview');if(!p)return;
+  const rec=collectRec();if(!rec){p.innerHTML='';return;}
+  const dates=generateSessionDates(rec);
+  if(!dates.length){p.innerHTML=`<div class="note" style="margin-top:0">請完整填寫排程設定以預覽課程日期</div>`;return;}
+  const total=rec.endType==='count'?rec.endCount:dates.length;
+  p.innerHTML=`<div class="note" style="background:var(--green-light);color:var(--ink);margin-top:0"><b style="color:var(--green)">📅 課程日期預覽（共 ${total} 堂）</b><br>${dates.slice(0,6).map((d,i)=>`第${i+1}堂：${fmtDate(d)}`).join('<br>')}${dates.length>6?'<br>…':''}</div>`;
+}
+function gotoStep3(){
+  const rec=collectRec();if(!rec){showToast('請選擇開課模式');return;}
+  if(rec.type==='none'&&!rec.singleDate){showToast('請選擇上課日期');return;}
+  if(rec.type!=='none'){if((rec.type==='weekly'||rec.type==='biweekly')&&(!rec.dayOfWeek||!rec.dayOfWeek.length)){showToast('請選擇上課星期幾');return;}if(!rec.dateStart){showToast('請填寫第一堂開始日期');return;}if(rec.endType==='date'&&!rec.endDate){showToast('請填寫結束日期');return;}}
+  if(!rec.timeStart||!rec.timeEnd){showToast('請填寫上課時段');return;}
+  const location=(gv('cLocation')||'').trim();if(!location){showToast('請填寫上課地點');return;}
+  const minP=parseInt(gv('cMinP'))||0,maxP=parseInt(gv('cMaxP'))||0,regEndStr=gv('cRegEnd')||'';
+  if(minP<2){showToast('最低成團人數至少 2 人');return;}if(maxP<minP){showToast('人數上限需大於等於最低人數');return;}if(!regEndStr){showToast('請填寫報名截止時間');return;}
+  createData.recurrence=rec;createData.location=location;createData.minParticipants=minP;createData.maxParticipants=maxP;createData.registrationEnd=new Date(regEndStr).getTime();
+  showCreateStep(3);
+}
+
+/* Step 3 */
+function step3HTML(){return `${stepBar(3)}<div class="step-title">費用與發起人資訊</div>
+<div class="form-section sec" style="margin-top:6px;padding-top:22px"><div class="sechead">費用</div>
+<div class="radio-group" style="margin-top:10px">
+<label class="radio-row"><input type="radio" name="feeType" value="free" checked onchange="onFeeTypeChange()"> 免費（材料費等自行協調）</label>
+<label class="radio-row"><input type="radio" name="feeType" value="fixed" onchange="onFeeTypeChange()"> 每人固定費用</label>
+<label class="radio-row"><input type="radio" name="feeType" value="split" onchange="onFeeTypeChange()"> 總費用由成團人數平攤</label>
+</div>
+<div id="feeAmountWrap" style="display:none;margin-top:8px">
+<div class="f-label" id="feeAmtLabel">費用金額（元）</div>
+<input type="number" id="feeAmount" min="0" inputmode="numeric" placeholder="0" class="f-input">
+</div>
+<div class="float" style="margin-top:12px"><input type="text" id="feeNote" placeholder=" " maxlength="80"><label>費用說明（選填，如：確定成團後告知繳費方式）</label></div>
+</div>
+<div class="form-section sec" style="padding-top:22px"><div class="sechead">發起人資訊</div>
+<div class="float" style="margin-top:10px"><input type="text" id="orgName" placeholder=" " maxlength="20"><label>姓名 / 暱稱（必填）</label></div>
+<div class="float"><input type="text" id="orgContact" placeholder=" " maxlength="50"><label>聯絡方式：LINE ID / 電話（必填）</label></div>
+</div>
+<div class="sticky-bar"><div class="dbtns" style="margin:0"><button class="dbtn cancel" onclick="showCreateStep(2)">← 上一步</button><button class="dbtn go" onclick="submitCreateCourse()">確認發布</button></div></div>`;}
+
+function restoreStep3(){
+  if(createData.feeType)document.querySelectorAll('input[name="feeType"]').forEach(r=>{r.checked=r.value===createData.feeType;});
+  if(createData.feeAmount)sv('feeAmount',createData.feeAmount);if(createData.feeNote)sv('feeNote',createData.feeNote);if(createData.organizerName)sv('orgName',createData.organizerName);if(createData.organizerContact)sv('orgContact',createData.organizerContact);
+}
+function onFeeTypeChange(){const t=(document.querySelector('input[name="feeType"]:checked')||{}).value||'free';show('feeAmountWrap',t!=='free');const lbl=document.getElementById('feeAmtLabel');if(lbl)lbl.textContent=t==='split'?'總費用金額（元）':'每人費用金額（元）';}
+async function submitCreateCourse(){
+  const feeType=(document.querySelector('input[name="feeType"]:checked')||{}).value||'free';
+  let feeAmount=0;
+  if(feeType!=='free'){feeAmount=parseInt(gv('feeAmount'))||0;if(feeAmount<=0){showToast('請填寫費用金額');return;}}
+  const feeNote=(gv('feeNote')||'').trim(),orgName=(gv('orgName')||'').trim(),orgContact=(gv('orgContact')||'').trim();
+  if(!orgName){markErr('orgName');showToast('請填寫發起人姓名');return;}if(!orgContact){markErr('orgContact');showToast('請填寫聯絡方式');return;}
+  createData.feeType=feeType;createData.feeAmount=feeAmount;createData.feeNote=feeNote;createData.organizerName=orgName;createData.organizerContact=orgContact;
+  const my=me();
+  const course={id:Date.now().toString(36),title:createData.title,category:createData.category,description:createData.description||'',instructorInfo:createData.instructorInfo||'',recurrence:createData.recurrence,location:createData.location,minParticipants:createData.minParticipants,maxParticipants:createData.maxParticipants,registrationEnd:createData.registrationEnd,feeType,feeAmount,feeNote,organizer:{name:orgName,addr:my,contact:orgContact},status:'recruiting',registrations:[],createdAt:Date.now()};
+  showMask('發布揪團中…');courses.unshift(course);await notify('create_course',{course});hideMask();closeSheet();showToast('揪團發布成功！🎉');go('list');
+}
+
+/* ---- Login ---- */
+function applyLoginUI(){const logged=!!me();document.getElementById('loginDot').classList.toggle('hidden',!logged);document.getElementById('loginLabel').textContent=logged?myAddrShort():'未登入';}
+function openLogin(){
+  const s=me();const opt=(arr,v)=>arr.map(x=>`<option value="${x}" ${x==v?'selected':''}>${x}</option>`).join('');
+  const lou=[];for(let i=LOU_RANGE[0];i<=LOU_RANGE[1];i++)lou.push(i);
+  showSheet(`<div style="font-size:18px;font-weight:900;text-align:center;margin-bottom:18px">請選擇您的門牌</div>
+<div class="addr-row" style="margin-bottom:20px"><select class="addr-sel" id="inHao">${opt(HAO_LIST,s&&s.hao)}</select><span style="font-size:13px;font-weight:700;color:var(--ink-soft)">號</span><select class="addr-sel" id="inLou">${opt(lou,s&&s.lou)}</select><span style="font-size:13px;font-weight:700;color:var(--ink-soft)">樓之</span><select class="addr-sel" id="inZhi">${opt(ZHI_LIST,s&&s.zhi)}</select></div>
+<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="confirmLogin()">確認登入</button></div>
+${s?`<button class="logoutbtn" onclick="doLogout()">登出</button>`:''}`);
+}
+function confirmLogin(){const a={hao:+gv('inHao'),lou:+gv('inLou'),zhi:+gv('inZhi')};setLogin(a);closeSheet();applyLoginUI();showToast(`歡迎！${fullAddr(a)}`);loadCoursesData();}
+function doLogout(){clearLogin();closeSheet();applyLoginUI();go('list');showToast('已登出');}
+
+/* ---- Disclaimer ---- */
+function checkDisclaimer(){var a=false;try{a=localStorage.getItem(DISC_KEY)==='1';}catch(e){}if(!a)document.getElementById('discOverlay').classList.remove('hidden');}
+function agreeDisclaimer(){try{localStorage.setItem(DISC_KEY,'1');}catch(e){}document.getElementById('discOverlay').classList.add('hidden');}
+
+/* ---- GAS ---- */
+// ← 部署 GAS 後，將 Web App URL 填入此處
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxbf-OMsY-QTqaD3gx0Owl0Soj8NKPpjCeFsUF0mJ69aEcvkb5sYNbq6UTBAJot9XK7/exec";
+
+async function loadCoursesData(){
+  if(!GAS_URL){dataLoaded=true;renderList();if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();return;}
+  try{const r=await fetch(GAS_URL+"?action=list_courses");const j=await r.json();if(Array.isArray(j))courses=j;}catch(e){console.log('後端讀取失敗:',e);}
+  finally{dataLoaded=true;renderList();if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();}
+}
+async function notify(event,payload){
+  console.log('[notify]',event,payload);if(!GAS_URL)return;
+  try{await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({event,payload,timestamp:Date.now()})});}catch(e){console.log('通知失敗:',e);}
+}
+async function pollForUpdates(){
+  if(!GAS_URL||isPolling)return;isPolling=true;
+  try{const r=await fetch(GAS_URL+"?action=list_courses");const j=await r.json();if(Array.isArray(j)){courses=j;dataLoaded=true;renderList();if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();}}catch(e){}finally{isPolling=false;}
+}
+function startPolling(){if(pollTimer)return;pollTimer=setInterval(pollForUpdates,120000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollForUpdates();});}
+
+/* ---- Boot ---- */
+(function init(){applyLoginUI();go('list');loadCoursesData();checkDisclaimer();startPolling();})();
+</script>
+</body>
+</html>
