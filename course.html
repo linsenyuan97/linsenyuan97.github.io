@@ -73,7 +73,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .pill.p-success{background:#7C5CFC;color:#FFFFFF;font-weight:900;box-shadow:0 2px 8px rgba(124,92,252,.32)}
 .pill.p-full{background:#4C1D95;color:#FFFFFF;font-weight:900}
 .pill.p-closed{background:#F1F5F9;color:#64748B}
-.pill.cat-tag{background:var(--tiffany-light);color:var(--tiffany-dark);font-size:10px;padding:2px 8px}
+.pill.cat-tag{background:#F8F6FC;color:var(--ink-soft);border:1px solid #E8E2F4;font-size:11px;font-weight:500;padding:2px 8px}
 .card{background:var(--surface);border-radius:var(--radius-sm);box-shadow:var(--shadow-card);margin-bottom:14px;border:1px solid var(--line);border-left:4px solid var(--tiffany);position:relative}
 .card:active{transform:scale(.99)}
 .card-top-tag{position:absolute;top:-10px;left:12px;background:#fff;border:1.5px solid var(--tiffany);border-radius:6px;padding:1px 8px;font-size:11px;font-weight:700;color:var(--tiffany-dark);z-index:5}
@@ -84,8 +84,8 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .card-title{font-size:16px;font-weight:700;margin:0 0 4px;color:var(--tiffany-dark);display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;line-height:1.3}
 .card-title .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-meta{font-size:13px;color:var(--ink-soft);margin-bottom:8px;line-height:1.55}
-.progress-track{background:var(--line);border-radius:4px;height:7px;overflow:hidden;margin:6px 0 4px}
-.progress-fill{height:100%;border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.progress-track{background:rgba(124,92,252,.09);border-radius:6px;height:7px;overflow:hidden;margin:6px 0 4px;border:1px solid rgba(124,92,252,.06)}
+.progress-fill{height:100%;border-radius:6px;transition:width .4s cubic-bezier(.4,0,.2,1)}
 .progress-fill.p-seed{background:#DDD6FE}
 .progress-fill.p-boost{background:linear-gradient(90deg,#C4B5FD,#A78BFA)}
 .progress-fill.p-success{background:linear-gradient(90deg,#8B5CF6,#7C5CFC);box-shadow:0 0 8px rgba(124,92,252,.4)}
@@ -395,7 +395,24 @@ function parseLocalDate(s){const[y,m,d]=s.split('-').map(Number);return new Date
 function fmtDate(d){const mm=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return `${d.getFullYear()}/${mm}/${dd}（${DOW_NAMES[d.getDay()]}）`;}
 function fmtDateShort(d){return `${d.getMonth()+1}/${d.getDate()}（${DOW_NAMES[d.getDay()]}）`;}
 function fmtDateTime(ts){const d=new Date(ts),mm=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0'),hh=String(d.getHours()).padStart(2,'0'),mi=String(d.getMinutes()).padStart(2,'0');return `${d.getFullYear()}/${mm}/${dd} ${hh}:${mi}`;}
-function deadlineText(ts){const diff=ts-Date.now();if(diff<=0)return'已截止';const days=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000);if(days>0)return`${days}天後截止`;if(h>0)return`${h}小時後截止`;return'即將截止';}
+function deadlineText(ts){
+  if(!ts)return'';
+  const diff=ts-Date.now();
+  if(diff<=0)return'已截止';
+  const days=Math.floor(diff/86400000);
+  const h=Math.floor((diff%86400000)/3600000);
+  const d=new Date(ts);
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  const hh=String(d.getHours()).padStart(2,'0');
+  const mi=String(d.getMinutes()).padStart(2,'0');
+  
+  if(days>30)return `${d.getFullYear()}/${mm}/${dd} 截止`;
+  if(days>=7)return `${mm}/${dd}（剩 ${days} 天）`;
+  if(days>=1)return `⚡ 最後 ${days} 天截止`;
+  if(h>=1)return `<span style="color:var(--coral);font-weight:700">🔥 剩 ${h} 小時截止</span>`;
+  return `<span style="color:var(--coral);font-weight:900">🔥 即將截止（${hh}:${mi}）</span>`;
+}
 function feeText(c){if(c.feeType==='fixed')return`每人 $${Number(c.feeAmount||0).toLocaleString()}`;if(c.feeType==='split')return`總費用 $${Number(c.feeAmount||0).toLocaleString()} 平攤`;return'免費';}
 function formatRecurrence(rec){
   if(!rec)return'時間未設定';
