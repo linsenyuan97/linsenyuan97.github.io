@@ -474,16 +474,31 @@ function generateSessionDates(rec){
 function formatRecurrence(rec){
   if(!rec)return'時間未設定';
   const time=rec.timeStart&&rec.timeEnd?`${rec.timeStart}～${rec.timeEnd}`:'';
-  if(rec.type==='none'){if(!rec.singleDate)return'時間未設定';return `${fmtDate(parseLocalDate(rec.singleDate))} ${time}`.trim();}
+  if(rec.type==='none'){
+    if(!rec.singleDate)return'時間未設定';
+    return `${fmtDate(parseLocalDate(rec.singleDate))} ${time}（單堂）`.trim();
+  }
   let countStr = '';
   if(rec.endType==='count'){
     countStr = rec.endCount ? `（共 ${rec.endCount} 堂）` : '';
   } else if(rec.endType==='date' && rec.dateStart && rec.endDate){
     try {
       const dates = generateSessionDates(rec);
-      if(dates && dates.length > 0 && dates.length < 52) countStr = `（共 ${dates.length} 堂）`;
-      else if(rec.endDate) countStr = `（到 ${rec.endDate}）`;
-    } catch(e){}
+      if(dates && dates.length > 0 && dates.length <= 24){
+        countStr = `（共 ${dates.length} 堂）`;
+      } else if(rec.dateStart){
+        const d = parseLocalDate(rec.dateStart);
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const dd = String(d.getDate()).padStart(2,'0');
+        countStr = `（${mm}/${dd} 起長期固定）`;
+      } else {
+        countStr = '（長期常態）';
+      }
+    } catch(e){
+      countStr = '（長期常態）';
+    }
+  } else {
+    countStr = '（長期常態）';
   }
   const suffix = countStr ? `${countStr}` : '';
   if(rec.type==='weekly'){const days=(rec.dayOfWeek||[]).map(d=>`週${DOW_NAMES[d]}`).join('、');return `每週${days} ${time}${suffix}`.trim();}
