@@ -80,10 +80,13 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .card-top-tag.green{border-color:var(--green);color:var(--green)}
 .card-cancel-btn{background:transparent;border:1.5px solid var(--coral);color:var(--coral);border-radius:8px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .card-cancel-btn:active{background:var(--coral-light);transform:scale(.95)}
+.view-more-btn{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;color:var(--tiffany-dark);background:var(--tiffany-light);border:1px solid rgba(124,92,252,.22);padding:3px 9px;border-radius:6px;flex-shrink:0;transition:all .15s}
+.card-body:active .view-more-btn{background:var(--tiffany);color:#fff}
 .card-body{padding:14px 16px;cursor:pointer}
-.card-title{font-size:16px;font-weight:700;margin:0 0 4px;color:var(--tiffany-dark);display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;line-height:1.3}
-.card-title .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-meta{font-size:13px;color:var(--ink-soft);margin-bottom:8px;line-height:1.55}
+.card-meta{font-size:13px;color:var(--ink-soft);margin:6px 0 8px;display:flex;flex-direction:column;gap:3px}
+.meta-item{display:flex;align-items:center;gap:6px;line-height:1.45}
+.meta-icon{width:18px;text-align:center;flex-shrink:0;font-size:13px}
+.meta-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .progress-track{background:rgba(124,92,252,.09);border-radius:6px;height:7px;overflow:hidden;margin:6px 0 4px;border:1px solid rgba(124,92,252,.06)}
 .progress-fill{height:100%;border-radius:6px;transition:width .4s cubic-bezier(.4,0,.2,1)}
 .progress-fill.p-seed{background:#DDD6FE}
@@ -371,23 +374,23 @@ function statusOf(c){
   if (c.status === 'cancelled') return { cls: 'p-closed', fillCls: 'p-closed', label: '已取消', pct: 0, detailHint: '此揪團已取消' };
   if (now > c.registrationEnd) {
     return count >= min
-      ? { cls: 'p-closed', fillCls: 'p-closed', label: '已截止', pct: 100, detailHint: `已達門檻成團（共 ${count} 人報名）` }
-      : { cls: 'p-closed', fillCls: 'p-closed', label: '已流團', pct: Math.round((count / min) * 100), detailHint: `未達最低門檻 ${min} 人` };
+      ? { cls: 'p-closed', fillCls: 'p-closed', label: '已截止', pct: 100, detailHint: `已達門檻成團 (已報名 ${count}/${max} 人)` }
+      : { cls: 'p-closed', fillCls: 'p-closed', label: '已流團', pct: Math.round((count / min) * 100), detailHint: `未達最低門檻 ${min} 人 (已報名 ${count}/${max} 人)` };
   }
   if (count >= max) {
-    return { cls: 'p-full', fillCls: 'p-full', label: '🈵 已額滿', pct: 100, detailHint: `已額滿（共 ${count} 人）` };
+    return { cls: 'p-full', fillCls: 'p-full', label: '🈵 已額滿', pct: 100, detailHint: `已額滿 (已報名 ${count}/${max} 人)` };
   }
   if (count >= min) {
     const left = max - count;
     const pct = Math.min(100, Math.round((count / max) * 100));
-    return { cls: 'p-success', fillCls: 'p-success', label: '🎉 已成團', pct, detailHint: `確定開課！剩 <b>${left}</b> 名額 (已報名 ${count}/${max}人)` };
+    return { cls: 'p-success', fillCls: 'p-success', label: '🎉 已成團', pct, detailHint: `確定開課！剩 <b>${left}</b> 名額 (已報名 ${count}/${max} 人)` };
   }
   const need = min - count;
   const pct = Math.round((count / min) * 100);
   if (need <= 2) {
-    return { cls: 'p-boost', fillCls: 'p-boost', label: `⚡ 差 ${need} 人`, pct, detailHint: `只差最後 <b>${need}</b> 人成團 (已報名 ${count}/${min}人)` };
+    return { cls: 'p-boost', fillCls: 'p-boost', label: `⚡ 差 ${need} 人`, pct, detailHint: `只差最後 <b>${need}</b> 人成團 (已報名 ${count}/${max} 人)` };
   }
-  return { cls: 'p-seed', fillCls: 'p-seed', label: '🌱 集氣中', pct, detailHint: `還差 <b>${need}</b> 人成團 (已報名 ${count}/${min}人)` };
+  return { cls: 'p-seed', fillCls: 'p-seed', label: '🌱 集氣中', pct, detailHint: `還差 <b>${need}</b> 人成團 (已報名 ${count}/${max} 人)` };
 }
 
 function progressOf(c){
@@ -422,18 +425,7 @@ function deadlineText(ts){
   if(h>=1)return `<span style="color:var(--coral);font-weight:700">🔥 剩 ${h} 小時截止</span>`;
   return `<span style="color:var(--coral);font-weight:900">🔥 即將截止（${hh}:${mi}）</span>`;
 }
-function feeText(c){if(c.feeType==='fixed')return`每人 $${Number(c.feeAmount||0).toLocaleString()}`;if(c.feeType==='split')return`總費用 $${Number(c.feeAmount||0).toLocaleString()} 平攤`;return'免費';}
-function formatRecurrence(rec){
-  if(!rec)return'時間未設定';
-  const time=rec.timeStart&&rec.timeEnd?`${rec.timeStart}～${rec.timeEnd}`:'';
-  if(rec.type==='none'){if(!rec.singleDate)return'時間未設定';return `${fmtDate(parseLocalDate(rec.singleDate))} ${time}`;}
-  const endStr=rec.endType==='count'?`共${rec.endCount||'?'}堂`:(rec.endDate?`到${rec.endDate}`:'長期');
-  if(rec.type==='weekly'){const days=(rec.dayOfWeek||[]).map(d=>`週${DOW_NAMES[d]}`).join('、');return `每週${days} ${time}，${endStr}`;}
-  if(rec.type==='biweekly'){const days=(rec.dayOfWeek||[]).map(d=>`週${DOW_NAMES[d]}`).join('、');return `每雙週${days} ${time}，${endStr}`;}
-  if(rec.type==='monthly_day')return `每月${rec.dayOfMonth}號 ${time}，${endStr}`;
-  if(rec.type==='monthly_weekday'){const w=rec.dayOfWeek&&rec.dayOfWeek[0]!=null?rec.dayOfWeek[0]:6;return `每月第${rec.weekOfMonth}個週${DOW_NAMES[w]} ${time}，${endStr}`;}
-  return '';
-}
+function feeText(c){if(c.feeType==='fixed')return`每人 $${Number(c.feeAmount||0).toLocaleString()}`;if(c.feeType==='split')return`總額 $${Number(c.feeAmount||0).toLocaleString()} 平攤`;return'免費';}
 
 /* ---- Session date generation ---- */
 function generateSessionDates(rec){
@@ -474,6 +466,28 @@ function generateSessionDates(rec){
     return dates;
   }
   return dates;
+}
+
+function formatRecurrence(rec){
+  if(!rec)return'時間未設定';
+  const time=rec.timeStart&&rec.timeEnd?`${rec.timeStart}～${rec.timeEnd}`:'';
+  if(rec.type==='none'){if(!rec.singleDate)return'時間未設定';return `${fmtDate(parseLocalDate(rec.singleDate))} ${time}`.trim();}
+  let countStr = '';
+  if(rec.endType==='count'){
+    countStr = rec.endCount ? `（共 ${rec.endCount} 堂）` : '';
+  } else if(rec.endType==='date' && rec.dateStart && rec.endDate){
+    try {
+      const dates = generateSessionDates(rec);
+      if(dates && dates.length > 0 && dates.length < 52) countStr = `（共 ${dates.length} 堂）`;
+      else if(rec.endDate) countStr = `（到 ${rec.endDate}）`;
+    } catch(e){}
+  }
+  const suffix = countStr ? `${countStr}` : '';
+  if(rec.type==='weekly'){const days=(rec.dayOfWeek||[]).map(d=>`週${DOW_NAMES[d]}`).join('、');return `每週${days} ${time}${suffix}`.trim();}
+  if(rec.type==='biweekly'){const days=(rec.dayOfWeek||[]).map(d=>`週${DOW_NAMES[d]}`).join('、');return `每雙週${days} ${time}${suffix}`.trim();}
+  if(rec.type==='monthly_day')return `每月${rec.dayOfMonth}號 ${time}${suffix}`.trim();
+  if(rec.type==='monthly_weekday'){const w=rec.dayOfWeek&&rec.dayOfWeek[0]!=null?rec.dayOfWeek[0]:6;return `每月第${rec.weekOfMonth}個週${DOW_NAMES[w]} ${time}${suffix}`.trim();}
+  return '';
 }
 
 /* ---- List ---- */
@@ -525,36 +539,28 @@ function renderList(){
     const iReg=my&&(course.registrations||[]).some(r=>sameAddr(r.addr,my));
     const tag=iOrg?'<div class="card-top-tag">我發起的</div>':iReg?'<div class="card-top-tag green">已報名</div>':'';
     const canCancel=iOrg&&!['cancelled','completed'].includes(course.status);
-    // 費用標籤
-    const feeParts = course.feeType==='fixed'?`💰 每人 $${Number(course.feeAmount||0).toLocaleString()}`:course.feeType==='split'?`💰 總額 $${Number(course.feeAmount||0).toLocaleString()} 平攤`:'💰 免費';
-    // 堂數（安全呼叫）
-    let sessCountStr='';
-    try{
-      const rec=course.recurrence;
-      const totalCardSess=rec&&rec.endType==='count'?(rec.endCount||0):0;
-      sessCountStr=totalCardSess>1?`（共 ${totalCardSess} 堂）`:'';
-    }catch(e){}
-    // 進度：分母改用上限
-    const cardCount=(course.registrations||[]).length,cardMax=course.maxParticipants||course.minParticipants||2;
-    // detailHint 替換（安全）
-    const rawHint=st.detailHint||'';
-    const cardHint=rawHint.replace(/\(已報名 \d+\/\d+人\)/,`(已報名 ${cardCount}/${cardMax}人)`);
+    const feeTextStr=course.feeType==='fixed'?`每人 $${Number(course.feeAmount||0).toLocaleString()}`:course.feeType==='split'?`總額 $${Number(course.feeAmount||0).toLocaleString()} 平攤`:'免費';
+    const recText=formatRecurrence(course.recurrence);
     return `<div class="card" style="${(iOrg||iReg)?'margin-top:20px':''}">
       ${tag}
       <div class="card-body" onclick="openCourseDetail('${course.id}')">
         <div class="card-title"><span class="tt">${esc(course.title)}</span><span class="pill cat-tag">${esc(course.category)}</span></div>
-        <div class="card-meta"><span>📍 ${esc(course.location||'地點待定')}</span><br><span>🗓️ ${esc(formatRecurrence(course.recurrence))}${sessCountStr}</span><br><span style="color:var(--ink-soft);font-size:12px">${feeParts}</span></div>
+        <div class="card-meta">
+          <div class="meta-item"><span class="meta-icon">📍</span><span class="meta-text">${esc(course.location||'地點待定')}</span></div>
+          <div class="meta-item"><span class="meta-icon">📅</span><span class="meta-text">${esc(recText)}</span></div>
+          <div class="meta-item"><span class="meta-icon">💰</span><span class="meta-text">${esc(feeTextStr)}</span></div>
+        </div>
         <div class="progress-track"><div class="progress-fill ${prog.fillCls}" style="width:${prog.pct}%"></div></div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;flex-wrap:wrap">
           <div class="progress-hint ${st.cls}" style="flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <span class="pill ${st.cls}" style="font-size:10px;padding:2px 7px">${esc(st.label)}</span>
-            <span>${cardHint}</span>
+            <span>${st.detailHint}</span>
             <span style="font-size:11px;color:var(--ink-muted);font-weight:normal">｜ ${deadlineText(course.registrationEnd)}</span>
           </div>
           ${canCancel?`<div style="display:flex;gap:6px;flex-shrink:0">
             <button type="button" style="background:#06C755;color:#fff;border:none;border-radius:8px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px" onclick="event.stopPropagation();shareToLine('${course.id}')"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg>分享</button>
             <button type="button" class="card-cancel-btn" onclick="event.stopPropagation();openCancelCourse('${course.id}')">取消揪團</button>
-          </div>`:''}
+          </div>`:`<span class="view-more-btn">查看詳情 →</span>`}
         </div>
       </div>
     </div>`;
@@ -591,7 +597,7 @@ function openCourseDetail(id){
       <div style="font-size:11px;color:var(--ink-muted);margin-top:3px">已報名 <b>${prog.count}</b> 人 ｜ 最低成團 <b>${prog.min}</b> 人 ｜ 上限 <b>${prog.max}</b> 人</div>
     </div>
     ${course.description?`<p style="font-size:14px;color:var(--ink-soft);line-height:1.65;margin:0 0 12px">${esc(course.description)}</p>`:''}
-    <div class="dfield"><span class="k">上課安排</span><span class="v">${esc(formatRecurrence(course.recurrence))}${totalSessions>1?`（共 ${totalSessions} 堂）`:''}</span></div>
+    <div class="dfield"><span class="k">上課安排</span><span class="v">${esc(formatRecurrence(course.recurrence))}</span></div>
     ${sessHtml?`<div style="padding:4px 0 10px;border-bottom:1px solid var(--line)">${sessHtml}</div>`:''}
     <div class="dfield"><span class="k">上課地點</span><span class="v">${esc(course.location||'待確認')}</span></div>
     <div class="dfield"><span class="k">報名截止</span><span class="v">${fmtDateTime(course.registrationEnd)}<br><span style="color:${Date.now()>course.registrationEnd?'var(--coral)':'var(--amber)'}">${deadlineText(course.registrationEnd)}</span></span></div>
