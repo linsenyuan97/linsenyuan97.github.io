@@ -185,7 +185,8 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .dbtn.cancel{background:var(--slate-light);color:var(--slate);flex:0 0 34%}
 .dbtn.go{background:var(--tiffany);color:#fff}
 .dbtn.rm{background:var(--coral);color:#fff}
-.sticky-bar{position:sticky;bottom:0;background:#fff;margin:10px -18px 0;padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 12px rgba(255,255,255,.95)}
+.sticky-bar{position:sticky;bottom:0;background:rgba(255,255,255,.98);backdrop-filter:blur(10px);margin:14px -18px 0;padding:10px 18px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 16px rgba(0,0,0,.08);border-top:1px solid var(--line);z-index:20}
+.sticky-bar .dbtns{margin:0}
 .disc-overlay{position:fixed;inset:0;z-index:400;background:rgba(28,25,41,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
 .disc-card{background:#fff;width:100%;max-width:440px;max-height:86vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;animation:fade .25s}
 .disc-head{padding:18px 20px 12px;font-size:18px;font-weight:900;color:var(--tiffany-dark);text-align:center;border-bottom:1px solid var(--line)}
@@ -645,7 +646,7 @@ function openCourseDetail(id){
     <div class="dfield"><span class="k">發起人</span><span class="v">${esc((course.organizer&&course.organizer.name)?`${course.organizer.name}（${dongLabel(course.organizer.addr)}棟住戶）`:`${dongLabel(course.organizer&&course.organizer.addr)}棟住戶`)}</span></div>
     ${(course.organizer&&course.organizer.contact)?`<div class="dfield"><span class="k">聯絡方式 (LINE ID/電話)</span><span class="v">${esc(course.organizer.contact)}</span></div>`:''}
     ${(course.organizer&&course.organizer.lineGroup)?`<div class="dfield" style="border:none"><span class="k">LINE 群組</span><span class="v"><a href="${esc(course.organizer.lineGroup)}" target="_blank" rel="noopener" style="color:#06C755;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg>點此加入課程群 ↗</a></span></div>`:''} 
-    ${ctaHtml}
+    <div class="sticky-bar">${ctaHtml}</div>
   `);
 }
 
