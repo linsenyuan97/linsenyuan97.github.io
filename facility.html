@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林森苑公設預約查詢</title>
+<!-- App 圖示：主畫面/捷徑/分頁 -->
+<link rel="apple-touch-icon" href="icons/facility/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/facility/icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/facility/icon-192.png">
+<link rel="icon" type="image/png" sizes="64x64" href="icons/facility/favicon-64.png">
+<meta name="apple-mobile-web-app-title" content="林森苑公設">
+<meta name="theme-color" content="#1d4ed8">
+<style>
+:root{
+  --nw: 120px;   /* 名稱欄寬 */
+  --hw: 128px;   /* 每個時段欄寬 */
+  --vw: 100%;    /* 表格可視寬度（由 JS 更新，供大項分隔置中用） */
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+  background: #fff; color: #111827;
+  min-height: 100vh; padding: 14px 10px 40px;
+}
+.container { max-width: 1180px; margin: 0 auto; }
+
+/* ── 登入卡片 ─────────────────────────────── */
+.card {
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+  padding: 40px 36px 36px; max-width: 430px; margin: 0 auto;
+}
+.banner-img { margin: -40px -36px 24px -36px; border-radius: 16px 16px 0 0; overflow: hidden; height: 140px; }
+.banner-img img { width: 100%; height: 100%; object-fit: cover; object-position: 0 80%; }
+h1 { font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+.subtitle { font-size: 13px; color: #6b7280; margin: 4px 0 24px; }
+label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+input[type="text"], input[type="password"] {
+  width: 100%; padding: 9px 13px; border: 1.5px solid #d1d5db; border-radius: 8px;
+  font-size: 16px; color: #111827; outline: none; transition: border-color 0.15s;
+}
+input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10); }
+.field { margin-bottom: 16px; }
+.btn {
+  padding: 10px 20px; background: #1a56db; color: #fff; border: none; border-radius: 8px;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s;
+}
+.btn:hover { background: #1444b8; }
+.btn:disabled { background: #93a8e8; cursor: not-allowed; }
+.btn-full { width: 100%; margin-top: 6px; }
+.error-msg {
+  margin-top: 14px; padding: 10px 14px; background: #fef2f2; border: 1.5px solid #fca5a5;
+  color: #991b1b; border-radius: 8px; font-size: 13px; font-weight: 600; display: none;
+}
+.spinner {
+  display: inline-block; width: 14px; height: 14px; border: 2px solid #ffffff55;
+  border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;
+  vertical-align: middle; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── 主面板 ───────────────────────────────── */
+.panel {
+  background: #fff; border: 1px solid #eef0f3; border-radius: 16px;
+  overflow: hidden; display: none;
+}
+
+/* 頂部日期列 */
+.topbar { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-bottom: 1px solid #eef0f3; }
+.navbtn { width: 38px; height: 38px; border: 1px solid #e2e5ea; border-radius: 999px; background: #fff; cursor: pointer; font-size: 18px; line-height: 1; color: #374151; display: flex; align-items: center; justify-content: center; }
+.navbtn:hover { background: #f7f8fa; }
+.datebox { display: flex; align-items: center; position: relative; }
+.datebtn { display: inline-flex; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; padding: 2px 8px; border-radius: 8px; color: #111827; pointer-events: none; }
+.datebtn:hover { background: #f4f7ff; color: #1a56db; }
+.datebtn .dtext { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+.datebtn .calic { color: #4b5563; flex: 0 0 auto; }
+.datebtn:hover .calic { color: #1a56db; }
+/* 讓真正的 date input 疊在 datebtn 上方，手指可直接點到以觸發原生日曆選單 */
+.hiddendate {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0;
+  -webkit-appearance: none; appearance: none;
+}
+
+/* 控制列：時間範圍 + 篩選鈕同一列 */
+.controlbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; }
+.timerange { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.clockic { color: #6b7280; flex: 0 0 auto; }
+.timerange select { font-size: 14px; font-weight: 600; color: #111827; padding: 7px 10px; border: 1px solid #e2e5ea; border-radius: 8px; background: #fff; cursor: pointer; }
+.timerange select:focus { outline: none; border-color: #1a56db; }
+.timedash { color: #9ca3af; font-weight: 700; }
+.filterbtn { grid-column: 3; justify-self: end; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #374151; background: #fff; border: 1px solid #e2e5ea; border-radius: 999px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+.gearic { flex: 0 0 auto; }
+.filterbtn:hover { background: #f7f8fa; }
+.filterbtn.on { border-color: #1a56db; color: #1a56db; background: #eef4ff; }
+
+/* 篩選對話框內的勾選選項 */
+.filter-opts { display: flex; flex-direction: column; gap: 14px; margin-bottom: 4px; }
+.fchk { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: #374151; font-weight: 500; cursor: pointer; user-select: none; }
+.fchk input { width: 18px; height: 18px; accent-color: #1a56db; cursor: pointer; }
+
+/* 大項標籤列 */
+.filters { padding: 14px 16px; border-bottom: 1px solid #eef0f3; }
+.tabs { display: flex; gap: 8px; overflow-x: auto; }
+.tab { font-size: 14px; padding: 8px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; border: 1px solid #e2e5ea; background: #fff; color: #6b7280; font-weight: 600; }
+.tab.on { border-color: transparent; background: #e6f0ff; color: #1a56db; }
+
+/* 表格（單一捲動容器 + sticky 凍結表頭與名稱欄） */
+.board-wrap { position: relative; margin: 0 16px; }
+.board { overflow: auto; max-height: 74vh; -webkit-overflow-scrolling: touch; }
+.fade-right { position: absolute; top: 0; right: 0; bottom: 0; width: 40px; background: linear-gradient(to right, rgba(255,255,255,0), #fff); pointer-events: none; z-index: 5; opacity: 0; transition: opacity .2s; }
+.btable { position: relative; }        /* 寬度由 JS 設定 */
+/* 目前時間紅線（僅今天顯示，位於可捲動的時間軸容器內，隨橫向捲動一起移動） */
+.nowline { position: absolute; top: 0; bottom: 0; width: 2px; background: #ef4444; z-index: 1; pointer-events: none; box-shadow: 0 0 0 0.5px rgba(239,68,68,0.35); }
+.nowline::before { content: ''; position: absolute; top: 0; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+.brow { display: flex; flex-wrap: nowrap; width: 100%; }
+.bcell { flex: 0 0 auto; display: flex; align-items: center; }
+.bcell.name {
+  position: sticky; left: 0; z-index: 2; background: #fff;
+  width: var(--nw); min-width: var(--nw); padding-left: 18px;
+  font-size: 16px; font-weight: 500; color: #111827;
+  border-right: 1px solid #eef0f3; white-space: nowrap;
+}
+.bcell.hour { width: var(--hw); min-width: var(--hw); justify-content: center; gap: 8px; padding: 7px 8px; }
+.bcell.filler { flex: 1 1 0; min-width: 0; padding: 0; }   /* 右側填充：吃掉剩餘寬度使區塊滿版，時段欄維持原寬 */
+/* 大項外框畫在「凍結名稱欄 + 首/末列」上：圓角固定於左側、單線、不隨捲動 */
+.catbox .frow .bcell.name { border-left: 1px solid var(--cc); }                 /* 固定左框 */
+.catlegend + .frow > .bcell { border-top: 1px solid var(--cc); }                /* 首列上框（滿版橫線） */
+.catlegend + .frow > .bcell.name { border-top-left-radius: 12px; }                /* 左上圓角（凍結） */
+.catbox .frow:last-child > .bcell { border-bottom: 1px solid var(--cc); }       /* 末列下框 */
+.catbox .frow:last-child > .bcell.name { border-bottom-left-radius: 12px; }       /* 左下圓角（凍結） */
+/* 無資料／載入中訊息列：文字放凍結名稱格向右溢出、固定於左，捲動穩定不跑位 */
+.msgrow .msgname { border-right: none; overflow: visible; color: #9ca3af; font-size: 14px; font-weight: 500; }
+.msgrow .msgfill { flex: 1 1 0; min-width: 0; }
+
+.bhead { position: sticky; top: 0; z-index: 4; background: #fff; border-bottom: 1px solid #eef0f3; height: 44px; }
+.bhead .bcell { height: 44px; }
+.bhead .bcell.name { z-index: 6; color: #374151; font-weight: 700; font-size: 13px; }
+.bhead .bcell.hour { color: #6b7280; font-weight: 600; font-size: 13px; }
+
+.frow { height: 48px; border-bottom: 1px solid #f4f5f7; }
+.frow .bcell { height: 48px; }
+/* 每個大項內的偶數列加淡灰底（含凍結的名稱欄） */
+.frow.alt, .frow.alt .bcell.name { background: #f8f9fb; }
+
+/* 大項容器（外框由凍結名稱欄與首/末列繪製，見上方規則） */
+.catbox { position: relative; width: 100%; background: #fff; margin: 22px 0 18px; }
+.catlegend { position: sticky; left: 0; width: fit-content; height: 0; display: flex; justify-content: flex-start; align-items: center; padding-left: 14px; z-index: 3; pointer-events: none; }
+.catlegend .dtxt { transform: translateY(-50%); background: #fff; padding: 0 10px; font-size: 18px; font-weight: 700; letter-spacing: 2px; white-space: nowrap; color: var(--tc); margin-top: 18px; }
+.catlegend + .frow { margin-top: 0; }   /* 標題壓在首列上框（含左上圓角）上 */
+.catbox .frow:last-child { border-bottom: none; }
+/* 名稱欄的左框（.catbox .frow .bcell.name）即為大項固定左框，表頭不需再補償 */
+.catbox.sport   { --cc: #bfe3d0; --tc: #1f9d63; }
+.catbox.park    { --cc: #c3d8f8; --tc: #1a56db; }
+.catbox.leisure { --cc: #eec4da; --tc: #be185d; }
+
+/* 格子 chip：依剩餘量色階 */
+.chip { flex: 1 1 0; min-width: 0; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.chip.full { background: #eaf6f0; border: 1px solid #cfe9dd; color: #2e8b6e; }
+.chip.zero { background: #f1f3f5; border: 1px solid #e5e7eb; color: #9aa1aa; }
+.chip.off  { background: #f1f3f5; border: 1px solid transparent; color: transparent; }
+
+.status { padding: 28px; text-align: center; color: #9ca3af; font-size: 14px; }
+.logout-row { padding: 12px 16px; border-top: 1px solid #eef0f3; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.logout-btn { font-size: 12px; color: #1a56db; background: none; border: 1px solid #1a56db; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+.chpwd-btn { font-size: 12px; color: #1a56db; background: none; border: 1px solid #1a56db; border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+
+/* 無障礙：鍵盤焦點 + 減少動態 */
+.navbtn:focus-visible, .tab:focus-visible, .btn:focus-visible, .calbtn:focus-visible,
+.logout-btn:focus-visible, .chpwd-btn:focus-visible { outline: 2px solid #1a56db; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce){ * { animation-duration: 0.01ms !important; transition: none !important; } }
+
+/* 修改密碼 Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal-card { background: #fff; border-radius: 16px; padding: 28px 28px 24px; width: 90%; max-width: 340px; box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+.modal-title { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 20px; }
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+.modal-field input { width: 100%; padding: 9px 13px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 15px; color: #111827; outline: none; transition: border-color 0.15s; }
+.modal-field input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10); }
+.modal-field textarea { width: 100%; padding: 10px 13px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #111827; outline: none; transition: border-color 0.15s; resize: vertical; min-height: 110px; font-family: inherit; line-height: 1.5; box-sizing: border-box; }
+.modal-field textarea:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10); }
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+.modal-ok { flex: 1; padding: 10px; background: #1a56db; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.modal-ok:hover { background: #1444b8; }
+.modal-ok:disabled { background: #93a8e8; cursor: not-allowed; }
+.modal-cancel { flex: 1; padding: 10px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.modal-cancel:hover { background: #e5e7eb; }
+.modal-msg { margin-top: 12px; font-size: 13px; border-radius: 7px; padding: 9px 12px; display: none; }
+.modal-msg.err { background: #fef2f2; color: #991b1b; border: 1.5px solid #fca5a5; display: block; }
+.modal-msg.ok { background: #f0fdf4; color: #166534; border: 1.5px solid #bbf7d0; display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="card" id="loginCard">
+    <div class="banner-img">
+      <img src="logo.jpg" alt="林森苑">
+    </div>
+    <h1>林森苑公設預約查詢</h1>
+    <div class="subtitle">請登入後查看公設可預約狀態</div>
+    <div class="field">
+      <label for="account">帳號</label>
+      <input type="text" id="account" placeholder="請輸入帳號" inputmode="numeric" pattern="[0-9]*">
+    </div>
+    <div class="field">
+      <label for="password">密碼</label>
+      <input type="password" id="password" placeholder="請輸入密碼" inputmode="numeric" pattern="[0-9]*">
+    </div>
+    <button class="btn btn-full" id="loginBtn" onclick="doLogin()">登入</button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="topbar">
+      <button class="navbtn" id="prevDay" aria-label="前一天">‹</button>
+      <div class="datebox">
+        <button class="datebtn" id="dateBtn" type="button" aria-label="選擇日期">
+          <span class="dtext" id="dateText">—</span>
+          <svg class="calic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+        </button>
+        <input type="date" id="datePick" class="hiddendate">
+      </div>
+      <button class="navbtn" id="nextDay" aria-label="後一天">›</button>
+    </div>
+
+    <div class="controlbar">
+      <div class="timerange">
+        <svg class="clockic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <select id="startSel" aria-label="起始時間"></select>
+        <span class="timedash">～</span>
+        <select id="endSel" aria-label="結束時間"></select>
+      </div>
+      <button class="filterbtn" id="filterBtn" type="button"><svg class="gearic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>篩選 (<span id="filterCount">1</span>)</button>
+    </div>
+
+    <div class="filters">
+      <div class="tabs" id="tabs"></div>
+    </div>
+
+    <div class="board-wrap" id="boardWrap" style="display:none;">
+      <div class="board" id="board">
+        <div class="btable" id="btable"></div>
+      </div>
+      <div class="fade-right" id="fadeRight"></div>
+    </div>
+
+    <div class="logout-row">
+      <button class="chpwd-btn" onclick="openFeedback()">建議與回報</button>
+      <button class="chpwd-btn" onclick="openCustomPwd()">自訂密碼</button>
+      <button class="logout-btn" onclick="doLogout()">登出</button>
+    </div>
+  </div>
+
+  <!-- 自訂密碼 Dialog -->
+  <div class="modal-overlay" id="customPwdModal">
+    <div class="modal-card">
+      <div class="modal-title">🔑 自訂密碼</div>
+      <div class="modal-field">
+        <label for="customPwd">新的自訂密碼（僅限數字）</label>
+        <input type="text" id="customPwd" inputmode="numeric" pattern="[0-9]*" placeholder="請輸入數字密碼" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      </div>
+      <div class="modal-msg" id="customPwdMsg"></div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeCustomPwd()">取消</button>
+        <button class="modal-ok" id="customPwdOkBtn" onclick="doSetCustomPassword()">確認</button>
+      </div>
+    </div>
+  </div>
+  <!-- 建議與回報 Dialog -->
+  <div class="modal-overlay" id="feedbackModal">
+    <div class="modal-card">
+      <div class="modal-title">💬 建議與回報</div>
+      <div class="modal-field">
+        <label for="feedbackText">請您提供使用上的問題或是建議</label>
+        <textarea id="feedbackText" rows="5" placeholder="請輸入您的問題或建議…"></textarea>
+      </div>
+      <div class="modal-msg" id="feedbackMsg"></div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeFeedback()">取消</button>
+        <button class="modal-ok" id="feedbackOkBtn" onclick="doSendFeedback()">送出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 篩選 Dialog -->
+  <div class="modal-overlay" id="filterModal">
+    <div class="modal-card">
+      <div class="modal-title">⚙️ 篩選</div>
+      <div class="filter-opts">
+        <label class="fchk"><input type="checkbox" id="chkAvail"> 只顯示有空位的公設</label>
+        <label class="fchk"><input type="checkbox" id="chkHideClosed" checked> 隱藏未開放公設</label>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeFilter()">取消</button>
+        <button class="modal-ok" id="filterOkBtn" onclick="applyFilter()">確認</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ====== 換成你的 Apps Script 部署網址 ======
+const EXEC = 'https://script.google.com/macros/s/AKfycbxl72JqnTQczbO9hYw2LoR2i1GymTLmoolZdS3QhAGyqkB9xeviv7ricTZqwBKmzfX9mg/exec';
+
+const START = 0, END = 24;                     // 時間軸可涵蓋全天 00:00 ~ 23:00（車位可 24h 預約）
+const DEFAULT_START = 6;                        // 預設起始時數（非今天用；今天則用目前時數）
+const HOURS = [];
+for (let h = START; h < END; h++) HOURS.push(h);
+
+const NAME_W = 120, HOUR_W = 128;              // 需與 CSS 的 --nw / --hw 一致
+const HOUR_PAD = 8;                            // 需與 .bcell.hour 左右 padding 一致（格子實際內容區）
+const HOUR_GAP = 8;                            // 需與 .bcell.hour 的 gap 一致（兩個半小時格之間的間距）
+const TOTAL_W = NAME_W + HOURS.length * HOUR_W;
+
+// 大項顯示順序：運動 → 車位 → 休閒
+const CAT_ORDER = ['運動', '車位', '休閒'];
+const CATS = ['全部', '運動', '車位', '休閒'];
+// 各大項的橫幅樣式與 icon
+const CAT_META = {
+  '運動': { cls: 'sport',   icon: '🏃' },
+  '車位': { cls: 'park',    icon: '🚗' },
+  '休閒': { cls: 'leisure', icon: '🛋️' }
+};
+
+let active = '全部';
+let dataset = [];
+let catLoaded = { '運動': false, '車位': false, '休閒': false };  // 各大項資料是否已載回
+let filterStart = DEFAULT_START, filterEnd = END - 1;   // 顯示時數範圍（含），預設 06:00 ~ 23:00
+let visHours = HOURS.slice();                    // 目前實際顯示的時數（依範圍過濾）
+let onlyAvail = false;                            // 只顯示有空位的公設（預設不勾）
+let hideClosed = true;                            // 隱藏未開放公設（預設勾）
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function toVal(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+
+// ── 登入 ──────────────────────────────────────────────
+async function doLogin() {
+  const account  = document.getElementById('account').value.trim();
+  const password = document.getElementById('password').value.trim();
+  if (!account || !password) { showError('請填寫帳號與密碼'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>驗證中...';
+  hideError();
+  try {
+    // 1. 快速驗證帳密（只查試算表，很快，不必等公設資料）
+    const res = await fetch(EXEC + '?action=login&account=' + encodeURIComponent(account) + '&password=' + encodeURIComponent(password));
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || '帳號或密碼錯誤');
+
+    // 2. 驗證成功：存憑證並立即顯示面板（不阻塞於公設資料）
+    localStorage.setItem('lsy_account', account);
+    localStorage.setItem('lsy_password', password);
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('panel').style.display = 'block';
+    setTimeout(() => window.scrollTo(0, 0), 200);
+
+    // 3. 非同步於背景載入公設資料（載入期間各區塊顯示「讀取公設預約資料中」，回來再畫上）
+    resetTimeForDate();
+    load();
+  } catch(e) {
+    showError(e.message || '帳號或密碼錯誤');
+  } finally {
+    btn.disabled = false; btn.textContent = '登入';
+  }
+}
+function doLogout() {
+  document.getElementById('panel').style.display = 'none';
+  document.getElementById('loginCard').style.display = 'block';
+  hideError();
+}
+function showError(msg) { const el = document.getElementById('errorMsg'); el.textContent = msg; el.style.display = 'block'; }
+function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('loginCard').style.display !== 'none') doLogin();
+});
+
+// ── 日期列 ────────────────────────────────────────────
+const dp = document.getElementById('datePick');
+let cur = new Date();
+dp.value = toVal(cur);
+dp.min = toVal(new Date());
+function updateDateText(){
+  document.getElementById('dateText').textContent =
+    cur.getFullYear() + '/' + pad(cur.getMonth()+1) + '/' + pad(cur.getDate());
+}
+updateDateText();
+document.getElementById('prevDay').onclick = () => { cur.setDate(cur.getDate()-1); dp.value = toVal(cur); updateDateText(); resetTimeForDate(); load(); };
+document.getElementById('nextDay').onclick = () => { cur.setDate(cur.getDate()+1); dp.value = toVal(cur); updateDateText(); resetTimeForDate(); load(); };
+const openPicker = () => { try { dp.showPicker(); } catch(e) { dp.click(); } };
+document.getElementById('dateBtn').onclick = openPicker;
+dp.onchange = () => { const v = dp.value.split('-'); cur = new Date(+v[0], +v[1]-1, +v[2]); updateDateText(); resetTimeForDate(); load(); };
+
+// ── 時間搜尋（起訖時數）────────────────────────────────
+const startSel = document.getElementById('startSel');
+const endSel   = document.getElementById('endSel');
+function timeOpts(from){
+  let html = '';
+  for (let h = from; h <= END - 1; h++) html += '<option value="' + h + '">' + pad(h) + ':00</option>';
+  return html;
+}
+// 今天：起始選單最早只到「現在整點」（今天已過的時段不列）；其他日期：從 START 全列
+function startMinHour(){
+  if (dp.value === toVal(new Date())) {
+    return Math.max(START, Math.min(new Date().getHours(), END - 1));
+  }
+  return START;
+}
+function syncTimeSelects(){
+  const minH = startMinHour();
+  if (filterStart < minH) filterStart = minH;         // 起始不早於允許的最早時數
+  startSel.innerHTML = timeOpts(minH);                // 起始選單移除今天已過的時段
+  startSel.value = String(filterStart);
+  if (filterEnd < filterStart) filterEnd = filterStart;
+  endSel.innerHTML = timeOpts(filterStart);           // 結束只列 ≥ 起始
+  endSel.value = String(filterEnd);
+}
+// 切換日期時重設：預設 06:00~23:00；若為今天，起始改為目前時數（取代原本自動捲動）
+function resetTimeForDate(){
+  filterEnd = END - 1;
+  if (dp.value === toVal(new Date())) {
+    filterStart = Math.max(START, Math.min(new Date().getHours(), END - 1));
+  } else {
+    filterStart = DEFAULT_START;
+  }
+  syncTimeSelects();
+}
+startSel.onchange = () => {
+  filterStart = +startSel.value;
+  if (filterEnd < filterStart) filterEnd = filterStart;
+  endSel.innerHTML = timeOpts(filterStart);           // 結束移除比起始小的時間
+  endSel.value = String(filterEnd);
+  render(); updateFade();
+};
+endSel.onchange = () => {
+  filterEnd = +endSel.value;
+  render(); updateFade();
+};
+
+// ── 右緣淡出提示（還能往右捲時才顯示）──────────────────
+function updateFade(){
+  const b = document.getElementById('board');
+  const f = document.getElementById('fadeRight');
+  if (!b || !f) return;
+  const more = (b.scrollWidth - b.clientWidth - b.scrollLeft) > 2;
+  f.style.opacity = more ? '1' : '0';
+}
+document.getElementById('board').addEventListener('scroll', () => { updateFade(); applyNowLineClip(); });
+window.addEventListener('resize', updateFade);
+
+// ── 篩選面板（展開 → 勾選 → 確認才套用並收合）──────────
+function updateFilterCount(){
+  const n = (onlyAvail ? 1 : 0) + (hideClosed ? 1 : 0);   // 目前生效中的篩選數
+  document.getElementById('filterCount').textContent = n;
+}
+function openFilter(){
+  // 開啟時把勾選同步為目前已套用的狀態（未按確認的更動不保留）
+  document.getElementById('chkAvail').checked = onlyAvail;
+  document.getElementById('chkHideClosed').checked = hideClosed;
+  document.getElementById('filterModal').classList.add('open');
+}
+function closeFilter(){ document.getElementById('filterModal').classList.remove('open'); }
+function applyFilter(){
+  onlyAvail  = document.getElementById('chkAvail').checked;
+  hideClosed = document.getElementById('chkHideClosed').checked;
+  updateFilterCount();
+  render(); updateFade();
+  closeFilter();
+}
+document.getElementById('filterBtn').onclick = openFilter;
+
+// ── 核心載入：立即畫出三大項區塊，各分類回來各自填入 ──────
+// 每次載入取一個遞增序號；回應回來時若已非最新序號（代表期間又切換過），即丟棄
+let loadToken = 0;
+async function load() {
+  const myToken = ++loadToken;
+
+  document.getElementById('boardWrap').style.display = 'block';
+
+  const account  = localStorage.getItem('lsy_account') || '';
+  const password = localStorage.getItem('lsy_password') || '';
+  const dateVal  = dp.value;
+
+  dataset = [];
+  catLoaded = { '運動': false, '車位': false, '休閒': false };
+  render();        // 立即畫出三大項區塊，各區塊內顯示「讀取公設預約資料中」
+  updateFade();
+
+  const categories = ['運動', '車位', '休閒'];
+  const promises = categories.map(async (cat) => {
+    let data = null;
+    try {
+      const res = await fetch(EXEC + '?action=facilities&date=' + dateVal + '&account=' + encodeURIComponent(account) + '&password=' + encodeURIComponent(password) + '&cat=' + encodeURIComponent(cat));
+      const json = await res.json();
+      if (json.ok && Array.isArray(json.data)) data = json.data;
+    } catch (e) {
+      console.error('載入分類 ' + cat + ' 失敗:', e);
+    }
+    if (myToken !== loadToken) return;   // 已有更新的載入（日期已切換），此回應作廢
+
+    if (data) {
+      const existingIds = dataset.map(f => String(f.pf_id || f.pfId));
+      const newData = data.filter(f => !existingIds.includes(String(f.pf_id || f.pfId)));
+      dataset = dataset.concat(newData);
+    }
+    catLoaded[cat] = true;   // 不論成功或失敗都結束該區塊載入中狀態
+    render();
+    updateFade();
+  });
+
+  await Promise.all(promises);
+}
+
+// ── 資料存取與色階 ────────────────────────────────────
+function capAt(f, h, m){
+  const key = pad(h) + ':' + pad(m);
+  return (key in f.slots) ? f.slots[key] : null;
+}
+// 依目前顯示時數範圍（visHours）判斷公設狀態：
+//   'avail'  有任一格還有空位（>0）
+//   'full'   有開放時段但全被約滿（值存在但無 >0）
+//   'closed' 範圍內完全未開放（全為 null）
+function facStatus(f){
+  let hasOpen = false;
+  for (const h of visHours){
+    const mins = f.half ? [0, 30] : [0];
+    for (const m of mins){
+      const c = capAt(f, h, m);
+      if (c == null) continue;
+      hasOpen = true;
+      if (c > 0) return 'avail';
+    }
+  }
+  return hasOpen ? 'full' : 'closed';
+}
+function chipEl(f, h, m){
+  const c = capAt(f, h, m);
+  const chip = document.createElement('div');
+  if (c == null) {                     // 不可預約
+    chip.className = 'chip off';
+    chip.title = pad(h)+':'+pad(m)+'　不可預約';
+  } else if (c <= 0) {                  // 已額滿
+    chip.className = 'chip zero';
+    chip.textContent = 0;
+    chip.title = pad(h)+':'+pad(m)+'　已額滿';
+  } else {                             // 可預約（一律綠色，貼近設計稿）
+    chip.className = 'chip full';
+    chip.textContent = c;
+    chip.title = pad(h)+':'+pad(m)+'　剩 ' + c;
+  }
+  return chip;
+}
+
+// ── 渲染表格 ──────────────────────────────────────────
+function setVW(){
+  const b = document.getElementById('board');
+  if (!b || !b.clientWidth) return;
+  const cs = getComputedStyle(b);
+  const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  document.documentElement.style.setProperty('--vw', (b.clientWidth - pad) + 'px');
+}
+window.addEventListener('resize', setVW);
+function catboxEl(cat){
+  const meta = CAT_META[cat] || CAT_META['休閒'];
+  const box = document.createElement('div');
+  box.className = 'catbox ' + meta.cls;
+  const lg = document.createElement('div');
+  lg.className = 'catlegend';
+  lg.innerHTML = '<span class="dtxt">' + cat + '</span>';
+  box.appendChild(lg);
+  return box;
+}
+function rowEl(f, alt){
+  const row = document.createElement('div');
+  row.className = 'brow frow' + (alt ? ' alt' : '');
+  const nm = document.createElement('div');
+  nm.className = 'bcell name';
+  nm.textContent = f.name.replace('臨停車位', '');
+  row.appendChild(nm);
+  visHours.forEach(h => {
+    const cell = document.createElement('div');
+    cell.className = 'bcell hour';
+    cell.appendChild(chipEl(f, h, 0));
+    if (f.half) cell.appendChild(chipEl(f, h, 30));   // 半小時制 → 兩顆
+    row.appendChild(cell);
+  });
+  row.appendChild(fillerCell());
+  return row;
+}
+// 右側填充格：伸縮吃掉剩餘寬度，使區塊滿版而時段欄不被拉伸
+function fillerCell(){
+  const c = document.createElement('div');
+  c.className = 'bcell filler';
+  return c;
+}
+function render(){
+  const bt = document.getElementById('btable');
+  bt.innerHTML = '';
+  visHours = HOURS.filter(h => h >= filterStart && h <= filterEnd);   // 依時間範圍過濾欄位
+  bt.style.width = '100%';                                            // 至少滿版（時段少時撐滿）
+  bt.style.minWidth = (NAME_W + visHours.length * HOUR_W) + 'px';     // 內容較寬時才超出 → 橫向捲動
+  setVW();   // 更新大項分隔置中所需的可視寬度
+
+  // 表頭
+  const head = document.createElement('div');
+  head.className = 'brow bhead';
+  const corner = document.createElement('div');
+  corner.className = 'bcell name';
+  corner.textContent = '時段';
+  head.appendChild(corner);
+  visHours.forEach(h => {
+    const c = document.createElement('div');
+    c.className = 'bcell hour';
+    c.textContent = pad(h) + ':00';
+    head.appendChild(c);
+  });
+  head.appendChild(fillerCell());
+  bt.appendChild(head);
+
+  // 要顯示的大項：全部 → 三大項（依序）；否則 → 目前選到的那一項
+  const cats = (active === '全部') ? CAT_ORDER.slice() : [active];
+
+  cats.forEach(cat => {
+    const box = catboxEl(cat);
+    bt.appendChild(box);
+
+    if (!catLoaded[cat]) {                       // 尚未載回 → 區塊內顯示載入中
+      box.appendChild(msgRow('讀取公設預約資料中'));
+      return;
+    }
+    const items = dataset.filter(f => f.cat === cat);
+    if (items.length === 0) {                    // 已載回但無資料（防呆）
+      box.appendChild(msgRow('無此分類之公設資料'));
+      return;
+    }
+    // 套用篩選：只顯示有空位 → 非 avail 隱藏；隱藏未開放 → closed 隱藏（皆依 visHours 判斷）
+    const shown = items.filter(f => {
+      const st = facStatus(f);
+      if (onlyAvail && st !== 'avail') return false;
+      if (hideClosed && st === 'closed') return false;
+      return true;
+    });
+    if (shown.length === 0) {                    // 有資料但被篩光
+      box.appendChild(msgRow('本時段無可預約公設'));
+      return;
+    }
+    shown.forEach((f, i) => box.appendChild(rowEl(f, i % 2 === 1)));
+  });
+
+  positionNowLine();   // 畫出／更新目前時間紅線
+}
+
+// 目前時間紅線：只在「今天」且目前時間落在顯示範圍內時出現，依 filterStart 換算位置
+let nowLineLeft = null;   // 紅線在表格內的 x 座標（含名稱欄寬）；null 表示不顯示
+function positionNowLine(){
+  const bt = document.getElementById('btable');
+  if (!bt) return;
+  let line = document.getElementById('nowLine');
+  const now = new Date();
+  const nowPos = now.getHours() + now.getMinutes() / 60;
+  // 載入中（目前顯示的大項尚未全部載回）不畫紅線
+  const catsShown = (active === '全部') ? CAT_ORDER : [active];
+  const loading = catsShown.some(c => !catLoaded[c]);
+  const inRange = !loading && (dp.value === toVal(new Date())) && nowPos >= filterStart && nowPos < filterEnd + 1;
+  if (!inRange) { nowLineLeft = null; if (line) line.style.display = 'none'; return; }
+  if (!line) { line = document.createElement('div'); line.id = 'nowLine'; line.className = 'nowline'; bt.appendChild(line); }
+  // 前半 30 分 → 落在第一格內（左→右）；後半 30 分 → 落在第二格內（左→右），中間縫跳過
+  const hourIdx = Math.floor(nowPos) - filterStart;               // 目前在第幾個顯示欄
+  const cellLeft = NAME_W + hourIdx * HOUR_W;
+  const chipW = (HOUR_W - 2 * HOUR_PAD - HOUR_GAP) / 2;           // 每個半小時格的寬度
+  const m = now.getMinutes();
+  const x = (m < 30)
+    ? cellLeft + HOUR_PAD + (m / 30) * chipW                              // 第一格內
+    : cellLeft + HOUR_PAD + chipW + HOUR_GAP + ((m - 30) / 30) * chipW;   // 第二格內
+  nowLineLeft = x;
+  line.style.left = x + 'px';
+  applyNowLineClip();   // 依橫向捲動決定是否露出（捲到名稱欄後方就隱藏）
+}
+// 當紅線捲到凍結名稱欄後方時隱藏，避免從標題列／大項間空隙的左緣露出
+function applyNowLineClip(){
+  const line = document.getElementById('nowLine');
+  const board = document.getElementById('board');
+  if (!line || nowLineLeft === null || !board) return;
+  const screenX = nowLineLeft - board.scrollLeft;    // 相對於捲動容器左緣的位置
+  line.style.display = (screenX >= NAME_W) ? 'block' : 'none';
+}
+setInterval(positionNowLine, 60000);   // 每分鐘更新紅線位置
+
+// 區塊內的單列訊息（載入中／無資料）：套用大項外框，寬度貼齊可視範圍並固定於左
+function msgRow(text){
+  const row = document.createElement('div');
+  row.className = 'frow msgrow';
+  const name = document.createElement('div');
+  name.className = 'bcell name msgname';   // 訊息放凍結名稱格，向右溢出顯示、固定於左
+  name.textContent = text;
+  const fill = document.createElement('div');
+  fill.className = 'bcell msgfill';        // 右側填充：提供上/下框線，與資料列同結構
+  row.appendChild(name);
+  row.appendChild(fill);
+  return row;
+}
+
+// ── 分類標籤 ──────────────────────────────────────────
+const tabsEl = document.getElementById('tabs');
+function renderTabs(){
+  tabsEl.innerHTML = '';
+  CATS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'tab' + (c === active ? ' on' : '');
+    b.textContent = c;
+    b.onclick = () => { active = c; renderTabs(); render(); };
+    tabsEl.appendChild(b);
+  });
+}
+
+// ── 自訂密碼 ──────────────────────────────────────────
+function openCustomPwd(){
+  const i = document.getElementById('customPwd'); i.value = '';
+  const m = document.getElementById('customPwdMsg'); m.className = 'modal-msg'; m.textContent = '';
+  document.getElementById('customPwdModal').classList.add('open');
+  setTimeout(() => i.focus(), 50);
+}
+function closeCustomPwd(){ document.getElementById('customPwdModal').classList.remove('open'); }
+function showCustomMsg(text, ok){
+  const m = document.getElementById('customPwdMsg');
+  m.textContent = text; m.className = 'modal-msg ' + (ok ? 'ok' : 'err');
+}
+async function doSetCustomPassword(){
+  const val = document.getElementById('customPwd').value.trim();
+  if (!/^[0-9]+$/.test(val)) { showCustomMsg('請輸入數字密碼', false); return; }
+  const account  = localStorage.getItem('lsy_account') || '';
+  const password = localStorage.getItem('lsy_password') || '';
+
+  const okBtn = document.getElementById('customPwdOkBtn');
+  okBtn.disabled = true; okBtn.textContent = '處理中…';
+  try {
+    const url = EXEC + '?action=setCustomPassword&account=' + encodeURIComponent(account)
+      + '&password=' + encodeURIComponent(password)
+      + '&customPassword=' + encodeURIComponent(val);
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.ok) {
+      showCustomMsg('密碼變更成功', true);
+      setTimeout(closeCustomPwd, 1200);
+    } else {
+      showCustomMsg(json.error || '變更失敗', false);
+    }
+  } catch(e) {
+    showCustomMsg('連線失敗，請稍後再試', false);
+  } finally {
+    okBtn.disabled = false; okBtn.textContent = '確認';
+  }
+}
+
+// ── 建議與回報 ────────────────────────────────────────
+async function openFeedback(){
+  const t = document.getElementById('feedbackText');
+  const m = document.getElementById('feedbackMsg'); m.className = 'modal-msg'; m.textContent = '';
+  t.value = ''; t.placeholder = '讀取中…';
+  document.getElementById('feedbackModal').classList.add('open');
+  // 預設帶入該帳號目前已填的建議內容
+  const account = localStorage.getItem('lsy_account') || '';
+  try {
+    const res = await fetch(EXEC + '?action=getFeedback&account=' + encodeURIComponent(account));
+    const json = await res.json();
+    if (json.ok) t.value = json.feedback || '';
+  } catch(e) { /* 讀取失敗就留空白 */ }
+  t.placeholder = '請輸入您的問題或建議…';
+  setTimeout(() => t.focus(), 50);
+}
+function closeFeedback(){ document.getElementById('feedbackModal').classList.remove('open'); }
+function showFeedbackMsg(text, ok){
+  const m = document.getElementById('feedbackMsg');
+  m.textContent = text; m.className = 'modal-msg ' + (ok ? 'ok' : 'err');
+}
+async function doSendFeedback(){
+  const text = document.getElementById('feedbackText').value;
+  const account = localStorage.getItem('lsy_account') || '';
+  const okBtn = document.getElementById('feedbackOkBtn');
+  okBtn.disabled = true; okBtn.textContent = '送出中…';
+  try {
+    const url = EXEC + '?action=setFeedback&account=' + encodeURIComponent(account)
+      + '&feedback=' + encodeURIComponent(text);
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.ok) {
+      showFeedbackMsg('送出成功', true);
+      setTimeout(closeFeedback, 1200);
+    } else {
+      showFeedbackMsg(json.error || '送出失敗', false);
+    }
+  } catch(e) {
+    showFeedbackMsg('連線失敗，請稍後再試', false);
+  } finally {
+    okBtn.disabled = false; okBtn.textContent = '送出';
+  }
+}
+
+// ── 啟動 ──────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    const a = localStorage.getItem('lsy_account');
+    const p = localStorage.getItem('lsy_password');
+    if (a) document.getElementById('account').value = a;
+    if (p) document.getElementById('password').value = p;
+  } catch(e) {}
+  renderTabs();
+  resetTimeForDate();   // 建立起訖時間下拉並套用預設（今天→起始為目前時數）
+  updateFilterCount();  // 依預設勾選狀態顯示生效中的篩選數
+  warmupCache();   // 背景預熱後端快取
+});
+
+async function warmupCache() {
+  try { await fetch(EXEC + '?action=warmup'); } catch(e) {}
+}
+</script>
+</body>
+</html>
