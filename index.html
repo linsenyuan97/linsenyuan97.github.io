@@ -387,38 +387,70 @@
     line-height: 1.3;
   }
 
-  /* 樓層右側箭頭 */
+  /* ── 豪宅梯廳・電梯呼叫按鈕 (Elevator Call Button) ── */
   .floor-arrow {
-    width: 25px;
-    height: 25px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: radial-gradient(circle at 35% 35%, #2a3447 0%, #121824 85%);
+    border: 1.5px solid rgba(212, 175, 55, 0.35);
+    box-shadow: 
+      inset 0 1px 2px rgba(255, 255, 255, 0.25),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.8),
+      0 2px 6px rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-dim);
     flex-shrink: 0;
-    transition: all 0.25s ease;
+    position: relative;
+    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* 呼叫燈內圈光環 */
+  .floor-arrow::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+    transition: all 0.22s ease;
   }
 
   .floor-arrow svg {
-    width: 13px;
-    height: 13px;
-    transition: transform 0.25s ease;
+    width: 14px;
+    height: 14px;
+    transition: transform 0.22s ease, color 0.22s ease, filter 0.22s ease;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
   }
 
+  /* 懸停與點擊/呼叫點亮狀態 (Call Lamp Light-up) */
   .floor-unit:hover .floor-arrow,
-  .floor-unit.active .floor-arrow {
-    background: var(--floor-accent, var(--gold-primary));
+  .floor-unit:active .floor-arrow,
+  .floor-unit.calling .floor-arrow {
+    background: radial-gradient(circle at 40% 40%, var(--floor-accent, #ffd983) 0%, #1a1608 100%);
     color: #070a10;
-    border-color: transparent;
-    box-shadow: 0 0 10px var(--floor-accent, rgba(212, 175, 55, 0.6));
+    border-color: var(--floor-accent, var(--gold-primary));
+    box-shadow: 
+      0 0 16px var(--floor-accent, rgba(212, 175, 55, 0.8)),
+      0 0 28px var(--floor-accent, rgba(212, 175, 55, 0.4)),
+      inset 0 0 6px rgba(255, 255, 255, 0.8);
+    transform: scale(1.06);
+  }
+
+  .floor-unit:hover .floor-arrow::after,
+  .floor-unit:active .floor-arrow::after,
+  .floor-unit.calling .floor-arrow::after {
+    border-color: rgba(255, 255, 255, 0.6);
   }
 
   .floor-unit:hover .floor-arrow svg,
-  .floor-unit.active .floor-arrow svg {
-    transform: translateX(2px);
+  .floor-unit:active .floor-arrow svg,
+  .floor-unit.calling .floor-arrow svg {
+    color: #06090e;
+    transform: translateX(1.5px);
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
   }
 
   /* 各樓層專屬配色 */
@@ -656,7 +688,7 @@
   </main>
 
   <script>
-    // 即時時間更新
+    // 即時時間更新 (yyyy/MM/dd HH:mm)
     function updateClock() {
       const now = new Date();
       const year = now.getFullYear();
@@ -669,6 +701,21 @@
     }
     updateClock();
     setInterval(updateClock, 30000);
+
+    // 點擊呼叫燈微互動回饋（按鈕點亮 0.16 秒後流暢跳轉）
+    const floorUnits = document.querySelectorAll('.floor-unit');
+    floorUnits.forEach(unit => {
+      unit.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href && !e.metaKey && !e.ctrlKey) {
+          e.preventDefault();
+          this.classList.add('calling');
+          setTimeout(() => {
+            window.location.href = href;
+          }, 160);
+        }
+      });
+    });
   </script>
 
 </body>
