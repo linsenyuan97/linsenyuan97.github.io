@@ -151,6 +151,11 @@
       <feGaussianBlur stdDeviation="3" result="b"/>
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    <!-- 石牌文字專用光暈：純模糊、範圍更大，因為底下這份會被上層文字完全蓋住，
+         露出來的只有模糊外溢的部分，所以模糊強度要夠明顯才看得出來 -->
+    <filter id="textGlow" x="-150%" y="-150%" width="400%" height="400%">
+      <feGaussianBlur stdDeviation="4.5"/>
+    </filter>
     <!-- 頂級懸浮立體投影 (3D Glass Elevation Shadow) -->
     <filter id="glassShadow" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#151A22" flood-opacity="0.32"/>
@@ -625,10 +630,10 @@
 <rect x="125" y="95" width="170" height="475" rx="2" fill="none" stroke="#4A463C" stroke-width="1.1" opacity="0.4"/>
 <rect x="111" y="566" width="198" height="34" fill="url(#towerShade)"/>
 <rect x="111" y="566" width="198" height="34" fill="none" stroke="#4A463C" stroke-width="1" opacity="0.35"/>
-<rect x="155" y="572" width="110" height="26" rx="1" fill="#E4E0D3" opacity="0.95"/>
+<rect id="plaqueBg" x="155" y="572" width="110" height="26" rx="1" fill="#E4E0D3" opacity="0.95"/>
 <!-- 夜間版：貼合字形本身的黃色光暈（疊在真正文字下方，跟文字座標完全一致） -->
-<text id="plaqueTextGlow" x="210.0" y="592" text-anchor="middle" font-family="'Noto Serif TC', serif" font-weight="900" font-size="20" letter-spacing="3" fill="#F7D375" opacity="0" filter="url(#glow)">林森苑</text>
-<text x="210.0" y="592" text-anchor="middle" font-family="'Noto Serif TC', serif" font-weight="900" font-size="20" letter-spacing="3" fill="#2B2E33">林森苑</text>
+<text id="plaqueTextGlow" x="210.0" y="592" text-anchor="middle" font-family="'Noto Serif TC', serif" font-weight="900" font-size="20" letter-spacing="3" fill="#F7D375" opacity="0" filter="url(#textGlow)">林森苑</text>
+<text id="plaqueText" x="210.0" y="592" text-anchor="middle" font-family="'Noto Serif TC', serif" font-weight="900" font-size="20" letter-spacing="3" fill="#2B2E33">林森苑</text>
 <a href="course.html" class="floor-link" aria-label="課程揪團">
   <!-- 1. 課程揪團：紫羅蘭透光微漸層 + 磨砂玻璃 1px 微光外框 + 3D 立體投影 (寬度 230px 擴大熱區) -->
   <rect x="95" y="147" width="230" height="46" rx="6" fill="url(#glassCourse)" stroke="rgba(255,255,255,0.4)" stroke-width="1" filter="url(#glassShadow)"/>
