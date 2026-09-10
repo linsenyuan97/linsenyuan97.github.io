@@ -1,0 +1,92 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="goldHeart" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="45%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <filter id="badgeShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0F172A" flood-opacity="0.28"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+    <filter id="heartShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#B45309" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="512" height="512" rx="115" fill="#3474CC"/>
+
+  <!--
+    三棟大樓：w=100 h=362，頂 y=113（冠飾 y=105）底 y=475
+    棟間距 40px
+    左 x=56  中 x=196  右 x=336
+    整體再往右平移 8px
+  -->
+  <g fill="#FFFFFF" transform="translate(8,0)">
+    <rect x="56"  y="98"  width="100" height="377"/>
+    <rect x="52"  y="90"  width="108" height="14"/>
+
+    <rect x="196" y="98"  width="100" height="377"/>
+    <rect x="192" y="90"  width="108" height="14"/>
+
+    <rect x="336" y="98"  width="100" height="377"/>
+    <rect x="332" y="90"  width="108" height="14"/>
+  </g>
+
+  <!--
+    窗格：3欄×10列，每格 18×22，欄距 9，列距 10
+    translate y=148（冠飾下 29px），內縮 14px
+    左 translate(70,133)  中 translate(210,133)  右 translate(350,133)
+  -->
+
+  <!-- 左棟窗格 -->
+  <g fill="#3474CC" transform="translate(78,133)">
+    <rect x="0" y="0"   width="18" height="22"/><rect x="27" y="0"   width="18" height="22"/><rect x="54" y="0"   width="18" height="22"/>
+    <rect x="0" y="32"  width="18" height="22"/><rect x="27" y="32"  width="18" height="22"/><rect x="54" y="32"  width="18" height="22"/>
+    <rect x="0" y="64"  width="18" height="22"/><rect x="27" y="64"  width="18" height="22"/><rect x="54" y="64"  width="18" height="22"/>
+    <rect x="0" y="96"  width="18" height="22"/><rect x="27" y="96"  width="18" height="22"/><rect x="54" y="96"  width="18" height="22"/>
+    <rect x="0" y="128" width="18" height="22"/><rect x="27" y="128" width="18" height="22"/><rect x="54" y="128" width="18" height="22"/>
+    <rect x="0" y="160" width="18" height="22"/><rect x="27" y="160" width="18" height="22"/><rect x="54" y="160" width="18" height="22"/>
+    <rect x="0" y="192" width="18" height="22"/><rect x="27" y="192" width="18" height="22"/><rect x="54" y="192" width="18" height="22"/>
+    <rect x="0" y="224" width="18" height="22"/><rect x="27" y="224" width="18" height="22"/><rect x="54" y="224" width="18" height="22"/>
+    <rect x="0" y="256" width="18" height="22"/><rect x="27" y="256" width="18" height="22"/><rect x="54" y="256" width="18" height="22"/>
+    <rect x="0" y="288" width="18" height="22"/><rect x="27" y="288" width="18" height="22"/><rect x="54" y="288" width="18" height="22"/>
+  </g>
+
+  <!-- 中棟窗格 -->
+  <g fill="#3474CC" transform="translate(218,133)">
+    <rect x="0" y="0"   width="18" height="22"/><rect x="27" y="0"   width="18" height="22"/><rect x="54" y="0"   width="18" height="22"/>
+    <rect x="0" y="32"  width="18" height="22"/><rect x="27" y="32"  width="18" height="22"/><rect x="54" y="32"  width="18" height="22"/>
+    <rect x="0" y="64"  width="18" height="22"/><rect x="27" y="64"  width="18" height="22"/><rect x="54" y="64"  width="18" height="22"/>
+    <rect x="0" y="96"  width="18" height="22"/><rect x="27" y="96"  width="18" height="22"/><rect x="54" y="96"  width="18" height="22"/>
+    <rect x="0" y="128" width="18" height="22"/><rect x="27" y="128" width="18" height="22"/><rect x="54" y="128" width="18" height="22"/>
+    <rect x="0" y="160" width="18" height="22"/><rect x="27" y="160" width="18" height="22"/><rect x="54" y="160" width="18" height="22"/>
+    <rect x="0" y="192" width="18" height="22"/><rect x="27" y="192" width="18" height="22"/><rect x="54" y="192" width="18" height="22"/>
+    <rect x="0" y="224" width="18" height="22"/><rect x="27" y="224" width="18" height="22"/><rect x="54" y="224" width="18" height="22"/>
+    <rect x="0" y="256" width="18" height="22"/><rect x="27" y="256" width="18" height="22"/><rect x="54" y="256" width="18" height="22"/>
+    <rect x="0" y="288" width="18" height="22"/><rect x="27" y="288" width="18" height="22"/><rect x="54" y="288" width="18" height="22"/>
+  </g>
+
+  <!-- 右棟窗格 -->
+  <g fill="#3474CC" transform="translate(358,133)">
+    <rect x="0" y="0"   width="18" height="22"/><rect x="27" y="0"   width="18" height="22"/><rect x="54" y="0"   width="18" height="22"/>
+    <rect x="0" y="32"  width="18" height="22"/><rect x="27" y="32"  width="18" height="22"/><rect x="54" y="32"  width="18" height="22"/>
+    <rect x="0" y="64"  width="18" height="22"/><rect x="27" y="64"  width="18" height="22"/><rect x="54" y="64"  width="18" height="22"/>
+    <rect x="0" y="96"  width="18" height="22"/><rect x="27" y="96"  width="18" height="22"/><rect x="54" y="96"  width="18" height="22"/>
+    <rect x="0" y="128" width="18" height="22"/><rect x="27" y="128" width="18" height="22"/><rect x="54" y="128" width="18" height="22"/>
+    <rect x="0" y="160" width="18" height="22"/><rect x="27" y="160" width="18" height="22"/><rect x="54" y="160" width="18" height="22"/>
+    <rect x="0" y="192" width="18" height="22"/><rect x="27" y="192" width="18" height="22"/><rect x="54" y="192" width="18" height="22"/>
+    <rect x="0" y="224" width="18" height="22"/><rect x="27" y="224" width="18" height="22"/><rect x="54" y="224" width="18" height="22"/>
+    <rect x="0" y="256" width="18" height="22"/><rect x="27" y="256" width="18" height="22"/><rect x="54" y="256" width="18" height="22"/>
+    <rect x="0" y="288" width="18" height="22"/><rect x="27" y="288" width="18" height="22"/><rect x="54" y="288" width="18" height="22"/>
+  </g>
+
+  <!-- 徽章 -->
+  <g id="badge">
+    <circle cx="370" cy="385" r="122" fill="#FFFFFF" filter="url(#badgeShadow)"/>
+    <path d="M370 345 C370 331, 354 317, 334 317 C308 317, 292 339, 292 367 C292 403, 330 435, 370 463 C410 435, 448 403, 448 367 C448 339, 432 317, 406 317 C386 317, 370 331, 370 345 Z" fill="url(#goldHeart)" filter="url(#heartShadow)"/>
+    <path d="M334 325 C315 325, 302 340, 302 361 C302 381, 318 403, 342 423 C329 405, 318 387, 318 368 C318 348, 329 333, 346 333 C354 333, 360 337, 365 343 C358 331, 348 325, 334 325 Z" fill="#FEF2C7" opacity="0.6"/>
+  </g>
+</svg>
+
