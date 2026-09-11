@@ -1280,7 +1280,7 @@ async function submitDonate(){
 /* ============================================================
    Login (Same logic and presentation as book.html)
    ============================================================ */
-function myAddrShort(){ const s=me(); return s ? `${s.hao}-${s.lou}F${s.zhi}` : ''; }
+function myAddrShort(){ const s=me(); return s ? `${DONG_MAP[s.hao]||s.hao}-${s.lou}F${s.zhi}` : ''; }
 
 function applyLoginUI(){
   const logged = !!me();

@@ -21,7 +21,7 @@
 body {
   font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
   background: #fff; color: #111827;
-  min-height: 100vh; padding: 14px 10px 40px;
+  padding: 14px 10px 40px;
 }
 .container { max-width: 1180px; margin: 0 auto; }
 
@@ -191,10 +191,18 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .modal-msg { margin-top: 12px; font-size: 13px; border-radius: 7px; padding: 9px 12px; display: none; }
 .modal-msg.err { background: #fef2f2; color: #991b1b; border: 1.5px solid #fca5a5; display: block; }
 .modal-msg.ok { background: #f0fdf4; color: #166534; border: 1.5px solid #bbf7d0; display: block; }
+.page-header { display: flex; align-items: center; gap: 10px; padding: 2px 2px 14px; }
+.page-header svg { width: 28px; height: 28px; flex-shrink: 0; color: #1d4ed8; }
+.page-header h2 { font-size: 19px; font-weight: 700; color: #111827; margin: 0; }
 </style>
 </head>
 <body>
 <div class="container">
+
+  <div class="page-header">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="3"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="m8.5 14.5 2.2 2.2L15.5 12"></path></svg>
+    <h2>林森苑公設查詢</h2>
+  </div>
 
   <div class="card" id="loginCard">
     <div class="banner-img">

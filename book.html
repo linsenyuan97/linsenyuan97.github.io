@@ -640,6 +640,7 @@ let h5qD=null,scanningD=false;
 let h5qB=null,scanningB=false;
 let donateBatch=[];
 let pendingBorrowId=null;
+const DONG_MAP = {95:'A', 97:'B', 99:'C'}; // 號 → 對外顯示的「棟」（跟 course.html / share.html 一致）
 const ADDR_KEY='ls-resident-addr';
 const MODE_KEY='borrow-mode';
 const MAXB_KEY='max-borrow-per-addr';
@@ -1302,7 +1303,7 @@ function initAddrSelects(){
 }
 function getLogin(){try{const s=JSON.parse(localStorage.getItem(ADDR_KEY)||'null');return (s&&s.hao)?s:null;}catch(e){return null;}}
 function myAddr(){const s=getLogin();return s?(s.hao+'號'+s.lou+'樓之'+s.zhi):'';}
-function myAddrShort(){const s=getLogin();return s?(s.hao+'-'+s.lou+'F'+s.zhi):'';}
+function myAddrShort(){const s=getLogin();return s?((DONG_MAP[s.hao]||s.hao)+'-'+s.lou+'F'+s.zhi):'';}
 function applyLoginUI(){
   const logged=!!getLogin();
   document.getElementById('loginDot').classList.toggle('hidden',!logged);
