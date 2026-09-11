@@ -746,10 +746,10 @@
   // enabled  : 要不要啟用夜間模式判斷。之後想整個關掉，改成 false 即可。
   // startHour: 晚上從幾點開始算「夜間」(24 小時制)
   // endHour  : 早上到幾點結束「夜間」(24 小時制)
-  //            範例：19、6 代表晚上 7 點 ~ 隔天早上 6 點都算夜間
+  //            範例：18、6 代表晚上 6 點 ~ 隔天早上 6 點都算夜間
   const NIGHT_MODE = {
     enabled: true,
-    startHour: 19,
+    startHour: 18,
     endHour: 6
   };
 
@@ -757,7 +757,7 @@
     const hour = new Date().getHours();
     if (cfg.startHour === cfg.endHour) return false;
     if (cfg.startHour > cfg.endHour) {
-      // 跨過午夜的區間，例如 19 點 ~ 隔天 6 點
+      // 跨過午夜的區間，例如 18 點 ~ 隔天 6 點
       return hour >= cfg.startHour || hour < cfg.endHour;
     }
     return hour >= cfg.startHour && hour < cfg.endHour;
