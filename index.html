@@ -158,17 +158,17 @@
     if (!el) return;
     var vv = window.visualViewport;
     el.textContent =
-      'innerH:' + window.innerHeight +
-      ' vvH:' + (vv ? Math.round(vv.height) : 'x') +
-      ' vvOffsetTop:' + (vv ? Math.round(vv.offsetTop) : 'x') +
-      ' docH:' + document.documentElement.getBoundingClientRect().height.toFixed(0) +
-      ' appH:' + (document.querySelector('.app') ? document.querySelector('.app').getBoundingClientRect().height.toFixed(0) : 'x') +
-      ' dpr:' + window.devicePixelRatio;
+      'innerH: ' + window.innerHeight + '\n' +
+      'vvH: ' + (vv ? Math.round(vv.height) : 'x') + '\n' +
+      'vvOffsetTop: ' + (vv ? Math.round(vv.offsetTop) : 'x') + '\n' +
+      'docH: ' + document.documentElement.getBoundingClientRect().height.toFixed(0) + '\n' +
+      'appH: ' + (document.querySelector('.app') ? document.querySelector('.app').getBoundingClientRect().height.toFixed(0) : 'x') + '\n' +
+      'dpr: ' + window.devicePixelRatio;
   }
 </script>
 </head>
 <body>
-<div id="debugOverlay" style="position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(255,0,0,0.75);color:#fff;font-size:11px;font-family:monospace;padding:2px 6px;text-align:center;pointer-events:none;"></div>
+<div id="debugOverlay" style="position:fixed;top:50%;left:8px;right:8px;transform:translateY(-50%);z-index:999;background:rgba(255,0,0,0.9);color:#fff;font-size:13px;line-height:1.6;font-family:monospace;padding:10px;text-align:left;pointer-events:none;border-radius:8px;white-space:pre-wrap;"></div>
 <div class="bg-blur" id="bgBlur" aria-hidden="true"></div>
 <div class="app">
 
