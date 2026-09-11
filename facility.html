@@ -348,9 +348,10 @@ async function doLogin() {
   hideError();
   try {
     // 1. 快速驗證帳密（只查試算表，很快，不必等公設資料）
-    const res = await fetch(EXEC + '?action=login&account=' + encodeURIComponent(account) + '&password=' + encodeURIComponent(password));
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || '帳號或密碼錯誤');
+    // ── 先不驗證密碼，直接放行進查詢頁面 ──────────────────────
+    // const res = await fetch(EXEC + '?action=login&account=' + encodeURIComponent(account) + '&password=' + encodeURIComponent(password));
+    // const json = await res.json();
+    // if (!json.ok) throw new Error(json.error || '帳號或密碼錯誤');
 
     // 2. 驗證成功：存憑證並立即顯示面板（不阻塞於公設資料）
     localStorage.setItem('lsy_account', account);
@@ -808,10 +809,14 @@ window.addEventListener('DOMContentLoaded', () => {
     if (a) document.getElementById('account').value = a;
     if (p) document.getElementById('password').value = p;
   } catch(e) {}
+  // ── 先不用輸入密碼，直接進到查詢頁面(略過登入卡片) ──────────
+  document.getElementById('loginCard').style.display = 'none';
+  document.getElementById('panel').style.display = 'block';
   renderTabs();
   resetTimeForDate();   // 建立起訖時間下拉並套用預設（今天→起始為目前時數）
   updateFilterCount();  // 依預設勾選狀態顯示生效中的篩選數
   warmupCache();   // 背景預熱後端快取
+  load();          // 直接載入公設預約資料
 });
 
 async function warmupCache() {
