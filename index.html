@@ -157,13 +157,20 @@
     var el = document.getElementById('debugOverlay');
     if (!el) return;
     var vv = window.visualViewport;
+    var appEl = document.querySelector('.app');
+    var stageEl = document.querySelector('.stage');
+    var svgEl = document.querySelector('.stage svg');
+    var appRect = appEl ? appEl.getBoundingClientRect() : null;
+    var stageRect = stageEl ? stageEl.getBoundingClientRect() : null;
+    var svgRect = svgEl ? svgEl.getBoundingClientRect() : null;
     el.textContent =
-      'innerH: ' + window.innerHeight + '\n' +
-      'vvH: ' + (vv ? Math.round(vv.height) : 'x') + '\n' +
-      'vvOffsetTop: ' + (vv ? Math.round(vv.offsetTop) : 'x') + '\n' +
+      'innerH: ' + window.innerHeight + ' vvH: ' + (vv ? Math.round(vv.height) : 'x') + '\n' +
       'docH: ' + document.documentElement.getBoundingClientRect().height.toFixed(0) + '\n' +
-      'appH: ' + (document.querySelector('.app') ? document.querySelector('.app').getBoundingClientRect().height.toFixed(0) : 'x') + '\n' +
-      'dpr: ' + window.devicePixelRatio;
+      'appH: ' + (appRect ? appRect.height.toFixed(0) : 'x') + ' appTop: ' + (appRect ? appRect.top.toFixed(0) : 'x') + '\n' +
+      'stageH: ' + (stageRect ? stageRect.height.toFixed(0) : 'x') + ' stageTop: ' + (stageRect ? stageRect.top.toFixed(0) : 'x') + '\n' +
+      'svgW: ' + (svgRect ? svgRect.width.toFixed(0) : 'x') + ' svgH: ' + (svgRect ? svgRect.height.toFixed(0) : 'x') + '\n' +
+      'svgTop: ' + (svgRect ? svgRect.top.toFixed(0) : 'x') + ' svgBottom: ' + (svgRect ? svgRect.bottom.toFixed(0) : 'x') + '\n' +
+      'scrollY: ' + window.scrollY + ' dpr: ' + window.devicePixelRatio;
   }
 </script>
 </head>
@@ -831,6 +838,24 @@
     window.visualViewport.addEventListener('resize', setAppVh);
     window.visualViewport.addEventListener('scroll', setAppVh);
   }
+
+  // ── 保險用的輪詢機制 ──────────────────────────────────────────
+  // 有些情況(例如 Chrome 跳出「要翻譯網頁嗎」這種原生提示列)會改變可視高度，
+  // 但不一定會確實觸發 resize / visualViewport 的事件通知，導致上面那些監聽器完全沒被叫到。
+  // 所以頁面顯示後的前 8 秒，不管有沒有收到事件，都每 300ms 主動重算一次高度，
+  // 確保就算事件沒觸發，也能在畫面真正跑掉之前把它修正回來。
+  function pollAppVhFor(durationMs) {
+    var start = Date.now();
+    var timer = setInterval(function () {
+      setAppVh();
+      if (Date.now() - start > durationMs) clearInterval(timer);
+    }, 300);
+  }
+  pollAppVhFor(8000);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') pollAppVhFor(8000);
+  });
+  window.addEventListener('pageshow', function () { pollAppVhFor(8000); });
 
   applyNightModeIfNeeded();
 
