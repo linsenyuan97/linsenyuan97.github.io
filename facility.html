@@ -84,7 +84,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 }
 
 /* 時間範圍(併入 .topbar，跟日期同排) */
-.timerange { display: flex; align-items: center; gap: 6px; min-width: 0; padding-left: 6px; border-left: 1px solid #eef0f3; }
+.timerange { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .clockic { color: #6b7280; flex: 0 0 auto; }
 .timerange select { font-size: 13px; font-weight: 600; color: #111827; padding: 6px 8px; border: 1px solid #e2e5ea; border-radius: 8px; background: #fff; cursor: pointer; }
 .timerange select:focus { outline: none; border-color: #1a56db; }
@@ -237,7 +237,6 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
       </div>
       <button class="navbtn" id="nextDay" aria-label="後一天" style="display:none">›</button>
       <div class="timerange">
-        <svg class="clockic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
         <select id="startSel" aria-label="起始時間"></select>
         <span class="timedash">～</span>
         <select id="endSel" aria-label="結束時間"></select>
