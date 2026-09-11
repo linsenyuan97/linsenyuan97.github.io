@@ -66,8 +66,8 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
   overflow: hidden; display: none;
 }
 
-/* 頂部日期列 */
-.topbar { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; border-bottom: 1px solid #eef0f3; }
+/* 頂部日期列(含時段篩選，兩者都是查詢條件放同一排) */
+.topbar { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #eef0f3; flex-wrap: nowrap; }
 .navbtn { width: 38px; height: 38px; border: 1px solid #e2e5ea; border-radius: 999px; background: #fff; cursor: pointer; font-size: 18px; line-height: 1; color: #374151; display: flex; align-items: center; justify-content: center; }
 .navbtn:hover { background: #f7f8fa; }
 .datebox { display: flex; align-items: center; position: relative; }
@@ -83,14 +83,13 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
   -webkit-appearance: none; appearance: none;
 }
 
-/* 控制列：時間範圍 + 篩選鈕同一列 */
-.controlbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; }
-.timerange { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: 8px; min-width: 0; }
+/* 時間範圍(併入 .topbar，跟日期同排) */
+.timerange { display: flex; align-items: center; gap: 6px; min-width: 0; padding-left: 6px; border-left: 1px solid #eef0f3; }
 .clockic { color: #6b7280; flex: 0 0 auto; }
-.timerange select { font-size: 14px; font-weight: 600; color: #111827; padding: 7px 10px; border: 1px solid #e2e5ea; border-radius: 8px; background: #fff; cursor: pointer; }
+.timerange select { font-size: 13px; font-weight: 600; color: #111827; padding: 6px 8px; border: 1px solid #e2e5ea; border-radius: 8px; background: #fff; cursor: pointer; }
 .timerange select:focus { outline: none; border-color: #1a56db; }
 .timedash { color: #9ca3af; font-weight: 700; }
-.filterbtn { grid-column: 3; justify-self: end; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #374151; background: #fff; border: 1px solid #e2e5ea; border-radius: 999px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+.filterbtn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #374151; background: #fff; border: 1px solid #e2e5ea; border-radius: 999px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
 .gearic { flex: 0 0 auto; }
 .filterbtn:hover { background: #f7f8fa; }
 .filterbtn.on { border-color: #1a56db; color: #1a56db; background: #eef4ff; }
@@ -101,7 +100,7 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .fchk input { width: 18px; height: 18px; accent-color: #1a56db; cursor: pointer; }
 
 /* 大項標籤列 */
-.filters { padding: 14px 16px; border-bottom: 1px solid #eef0f3; }
+.filters { padding: 8px 16px; border-bottom: 1px solid #eef0f3; }
 .tabs { display: flex; gap: 8px; overflow-x: auto; }
 .tab { font-size: 14px; padding: 8px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap; border: 1px solid #e2e5ea; background: #fff; color: #6b7280; font-weight: 600; }
 .tab.on { border-color: transparent; background: #e6f0ff; color: #1a56db; }
@@ -191,18 +190,14 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
 .modal-msg { margin-top: 12px; font-size: 13px; border-radius: 7px; padding: 9px 12px; display: none; }
 .modal-msg.err { background: #fef2f2; color: #991b1b; border: 1.5px solid #fca5a5; display: block; }
 .modal-msg.ok { background: #f0fdf4; color: #166534; border: 1.5px solid #bbf7d0; display: block; }
-.page-header { display: flex; align-items: center; gap: 10px; padding: 2px 2px 14px; }
-.page-header svg { width: 28px; height: 28px; flex-shrink: 0; color: #1d4ed8; }
-.page-header h2 { font-size: 19px; font-weight: 700; color: #111827; margin: 0; }
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #eef0f3; }
+.page-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.page-title svg { width: 28px; height: 28px; flex-shrink: 0; color: #1d4ed8; }
+.page-title h2 { font-size: 19px; font-weight: 700; color: #111827; margin: 0; white-space: nowrap; }
 </style>
 </head>
 <body>
 <div class="container">
-
-  <div class="page-header">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="3"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="m8.5 14.5 2.2 2.2L15.5 12"></path></svg>
-    <h2>林森苑公設查詢</h2>
-  </div>
 
   <div class="card" id="loginCard">
     <div class="banner-img">
@@ -223,8 +218,16 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
   </div>
 
   <div class="panel" id="panel">
+    <div class="page-header">
+      <div class="page-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="3"></rect><path d="M16 2v4M8 2v4M3 10h18"></path><path d="m8.5 14.5 2.2 2.2L15.5 12"></path></svg>
+        <h2>林森苑公設查詢</h2>
+      </div>
+      <button class="filterbtn" id="filterBtn" type="button"><svg class="gearic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>篩選 (<span id="filterCount">1</span>)</button>
+    </div>
+
     <div class="topbar">
-      <button class="navbtn" id="prevDay" aria-label="前一天">‹</button>
+      <button class="navbtn" id="prevDay" aria-label="前一天" style="display:none">‹</button>
       <div class="datebox">
         <button class="datebtn" id="dateBtn" type="button" aria-label="選擇日期">
           <span class="dtext" id="dateText">—</span>
@@ -232,17 +235,13 @@ input:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,0.10);
         </button>
         <input type="date" id="datePick" class="hiddendate">
       </div>
-      <button class="navbtn" id="nextDay" aria-label="後一天">›</button>
-    </div>
-
-    <div class="controlbar">
+      <button class="navbtn" id="nextDay" aria-label="後一天" style="display:none">›</button>
       <div class="timerange">
         <svg class="clockic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
         <select id="startSel" aria-label="起始時間"></select>
         <span class="timedash">～</span>
         <select id="endSel" aria-label="結束時間"></select>
       </div>
-      <button class="filterbtn" id="filterBtn" type="button"><svg class="gearic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>篩選 (<span id="filterCount">1</span>)</button>
     </div>
 
     <div class="filters">
