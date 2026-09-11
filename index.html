@@ -143,7 +143,10 @@
   // 100dvh 在「切分頁再切回來」這種從背景快取還原的情境下不一定會重新計算，
   // 導致畫面底部出現空白。改用 JS 量測實際高度寫成 CSS 變數，並在關鍵時機重算。
   function setAppVh() {
-    document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+    // visualViewport 會扣掉網址列/工具列目前實際佔用的空間，比 innerHeight 準確，
+    // 尤其是 iOS 上「工具列收合中/收合後」這種瞬間，兩者常常對不起來。
+    var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    document.documentElement.style.setProperty('--vh', h * 0.01 + 'px');
   }
   setAppVh();
 </script>
@@ -792,11 +795,25 @@
     if (sideBuildings) sideBuildings.setAttribute('opacity', '0.35'); // 兩側配角大樓夜晚調暗，融入夜色，避免屋頂太搶眼
   }
 
-  // 視窗大小變化、螢幕旋轉、或分頁從瀏覽器的「背景快取」被切回來顯示時
+  // 視窗大小變化、螢幕旋轉、分頁從瀏覽器背景/快取被切回來顯示、或分頁重新變成可見時
   // (iOS Chrome/Safari 切分頁常見)，都重新量一次高度，避免用到過期數值出現底部空白。
+  // 額外用 setTimeout 延遲補算一次，因為部分瀏覽器觸發事件當下，網址列收合動畫還沒跑完，
+  // 量到的高度可能還是過渡中的數值。
+  function setAppVhWithRetry() {
+    setAppVh();
+    setTimeout(setAppVh, 150);
+    setTimeout(setAppVh, 400);
+  }
   window.addEventListener('resize', setAppVh);
-  window.addEventListener('orientationchange', setAppVh);
-  window.addEventListener('pageshow', setAppVh);
+  window.addEventListener('orientationchange', setAppVhWithRetry);
+  window.addEventListener('pageshow', setAppVhWithRetry);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') setAppVhWithRetry();
+  });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setAppVh);
+    window.visualViewport.addEventListener('scroll', setAppVh);
+  }
 
   applyNightModeIfNeeded();
 
