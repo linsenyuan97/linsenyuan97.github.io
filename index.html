@@ -28,7 +28,6 @@
   html,body{
     height:100%;
     height:100dvh;
-    height:calc(var(--vh, 1vh) * 100);
     margin:0;
     padding:0;
     overflow:hidden;
@@ -48,7 +47,6 @@
     max-width:480px;
     height:100%;
     height:100dvh;
-    height:calc(var(--vh, 1vh) * 100);
     background:#EAE6DC;
     display:flex;
     flex-direction:column;
@@ -138,44 +136,8 @@
     }
   }
 </style>
-<script>
-  // 手機瀏覽器(尤其 iOS Chrome/Safari)網址列收合/展開會改變可視高度，
-  // 100dvh 在「切分頁再切回來」這種從背景快取還原的情境下不一定會重新計算，
-  // 導致畫面底部出現空白。改用 JS 量測實際高度寫成 CSS 變數，並在關鍵時機重算。
-  function setAppVh() {
-    // visualViewport 會扣掉網址列/工具列目前實際佔用的空間，比 innerHeight 準確，
-    // 尤其是 iOS 上「工具列收合中/收合後」這種瞬間，兩者常常對不起來。
-    var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-    document.documentElement.style.setProperty('--vh', h * 0.01 + 'px');
-    updateDebugOverlay();
-  }
-  setAppVh();
-
-  // ── 暫時除錯用：在畫面角落顯示實際量到的數值，方便排查「底部空白」問題 ──
-  // 排查完之後這整段(含呼叫處)可以直接刪掉。
-  function updateDebugOverlay() {
-    var el = document.getElementById('debugOverlay');
-    if (!el) return;
-    var vv = window.visualViewport;
-    var appEl = document.querySelector('.app');
-    var stageEl = document.querySelector('.stage');
-    var svgEl = document.querySelector('.stage svg');
-    var appRect = appEl ? appEl.getBoundingClientRect() : null;
-    var stageRect = stageEl ? stageEl.getBoundingClientRect() : null;
-    var svgRect = svgEl ? svgEl.getBoundingClientRect() : null;
-    el.textContent =
-      'innerH: ' + window.innerHeight + ' vvH: ' + (vv ? Math.round(vv.height) : 'x') + '\n' +
-      'docH: ' + document.documentElement.getBoundingClientRect().height.toFixed(0) + '\n' +
-      'appH: ' + (appRect ? appRect.height.toFixed(0) : 'x') + ' appTop: ' + (appRect ? appRect.top.toFixed(0) : 'x') + '\n' +
-      'stageH: ' + (stageRect ? stageRect.height.toFixed(0) : 'x') + ' stageTop: ' + (stageRect ? stageRect.top.toFixed(0) : 'x') + '\n' +
-      'svgW: ' + (svgRect ? svgRect.width.toFixed(0) : 'x') + ' svgH: ' + (svgRect ? svgRect.height.toFixed(0) : 'x') + '\n' +
-      'svgTop: ' + (svgRect ? svgRect.top.toFixed(0) : 'x') + ' svgBottom: ' + (svgRect ? svgRect.bottom.toFixed(0) : 'x') + '\n' +
-      'scrollY: ' + window.scrollY + ' dpr: ' + window.devicePixelRatio;
-  }
-</script>
 </head>
 <body>
-<div id="debugOverlay" style="position:fixed;top:50%;left:8px;right:8px;transform:translateY(-50%);z-index:999;background:rgba(255,0,0,0.9);color:#fff;font-size:13px;line-height:1.6;font-family:monospace;padding:10px;text-align:left;pointer-events:none;border-radius:8px;white-space:pre-wrap;"></div>
 <div class="bg-blur" id="bgBlur" aria-hidden="true"></div>
 <div class="app">
 
@@ -818,44 +780,6 @@
     if (plaqueTextGlow) plaqueTextGlow.setAttribute('opacity', '0.9'); // 「林森苑」每個字貼合字形透出黃光
     if (sideBuildings) sideBuildings.setAttribute('opacity', '0.35'); // 兩側配角大樓夜晚調暗，融入夜色，避免屋頂太搶眼
   }
-
-  // 視窗大小變化、螢幕旋轉、分頁從瀏覽器背景/快取被切回來顯示、或分頁重新變成可見時
-  // (iOS Chrome/Safari 切分頁常見)，都重新量一次高度，避免用到過期數值出現底部空白。
-  // 額外用 setTimeout 延遲補算一次，因為部分瀏覽器觸發事件當下，網址列收合動畫還沒跑完，
-  // 量到的高度可能還是過渡中的數值。
-  function setAppVhWithRetry() {
-    setAppVh();
-    setTimeout(setAppVh, 150);
-    setTimeout(setAppVh, 400);
-  }
-  window.addEventListener('resize', setAppVh);
-  window.addEventListener('orientationchange', setAppVhWithRetry);
-  window.addEventListener('pageshow', setAppVhWithRetry);
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') setAppVhWithRetry();
-  });
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setAppVh);
-    window.visualViewport.addEventListener('scroll', setAppVh);
-  }
-
-  // ── 保險用的輪詢機制 ──────────────────────────────────────────
-  // 有些情況(例如 Chrome 跳出「要翻譯網頁嗎」這種原生提示列)會改變可視高度，
-  // 但不一定會確實觸發 resize / visualViewport 的事件通知，導致上面那些監聽器完全沒被叫到。
-  // 所以頁面顯示後的前 8 秒，不管有沒有收到事件，都每 300ms 主動重算一次高度，
-  // 確保就算事件沒觸發，也能在畫面真正跑掉之前把它修正回來。
-  function pollAppVhFor(durationMs) {
-    var start = Date.now();
-    var timer = setInterval(function () {
-      setAppVh();
-      if (Date.now() - start > durationMs) clearInterval(timer);
-    }, 300);
-  }
-  pollAppVhFor(8000);
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') pollAppVhFor(8000);
-  });
-  window.addEventListener('pageshow', function () { pollAppVhFor(8000); });
 
   applyNightModeIfNeeded();
 
