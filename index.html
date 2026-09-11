@@ -147,11 +147,28 @@
     // 尤其是 iOS 上「工具列收合中/收合後」這種瞬間，兩者常常對不起來。
     var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
     document.documentElement.style.setProperty('--vh', h * 0.01 + 'px');
+    updateDebugOverlay();
   }
   setAppVh();
+
+  // ── 暫時除錯用：在畫面角落顯示實際量到的數值，方便排查「底部空白」問題 ──
+  // 排查完之後這整段(含呼叫處)可以直接刪掉。
+  function updateDebugOverlay() {
+    var el = document.getElementById('debugOverlay');
+    if (!el) return;
+    var vv = window.visualViewport;
+    el.textContent =
+      'innerH:' + window.innerHeight +
+      ' vvH:' + (vv ? Math.round(vv.height) : 'x') +
+      ' vvOffsetTop:' + (vv ? Math.round(vv.offsetTop) : 'x') +
+      ' docH:' + document.documentElement.getBoundingClientRect().height.toFixed(0) +
+      ' appH:' + (document.querySelector('.app') ? document.querySelector('.app').getBoundingClientRect().height.toFixed(0) : 'x') +
+      ' dpr:' + window.devicePixelRatio;
+  }
 </script>
 </head>
 <body>
+<div id="debugOverlay" style="position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(255,0,0,0.75);color:#fff;font-size:11px;font-family:monospace;padding:2px 6px;text-align:center;pointer-events:none;"></div>
 <div class="bg-blur" id="bgBlur" aria-hidden="true"></div>
 <div class="app">
 
