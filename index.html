@@ -28,6 +28,7 @@
   html,body{
     height:100%;
     height:100dvh;
+    height:calc(var(--vh, 1vh) * 100);
     margin:0;
     padding:0;
     overflow:hidden;
@@ -47,6 +48,7 @@
     max-width:480px;
     height:100%;
     height:100dvh;
+    height:calc(var(--vh, 1vh) * 100);
     background:#EAE6DC;
     display:flex;
     flex-direction:column;
@@ -136,6 +138,15 @@
     }
   }
 </style>
+<script>
+  // 手機瀏覽器(尤其 iOS Chrome/Safari)網址列收合/展開會改變可視高度，
+  // 100dvh 在「切分頁再切回來」這種從背景快取還原的情境下不一定會重新計算，
+  // 導致畫面底部出現空白。改用 JS 量測實際高度寫成 CSS 變數，並在關鍵時機重算。
+  function setAppVh() {
+    document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+  }
+  setAppVh();
+</script>
 </head>
 <body>
 <div class="bg-blur" id="bgBlur" aria-hidden="true"></div>
@@ -780,6 +791,12 @@
     if (plaqueTextGlow) plaqueTextGlow.setAttribute('opacity', '0.9'); // 「林森苑」每個字貼合字形透出黃光
     if (sideBuildings) sideBuildings.setAttribute('opacity', '0.35'); // 兩側配角大樓夜晚調暗，融入夜色，避免屋頂太搶眼
   }
+
+  // 視窗大小變化、螢幕旋轉、或分頁從瀏覽器的「背景快取」被切回來顯示時
+  // (iOS Chrome/Safari 切分頁常見)，都重新量一次高度，避免用到過期數值出現底部空白。
+  window.addEventListener('resize', setAppVh);
+  window.addEventListener('orientationchange', setAppVh);
+  window.addEventListener('pageshow', setAppVh);
 
   applyNightModeIfNeeded();
 
