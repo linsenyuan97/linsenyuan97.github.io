@@ -231,6 +231,28 @@
   </g>
   <text id="brandTitle" x="26" y="19" font-family="'Noto Serif TC', serif" font-weight="900" font-size="18" letter-spacing="1.5" fill="#1E293B">林森苑</text>
 </g>
+<!-- 右上角智生活公佈欄捷徑（跳出去開智生活 App，跟左上角地標對稱擺放） -->
+<a href="kingnetsmartapp://Ann" aria-label="打開智生活公佈欄">
+  <g transform="translate(348, -32)">
+    <circle cx="16" cy="12" r="19" fill="#FDF8EC" stroke="rgba(255,255,255,0.7)" stroke-width="1" filter="url(#glassShadow)"/>
+    <clipPath id="annMainClip"><circle cx="16" cy="12" r="15.5"/></clipPath>
+    <image href="icons/smartdaily/icon.png" x="0.5" y="-3.5" width="31" height="31" clip-path="url(#annMainClip)"/>
+    <circle cx="29" cy="25" r="8.5" fill="#ffffff" stroke="#EEE9DC" stroke-width="1.4"/>
+    <!-- 佈告欄圖示：條列式公告清單，呼應智生活 App 裡「公佈欄」的實際樣式 -->
+    <g transform="translate(21.5, 17) scale(0.8)" stroke="#B8860B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <rect x="1.5" y="1.5" width="15" height="15" rx="1.5"/>
+      <circle cx="4.3" cy="4.8" r="0.7" fill="#B8860B" stroke="none"/>
+      <line x1="6.2" y1="4.8" x2="14" y2="4.8"/>
+      <circle cx="4.3" cy="8" r="0.7" fill="#B8860B" stroke="none"/>
+      <line x1="6.2" y1="8" x2="14" y2="8"/>
+      <circle cx="4.3" cy="11.2" r="0.7" fill="#B8860B" stroke="none"/>
+      <line x1="6.2" y1="11.2" x2="14" y2="11.2"/>
+      <circle cx="4.3" cy="14.4" r="0.7" fill="#B8860B" stroke="none"/>
+      <line x1="6.2" y1="14.4" x2="11.5" y2="14.4"/>
+    </g>
+  </g>
+  <text id="annLabel" x="364" y="15" text-anchor="middle" font-family="'Noto Sans TC', sans-serif" font-weight="700" font-size="10.5" fill="#4A4636">智生活公佈欄</text>
+</a>
 <!-- 左右配角大樓（保留窗戶暖黃燈光，與中央大樓共同拼出巨型愛心 ❤️） -->
 <g id="sideBuildings" opacity="0.78">
 <g filter="url(#soft)" opacity="0.5"><rect x="-28" y="116" width="96" height="472" rx="4" fill="#8A8267"/></g>
@@ -773,12 +795,14 @@
     const brandPin = document.getElementById('brandPin');
     const plaqueTextGlow = document.getElementById('plaqueTextGlow');
     const sideBuildings = document.getElementById('sideBuildings');
+    const annLabel = document.getElementById('annLabel');
     if (skyRect) skyRect.setAttribute('fill', 'url(#skyNight)');
     if (clouds) clouds.setAttribute('opacity', '0.15');
     if (brandTitle) brandTitle.setAttribute('fill', '#FFFFFF');
     if (brandPin) brandPin.setAttribute('stroke', '#F7D375'); // 月光黃，呼應窗戶暖燈色
     if (plaqueTextGlow) plaqueTextGlow.setAttribute('opacity', '0.9'); // 「林森苑」每個字貼合字形透出黃光
     if (sideBuildings) sideBuildings.setAttribute('opacity', '0.35'); // 兩側配角大樓夜晚調暗，融入夜色，避免屋頂太搶眼
+    if (annLabel) annLabel.setAttribute('fill', '#FFFFFF'); // 智生活公告文字，跟品牌文字同樣切換成白色
   }
 
   applyNightModeIfNeeded();
@@ -794,7 +818,7 @@
     const clone = sourceSvg.cloneNode(true);
     // 只拿掉會跟 getElementById 衝突的那幾個 id，SVG 內部漸層/濾鏡用的 id
     // (例如 #sky、#glow)要保留，否則複製品的顏色跟特效會整個失效。
-    const idsToStrip = ['skyRect', 'cloudsGroup', 'brandTitle', 'brandPin', 'plaqueTextGlow', 'sideBuildings'];
+    const idsToStrip = ['skyRect', 'cloudsGroup', 'brandTitle', 'brandPin', 'plaqueTextGlow', 'sideBuildings', 'annLabel', 'annMainClip'];
     idsToStrip.forEach(function (id) {
       const el = clone.querySelector('#' + id);
       if (el) el.removeAttribute('id');
