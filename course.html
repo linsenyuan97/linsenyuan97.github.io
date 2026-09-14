@@ -1065,15 +1065,42 @@ async function submitCreateCourse(){
 
 /* ---- Login ---- */
 function applyLoginUI(){const logged=!!me();document.getElementById('loginDot').classList.toggle('hidden',!logged);document.getElementById('loginLabel').textContent=logged?myAddrShort():'未登入';}
+// LINE Login 綁定用：組出授權網址並跳轉（client_id 是公開的 channel 識別碼，不是密鑰）
+const LINE_LOGIN_CLIENT_ID_='2011594461';
+const LINE_LOGIN_REDIRECT_URI_='https://script.google.com/macros/s/AKfycbyX2G2_jZy31CuTFlZDH4QnQU71SdIEHcF0TiT56FAo_8IiJhbS4Pr52uVe-t8hvQf0/exec';
+function buildLineLoginUrl_(addr){
+  const state=encodeURIComponent(JSON.stringify(addr));
+  return 'https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id='+LINE_LOGIN_CLIENT_ID_+
+    '&redirect_uri='+encodeURIComponent(LINE_LOGIN_REDIRECT_URI_)+'&state='+state+'&scope=profile';
+}
+function startLineBind(){const s=me();if(!s)return;location.href=buildLineLoginUrl_(s);}
+// 從 LINE 官方帳號圖文選單點進來的連結要帶 ?from=line；
+// 這種情況下如果還沒登入（沒有門牌），直接跳出登入視窗，不用使用者自己點「未登入」。
+function maybeAutoOpenLoginFromLine(){
+  try{ if(/[?&]from=line\b/i.test(location.search) && !me()) openLogin(); }catch(e){}
+}
 function openLogin(){
-  const s=me();const opt=(arr,v)=>arr.map(x=>`<option value="${x}" ${x==v?'selected':''}>${x}</option>`).join('');
+  const s=me();
+  if(s){
+    showSheet(`<div style="font-size:18px;font-weight:900;text-align:center;margin-bottom:8px">目前門牌：${fullAddr(s)}</div>
+<div style="font-size:13px;color:var(--ink-soft);text-align:center;margin-bottom:18px">已登入，如需更換門牌請先登出</div>
+<button class="logoutbtn" style="background:#06C755;border-color:#06C755;color:#fff;margin-top:0" onclick="startLineBind()">綁定 LINE 通知</button>
+<button class="logoutbtn" onclick="doLogout()">登出</button>`);
+    return;
+  }
+  const opt=(arr,v)=>arr.map(x=>`<option value="${x}" ${x==v?'selected':''}>${x}</option>`).join('');
   const lou=[];for(let i=LOU_RANGE[0];i<=LOU_RANGE[1];i++)lou.push(i);
   showSheet(`<div style="font-size:18px;font-weight:900;text-align:center;margin-bottom:18px">請選擇您的門牌</div>
 <div class="addr-row" style="margin-bottom:20px"><select class="addr-sel" id="inHao">${opt(HAO_LIST,s&&s.hao)}</select><span style="font-size:13px;font-weight:700;color:var(--ink-soft)">號</span><select class="addr-sel" id="inLou">${opt(lou,s&&s.lou)}</select><span style="font-size:13px;font-weight:700;color:var(--ink-soft)">樓之</span><select class="addr-sel" id="inZhi">${opt(ZHI_LIST,s&&s.zhi)}</select></div>
-<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="confirmLogin()">確認登入</button></div>
-${s?`<button class="logoutbtn" onclick="doLogout()">登出</button>`:''}`);
+<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="confirmLogin(false)">登入</button></div>
+<button class="logoutbtn" style="background:#06C755;border-color:#06C755;color:#fff" onclick="confirmLogin(true)">登入並綁定 LINE 通知</button>`);
 }
-function confirmLogin(){const a={hao:+gv('inHao'),lou:+gv('inLou'),zhi:+gv('inZhi')};setLogin(a);closeSheet();applyLoginUI();showToast(`歡迎！${fullAddr(a)}`);loadCoursesData();}
+function confirmLogin(withLineBind){
+  const a={hao:+gv('inHao'),lou:+gv('inLou'),zhi:+gv('inZhi')};
+  setLogin(a);applyLoginUI();loadCoursesData();
+  if(withLineBind){location.href=buildLineLoginUrl_(a);return;}
+  closeSheet();showToast(`歡迎！${fullAddr(a)}`);
+}
 function doLogout(){clearLogin();closeSheet();applyLoginUI();go('list');showToast('已登出');}
 
 /* ---- Disclaimer ---- */
@@ -1139,7 +1166,7 @@ async function pollForUpdates(){
 function startPolling(){if(pollTimer)return;pollTimer=setInterval(pollForUpdates,120000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollForUpdates();});}
 
 /* ---- Boot ---- */
-(function init(){applyLoginUI();go('list');loadCoursesData();checkDisclaimer();startPolling();})();
+(function init(){applyLoginUI();go('list');loadCoursesData();checkDisclaimer();startPolling();maybeAutoOpenLoginFromLine();})();
 </script>
 </body>
 </html>

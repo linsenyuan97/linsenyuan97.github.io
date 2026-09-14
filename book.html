@@ -101,6 +101,8 @@
   .dialog-btns>button:active{opacity:.85}
   .logoutbtn{display:block;width:100%;margin-top:10px;background:none;border:1.5px solid var(--stamp);border-radius:6px;font:inherit;font-size:16px;font-weight:700;color:var(--stamp);cursor:pointer;padding:13px 0;text-align:center}
   .logoutbtn:active{opacity:.75}
+  .linebindbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:10px;background:#06C755;border:none;border-radius:6px;font:inherit;font-size:15px;font-weight:700;color:#fff;cursor:pointer;padding:13px 0;text-align:center}
+  .linebindbtn:active{opacity:.85}
   .toast-overlay{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:300;pointer-events:none}
   .toast-box{display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(47,107,98,.92);color:#fff;width:100%;border-radius:0;box-shadow:0 -4px 16px rgba(0,0,0,.25);padding:16px 20px;font-size:18px;font-weight:700;letter-spacing:.03em;animation:toastUp .25s cubic-bezier(.34,1.56,.64,1);pointer-events:auto;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   .toast-box.error{background:rgba(178,58,46,.92)}
@@ -617,17 +619,25 @@
 <!-- 門牌登入對話框 -->
 <div id="loginOverlay" class="overlay hidden" onclick="if(event.target===this)closeLogin()">
   <div class="dialog">
-    <div class="dialog-msg">請選擇您的門牌</div>
-    <div class="addr-row">
-      <select id="addrHao" class="addr-sel"></select><span class="addr-unit">號</span>
-      <select id="addrLou" class="addr-sel"></select><span class="addr-unit">樓之</span>
-      <select id="addrZhi" class="addr-sel"></select>
+    <div id="loginPickView">
+      <div class="dialog-msg">請選擇您的門牌</div>
+      <div class="addr-row">
+        <select id="addrHao" class="addr-sel"></select><span class="addr-unit">號</span>
+        <select id="addrLou" class="addr-sel"></select><span class="addr-unit">樓之</span>
+        <select id="addrZhi" class="addr-sel"></select>
+      </div>
+      <div class="dialog-btns" style="margin-top:22px">
+        <button class="dlg-cancel" onclick="closeLogin()">取消</button>
+        <button class="dlg-ok" onclick="confirmLogin(false)">登入</button>
+      </div>
+      <button class="linebindbtn" onclick="confirmLogin(true)">登入並綁定 LINE 通知</button>
     </div>
-    <div class="dialog-btns" style="margin-top:22px">
-      <button class="dlg-cancel" onclick="closeLogin()">取消</button>
-      <button class="dlg-ok" onclick="confirmLogin()">確認</button>
+    <div id="loginBoundView" class="hidden">
+      <div class="dialog-msg">目前門牌：<b id="loginBoundAddr"></b></div>
+      <div style="font-size:13px;color:var(--ink-soft);text-align:center;margin:-14px 0 18px">已登入，如需更換門牌請先登出</div>
+      <button class="linebindbtn" onclick="startLineBind()">綁定 LINE 通知</button>
+      <button id="logoutBtn" class="logoutbtn" onclick="doLogout()">登出</button>
     </div>
-    <button id="logoutBtn" class="logoutbtn hidden" onclick="doLogout()">登出</button>
   </div>
 </div>
 
@@ -711,6 +721,7 @@ function bootResident(){
       switchAdminBottomTab('review');
     }else{
       applyLoginUI();
+      maybeAutoOpenLoginFromLine();
       switchBottomTab('search');
     }
   }catch(e){ try{doResidentSearch();}catch(e2){} }
@@ -1310,11 +1321,36 @@ function applyLoginUI(){
   document.getElementById('logoutBtn').classList.toggle('hidden',!logged);
   document.getElementById('loginLabel').textContent = logged ? myAddrShort() : '未登入';
 }
+// 從 LINE 官方帳號圖文選單點進來的連結要帶 ?from=line；
+// 這種情況下如果還沒登入（沒有門牌），直接跳出登入視窗，不用使用者自己點「未登入」。
+function maybeAutoOpenLoginFromLine(){
+  try{
+    if(/[?&]from=line\b/i.test(location.search) && !getLogin()) openLogin();
+  }catch(e){}
+}
 function openLogin(){
   applyLoginUI();
+  const s=getLogin();
+  document.getElementById('loginPickView').classList.toggle('hidden', !!s);
+  document.getElementById('loginBoundView').classList.toggle('hidden', !s);
+  if(s) document.getElementById('loginBoundAddr').textContent = myAddrShort();
   document.getElementById('loginOverlay').classList.remove('hidden');
 }
 function closeLogin(){document.getElementById('loginOverlay').classList.add('hidden');}
+
+// LINE Login 綁定用：組出授權網址並跳轉（client_id 是公開的 channel 識別碼，不是密鑰）
+const LINE_LOGIN_CLIENT_ID_='2011594461';
+const LINE_LOGIN_REDIRECT_URI_='https://script.google.com/macros/s/AKfycbyX2G2_jZy31CuTFlZDH4QnQU71SdIEHcF0TiT56FAo_8IiJhbS4Pr52uVe-t8hvQf0/exec';
+function buildLineLoginUrl_(addr){
+  const state=encodeURIComponent(JSON.stringify(addr));
+  return 'https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id='+LINE_LOGIN_CLIENT_ID_+
+    '&redirect_uri='+encodeURIComponent(LINE_LOGIN_REDIRECT_URI_)+'&state='+state+'&scope=profile';
+}
+function startLineBind(){
+  const s=getLogin();
+  if(!s)return;
+  location.href=buildLineLoginUrl_(s);
+}
 function renderCurrent(){
   // 用現有資料就地重繪(不重新抓後端、保留捲動位置)
   const el=document.getElementById('results');
@@ -1325,13 +1361,18 @@ function renderCurrent(){
   el.innerHTML=list.length?list.map(b=>bookCard(b,false)).join(''):'<div class="empty big">目前沒有符合條件的書籍</div>';
   window.scrollTo(0,y);
 }
-function confirmLogin(){
+function confirmLogin(withLineBind){
   const hao=document.getElementById('addrHao').value;
   const lou=document.getElementById('addrLou').value;
   const zhi=document.getElementById('addrZhi').value;
   try{localStorage.setItem(ADDR_KEY,JSON.stringify({hao,lou,zhi}));}catch(e){}
-  closeLogin();applyLoginUI();
+  applyLoginUI();
   if(document.getElementById('panel-user').classList.contains('on')) renderCurrent();
+  if(withLineBind){
+    location.href=buildLineLoginUrl_({hao,lou,zhi});
+    return; // 即將跳轉到 LINE，不用再關 modal
+  }
+  closeLogin();
   showToast('歡迎！'+hao+'號'+lou+'樓之'+zhi);
 }
 function doLogout(){
