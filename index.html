@@ -136,29 +136,30 @@
     }
   }
 
-  /* LINE 綁定結果提示 Toast */
+  /* LINE 綁定結果提示 Toast（滿版橫幅，貼在畫面底部） */
   #lineToast{
     position: fixed;
-    left: 50%;
-    bottom: 32px;
-    transform: translate(-50%, 16px);
+    left: 0; right: 0;
+    bottom: 0;
+    width: 100%;
+    box-sizing: border-box;
+    transform: translateY(100%);
     z-index: 999;
-    max-width: min(360px, calc(100vw - 32px));
     background: rgba(30, 41, 59, 0.94);
     color: #fff;
     font-family: 'Noto Sans TC', sans-serif;
     font-size: 14px;
-    line-height: 1.5;
-    padding: 12px 16px;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    line-height: 1.6;
+    text-align: center;
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s ease, transform 0.25s ease;
   }
   #lineToast.show{
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
   #lineToast.ok{ background: rgba(21, 128, 61, 0.94); }
   #lineToast.warn{ background: rgba(180, 83, 9, 0.94); }
@@ -865,7 +866,7 @@
   setupDesktopBlurBackground();
 
   // ── 處理從 gas/user.gs 綁定流程導回來的結果（?lineBind=success|conflict|cancel|error）──
-  function showToast(message, type, allowHtml) {
+  function showToast(message, type, allowHtml, durationMs) {
     const el = document.getElementById('lineToast');
     if (!el) return;
     if (allowHtml) { el.innerHTML = message; } else { el.textContent = message; }
@@ -873,7 +874,7 @@
     // 強制 reflow 才能讓同一個 toast 連續觸發時動畫都正常播放
     void el.offsetWidth;
     el.classList.add('show');
-    setTimeout(function () { el.classList.remove('show'); }, 3200);
+    setTimeout(function () { el.classList.remove('show'); }, durationMs || 3200);
   }
 
   function handleLineBindResult() {
@@ -947,7 +948,7 @@
   function maybeAutoOpenSmartlife() {
     try {
       if (/[?&]openSmartlife=1\b/i.test(location.search)) {
-        showToast('正在為您開啟「智生活」App 公佈欄...<br>如果沒有自動跳轉，請點右上方智生活公佈欄按鈕。', 'ok', true);
+        showToast('正在為您開啟「智生活」App 公佈欄...<br>如果沒有自動跳轉，請點右上方智生活公佈欄按鈕。', 'ok', true, 15000);
         var link = document.getElementById('smartdailyLink');
         if (link) location.href = link.getAttribute('href');
       }
