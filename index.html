@@ -865,7 +865,7 @@
 
   setupDesktopBlurBackground();
 
-  // ── 處理從 gas/user.gs 綁定流程導回來的結果（?lineBind=success|conflict|cancel|error）──
+  // ── 處理從 gas/user.gs 綁定流程導回來的結果（?lineBind=success|cancel|error）──
   function showToast(message, type, allowHtml, durationMs) {
     const el = document.getElementById('lineToast');
     if (!el) return;
@@ -876,43 +876,6 @@
     el.classList.add('show');
     setTimeout(function () { el.classList.remove('show'); }, durationMs || 3200);
   }
-
-  function handleLineBindResult() {
-    const params = new URLSearchParams(location.search);
-    const lineBind = params.get('lineBind');
-    if (!lineBind) return;
-
-    if (lineBind === 'success') {
-      const addr = {
-        hao: Number(params.get('hao')),
-        lou: Number(params.get('lou')),
-        zhi: Number(params.get('zhi'))
-      };
-      try { localStorage.setItem('ls-resident-addr', JSON.stringify(addr)); } catch (e) {}
-      const name = params.get('name') || '';
-      if (params.get('corrected') === '1') {
-        showToast('您的 LINE 帳號原本已綁定門牌 ' + fullAddr(addr) + '，本次以原本綁定為準。如需更換門牌請聯繫管委會協助。', 'warn');
-      } else {
-        showToast('LINE 綁定成功' + (name ? '，' + name : '') + '！之後每月會收到與您相關的社區訊息彙整。', 'ok');
-      }
-    } else if (lineBind === 'conflict') {
-      const existingName = params.get('existingName') || '其他住戶';
-      showToast('此門牌已由「' + existingName + '」綁定 LINE 通知，每戶僅限一人，如需更換請聯繫管委會協助。', 'warn');
-    } else if (lineBind === 'cancel') {
-      showToast('已取消 LINE 綁定，尚未完成設定。', 'warn');
-    } else if (lineBind === 'error') {
-      showToast('LINE 綁定發生問題，請稍後再試一次。', 'warn');
-    }
-
-    // 清掉網址上的參數，避免重新整理頁面時又跳一次 toast
-    params.delete('lineBind');
-    params.delete('hao'); params.delete('lou'); params.delete('zhi');
-    params.delete('name'); params.delete('existingName'); params.delete('msg'); params.delete('corrected');
-    const qs = params.toString();
-    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
-  }
-
-  handleLineBindResult();
 
   // ── 門牌資料存取（首頁本身不需要登入按鈕，這裡只負責讀寫 localStorage，
   //    給 LIFF 無感綁定偵測、以及從 book/course/share 綁定後導回本頁時使用）──
@@ -949,7 +912,7 @@
   // 不需要另外做中繼頁，也不用重複維護同一個 App URL Scheme。
   function maybeAutoOpenSmartlife() {
     try {
-      if (/[?&]openSmartlife=1\b/i.test(location.search)) {
+      if (/[?&]openSmartlife(=1)?\b/i.test(location.search) || /[?&]opensmartlife(=1)?\b/i.test(location.search)) {
         showToast('正在為您開啟「智生活」App 公佈欄...<br>如果沒有自動跳轉，請點右上方智生活公佈欄按鈕。', 'ok', true, 15000);
         var link = document.getElementById('smartdailyLink');
         if (link) location.href = link.getAttribute('href');
