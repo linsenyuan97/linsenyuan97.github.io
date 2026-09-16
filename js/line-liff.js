@@ -25,7 +25,6 @@
 // ============================================================
 
 const LineBinding = (function () {
-  // TODO: 部署 gas/user.gs 為 Web App 後，把網址貼在這裡（六個頁面共用同一組）
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbyX2G2_jZy31CuTFlZDH4QnQU71SdIEHcF0TiT56FAo_8IiJhbS4Pr52uVe-t8hvQf0/exec';
 
   function init(liffId) {
