@@ -22,15 +22,41 @@
     <p>即將前往智生活 App，<br>查看社區公佈欄全文與詳細附件。</p>
     <div class="countdown" id="timerText">⏱️ 將在 5 秒後自動開啟...</div>
     <a class="btn" href="kingnetsmartapp://Ann" onclick="cancelTimer()">立即開啟智生活 APP</a>
-    <a class="back-btn" href="https://line.me/R/nv/chat" onclick="cancelTimer()">返回 LINE 聊天室</a>
+    <a class="back-btn" href="javascript:void(0)" onclick="closeWindow(); return false;">返回 LINE 聊天室</a>
   </div>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
+    const LIFF_ID = '2011594461-wlr3nDOx';
+    let liffReady = false;
+
+    if (typeof liff !== 'undefined') {
+      liff.init({ liffId: LIFF_ID }).then(function() {
+        liffReady = true;
+      }).catch(function(err) {
+        console.error('LIFF init error:', err);
+      });
+    }
+
     let seconds = 5;
     let timerId = null;
     const timerEl = document.getElementById('timerText');
 
     function cancelTimer() {
       if (timerId) clearInterval(timerId);
+    }
+
+    function closeWindow() {
+      cancelTimer();
+      if (typeof liff !== 'undefined' && liff.isInClient()) {
+        liff.closeWindow();
+        return;
+      }
+      try {
+        if (typeof window.close === 'function') window.close();
+      } catch(e){}
+      try {
+        if (history.length > 1) history.back();
+      } catch(e){}
     }
 
     timerId = setInterval(function() {
