@@ -163,62 +163,12 @@
   #lineToast.ok{ background: rgba(21, 128, 61, 0.94); }
   #lineToast.warn{ background: rgba(180, 83, 9, 0.94); }
 
-  /* 右上角登入按鈕 */
-  .index-login-btn{
-    position: absolute;
-    top: 14px; right: 14px;
-    z-index: 6;
-    display: flex; align-items: center; gap: 6px;
-    background: rgba(255,255,255,0.88);
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 999px;
-    padding: 6px 13px 6px 8px;
-    font-family: 'Noto Sans TC', sans-serif;
-    font-size: 13px; font-weight: 700; color: var(--ink);
-    cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.14);
-  }
-  .index-login-btn svg{ width: 19px; height: 19px; flex-shrink: 0; }
-
-  /* 登入 / 綁定 LINE 對話框 */
-  #indexLoginOverlay{
-    position: fixed; inset: 0; z-index: 998;
-    background: rgba(20,20,20,0.45);
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-  }
-  #indexLoginOverlay.hidden{ display: none; }
-  .il-dialog{
-    background: #fff; border-radius: 14px;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.35);
-    max-width: 320px; width: 100%;
-    padding: 26px 22px 20px;
-    font-family: 'Noto Sans TC', sans-serif;
-  }
-  .il-msg{ font-size: 17px; font-weight: 900; color: var(--ink); text-align: center; margin-bottom: 18px; line-height: 1.6; }
-  .il-sub{ font-size: 13px; color: #6b7280; text-align: center; margin: -10px 0 18px; }
-  .il-addr-row{ display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 20px; }
-  .il-sel{ font: inherit; font-size: 15px; padding: 8px 6px; border: 1.5px solid #ddd; border-radius: 6px; background: #fff; }
-  .il-btns{ display: flex; gap: 10px; }
-  .il-btns>button{ flex: 1; padding: 12px 0; border: none; border-radius: 8px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; color: #fff; }
-  .il-cancel{ background: #9CA3AF; }
-  .il-ok{ background: #1a56db; }
-  .il-line{ display: block; width: 100%; margin-top: 10px; background: #06C755; border: none; border-radius: 8px; color: #fff; font: inherit; font-weight: 700; font-size: 14px; padding: 12px 0; cursor: pointer; }
-  .il-logout{ display: block; width: 100%; margin-top: 10px; background: none; border: 1.5px solid #9CA3AF; border-radius: 8px; color: #6b7280; font: inherit; font-weight: 700; font-size: 14px; padding: 12px 0; cursor: pointer; }
 </style>
 </head>
 <body>
 <div id="lineToast" role="status" aria-live="polite"></div>
-<div id="indexLoginOverlay" class="hidden" onclick="if(event.target===this)closeIndexLogin()">
-  <div class="il-dialog" id="ilBody"></div>
-</div>
 <div class="bg-blur" id="bgBlur" aria-hidden="true"></div>
 <div class="app">
-  <button class="index-login-btn" id="indexLoginBtn" onclick="openIndexLogin()" aria-label="登入">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg>
-    <span id="indexLoginLabel">登入</span>
-  </button>
-
   <div class="stage">
 <svg viewBox="0 -35 420 700" xmlns="http://www.w3.org/2000/svg">
 <defs>
@@ -963,98 +913,30 @@
 
   handleLineBindResult();
 
-  // ── 右上角登入 / LINE 綁定 ──────────────────────────────────
+  // ── 門牌資料存取（首頁本身不需要登入按鈕，這裡只負責讀寫 localStorage，
+  //    給 LIFF 無感綁定偵測、以及從 book/course/share 綁定後導回本頁時使用）──
   const ADDR_KEY = 'ls-resident-addr';
-  const HAO_LIST = [95, 97, 99], LOU_RANGE = [2, 24], ZHI_LIST = [1, 2, 3, 5];
-  const DONG_MAP = { 95: 'A', 97: 'B', 99: 'C' };
 
   function getLogin() {
     try { const s = JSON.parse(localStorage.getItem(ADDR_KEY) || 'null'); return (s && s.hao) ? s : null; }
     catch (e) { return null; }
   }
   function setLogin(a) { try { localStorage.setItem(ADDR_KEY, JSON.stringify(a)); } catch (e) {} }
-  function clearLogin() { try { localStorage.removeItem(ADDR_KEY); } catch (e) {} }
   function fullAddr(a) { return a ? (a.hao + '號' + a.lou + '樓之' + a.zhi) : ''; }
-  function myAddrShort() { const s = getLogin(); return s ? ((DONG_MAP[s.hao] || s.hao) + '-' + s.lou + 'F' + s.zhi) : ''; }
 
-  // LINE Login 綁定用：組出授權網址並跳轉（client_id 是公開的 channel 識別碼，不是密鑰）
-  const LINE_LOGIN_CLIENT_ID_ = '2011594461';
-  const LINE_LOGIN_REDIRECT_URI_ = 'https://script.google.com/macros/s/AKfycbyX2G2_jZy31CuTFlZDH4QnQU71SdIEHcF0TiT56FAo_8IiJhbS4Pr52uVe-t8hvQf0/exec';
-  function buildLineLoginUrl_(addr) {
-    const state = encodeURIComponent(JSON.stringify({ hao: addr.hao, lou: addr.lou, zhi: addr.zhi }));
-    return 'https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=' + LINE_LOGIN_CLIENT_ID_ +
-      '&redirect_uri=' + encodeURIComponent(LINE_LOGIN_REDIRECT_URI_) + '&state=' + state + '&scope=profile';
-  }
-  function startLineBindIndex() { const s = getLogin(); if (!s) return; location.href = buildLineLoginUrl_(s); }
-
-  function applyIndexLoginUI() {
-    const s = getLogin();
-    document.getElementById('indexLoginLabel').textContent = s ? myAddrShort() : '登入';
-  }
-
-  function openIndexLogin() {
-    const s = getLogin();
-    const body = document.getElementById('ilBody');
-    if (s) {
-      body.innerHTML =
-        '<div class="il-msg">目前門牌：' + fullAddr(s) + '</div>' +
-        '<div class="il-sub">已登入，如需更換門牌請先登出</div>' +
-        '<button class="il-line" onclick="startLineBindIndex()">綁定 LINE 通知</button>' +
-        '<button class="il-logout" onclick="doIndexLogout()">登出</button>';
-    } else {
-      const opt = function (arr) { return arr.map(function (x) { return '<option value="' + x + '">' + x + '</option>'; }).join(''); };
-      const optHao = function (arr) { return arr.map(function (x) { return '<option value="' + x + '">' + (DONG_MAP[x] || x) + '棟</option>'; }).join(''); };
-      const optLou = function (arr) { return arr.map(function (x) { return '<option value="' + x + '">' + x + '樓</option>'; }).join(''); };
-      const lou = []; for (let i = LOU_RANGE[0]; i <= LOU_RANGE[1]; i++) lou.push(i);
-      body.innerHTML =
-        '<div class="il-msg">請選擇您的門牌</div>' +
-        '<div class="il-addr-row">' +
-        '<select class="il-sel" id="ilHao">' + optHao(HAO_LIST) + '</select>' +
-        '<select class="il-sel" id="ilLou">' + optLou(lou) + '</select><span>-</span>' +
-        '<select class="il-sel" id="ilZhi">' + opt(ZHI_LIST) + '</select>' +
-        '</div>' +
-        '<div class="il-btns"><button class="il-cancel" onclick="closeIndexLogin()">取消</button><button class="il-ok" onclick="confirmIndexLogin(false)">登入</button></div>' +
-        '<button class="il-line" onclick="confirmIndexLogin(true)">登入並綁定 LINE 通知</button>';
-    }
-    document.getElementById('indexLoginOverlay').classList.remove('hidden');
-  }
-  function closeIndexLogin() { document.getElementById('indexLoginOverlay').classList.add('hidden'); }
-
-  function confirmIndexLogin(withLineBind) {
-    const a = {
-      hao: +document.getElementById('ilHao').value,
-      lou: +document.getElementById('ilLou').value,
-      zhi: +document.getElementById('ilZhi').value
-    };
-    setLogin(a); applyIndexLoginUI();
-    if (withLineBind) { location.href = buildLineLoginUrl_(a); return; }
-    closeIndexLogin();
-    showToast('歡迎！' + fullAddr(a), 'ok');
-  }
-  function doIndexLogout() { clearLogin(); applyIndexLoginUI(); closeIndexLogin(); showToast('已登出', 'warn'); }
-
-  // 從 LINE 官方帳號圖文選單點進來的連結要帶 ?from=line；
-  // 這種情況下如果還沒登入（沒有門牌），直接跳出登入視窗。
-  function maybeAutoOpenLoginFromLine() {
-    try { if (/[?&]from=line\b/i.test(location.search) && !getLogin()) openIndexLogin(); } catch (e) {}
-  }
-
-  // ── LIFF：從圖文選單／LINE 內建瀏覽器開啟時，若已綁定過就無感帶入門牌 ──
-  // 不強制住戶一定要綁定：已綁定 → 自動帶入門牌；未綁定 → 不主動彈窗，
-  // 維持原本「取消／登入／登入並綁定」的手動登入流程不變。
+  // ── LIFF：從圖文選單／LINE 內建瀏覽器開啟時，若已綁定過就無感把門牌存進 localStorage ──
   const LIFF_ID_ = '2011594461-wlr3nDOx';
 
   function initLiff_() {
     LineBinding.init(LIFF_ID_).then(function (profile) {
-      if (!profile) { applyIndexLoginUI(); maybeAutoOpenLoginFromLine(); return; }
+      if (!profile) return;
       LineBinding.checkBound(profile.userId).then(function (info) {
         if (info && info.bound && info.addr && info.addr.hao) {
           setLogin(info.addr);
           showToast('歡迎回來' + (profile.displayName ? '，' + profile.displayName : '') + '！', 'ok');
         }
-        applyIndexLoginUI();
-      }).catch(function () { applyIndexLoginUI(); });
-    }).catch(function () { applyIndexLoginUI(); maybeAutoOpenLoginFromLine(); });
+      });
+    });
   }
 
   initLiff_();
