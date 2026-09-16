@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>前往智生活公告</title>
+<style>
+  body{font-family:'Microsoft JhengHei','Noto Sans TC',sans-serif;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:24px;box-sizing:border-box}
+  .card{background:#fff;border-radius:16px;padding:32px 24px;box-shadow:0 4px 20px rgba(0,0,0,0.06);max-width:320px;width:100%}
+  img{width:64px;height:64px;margin-bottom:16px;border-radius:12px}
+  h2{font-size:18px;margin:0 0 8px;color:#1e293b}
+  p{color:#64748b;font-size:14px;line-height:1.6;margin:0 0 20px}
+  a.btn{display:block;padding:12px 24px;background:#06C755;color:#fff;border-radius:24px;text-decoration:none;font-weight:700;font-size:15px;margin-bottom:12px}
+  button.back-btn{display:block;width:100%;padding:10px 24px;background:#f1f5f9;color:#475569;border:none;border-radius:24px;font-size:14px;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="card">
+    <img src="icons/smartdaily/icon.png" alt="智生活">
+    <h2>正在開啟智生活 App</h2>
+    <p>系統正在為您跳轉至公佈欄...<br>完成後將自動返回 LINE。</p>
+    <a class="btn" href="kingnetsmartapp://Ann">立即開啟智生活 App</a>
+    <button class="back-btn" onclick="closeOrBack()">返回 LINE</button>
+  </div>
+  <script>
+    let isHidden = false;
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) isHidden = true;
+    });
+
+    function triggerApp() {
+      location.href = 'kingnetsmartapp://Ann';
+    }
+
+    function closeOrBack() {
+      try {
+        if (typeof window.close === 'function') window.close();
+      } catch(e){}
+      try {
+        if (history.length > 1) history.back();
+      } catch(e){}
+    }
+
+    // 1. 立即喚醒智生活 App
+    triggerApp();
+
+    // 2. 1.5 秒後多做一次 retry（若尚未切換背景）
+    setTimeout(function() {
+      if (!isHidden) {
+        triggerApp();
+      }
+    }, 1500);
+
+    // 3. 3 秒後自動嘗試關閉或後退 Webview，返回 LINE
+    setTimeout(function() {
+      closeOrBack();
+    }, 3000);
+  </script>
+</body>
+</html>
