@@ -310,7 +310,7 @@
   <text id="brandTitle" x="26" y="19" font-family="'Noto Serif TC', serif" font-weight="900" font-size="18" letter-spacing="1.5" fill="#1E293B">林森苑</text>
 </g>
 <!-- 右上角智生活公佈欄捷徑（跳出去開智生活 App，跟左上角地標對稱擺放） -->
-<a href="kingnetsmartapp://Ann" aria-label="打開智生活公佈欄">
+<a id="smartdailyLink" href="kingnetsmartapp://Ann" aria-label="打開智生活公佈欄">
   <g transform="translate(360, 13)">
     <circle cx="16" cy="12" r="19" fill="#FDF8EC" stroke="rgba(255,255,255,0.7)" stroke-width="1" filter="url(#glassShadow)"/>
     <clipPath id="annMainClip"><circle cx="16" cy="12" r="15.5"/></clipPath>
@@ -841,6 +841,8 @@
 
 </div>
 
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="js/line-liff.js"></script>
 <script>
   // ── 夜間模式設定 ────────────────────────────────────────────
   // enabled  : 要不要啟用夜間模式判斷。之後想整個關掉，改成 false 即可。
@@ -913,10 +915,10 @@
   setupDesktopBlurBackground();
 
   // ── 處理從 gas/user.gs 綁定流程導回來的結果（?lineBind=success|conflict|cancel|error）──
-  function showToast(message, type) {
+  function showToast(message, type, allowHtml) {
     const el = document.getElementById('lineToast');
     if (!el) return;
-    el.textContent = message;
+    if (allowHtml) { el.innerHTML = message; } else { el.textContent = message; }
     el.className = type || '';
     // 強制 reflow 才能讓同一個 toast 連續觸發時動畫都正常播放
     void el.offsetWidth;
@@ -937,7 +939,11 @@
       };
       try { localStorage.setItem('ls-resident-addr', JSON.stringify(addr)); } catch (e) {}
       const name = params.get('name') || '';
-      showToast('LINE 綁定成功' + (name ? '，' + name : '') + '！之後每月會收到與您相關的社區訊息彙整。', 'ok');
+      if (params.get('corrected') === '1') {
+        showToast('您的 LINE 帳號原本已綁定門牌 ' + fullAddr(addr) + '，本次以原本綁定為準。如需更換門牌請聯繫管委會協助。', 'warn');
+      } else {
+        showToast('LINE 綁定成功' + (name ? '，' + name : '') + '！之後每月會收到與您相關的社區訊息彙整。', 'ok');
+      }
     } else if (lineBind === 'conflict') {
       const existingName = params.get('existingName') || '其他住戶';
       showToast('此門牌已由「' + existingName + '」綁定 LINE 通知，每戶僅限一人，如需更換請聯繫管委會協助。', 'warn');
@@ -950,7 +956,7 @@
     // 清掉網址上的參數，避免重新整理頁面時又跳一次 toast
     params.delete('lineBind');
     params.delete('hao'); params.delete('lou'); params.delete('zhi');
-    params.delete('name'); params.delete('existingName'); params.delete('msg');
+    params.delete('name'); params.delete('existingName'); params.delete('msg'); params.delete('corrected');
     const qs = params.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
   }
@@ -997,12 +1003,14 @@
         '<button class="il-logout" onclick="doIndexLogout()">登出</button>';
     } else {
       const opt = function (arr) { return arr.map(function (x) { return '<option value="' + x + '">' + x + '</option>'; }).join(''); };
+      const optHao = function (arr) { return arr.map(function (x) { return '<option value="' + x + '">' + (DONG_MAP[x] || x) + '棟</option>'; }).join(''); };
+      const optLou = function (arr) { return arr.map(function (x) { return '<option value="' + x + '">' + x + '樓</option>'; }).join(''); };
       const lou = []; for (let i = LOU_RANGE[0]; i <= LOU_RANGE[1]; i++) lou.push(i);
       body.innerHTML =
         '<div class="il-msg">請選擇您的門牌</div>' +
         '<div class="il-addr-row">' +
-        '<select class="il-sel" id="ilHao">' + opt(HAO_LIST) + '</select><span>號</span>' +
-        '<select class="il-sel" id="ilLou">' + opt(lou) + '</select><span>樓之</span>' +
+        '<select class="il-sel" id="ilHao">' + optHao(HAO_LIST) + '</select>' +
+        '<select class="il-sel" id="ilLou">' + optLou(lou) + '</select><span>-</span>' +
         '<select class="il-sel" id="ilZhi">' + opt(ZHI_LIST) + '</select>' +
         '</div>' +
         '<div class="il-btns"><button class="il-cancel" onclick="closeIndexLogin()">取消</button><button class="il-ok" onclick="confirmIndexLogin(false)">登入</button></div>' +
@@ -1031,8 +1039,39 @@
     try { if (/[?&]from=line\b/i.test(location.search) && !getLogin()) openIndexLogin(); } catch (e) {}
   }
 
-  applyIndexLoginUI();
-  maybeAutoOpenLoginFromLine();
+  // ── LIFF：從圖文選單／LINE 內建瀏覽器開啟時，若已綁定過就無感帶入門牌 ──
+  // 不強制住戶一定要綁定：已綁定 → 自動帶入門牌；未綁定 → 不主動彈窗，
+  // 維持原本「取消／登入／登入並綁定」的手動登入流程不變。
+  const LIFF_ID_ = '2011594461-wlr3nDOx';
+
+  function initLiff_() {
+    LineBinding.init(LIFF_ID_).then(function (profile) {
+      if (!profile) { applyIndexLoginUI(); maybeAutoOpenLoginFromLine(); return; }
+      LineBinding.checkBound(profile.userId).then(function (info) {
+        if (info && info.bound && info.addr && info.addr.hao) {
+          setLogin(info.addr);
+          showToast('歡迎回來' + (profile.displayName ? '，' + profile.displayName : '') + '！', 'ok');
+        }
+        applyIndexLoginUI();
+      }).catch(function () { applyIndexLoginUI(); });
+    }).catch(function () { applyIndexLoginUI(); maybeAutoOpenLoginFromLine(); });
+  }
+
+  initLiff_();
+
+  // 從 LINE 圖文選單「智生活公告」點進來的連結帶 ?openSmartlife=1；
+  // 借用畫面上原本就有的智生活捷徑按鈕的連結，一到頁面就直接觸發，
+  // 不需要另外做中繼頁，也不用重複維護同一個 App URL Scheme。
+  function maybeAutoOpenSmartlife() {
+    try {
+      if (/[?&]openSmartlife=1\b/i.test(location.search)) {
+        showToast('正在為您開啟「智生活」App 公佈欄...<br>如果沒有自動跳轉，請點右上方智生活公佈欄按鈕。', 'ok', true);
+        var link = document.getElementById('smartdailyLink');
+        if (link) location.href = link.getAttribute('href');
+      }
+    } catch (e) {}
+  }
+  maybeAutoOpenSmartlife();
 </script>
 </body>
 </html>

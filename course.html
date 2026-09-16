@@ -1089,9 +1089,11 @@ function openLogin(){
     return;
   }
   const opt=(arr,v)=>arr.map(x=>`<option value="${x}" ${x==v?'selected':''}>${x}</option>`).join('');
+  const optHao=(arr,v)=>arr.map(x=>`<option value="${x}" ${x==v?'selected':''}>${DONG_MAP[x]||x}棟</option>`).join('');
+  const optLou=(arr,v)=>arr.map(x=>`<option value="${x}" ${x==v?'selected':''}>${x}樓</option>`).join('');
   const lou=[];for(let i=LOU_RANGE[0];i<=LOU_RANGE[1];i++)lou.push(i);
   showSheet(`<div style="font-size:18px;font-weight:900;text-align:center;margin-bottom:18px">請選擇您的門牌</div>
-<div class="addr-row" style="margin-bottom:20px"><select class="addr-sel" id="inHao">${opt(HAO_LIST,s&&s.hao)}</select><span style="font-size:13px;font-weight:700;color:var(--ink-soft)">號</span><select class="addr-sel" id="inLou">${opt(lou,s&&s.lou)}</select><span style="font-size:13px;font-weight:700;color:var(--ink-soft)">樓之</span><select class="addr-sel" id="inZhi">${opt(ZHI_LIST,s&&s.zhi)}</select></div>
+<div class="addr-row" style="margin-bottom:20px"><select class="addr-sel" id="inHao">${optHao(HAO_LIST,s&&s.hao)}</select><select class="addr-sel" id="inLou">${optLou(lou,s&&s.lou)}</select><span style="font-size:13px;font-weight:700;color:var(--ink-soft)">-</span><select class="addr-sel" id="inZhi">${opt(ZHI_LIST,s&&s.zhi)}</select></div>
 <div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="confirmLogin(false)">登入</button></div>
 <button class="logoutbtn" style="background:#06C755;border-color:#06C755;color:#fff" onclick="confirmLogin(true)">登入並綁定 LINE 通知</button>`);
 }

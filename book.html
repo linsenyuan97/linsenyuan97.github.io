@@ -622,8 +622,8 @@
     <div id="loginPickView">
       <div class="dialog-msg">請選擇您的門牌</div>
       <div class="addr-row">
-        <select id="addrHao" class="addr-sel"></select><span class="addr-unit">號</span>
-        <select id="addrLou" class="addr-sel"></select><span class="addr-unit">樓之</span>
+        <select id="addrHao" class="addr-sel"></select>
+        <select id="addrLou" class="addr-sel"></select><span class="addr-unit">-</span>
         <select id="addrZhi" class="addr-sel"></select>
       </div>
       <div class="dialog-btns" style="margin-top:22px">
@@ -1304,7 +1304,9 @@ function initAddrSelects(){
   const hao=[95,97,99], zhi=[1,2,3,5];
   const lou=[];for(let i=2;i<=24;i++)lou.push(i);
   const fill=(id,arr)=>{document.getElementById(id).innerHTML=arr.map(v=>'<option value="'+v+'">'+v+'</option>').join('');};
-  fill('addrHao',hao);fill('addrLou',lou);fill('addrZhi',zhi);
+  const fillHao=(id,arr)=>{document.getElementById(id).innerHTML=arr.map(v=>'<option value="'+v+'">'+(DONG_MAP[v]||v)+'棟</option>').join('');};
+  const fillLou=(id,arr)=>{document.getElementById(id).innerHTML=arr.map(v=>'<option value="'+v+'">'+v+'樓</option>').join('');};
+  fillHao('addrHao',hao);fillLou('addrLou',lou);fill('addrZhi',zhi);
   const s=getLogin();
   if(s){
     if(s.hao)document.getElementById('addrHao').value=s.hao;
@@ -1313,8 +1315,8 @@ function initAddrSelects(){
   }
 }
 function getLogin(){try{const s=JSON.parse(localStorage.getItem(ADDR_KEY)||'null');return (s&&s.hao)?s:null;}catch(e){return null;}}
-function myAddr(){const s=getLogin();return s?(s.hao+'號'+s.lou+'樓之'+s.zhi):'';}
 function myAddrShort(){const s=getLogin();return s?((DONG_MAP[s.hao]||s.hao)+'-'+s.lou+'F'+s.zhi):'';}
+function myAddr(){const s=getLogin();return s?(s.hao+'號'+s.lou+'樓之'+s.zhi):'';}
 function applyLoginUI(){
   const logged=!!getLogin();
   document.getElementById('loginDot').classList.toggle('hidden',!logged);
