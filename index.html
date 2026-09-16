@@ -931,10 +931,12 @@
   function initLiff_() {
     LineBinding.init(LIFF_ID_).then(function (profile) {
       if (!profile) return;
+      // 暱稱從 LIFF 直接拿得到，馬上顯示，不用等後面查詢 GAS 綁定狀態；
+      // 綁定資料（門牌）比較慢，交給後面的 checkBound 在背景默默處理就好。
+      showToast('歡迎回來' + (profile.displayName ? '，' + profile.displayName : '') + '！', 'ok');
       LineBinding.checkBound(profile.userId).then(function (info) {
         if (info && info.bound && info.addr && info.addr.hao) {
           setLogin(info.addr);
-          showToast('歡迎回來' + (profile.displayName ? '，' + profile.displayName : '') + '！', 'ok');
         }
       });
     });
