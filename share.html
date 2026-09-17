@@ -1452,8 +1452,17 @@ function migrateLegacyMsgs(list){
   });
 }
 
+function checkDirectOpen(){
+  try{
+    const id = new URLSearchParams(window.location.search).get('id');
+    if(id && items.some(x => x.id === id)){
+      openDetail(id);
+    }
+  }catch(e){}
+}
+
 async function loadBooksData(){
-  if(!GAS_URL){ migrateLegacyMsgs(items); dataLoaded=true; renderList(); refreshBadges(); lastNotifiedMsgTs=maxDirectedMsgTs(items,me()); return; }
+  if(!GAS_URL){ migrateLegacyMsgs(items); dataLoaded=true; renderList(); refreshBadges(); lastNotifiedMsgTs=maxDirectedMsgTs(items,me()); checkDirectOpen(); return; }
   refreshBadges(true);
   try{
     const r = await fetch(GAS_URL + "?action=list_items");
@@ -1469,6 +1478,7 @@ async function loadBooksData(){
     if(document.getElementById('pageRecords').classList.contains('on')) renderRecords();
     // 記錄目前寫給「我」的訊息中最新的時間點，之後輪詢只比對比這個更新的訊息，避免把舊訊息也跳出來
     lastNotifiedMsgTs = maxDirectedMsgTs(items, me());
+    checkDirectOpen();
   }
 }
 
