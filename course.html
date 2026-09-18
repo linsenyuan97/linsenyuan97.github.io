@@ -1077,7 +1077,38 @@ function startLineBind(){const s=me();if(!s)return;location.href=buildLineLoginU
 // 從 LINE 官方帳號圖文選單點進來的連結要帶 ?from=line；
 // 這種情況下如果還沒登入（沒有門牌），直接跳出登入視窗，不用使用者自己點「未登入」。
 function maybeAutoOpenLoginFromLine(){
-  try{ if(/[?&]from=line\b/i.test(location.search) && !me()) openLogin(); }catch(e){}
+  try{
+    // 有帶 aiDraftId 的話，登入視窗交給 maybeOpenAiCourseDraft_ 自己處理就好，避免重複跳出。
+    if(/[?&]from=line\b/i.test(location.search) && !me() && !/[?&]aiDraftId=/i.test(location.search)) openLogin();
+  }catch(e){}
+}
+
+/* ---- AI 快速建立課程：從 LINE 帶草稿連結進來 ---- */
+// LINE 端只會把一個很短的 aiDraftId 放進網址（不是整包 JSON，避免網址過長），
+// 這裡用這個 id 向 course.gs 換回真正的草稿內容，換到之後那筆暫存資料就會被刪除。
+let pendingAiCourseDraft = null;
+async function maybeOpenAiCourseDraft_(){
+  try{
+    const id = new URLSearchParams(location.search).get('aiDraftId');
+    if(!id || !GAS_URL) return;
+    const r = await fetch(GAS_URL + '?action=get_ai_draft&id=' + encodeURIComponent(id));
+    const j = await r.json();
+    if(j && j.status === 'success' && j.draft){
+      if(me()){
+        openCreateSheetWithDraft_(j.draft);
+      } else {
+        pendingAiCourseDraft = j.draft;
+        openLogin();
+      }
+    } else {
+      showToast('這個 AI 課程草稿已經過期或已被使用過囉');
+    }
+  }catch(e){ console.log('讀取 AI 課程草稿失敗:', e); }
+}
+function openCreateSheetWithDraft_(draft){
+  createData = Object.assign({}, draft);
+  showCreateStep(1);
+  showToast('🤖 AI 已幫您帶入課程草稿，請檢查並補齊未填欄位（尤其是人數上限與下限）');
 }
 function openLogin(){
   const s=me();
@@ -1101,7 +1132,13 @@ function confirmLogin(withLineBind){
   const a={hao:+gv('inHao'),lou:+gv('inLou'),zhi:+gv('inZhi')};
   setLogin(a);applyLoginUI();loadCoursesData();
   if(withLineBind){location.href=buildLineLoginUrl_(a);return;}
-  closeSheet();showToast(`歡迎！${fullAddr(a)}`);
+  closeSheet();
+  if(pendingAiCourseDraft){
+    const draft=pendingAiCourseDraft;pendingAiCourseDraft=null;
+    openCreateSheetWithDraft_(draft);
+    return;
+  }
+  showToast(`歡迎！${fullAddr(a)}`);
 }
 function doLogout(){clearLogin();closeSheet();applyLoginUI();go('list');showToast('已登出');}
 
@@ -1168,7 +1205,7 @@ async function pollForUpdates(){
 function startPolling(){if(pollTimer)return;pollTimer=setInterval(pollForUpdates,120000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollForUpdates();});}
 
 /* ---- Boot ---- */
-(function init(){applyLoginUI();go('list');loadCoursesData();checkDisclaimer();startPolling();maybeAutoOpenLoginFromLine();})();
+(function init(){applyLoginUI();go('list');loadCoursesData();checkDisclaimer();startPolling();maybeAutoOpenLoginFromLine();maybeOpenAiCourseDraft_();})();
 </script>
 </body>
 </html>
