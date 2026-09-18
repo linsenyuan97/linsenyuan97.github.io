@@ -1094,7 +1094,15 @@ async function maybeOpenAiCourseDraft_(){
     const r = await fetch(GAS_URL + '?action=get_ai_draft&id=' + encodeURIComponent(id));
     const j = await r.json();
     if(j && j.status === 'success' && j.draft){
-      if(me()){
+      // 這份草稿是從 LINE 分析出來的，一定要用「LINE 綁定的門牌」(draft.boundAddr) 為準，
+      // 強制覆蓋掉這個瀏覽器本地原本選的門牌（可能是別人或之前選的其他門牌），
+      // 避免 LINE 綁 B 棟、瀏覽器卻選 A 棟，結果課程用錯門牌建立的情況。
+      if(j.draft.boundAddr){
+        setLogin(j.draft.boundAddr);
+        applyLoginUI();
+        loadCoursesData();
+        openCreateSheetWithDraft_(j.draft);
+      } else if(me()){
         openCreateSheetWithDraft_(j.draft);
       } else {
         pendingAiCourseDraft = j.draft;
