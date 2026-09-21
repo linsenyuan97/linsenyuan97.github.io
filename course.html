@@ -82,7 +82,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .card-cancel-btn:active{background:var(--coral-light);transform:scale(.95)}
 .view-more-btn{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;color:var(--tiffany-dark);background:var(--tiffany-light);border:1px solid rgba(124,92,252,.22);padding:3px 9px;border-radius:6px;flex-shrink:0;transition:all .15s}
 .card-body.is-pressed .view-more-btn{background:var(--tiffany);color:#fff}
-.card-body{padding:14px 16px;cursor:pointer}
+.card-body{padding:14px 28px 14px 16px;cursor:pointer}
 .card-title{font-size:16px;font-weight:700;margin:0 0 4px;color:var(--tiffany-dark);display:flex;align-items:center;justify-content:space-between;gap:8px;line-height:1.3}
 .card-title .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-title .cat-tag{margin-left:auto;flex-shrink:0}
@@ -121,10 +121,10 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .subtabs{display:flex;gap:6px;background:#e2e8f0;border-radius:12px;padding:4px;margin:14px 0}
 .subtab{flex:1;background:none;border:none;text-align:center;font-size:14px;font-weight:700;padding:10px 8px;border-radius:9px;color:var(--ink-muted);cursor:pointer}
 .subtab.on{background:#fff;color:var(--tiffany-dark);font-weight:900;box-shadow:0 2px 8px rgba(91,60,196,.18);border-bottom:3px solid var(--tiffany)}
-.trow{background:#fff;border-radius:13px;padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow-card);cursor:pointer;transition:background .12s}
+.trow{background:#fff;border-radius:13px;padding:12px 26px 12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow-card);cursor:pointer;transition:background .12s;position:relative}
 .trow.is-pressed{background:var(--tiffany-light)}
-.trow-chevron{color:var(--tiffany-dark);flex-shrink:0;display:inline-flex;align-items:center}
-.trow-chevron svg,.view-more-btn svg{animation:arrowPulse 1.6s ease-in-out infinite}
+.card-chevron{position:absolute;top:50%;right:14px;transform:translateY(-50%);color:var(--tiffany-dark);pointer-events:none;z-index:2;display:inline-flex;align-items:center}
+.view-more-btn svg,.card-chevron svg{animation:arrowPulse 1.6s ease-in-out infinite}
 @keyframes arrowPulse{0%,100%{opacity:.35;transform:translateX(0)}50%{opacity:1;transform:translateX(4px)}}
 .trow .tt{flex:1;min-width:0}
 .trow .tn{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -576,6 +576,7 @@ function renderList(){
     const recText=formatRecurrence(course.recurrence);
     return `<div class="card" style="${(iOrg||iReg)?'margin-top:20px':''}">
       ${tag}
+      <div class="card-chevron">${CHEVRON_SVG_}</div>
       <div class="card-body" onclick="openCourseDetail('${course.id}')">
         <div class="card-title"><span class="tt">${esc(course.title)}</span><span class="pill cat-tag">${esc(course.category)}</span></div>
         <div class="card-meta">
@@ -592,9 +593,8 @@ function renderList(){
           </div>
           ${iOrg?`<div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;align-items:center;justify-content:flex-end">
             ${canReg?`<button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:4px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}')">我要報名</button>`:(iReg?`<span class="view-more-btn">查看詳情</span>`:'')}
-            <button type="button" style="background:var(--ink);color:#fff;border:none;border-radius:8px;padding:4px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}',true)">管理</button>
-            <span class="trow-chevron">${CHEVRON_SVG_}</span>
-          </div>`:`<div style="display:flex;gap:4px;flex-shrink:0;align-items:center"><span class="view-more-btn" style="${canReg?'color:var(--tiffany-dark);font-weight:700':''}">${canReg?'立即報名':'查看詳情'}</span><span class="trow-chevron">${CHEVRON_SVG_}</span></div>`}
+            <button type="button" style="background:var(--slate-light);color:var(--slate);border:none;border-radius:8px;padding:4px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}',true)">管理</button>
+          </div>`:`<span class="view-more-btn" style="${canReg?'color:var(--tiffany-dark);font-weight:700':''}">${canReg?'立即報名':'查看詳情'}</span>`}
         </div>
       </div>
     </div>`;
@@ -624,14 +624,14 @@ function openCourseDetail(id,startAtManage){
   else if(iOrg)ctaHtml=`
     <div id="ctaStage1" style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
       ${orgRegBtn}
-      <button class="dbtn" style="width:100%;background:var(--ink);color:#fff" onclick="toggleOrgManage(true)">課程管理</button>
+      <button class="dbtn" style="width:100%;background:var(--slate-light);color:var(--slate)" onclick="toggleOrgManage(true)">課程管理</button>
       <button class="dbtn cancel" style="width:100%" onclick="closeSheet()">關閉</button>
     </div>
     <div id="ctaStage2" style="display:none;flex-direction:column;gap:10px;margin-top:14px">
       <div style="display:flex;gap:10px">${shareBtn}${dupBtn}</div>
       <div style="display:flex;gap:10px">
         <button class="dbtn rm" style="flex:1;min-width:0" onclick="closeSheet();openCancelCourse('${id}')">取消揪團</button>
-        <button class="dbtn" style="flex:1;min-width:0;background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany)" onclick="openRegistrantList('${id}')">報名名單</button>
+        <button class="dbtn" style="flex:1;min-width:0;background:#fff;color:var(--ink-soft);border:1.5px solid var(--line)" onclick="openRegistrantList('${id}')">報名名單</button>
       </div>
       <button class="dbtn cancel" style="width:100%" onclick="closeSheet()">關閉</button>
     </div>
@@ -837,7 +837,7 @@ function renderRecords(){
   if(currentRecordSubtab==='regs'){
     const mine=courses.filter(c=>(c.registrations||[]).some(r=>sameAddr(r.addr,my)));
     if(!mine.length){el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>尚未報名任何課程</h3><p>去「查詢」找感興趣的課程吧！</p></div>`;return;}
-    el.innerHTML=mine.map(course=>{const st=statusOf(course);const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>報名時間：${reg?fmtDateTime(reg.ts):''}</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${st.cls}">${esc(st.label)}</span><span class="trow-chevron">${CHEVRON_SVG_}</span></div></div>`;}).join('');
+    el.innerHTML=mine.map(course=>{const st=statusOf(course);const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>報名時間：${reg?fmtDateTime(reg.ts):''}</div></div><span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span><div class="card-chevron">${CHEVRON_SVG_}</div></div>`;}).join('');
   }else{
     const mine=courses.filter(c=>sameAddr(c.organizer&&c.organizer.addr,my));
     if(!mine.length){
@@ -853,7 +853,7 @@ function renderRecords(){
           <div class="tn">${esc(course.title)}</div>
           <div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>已報名 ${count}/${course.minParticipants} 人</div>
           <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-            <button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openRegistrantList('${course.id}')">👥 報名名單</button>
+            <button type="button" style="background:#fff;color:var(--ink-soft);border:1.5px solid var(--line);border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openRegistrantList('${course.id}')">👥 報名名單</button>
             ${canCancel?`
             <button type="button" style="background:#06C755;color:#fff;border:none;border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px" onclick="event.stopPropagation();shareToLine('${course.id}')"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg>LINE 分享</button>
             <button type="button" style="background:#fff;color:var(--ink-soft);border:1.5px solid var(--line);border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();duplicateCourse('${course.id}')">📋 另存揪團</button>
@@ -864,10 +864,8 @@ function renderRecords(){
             `:''}
           </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
-          <span class="pill ${st.cls}">${esc(st.label)}</span>
-          <span class="trow-chevron">${CHEVRON_SVG_}</span>
-        </div>
+        <span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span>
+        <div class="card-chevron">${CHEVRON_SVG_}</div>
       </div>`;
     }).join('');
   }
