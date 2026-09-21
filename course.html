@@ -319,6 +319,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ============================================================
    林森苑課程揪團 — 前端腳本
@@ -566,6 +567,7 @@ function renderList(){
     const iReg=my&&(course.registrations||[]).some(r=>sameAddr(r.addr,my));
     const tag=iOrg?'<div class="card-top-tag">我發起的</div>':iReg?'<div class="card-top-tag green">已報名</div>':'';
     const canCancel=iOrg&&!['cancelled','completed'].includes(course.status);
+    const canReg=!iReg&&canRegister(course);
     const feeTextStr=course.feeType==='fixed'?`每人 $${Number(course.feeAmount||0).toLocaleString()}`:course.feeType==='split'?`總額 $${Number(course.feeAmount||0).toLocaleString()} 平攤`:'免費';
     const recText=formatRecurrence(course.recurrence);
     return `<div class="card" style="${(iOrg||iReg)?'margin-top:20px':''}">
@@ -587,7 +589,7 @@ function renderList(){
           ${canCancel?`<div style="display:flex;gap:6px;flex-shrink:0">
             <button type="button" style="background:#06C755;color:#fff;border:none;border-radius:8px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px" onclick="event.stopPropagation();shareToLine('${course.id}')"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg>分享</button>
             <button type="button" class="card-cancel-btn" onclick="event.stopPropagation();openCancelCourse('${course.id}')">取消揪團</button>
-          </div>`:`<span class="view-more-btn">查看詳情 →</span>`}
+          </div>`:`<span class="view-more-btn" style="${canReg?'color:var(--tiffany-dark);font-weight:700':''}">${canReg?'立即報名 →':'查看詳情 →'}</span>`}
         </div>
       </div>
     </div>`;
@@ -605,12 +607,19 @@ function openCourseDetail(id){
   const shareBtn = iOrg ? `<button class="dbtn" style="flex:0 0 42%;background:#06C755;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px" onclick="shareToLine('${id}')"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg><span>LINE 分享</span></button>` : '';
   const dupBtn = iOrg ? `<button class="dbtn" style="flex:0 0 42%;background:#fff;color:var(--ink-soft);border:1.5px solid var(--line)" onclick="duplicateCourse('${id}')">📋 另存新檔</button>` : '';
   const isCancelled = course.status==='cancelled';
+  // 團主也可能想參加自己發起的課程（例如純粹幫忙揪團、自己不一定要參加），
+  // 所以團主畫面除了管理按鈕外，一併顯示報名／取消報名。
+  const orgRegBtn = (iOrg&&!isCancelled)
+    ? (iReg
+        ? `<button class="dbtn" style="flex:1 0 100%;background:#fff;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();openCancelRegister('${id}')">取消我的報名</button>`
+        : (canReg?`<button class="dbtn go" style="flex:1 0 100%" onclick="closeSheet();openRegister('${id}')">我也要報名</button>`:''))
+    : '';
 
   if(iOrg&&isCancelled)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${dupBtn}<button class="dbtn rm" style="flex:1" onclick="closeSheet();openDeleteCourse('${id}')">🗑️ 刪除資料</button></div>`;
-  else if(iOrg)ctaHtml=`<div class="dbtns" style="flex-wrap:wrap"><button class="dbtn cancel" style="flex:1" onclick="closeSheet()">關閉</button>${shareBtn}${dupBtn}<button class="dbtn rm" style="flex:1 0 100%" onclick="closeSheet();openCancelCourse('${id}')">取消揪團</button></div>`;
+  else if(iOrg)ctaHtml=`<div class="dbtns" style="flex-wrap:wrap"><button class="dbtn cancel" style="flex:1" onclick="closeSheet()">關閉</button>${shareBtn}${dupBtn}${orgRegBtn}<button class="dbtn rm" style="flex:1 0 100%" onclick="closeSheet();openCancelCourse('${id}')">取消揪團</button></div>`;
   else if(iReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${canReg?`<button class="dbtn" style="flex:1;background:#fff;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();openCancelRegister('${id}')">取消報名</button>`:''}</div>`;
   else if(!my)ctaHtml=canReg?`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn go" style="flex:1" onclick="closeSheet();openLogin()">登入後報名</button></div>`:`<div class="dbtns"><button class="dbtn cancel" style="flex:1;width:100%" onclick="closeSheet()">關閉（${esc(st.label)}）</button></div>`;
-  else if(canReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn go" style="flex:1" onclick="closeSheet();openRegister('${id}')">立即報名</button></div>`;
+  else if(canReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn go" style="flex:1" onclick="closeSheet();openRegister('${id}')">我要報名</button></div>`;
   else ctaHtml=`<div class="dbtns"><button class="dbtn cancel" style="flex:1;width:100%" onclick="closeSheet()">關閉（${esc(st.label)}）</button></div>`;
 
   // 兩欄式課程日期排版 ＋ 漸層遮罩與展開按鈕
@@ -669,6 +678,43 @@ function buildRegistrantListHtml_(course){
       <div style="font-size:11px;color:var(--ink-muted);flex-shrink:0;white-space:nowrap">${fmtDateTime(r.ts)}</div>
     </div>`).join('');
   return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)"><div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">👥 報名名單（共 ${regs.length} 人）</div>${rows}</div>`;
+}
+
+/* 團主專用：獨立跳出的報名名單 Dialog，附匯出 Excel 按鈕 */
+function openRegistrantList(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  const regs=course.registrations||[];
+  showSheet(`
+    <div class="dhead">
+      <div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div style="flex:1;min-width:0"><div class="dt" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(course.title)}</div><div class="ds">報名名單（共 ${regs.length} 人）</div></div>
+    </div>
+    <div style="margin-top:8px">${buildRegistrantListHtml_(course)}</div>
+    <div class="sticky-bar"><div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${regs.length?`<button class="dbtn go" style="flex:1" onclick="exportRegistrantsXlsx_('${id}')">📥 匯出 Excel</button>`:''}</div></div>
+  `);
+}
+
+/* 匯出報名名單為 xlsx（純前端產生，不需要後端） */
+function exportRegistrantsXlsx_(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  const regs=course.registrations||[];
+  if(!regs.length){showToast('目前還沒有人報名');return;}
+  if(typeof XLSX==='undefined'){showToast('匯出功能載入失敗，請檢查網路後重新整理再試');return;}
+  const rows=[['姓名','門牌','聯絡方式','報名時間']];
+  regs.forEach(r=>{
+    rows.push([
+      r.name||'',
+      r.addr?(dongLabel(r.addr)+' '+r.addr.lou+'樓之'+r.addr.zhi):'',
+      r.contact||'',
+      r.ts?fmtDateTime(r.ts):''
+    ]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:14},{wch:20},{wch:18}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'報名名單');
+  const safeTitle=(course.title||'課程').replace(/[\\/:*?"<>|]/g,'_');
+  XLSX.writeFile(wb,`${safeTitle}_報名名單.xlsx`);
 }
 
 function toggleSessionsExpand(){
@@ -775,13 +821,16 @@ function renderRecords(){
         <div class="tt">
           <div class="tn">${esc(course.title)}</div>
           <div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>已報名 ${count}/${course.minParticipants} 人</div>
-          ${canCancel?`<div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openRegistrantList('${course.id}')">👥 報名名單</button>
+            ${canCancel?`
             <button type="button" style="background:#06C755;color:#fff;border:none;border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px" onclick="event.stopPropagation();shareToLine('${course.id}')"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg>LINE 分享</button>
             <button type="button" class="card-cancel-btn" onclick="event.stopPropagation();openCancelCourse('${course.id}')">取消揪團</button>
-          </div>`:isCancelled?`<div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            `:isCancelled?`
             <button type="button" style="background:#fff;color:var(--ink-soft);border:1.5px solid var(--line);border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();duplicateCourse('${course.id}')">📋 另存新檔</button>
             <button type="button" class="card-cancel-btn" onclick="event.stopPropagation();openDeleteCourse('${course.id}')">🗑️ 刪除資料</button>
-          </div>`:''}
+            `:''}
+          </div>
         </div>
         <span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span>
       </div>`;
