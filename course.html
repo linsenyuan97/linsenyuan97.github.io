@@ -566,7 +566,6 @@ function renderList(){
     const iOrg=my&&sameAddr(course.organizer&&course.organizer.addr,my);
     const iReg=my&&(course.registrations||[]).some(r=>sameAddr(r.addr,my));
     const tag=iOrg?'<div class="card-top-tag">我發起的</div>':iReg?'<div class="card-top-tag green">已報名</div>':'';
-    const canCancel=iOrg&&!['cancelled','completed'].includes(course.status);
     const canReg=!iReg&&canRegister(course);
     const feeTextStr=course.feeType==='fixed'?`每人 $${Number(course.feeAmount||0).toLocaleString()}`:course.feeType==='split'?`總額 $${Number(course.feeAmount||0).toLocaleString()} 平攤`:'免費';
     const recText=formatRecurrence(course.recurrence);
@@ -586,10 +585,9 @@ function renderList(){
             <span>${st.detailHint}</span>
             <span style="font-size:11px;color:var(--ink-muted);font-weight:normal">｜ ${deadlineText(course.registrationEnd)}</span>
           </div>
-          ${canCancel?`<div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
-            ${canReg?`<span class="view-more-btn" style="color:var(--tiffany-dark);font-weight:700">我也要報名 →</span>`:''}
-            <button type="button" style="background:#06C755;color:#fff;border:none;border-radius:8px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px" onclick="event.stopPropagation();shareToLine('${course.id}')"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg>分享</button>
-            <button type="button" class="card-cancel-btn" onclick="event.stopPropagation();openCancelCourse('${course.id}')">取消揪團</button>
+          ${iOrg?`<div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+            ${canReg?`<button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:4px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openRegister('${course.id}')">我要報名</button>`:''}
+            <button type="button" style="background:var(--ink);color:#fff;border:none;border-radius:8px;padding:4px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}')">管理</button>
           </div>`:`<span class="view-more-btn" style="${canReg?'color:var(--tiffany-dark);font-weight:700':''}">${canReg?'立即報名 →':'查看詳情 →'}</span>`}
         </div>
       </div>
