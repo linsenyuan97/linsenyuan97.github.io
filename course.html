@@ -81,7 +81,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .card-cancel-btn{background:transparent;border:1.5px solid var(--coral);color:var(--coral);border-radius:8px;padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .card-cancel-btn:active{background:var(--coral-light);transform:scale(.95)}
 .view-more-btn{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;color:var(--tiffany-dark);background:var(--tiffany-light);border:1px solid rgba(124,92,252,.22);padding:3px 9px;border-radius:6px;flex-shrink:0;transition:all .15s}
-.card-body:active .view-more-btn{background:var(--tiffany);color:#fff}
+.card-body.is-pressed .view-more-btn{background:var(--tiffany);color:#fff}
 .card-body{padding:14px 16px;cursor:pointer}
 .card-title{font-size:16px;font-weight:700;margin:0 0 4px;color:var(--tiffany-dark);display:flex;align-items:center;justify-content:space-between;gap:8px;line-height:1.3}
 .card-title .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -121,7 +121,9 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .subtabs{display:flex;gap:6px;background:#e2e8f0;border-radius:12px;padding:4px;margin:14px 0}
 .subtab{flex:1;background:none;border:none;text-align:center;font-size:14px;font-weight:700;padding:10px 8px;border-radius:9px;color:var(--ink-muted);cursor:pointer}
 .subtab.on{background:#fff;color:var(--tiffany-dark);font-weight:900;box-shadow:0 2px 8px rgba(91,60,196,.18);border-bottom:3px solid var(--tiffany)}
-.trow{background:#fff;border-radius:13px;padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow-card);cursor:pointer}
+.trow{background:#fff;border-radius:13px;padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow-card);cursor:pointer;transition:background .12s}
+.trow.is-pressed{background:var(--tiffany-light)}
+.trow-chevron{color:var(--tiffany-dark);flex-shrink:0;display:inline-flex;align-items:center}
 .trow .tt{flex:1;min-width:0}
 .trow .tn{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trow .tsub{font-size:11px;color:var(--ink-muted);line-height:1.4}
@@ -328,6 +330,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 const HAO_LIST = [95,97,99];
 const LOU_RANGE = [2,24];
 const ZHI_LIST = [1,2,3,5];
+const CHEVRON_SVG_ = '<svg viewBox="0 0 12 16" width="7" height="12" fill="none"><path d="M1 1l5 7-5 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const DONG_MAP = {95:'A',97:'B',99:'C'};
 const ADDR_KEY = 'ls-resident-addr';
 const DISC_KEY = 'course-disclaimer-v1';
@@ -586,9 +589,9 @@ function renderList(){
             <span style="font-size:11px;color:var(--ink-muted);font-weight:normal">｜ ${deadlineText(course.registrationEnd)}</span>
           </div>
           ${iOrg?`<div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;align-items:center;justify-content:flex-end">
-            ${canReg?`<button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:4px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}')">我要報名</button>`:(iReg?`<span class="view-more-btn">查看詳情 →</span>`:'')}
+            ${canReg?`<button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:4px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}')">我要報名</button>`:(iReg?`<span class="view-more-btn">查看詳情 ${CHEVRON_SVG_}</span>`:'')}
             <button type="button" style="background:var(--ink);color:#fff;border:none;border-radius:8px;padding:4px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}',true)">管理</button>
-          </div>`:`<span class="view-more-btn" style="${canReg?'color:var(--tiffany-dark);font-weight:700':''}">${canReg?'立即報名 →':'查看詳情 →'}</span>`}
+          </div>`:`<span class="view-more-btn" style="${canReg?'color:var(--tiffany-dark);font-weight:700':''}">${canReg?'立即報名':'查看詳情'} ${CHEVRON_SVG_}</span>`}
         </div>
       </div>
     </div>`;
@@ -831,7 +834,7 @@ function renderRecords(){
   if(currentRecordSubtab==='regs'){
     const mine=courses.filter(c=>(c.registrations||[]).some(r=>sameAddr(r.addr,my)));
     if(!mine.length){el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>尚未報名任何課程</h3><p>去「查詢」找感興趣的課程吧！</p></div>`;return;}
-    el.innerHTML=mine.map(course=>{const st=statusOf(course);const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>報名時間：${reg?fmtDateTime(reg.ts):''}</div></div><span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span></div>`;}).join('');
+    el.innerHTML=mine.map(course=>{const st=statusOf(course);const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>報名時間：${reg?fmtDateTime(reg.ts):''}</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="pill ${st.cls}">${esc(st.label)}</span><span class="trow-chevron">${CHEVRON_SVG_}</span></div></div>`;}).join('');
   }else{
     const mine=courses.filter(c=>sameAddr(c.organizer&&c.organizer.addr,my));
     if(!mine.length){
@@ -850,6 +853,7 @@ function renderRecords(){
             <button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openRegistrantList('${course.id}')">👥 報名名單</button>
             ${canCancel?`
             <button type="button" style="background:#06C755;color:#fff;border:none;border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px" onclick="event.stopPropagation();shareToLine('${course.id}')"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 4.3 3.6 7.9 8.48 8.63.33.07.78.22.9.5.1.25.07.63.03.88l-.15.93c-.05.28-.23 1.1 1 .6 1.22-.5 6.6-3.88 9-6.63C22.6 13.9 22 12.35 22 10.75 22 5.92 17.52 2 12 2z"/></svg>LINE 分享</button>
+            <button type="button" style="background:#fff;color:var(--ink-soft);border:1.5px solid var(--line);border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();duplicateCourse('${course.id}')">📋 另存揪團</button>
             <button type="button" class="card-cancel-btn" onclick="event.stopPropagation();openCancelCourse('${course.id}')">取消揪團</button>
             `:isCancelled?`
             <button type="button" style="background:#fff;color:var(--ink-soft);border:1.5px solid var(--line);border-radius:8px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();duplicateCourse('${course.id}')">📋 另存揪團</button>
@@ -857,7 +861,10 @@ function renderRecords(){
             `:''}
           </div>
         </div>
-        <span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+          <span class="pill ${st.cls}">${esc(st.label)}</span>
+          <span class="trow-chevron">${CHEVRON_SVG_}</span>
+        </div>
       </div>`;
     }).join('');
   }
@@ -1373,6 +1380,16 @@ async function pollForUpdates(){
   try{const r=await fetch(GAS_URL+"?action=list_courses");const j=await r.json();if(Array.isArray(j)){courses=j;dataLoaded=true;renderList();if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();}}catch(e){}finally{isPolling=false;}
 }
 function startPolling(){if(pollTimer)return;pollTimer=setInterval(pollForUpdates,120000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollForUpdates();});}
+
+/* ---- 手機點按回饋：改用 Pointer 事件手動切換 class，
+   避免 iOS Safari 的 CSS :active 不穩定觸發、加上關掉了原生 tap 反白後完全沒有回饋的問題 ---- */
+(function initPressFeedback(){
+  function press(e){ const el=e.target.closest('.trow, .card-body'); if(el) el.classList.add('is-pressed'); }
+  function release(){ document.querySelectorAll('.trow.is-pressed, .card-body.is-pressed').forEach(el=>el.classList.remove('is-pressed')); }
+  document.addEventListener('pointerdown', press);
+  document.addEventListener('pointerup', release);
+  document.addEventListener('pointercancel', release);
+})();
 
 /* ---- Boot ---- */
 (function init(){applyLoginUI();go('list');loadCoursesData();checkDisclaimer();startPolling();maybeAutoOpenLoginFromLine();maybeOpenAiCourseDraft_();})();
