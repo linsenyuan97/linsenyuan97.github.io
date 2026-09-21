@@ -124,6 +124,8 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .trow{background:#fff;border-radius:13px;padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow-card);cursor:pointer;transition:background .12s}
 .trow.is-pressed{background:var(--tiffany-light)}
 .trow-chevron{color:var(--tiffany-dark);flex-shrink:0;display:inline-flex;align-items:center}
+.trow-chevron svg,.view-more-btn svg{animation:arrowPulse 1.6s ease-in-out infinite}
+@keyframes arrowPulse{0%,100%{opacity:.35;transform:translateX(0)}50%{opacity:1;transform:translateX(4px)}}
 .trow .tt{flex:1;min-width:0}
 .trow .tn{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .trow .tsub{font-size:11px;color:var(--ink-muted);line-height:1.4}
@@ -330,7 +332,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 const HAO_LIST = [95,97,99];
 const LOU_RANGE = [2,24];
 const ZHI_LIST = [1,2,3,5];
-const CHEVRON_SVG_ = '<svg viewBox="0 0 12 16" width="7" height="12" fill="none"><path d="M1 1l5 7-5 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CHEVRON_SVG_ = '<svg viewBox="0 0 12 16" width="10" height="16" fill="none"><path d="M1 1l5 7-5 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const DONG_MAP = {95:'A',97:'B',99:'C'};
 const ADDR_KEY = 'ls-resident-addr';
 const DISC_KEY = 'course-disclaimer-v1';
@@ -589,9 +591,10 @@ function renderList(){
             <span style="font-size:11px;color:var(--ink-muted);font-weight:normal">｜ ${deadlineText(course.registrationEnd)}</span>
           </div>
           ${iOrg?`<div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;align-items:center;justify-content:flex-end">
-            ${canReg?`<button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:4px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}')">我要報名</button>`:(iReg?`<span class="view-more-btn">查看詳情 ${CHEVRON_SVG_}</span>`:'')}
+            ${canReg?`<button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:4px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}')">我要報名</button>`:(iReg?`<span class="view-more-btn">查看詳情</span>`:'')}
             <button type="button" style="background:var(--ink);color:#fff;border:none;border-radius:8px;padding:4px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}',true)">管理</button>
-          </div>`:`<span class="view-more-btn" style="${canReg?'color:var(--tiffany-dark);font-weight:700':''}">${canReg?'立即報名':'查看詳情'} ${CHEVRON_SVG_}</span>`}
+            <span class="trow-chevron">${CHEVRON_SVG_}</span>
+          </div>`:`<div style="display:flex;gap:4px;flex-shrink:0;align-items:center"><span class="view-more-btn" style="${canReg?'color:var(--tiffany-dark);font-weight:700':''}">${canReg?'立即報名':'查看詳情'}</span><span class="trow-chevron">${CHEVRON_SVG_}</span></div>`}
         </div>
       </div>
     </div>`;
