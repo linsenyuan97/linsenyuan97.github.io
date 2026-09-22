@@ -820,7 +820,7 @@ function openRegister(id){
     <div class="float"><input type="text" id="regName" placeholder=" " maxlength="20"><label>您的姓名（必填）</label></div>
     <div class="float"><input type="text" id="regContact" placeholder=" " maxlength="50"><label>聯絡方式（LINE ID / 電話，選填）</label></div>
     <button type="button" class="sessions-toggle-btn" style="padding:14px 0" onclick="addCompanionField()">➕ 新增同行者</button>
-    <div id="companionList"></div>
+    <div id="companionList" style="max-height:220px;overflow-y:auto"></div>
     <div class="sticky-bar"><div class="dbtns"><button class="dbtn cancel" onclick="openCourseDetail('${id}')">取消</button><button class="dbtn go" onclick="submitRegister('${id}')">確認報名</button></div></div>
   `);
 }
@@ -855,7 +855,7 @@ function openEditRegister(id){
     <div class="float"><input type="text" id="regName" placeholder=" " maxlength="20" value="${esc(reg.name||'')}"><label>您的姓名（必填）</label></div>
     <div class="float"><input type="text" id="regContact" placeholder=" " maxlength="50" value="${esc(reg.contact||'')}"><label>聯絡方式（LINE ID / 電話，選填）</label></div>
     <button type="button" class="sessions-toggle-btn" style="padding:14px 0" onclick="addCompanionField()">➕ 新增同行者</button>
-    <div id="companionList"></div>
+    <div id="companionList" style="max-height:220px;overflow-y:auto"></div>
     <div class="sticky-bar"><div class="dbtns"><button class="dbtn cancel" onclick="openCourseDetail('${id}')">取消</button><button class="dbtn go" onclick="submitEditRegister('${id}')">儲存修改</button></div></div>
   `);
   (reg.companions||[]).forEach(n=>addCompanionField(n));
