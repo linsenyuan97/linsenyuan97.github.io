@@ -392,8 +392,10 @@ function goRecordPage(){if(!me()){openLogin();return;}switchRecordTab(currentRec
 function switchRecordTab(tab){currentRecordSubtab=tab;document.getElementById('subtabRegs').classList.toggle('on',tab==='regs');document.getElementById('subtabMine').classList.toggle('on',tab==='mine');renderRecords();}
 
 /* ---- Status ---- */
+// 一筆報名可能帶同行者，人數要算「代表人 + 同行者」，不能只算報名筆數
+function regHeadcount(c){return(c.registrations||[]).reduce((s,r)=>s+1+((r.companions||[]).length),0);}
 function statusOf(c){
-  const now = Date.now(), count = (c.registrations || []).length, min = c.minParticipants || 2, max = c.maxParticipants || min;
+  const now = Date.now(), count = regHeadcount(c), min = c.minParticipants || 2, max = c.maxParticipants || min;
   if (c.status === 'completed') return { cls: 'p-closed', fillCls: 'p-closed', label: '已完課', pct: 100, detailHint: '課程已圓滿完課' };
   if (c.status === 'cancelled') return { cls: 'p-closed', fillCls: 'p-closed', label: '已取消', pct: 0, detailHint: '此揪團已取消' };
   if (now > c.registrationEnd) {
@@ -418,11 +420,11 @@ function statusOf(c){
 }
 
 function progressOf(c){
-  const count = (c.registrations || []).length, min = c.minParticipants || 2, max = c.maxParticipants || min;
+  const count = regHeadcount(c), min = c.minParticipants || 2, max = c.maxParticipants || min;
   const st = statusOf(c);
   return { pct: st.pct, fillCls: st.fillCls, detailHint: st.detailHint, count, min, max, cls: st.cls };
 }
-function canRegister(c){return!['completed','cancelled'].includes(c.status)&&Date.now()<=c.registrationEnd&&(c.registrations||[]).length<c.maxParticipants;}
+function canRegister(c){return!['completed','cancelled'].includes(c.status)&&Date.now()<=c.registrationEnd&&regHeadcount(c)<c.maxParticipants;}
 function isRegistered(c){const my=me();if(!my)return false;return(c.registrations||[]).some(r=>sameAddr(r.addr,my));}
 function isOrganizer(c){const my=me();if(!my)return false;return sameAddr(c.organizer&&c.organizer.addr,my);}
 
@@ -549,7 +551,7 @@ function renderList(){
     if(sf!=='all'){
       const st=statusOf(c);
       const now=Date.now();
-      const count=(c.registrations||[]).length;
+      const count=regHeadcount(c);
       const min=c.minParticipants||2;
       if(sf==='recruiting'){
         // 招募集氣中：報名未截止 且 未達最低門檻
@@ -645,7 +647,7 @@ function openCourseDetail(id,startAtManage){
   else if(iReg){
     // 「額滿」只代表不能再有新人加入，不代表已報名的人不能退出，所以取消報名不能沿用 canReg 判斷。
     const canCancelMyReg=!['completed','cancelled'].includes(course.status);
-    ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${canCancelMyReg?`<button class="dbtn" style="flex:1;background:#fff;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();openCancelRegister('${id}')">取消報名</button>`:''}</div>`;
+    ctaHtml=`<div class="dbtns" style="flex-wrap:wrap"><button class="dbtn cancel" style="flex:1;min-width:0" onclick="closeSheet()">關閉</button>${canCancelMyReg?`<button class="dbtn" style="flex:1;min-width:0;background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany)" onclick="openEditRegister('${id}')">修改報名</button><button class="dbtn" style="flex:1;min-width:0;background:#fff;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();openCancelRegister('${id}')">取消報名</button>`:''}</div>`;
   }
   else if(!my)ctaHtml=canReg?`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn go" style="flex:1" onclick="closeSheet();openLogin()">登入後報名</button></div>`:`<div class="dbtns"><button class="dbtn cancel" style="flex:1;width:100%" onclick="closeSheet()">關閉（${esc(st.label)}）</button></div>`;
   else if(canReg)ctaHtml=`<div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button><button class="dbtn go" style="flex:1" onclick="closeSheet();openRegister('${id}')">我要報名</button></div>`;
@@ -704,10 +706,12 @@ function buildRegistrantListHtml_(course){
       <div style="min-width:0">
         <div style="font-size:13px;font-weight:700;color:var(--ink)">${esc(r.name||'（未填姓名）')}<span style="font-weight:400;color:var(--ink-muted);margin-left:6px">${r.addr?esc(dongLabel(r.addr)+' '+r.addr.lou+'樓之'+r.addr.zhi):''}</span></div>
         ${r.contact?`<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">📞 ${esc(r.contact)}</div>`:''}
+        ${(r.companions&&r.companions.length)?`<div style="font-size:12px;color:var(--tiffany-dark);margin-top:2px">👨‍👩‍👧 同行者：${r.companions.map(esc).join('、')}</div>`:''}
       </div>
       <div style="font-size:11px;color:var(--ink-muted);flex-shrink:0;white-space:nowrap">${fmtDateTime(r.ts)}</div>
     </div>`).join('');
-  return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)"><div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">👥 報名名單（共 ${regs.length} 人）</div>${rows}</div>`;
+  const totalHeadcount=regHeadcount(course);
+  return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)"><div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">👥 報名名單（共 ${regs.length} 筆・${totalHeadcount} 人）</div>${rows}</div>`;
 }
 
 /* 團主專用：獨立跳出的報名名單 Dialog，附匯出 Excel 按鈕 */
@@ -717,7 +721,7 @@ function openRegistrantList(id){
   showSheet(`
     <div class="dhead">
       <div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div style="flex:1;min-width:0"><div class="dt" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(course.title)}</div><div class="ds">報名名單（共 ${regs.length} 人）</div></div>
+      <div style="flex:1;min-width:0"><div class="dt" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(course.title)}</div><div class="ds">報名名單（共 ${regs.length} 筆・${regHeadcount(course)} 人）</div></div>
     </div>
     <div style="margin-top:8px">${buildRegistrantListHtml_(course)}</div>
     <div class="sticky-bar"><div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">關閉</button>${regs.length?`<button class="dbtn go" style="flex:1" onclick="exportRegistrantsXlsx_('${id}')">📥 匯出 Excel</button>`:''}</div></div>
@@ -730,17 +734,19 @@ function exportRegistrantsXlsx_(id){
   const regs=course.registrations||[];
   if(!regs.length){showToast('目前還沒有人報名');return;}
   if(typeof XLSX==='undefined'){showToast('匯出功能載入失敗，請檢查網路後重新整理再試');return;}
-  const rows=[['姓名','門牌','聯絡方式','報名時間']];
+  const rows=[['姓名','門牌','聯絡方式','同行者','人數','報名時間']];
   regs.forEach(r=>{
     rows.push([
       r.name||'',
       r.addr?(dongLabel(r.addr)+' '+r.addr.lou+'樓之'+r.addr.zhi):'',
       r.contact||'',
+      (r.companions||[]).join('、'),
+      1+((r.companions||[]).length),
       r.ts?fmtDateTime(r.ts):''
     ]);
   });
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:12},{wch:14},{wch:20},{wch:18}];
+  ws['!cols']=[{wch:12},{wch:14},{wch:20},{wch:24},{wch:6},{wch:18}];
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'報名名單');
   const safeTitle=(course.title||'課程').replace(/[\\/:*?"<>|]/g,'_');
@@ -764,14 +770,32 @@ function toggleSessionsExpand(){
 }
 
 /* ---- Register ---- */
+// 同行者欄位：同戶想一起參加的人，用「+ 新增同行者」動態加輸入框，不用分開報名好幾次
+function companionRowHtml_(name){
+  return `<div class="float companion-row" style="display:flex;gap:6px;align-items:center;margin-top:8px">
+    <div class="float" style="flex:1;margin:0"><input type="text" class="companionInput" placeholder=" " maxlength="20" value="${esc(name||'')}"><label>同行者姓名</label></div>
+    <button type="button" onclick="this.closest('.companion-row').remove()" style="flex-shrink:0;width:36px;height:36px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink-muted);font-size:16px;cursor:pointer">✕</button>
+  </div>`;
+}
+function addCompanionField(name){
+  const list=document.getElementById('companionList');
+  if(!list)return;
+  list.insertAdjacentHTML('beforeend',companionRowHtml_(name));
+}
+function collectCompanions_(){
+  return Array.from(document.querySelectorAll('.companionInput')).map(el=>el.value.trim()).filter(Boolean);
+}
 function openRegister(id){
   if(!me()){openLogin();return;}
   const course=courses.find(c=>c.id===id);if(!course)return;
+  const remaining=course.maxParticipants-regHeadcount(course);
   showSheet(`
     <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="dt">報名課程</div><div class="ds">${esc(course.title)}</div></div></div>
-    <div class="note">報名後請留意課程是否成團。成團後請依發起人指示繳費。</div>
+    <div class="note">報名後請留意課程是否成團。成團後請依發起人指示繳費。剩餘名額 <b>${remaining}</b> 人（含您本人）。</div>
     <div class="float"><input type="text" id="regName" placeholder=" " maxlength="20"><label>您的姓名（必填）</label></div>
     <div class="float"><input type="text" id="regContact" placeholder=" " maxlength="50"><label>聯絡方式（LINE ID / 電話，選填）</label></div>
+    <div id="companionList"></div>
+    <button type="button" class="sessions-toggle-btn" onclick="addCompanionField()">➕ 新增同行者（同戶一起參加）</button>
     <div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitRegister('${id}')">確認報名</button></div>
   `);
 }
@@ -782,7 +806,11 @@ async function submitRegister(id){
   const name=nameEl.value.trim();
   if(!name){nameEl.classList.add('err');nameEl.oninput=()=>nameEl.classList.remove('err');nameEl.focus();showToast('請填寫姓名');return;}
   const contact=document.getElementById('regContact').value.trim();
-  const reg={addr:my,name,contact,ts:Date.now()};
+  const companions=collectCompanions_();
+  const headcount=1+companions.length;
+  const remaining=course.maxParticipants-regHeadcount(course);
+  if(headcount>remaining){showToast(companions.length?`剩餘名額只有 ${remaining} 人，請減少同行者人數`:'很抱歉，名額剛好被其他人搶先報名了，請重新整理查看最新狀況');return;}
+  const reg={addr:my,name,contact,companions,ts:Date.now()};
   showMask('報名中…');
   const r=await notify('register',{courseId:id,registration:reg});
   hideMask();
@@ -792,9 +820,48 @@ async function submitRegister(id){
   closeSheet();showToast('報名成功！🎉');renderList();
   if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();
 }
+/* ---- 修改報名資訊：改姓名/聯絡方式/同行者名單，不改變是否已報名的狀態 ---- */
+function openEditRegister(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  const my=me();if(!my)return;
+  const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));if(!reg)return;
+  showSheet(`
+    <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="dt">修改報名資訊</div><div class="ds">${esc(course.title)}</div></div></div>
+    <div class="float"><input type="text" id="regName" placeholder=" " maxlength="20" value="${esc(reg.name||'')}"><label>您的姓名（必填）</label></div>
+    <div class="float"><input type="text" id="regContact" placeholder=" " maxlength="50" value="${esc(reg.contact||'')}"><label>聯絡方式（LINE ID / 電話，選填）</label></div>
+    <div id="companionList"></div>
+    <button type="button" class="sessions-toggle-btn" onclick="addCompanionField()">➕ 新增同行者（同戶一起參加）</button>
+    <div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitEditRegister('${id}')">儲存修改</button></div>
+  `);
+  (reg.companions||[]).forEach(n=>addCompanionField(n));
+}
+async function submitEditRegister(id){
+  const course=courses.find(c=>c.id===id);if(!course)return;
+  const my=me();if(!my)return;
+  const oldReg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));if(!oldReg)return;
+  const nameEl=document.getElementById('regName');
+  const name=nameEl.value.trim();
+  if(!name){nameEl.classList.add('err');nameEl.oninput=()=>nameEl.classList.remove('err');nameEl.focus();showToast('請填寫姓名');return;}
+  const contact=document.getElementById('regContact').value.trim();
+  const companions=collectCompanions_();
+  const remaining=course.maxParticipants-regHeadcount(course)+(1+(oldReg.companions||[]).length);
+  if(1+companions.length>remaining){showToast(companions.length?`剩餘名額只有 ${remaining} 人，請減少同行者人數`:'很抱歉，名額剛好被其他人搶先報名了，請重新整理查看最新狀況');return;}
+  const reg={addr:my,name,contact,companions,ts:oldReg.ts};
+  showMask('儲存中…');
+  const r=await notify('update_register',{courseId:id,registration:reg});
+  hideMask();
+  if(!r.ok){showToast(r.message);await loadCoursesData();return;}
+  course.registrations=(course.registrations||[]).map(rr=>sameAddr(rr.addr,my)?reg:rr);
+  closeSheet();showToast('已更新報名資訊');renderList();
+  if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();
+}
 function openCancelRegister(id){
   const course=courses.find(c=>c.id===id);if(!course)return;
-  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div><div class="dt">取消報名</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定取消報名嗎？若課程接近成團門檻，取消可能影響其他住戶。</div><div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">不取消</button><button class="dbtn rm" onclick="submitCancelRegister('${id}')">確認取消</button></div>`);
+  const my=me();
+  const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));
+  const companions=(reg&&reg.companions)||[];
+  const extraWarn=companions.length?`，會一併取消 <b>${companions.length}</b> 位同行者（${companions.map(esc).join('、')}）的報名`:'';
+  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div><div class="dt">取消報名</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定取消報名嗎${extraWarn}？若課程接近成團門檻，取消可能影響其他住戶。</div><div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">不取消</button><button class="dbtn rm" onclick="submitCancelRegister('${id}')">確認取消</button></div>`);
 }
 async function submitCancelRegister(id){
   const course=courses.find(c=>c.id===id);if(!course)return;
@@ -843,7 +910,7 @@ function renderRecords(){
   if(currentRecordSubtab==='regs'){
     const mine=courses.filter(c=>(c.registrations||[]).some(r=>sameAddr(r.addr,my)));
     if(!mine.length){el.innerHTML=`<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>尚未報名任何課程</h3><p>去「查詢」找感興趣的課程吧！</p></div>`;return;}
-    el.innerHTML=mine.map(course=>{const st=statusOf(course);const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>報名時間：${reg?fmtDateTime(reg.ts):''}</div></div><span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span><div class="card-chevron">${CHEVRON_SVG_}</div></div>`;}).join('');
+    el.innerHTML=mine.map(course=>{const st=statusOf(course);const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));const companionHint=(reg&&reg.companions&&reg.companions.length)?`（含${reg.companions.length}位同行者）`:'';return`<div class="trow" onclick="openCourseDetail('${course.id}')"><div class="tt"><div class="tn">${esc(course.title)}</div><div class="tsub">${esc(formatRecurrence(course.recurrence))}<br>報名時間：${reg?fmtDateTime(reg.ts):''}${companionHint}</div></div><span class="pill ${st.cls}" style="flex-shrink:0">${esc(st.label)}</span><div class="card-chevron">${CHEVRON_SVG_}</div></div>`;}).join('');
   }else{
     const mine=courses.filter(c=>sameAddr(c.organizer&&c.organizer.addr,my));
     if(!mine.length){
@@ -851,7 +918,7 @@ function renderRecords(){
       return;
     }
     el.innerHTML=mine.map(course=>{
-      const st=statusOf(course),count=(course.registrations||[]).length;
+      const st=statusOf(course),count=regHeadcount(course);
       const canCancel=!['cancelled','completed'].includes(course.status);
       const isCancelled=course.status==='cancelled';
       return `<div class="trow" style="align-items:flex-start" onclick="openCourseDetail('${course.id}')">
@@ -1328,7 +1395,7 @@ function agreeDisclaimer(){try{localStorage.setItem(DISC_KEY,'1');}catch(e){}doc
 
 function shareToLine(id){
   const course = courses.find(c => c.id === id); if(!course) return;
-  const count = (course.registrations||[]).length;
+  const count = regHeadcount(course);
   const url = window.location.origin + window.location.pathname + '?id=' + id;
   const msg = `📢【林森苑課程揪團】${course.title}\n🗓️ 排程：${formatRecurrence(course.recurrence)}\n📍 地點：${course.location||'社區公設'}\n👥 進度：已報名 ${count}/${course.minParticipants} 人（上限 ${course.maxParticipants} 人）\n⏰ 截止：${deadlineText(course.registrationEnd)}\n\n👉 點此直接查看詳情與報名：\n${url}`;
   
