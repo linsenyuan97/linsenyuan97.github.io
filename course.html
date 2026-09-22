@@ -791,11 +791,12 @@ function openRegister(id){
   const remaining=course.maxParticipants-regHeadcount(course);
   showSheet(`
     <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="dt">報名課程</div><div class="ds">${esc(course.title)}</div></div></div>
-    <div class="note">報名後請留意課程是否成團。成團後請依發起人指示繳費。剩餘名額 <b>${remaining}</b> 人（含您本人）。</div>
+    <div class="note">報名後請留意課程是否成團。成團後請依發起人指示繳費。</div>
+    <div class="note">剩餘名額 <b>${remaining}</b> 人。</div>
     <div class="float"><input type="text" id="regName" placeholder=" " maxlength="20"><label>您的姓名（必填）</label></div>
     <div class="float"><input type="text" id="regContact" placeholder=" " maxlength="50"><label>聯絡方式（LINE ID / 電話，選填）</label></div>
+    <button type="button" class="sessions-toggle-btn" style="padding:14px 0" onclick="addCompanionField()">➕ 新增同行者</button>
     <div id="companionList"></div>
-    <button type="button" class="sessions-toggle-btn" onclick="addCompanionField()">➕ 新增同行者（同戶一起參加）</button>
     <div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitRegister('${id}')">確認報名</button></div>
   `);
 }
@@ -829,8 +830,8 @@ function openEditRegister(id){
     <div class="dhead"><div class="dicon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="dt">修改報名資訊</div><div class="ds">${esc(course.title)}</div></div></div>
     <div class="float"><input type="text" id="regName" placeholder=" " maxlength="20" value="${esc(reg.name||'')}"><label>您的姓名（必填）</label></div>
     <div class="float"><input type="text" id="regContact" placeholder=" " maxlength="50" value="${esc(reg.contact||'')}"><label>聯絡方式（LINE ID / 電話，選填）</label></div>
+    <button type="button" class="sessions-toggle-btn" style="padding:14px 0" onclick="addCompanionField()">➕ 新增同行者</button>
     <div id="companionList"></div>
-    <button type="button" class="sessions-toggle-btn" onclick="addCompanionField()">➕ 新增同行者（同戶一起參加）</button>
     <div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitEditRegister('${id}')">儲存修改</button></div>
   `);
   (reg.companions||[]).forEach(n=>addCompanionField(n));
