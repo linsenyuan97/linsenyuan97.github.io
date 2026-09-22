@@ -625,7 +625,7 @@ function renderList(){
           </div>
           ${iOrg?`<div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;align-items:center;justify-content:flex-end">
             ${canReg?`<button type="button" style="background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany);border-radius:8px;padding:4px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}')">我要報名</button>`:(iReg?`<span class="view-more-btn">查看詳情</span>`:'')}
-            <button type="button" style="background:var(--slate-light);color:var(--slate);border:none;border-radius:8px;padding:4px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}',true)">管理</button>
+            <button type="button" style="background:var(--slate-light);color:var(--tiffany-dark);border:none;border-radius:8px;padding:4px 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer" onclick="event.stopPropagation();openCourseDetail('${course.id}',true)">管理</button>
           </div>`:`<span class="view-more-btn" style="${canReg?'color:var(--tiffany-dark);font-weight:700':''}">${canReg?'立即報名':'查看詳情'}</span>`}
         </div>
       </div>
@@ -656,7 +656,7 @@ function openCourseDetail(id,startAtManage){
   else if(iOrg)ctaHtml=`
     <div id="ctaStage1" style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
       ${orgRegBtn}
-      <button class="dbtn" style="width:100%;background:var(--slate-light);color:var(--slate)" onclick="toggleOrgManage(true)">課程管理</button>
+      <button class="dbtn" style="width:100%;background:var(--slate-light);color:var(--tiffany-dark)" onclick="toggleOrgManage(true)">課程管理</button>
       <button class="dbtn cancel" style="width:100%" onclick="closeSheet()">關閉</button>
     </div>
     <div id="ctaStage2" style="display:none;flex-direction:column;gap:10px;margin-top:14px">
@@ -886,7 +886,7 @@ function openCancelRegister(id){
   const reg=(course.registrations||[]).find(r=>sameAddr(r.addr,my));
   const companions=(reg&&reg.companions)||[];
   const extraWarn=companions.length?`，會一併取消 <b>${companions.length}</b> 位同行者（${companions.map(esc).join('、')}）的報名`:'';
-  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div><div class="dt">取消報名</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定取消報名嗎${extraWarn}？若課程接近成團門檻，取消可能影響其他住戶。</div><div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">不取消</button><button class="dbtn rm" onclick="submitCancelRegister('${id}')">確認取消</button></div>`);
+  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div><div class="dt">取消報名</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定取消報名嗎${extraWarn}？若課程接近成團門檻，取消可能影響其他住戶。</div><div class="dbtns"><button class="dbtn cancel" onclick="openCourseDetail('${id}')">不取消</button><button class="dbtn rm" onclick="submitCancelRegister('${id}')">確認取消</button></div>`);
 }
 async function submitCancelRegister(id){
   const course=courses.find(c=>c.id===id);if(!course)return;
@@ -901,7 +901,7 @@ async function submitCancelRegister(id){
 }
 function openCancelCourse(id){
   const course=courses.find(c=>c.id===id);if(!course)return;
-  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></div><div><div class="dt">取消揪團</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定取消這個揪團嗎？已報名住戶<b>不會收到系統通知</b>，請自行聯繫。</div><div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">不取消</button><button class="dbtn rm" onclick="submitCancelCourse('${id}')">確認取消</button></div>`);
+  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></div><div><div class="dt">取消揪團</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定取消這個揪團嗎？已報名住戶<b>不會收到系統通知</b>，請自行聯繫。</div><div class="dbtns"><button class="dbtn cancel" onclick="openCourseDetail('${id}',true)">不取消</button><button class="dbtn rm" onclick="submitCancelCourse('${id}')">確認取消</button></div>`);
 }
 async function submitCancelCourse(id){
   const course=courses.find(c=>c.id===id);if(!course)return;
@@ -915,7 +915,7 @@ async function submitCancelCourse(id){
 }
 function openDeleteCourse(id){
   const course=courses.find(c=>c.id===id);if(!course)return;
-  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></div><div><div class="dt">刪除課程資料</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定要刪除嗎？刪除後這筆課程的所有資料（含報名名單）都會<b>永久消失、無法復原</b>。</div><div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">不刪除</button><button class="dbtn rm" onclick="submitDeleteCourse('${id}')">確認刪除</button></div>`);
+  showSheet(`<div class="dhead"><div class="dicon coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></div><div><div class="dt">刪除課程資料</div><div class="ds">${esc(course.title)}</div></div></div><div class="note warn">確定要刪除嗎？刪除後這筆課程的所有資料（含報名名單）都會<b>永久消失、無法復原</b>。</div><div class="dbtns"><button class="dbtn cancel" onclick="openCourseDetail('${id}',true)">不刪除</button><button class="dbtn rm" onclick="submitDeleteCourse('${id}')">確認刪除</button></div>`);
 }
 async function submitDeleteCourse(id){
   showMask('刪除中…');
