@@ -356,8 +356,32 @@ let isPolling = false;
 /* ---- UI utils ---- */
 function showMask(m){const el=document.getElementById('loadMask');el.querySelector('span').textContent=m||'處理中…';el.classList.remove('hidden');}
 function hideMask(){document.getElementById('loadMask').classList.add('hidden');}
-function showSheet(inner){document.getElementById('overlayHost').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet"><div class="grab"></div>${inner}</div></div>`;}
-function closeSheet(){document.getElementById('overlayHost').innerHTML='';}
+let bodyScrollLockY_=0,isSheetLocked_=false;
+function showSheet(inner){
+  document.getElementById('overlayHost').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet"><div class="grab"></div>${inner}</div></div>`;
+  // 鎖住背景頁面的捲動，避免在 Dialog 裡上下滑時，底下的清單也跟著捲動。
+  // 用 isSheetLocked_ 擋住重複鎖定：從詳情頁換到報名表單這種「內容替換但沒真的關閉」的情況，
+  // 不能重新記一次 scrollY，不然關閉時會回到錯的位置。
+  if(!isSheetLocked_){
+    bodyScrollLockY_=window.scrollY;
+    document.body.style.position='fixed';
+    document.body.style.top=`-${bodyScrollLockY_}px`;
+    document.body.style.left='0';
+    document.body.style.right='0';
+    isSheetLocked_=true;
+  }
+}
+function closeSheet(){
+  document.getElementById('overlayHost').innerHTML='';
+  if(isSheetLocked_){
+    document.body.style.position='';
+    document.body.style.top='';
+    document.body.style.left='';
+    document.body.style.right='';
+    isSheetLocked_=false;
+    window.scrollTo(0,bodyScrollLockY_);
+  }
+}
 function showToast(msg){const t=document.getElementById('toast');document.getElementById('toastText').textContent=msg;t.classList.remove('hidden');if(toastTimer)clearTimeout(toastTimer);const hide=()=>t.classList.add('hidden');setTimeout(()=>{window.addEventListener('click',hide,{once:true});window.addEventListener('touchstart',hide,{passive:true,once:true});},150);toastTimer=setTimeout(hide,3500);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function gv(id){const e=document.getElementById(id);return e?e.value:'';}
@@ -624,7 +648,7 @@ function openCourseDetail(id,startAtManage){
   // 所以團主畫面除了管理按鈕外，一併顯示報名／取消報名。
   const orgRegBtn = (iOrg&&!isCancelled)
     ? (iReg
-        ? `<button class="dbtn" style="width:100%;background:#fff;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();openCancelRegister('${id}')">取消我的報名</button>`
+        ? `<div style="display:flex;flex-direction:column;gap:10px;width:100%"><button class="dbtn" style="width:100%;background:#fff;color:var(--tiffany-dark);border:1.5px solid var(--tiffany)" onclick="openEditRegister('${id}')">修改報名</button><button class="dbtn" style="width:100%;background:#fff;color:var(--coral);border:1.5px solid var(--coral)" onclick="closeSheet();openCancelRegister('${id}')">取消我的報名</button></div>`
         : (canReg?`<button class="dbtn go" style="width:100%" onclick="closeSheet();openRegister('${id}')">我也要報名</button>`:''))
     : '';
 
@@ -797,7 +821,7 @@ function openRegister(id){
     <div class="float"><input type="text" id="regContact" placeholder=" " maxlength="50"><label>聯絡方式（LINE ID / 電話，選填）</label></div>
     <button type="button" class="sessions-toggle-btn" style="padding:14px 0" onclick="addCompanionField()">➕ 新增同行者</button>
     <div id="companionList"></div>
-    <div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitRegister('${id}')">確認報名</button></div>
+    <div class="sticky-bar"><div class="dbtns"><button class="dbtn cancel" onclick="openCourseDetail('${id}')">取消</button><button class="dbtn go" onclick="submitRegister('${id}')">確認報名</button></div></div>
   `);
 }
 async function submitRegister(id){
@@ -832,7 +856,7 @@ function openEditRegister(id){
     <div class="float"><input type="text" id="regContact" placeholder=" " maxlength="50" value="${esc(reg.contact||'')}"><label>聯絡方式（LINE ID / 電話，選填）</label></div>
     <button type="button" class="sessions-toggle-btn" style="padding:14px 0" onclick="addCompanionField()">➕ 新增同行者</button>
     <div id="companionList"></div>
-    <div class="dbtns"><button class="dbtn cancel" onclick="closeSheet()">取消</button><button class="dbtn go" onclick="submitEditRegister('${id}')">儲存修改</button></div>
+    <div class="sticky-bar"><div class="dbtns"><button class="dbtn cancel" onclick="openCourseDetail('${id}')">取消</button><button class="dbtn go" onclick="submitEditRegister('${id}')">儲存修改</button></div></div>
   `);
   (reg.companions||[]).forEach(n=>addCompanionField(n));
 }
