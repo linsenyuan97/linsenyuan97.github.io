@@ -209,7 +209,11 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdro
 .empty-icon svg{width:28px;height:28px;color:var(--tiffany)}
 .empty h3{font-size:17px;font-weight:700;margin:0 0 6px}
 .empty p{font-size:13px;color:var(--ink-soft);margin:0;line-height:1.6}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .view-more-btn svg,.card-chevron svg{animation:arrowPulse 1.6s ease-in-out infinite!important}
+  .spin-ico,.inline-loading svg{animation:spin .9s linear infinite!important}
+}
 </style>
 </head>
 <body>
@@ -381,8 +385,10 @@ function go(page){
   if(page==='records')renderRecords();
   window.scrollTo({top:0,behavior:'smooth'});
 }
-function goSearchPage(){go('list');loadCoursesData();}
-function goRecordPage(){if(!me()){openLogin();return;}switchRecordTab(currentRecordSubtab||'regs');go('records');loadCoursesData();}
+// go() 本身就會用現有的 courses 資料立刻重畫，加上已經有 120 秒背景輪詢保持資料新鮮，
+// 切換分頁不需要每次都重新打一次 API，避免資料還沒抓完時畫面呆滯、抓完又突然跳一次的空窗期。
+function goSearchPage(){go('list');}
+function goRecordPage(){if(!me()){openLogin();return;}switchRecordTab(currentRecordSubtab||'regs');go('records');}
 function switchRecordTab(tab){currentRecordSubtab=tab;document.getElementById('subtabRegs').classList.toggle('on',tab==='regs');document.getElementById('subtabMine').classList.toggle('on',tab==='mine');renderRecords();}
 
 /* ---- Status ---- */
@@ -1300,7 +1306,11 @@ function openLogin(){
 }
 function confirmLogin(withLineBind){
   const a={hao:+gv('inHao'),lou:+gv('inLou'),zhi:+gv('inZhi')};
-  setLogin(a);applyLoginUI();loadCoursesData();
+  // 登入只會改變「哪些按鈕該顯示」，課程資料本身不會變，
+  // 直接用現有資料重畫就好，不用重新打一次 API、也不會有空窗期看起來像卡住。
+  setLogin(a);applyLoginUI();
+  renderList();
+  if(document.getElementById('pageRecords').classList.contains('on'))renderRecords();
   if(withLineBind){location.href=buildLineLoginUrl_(a);return;}
   closeSheet();
   if(pendingAiCourseDraft){
