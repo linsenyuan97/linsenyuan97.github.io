@@ -1422,7 +1422,8 @@ function shareToLine(id){
   const course = courses.find(c => c.id === id); if(!course) return;
   const count = regHeadcount(course);
   const url = window.location.origin + window.location.pathname + '?id=' + id;
-  const msg = `📢【林森苑課程揪團】${course.title}\n🗓️ 排程：${formatRecurrence(course.recurrence)}\n📍 地點：${course.location||'社區公設'}\n👥 進度：已報名 ${count}/${course.minParticipants} 人（上限 ${course.maxParticipants} 人）\n⏰ 截止：${deadlineText(course.registrationEnd)}\n\n👉 點此直接查看詳情與報名：\n${url}`;
+  const minHint = count>=course.minParticipants ? `（已達最低成團 ${course.minParticipants} 人 ✅）` : `（最低成團 ${course.minParticipants} 人）`;
+  const msg = `📢【林森苑課程揪團】${course.title}\n🗓️ 排程：${formatRecurrence(course.recurrence)}\n📍 地點：${course.location||'社區公設'}\n👥 進度：已報名 ${count}/${course.maxParticipants} 人${minHint}\n⏰ 截止：${deadlineText(course.registrationEnd)}\n\n👉 點此直接查看詳情與報名：\n${url}`;
   
   if (navigator.clipboard) {
     navigator.clipboard.writeText(msg).then(() => {
