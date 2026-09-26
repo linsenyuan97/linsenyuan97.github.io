@@ -2116,11 +2116,17 @@ async function exportDonateExcel(records,addr,date){
   if(!window.XLSX){
     try{await ensureXLSX();}catch(e){return false;}
   }
-  var data=records.map(function(r,i){
-    return{'序號':i+1,'捐書門牌':addr,'提交日期':date,'ISBN':r.isbn,'書名':r.title,'作者':r.author,'出版日期':r.publishDate,'出版社':r.publisher||'','審核狀態':'待審核'};
+  // 門牌、提交日期每一列都一樣，不用每列重複，改成最上面獨立一列的標題
+  var rows=[
+    ['捐書門牌：'+addr+'　提交日期：'+date],
+    ['ISBN','書名','作者','出版日期','出版社']
+  ];
+  records.forEach(function(r){
+    rows.push([r.isbn,r.title,r.author,r.publishDate,r.publisher||'']);
   });
-  var ws=XLSX.utils.json_to_sheet(data);
-  ws['!cols']=[{wch:5},{wch:14},{wch:12},{wch:16},{wch:30},{wch:16},{wch:12},{wch:16},{wch:10}];
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:16},{wch:30},{wch:16},{wch:12},{wch:16}];
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:4}}];
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'捐書清單');
   var shortA=myAddrShort();
