@@ -1048,7 +1048,7 @@ async function fetchBook(isbn){
   if(backend&&incomplete){
     try{
       const ctrl=new AbortController();
-      const tid=setTimeout(()=>ctrl.abort(),4000);
+      const tid=setTimeout(()=>ctrl.abort(),8000);
       const r=await fetch(backend+'?action=lookup&isbn='+isbn,{signal:ctrl.signal});
       clearTimeout(tid);
       const j=await r.json();
