@@ -1919,20 +1919,30 @@ async function onDonateISBN(isbn){
   }
   var st=document.getElementById('dStatus');
   st.className='status';st.innerHTML='<span class="spin"></span>查詢 ISBN：<span class="isbnbadge">'+isbn+'</span>';
+  // 先放一筆「查詢中」的佔位資料，讓清單馬上有反應，不用整個畫面卡著等網路查完；
+  // 查詢結果回來後再原地更新這一筆，或查無資料就把佔位資料拿掉。
+  var placeholder={isbn:isbn,title:'',author:'',publishDate:'',publisher:'',_loading:true};
+  donateBatch.push(placeholder);
+  renderDonateBatch();
+
   var info=await fetchBook(isbn);
+  var idx=donateBatch.indexOf(placeholder);
+  if(idx<0)return; // 查詢的過程中使用者自己把這筆移除了，不用再處理
+  if(!placeholder._loading)return; // 查詢還沒回來前，使用者已經手動編輯過這筆資料了，不要覆蓋掉他填的內容
   if(!info || !info.title){
+    donateBatch.splice(idx,1);
     st.className='status err';
     st.innerHTML='ISBN <span class="isbnbadge">'+isbn+'</span> 查無書目資料，請切換至「手動填寫」輸入書名與作者。';
+    renderDonateBatch();
     return;
   }
-  var bookTitle = info.title;
-  var bookAuthor = info.author || '';
-  var bookPub = info.publishDate ? fmtDate(info.publishDate) : '';
-  var bookPublisher = info.publisher || '';
-  var book = {isbn: isbn, title: bookTitle, author: bookAuthor, publishDate: bookPub, publisher: bookPublisher};
-  donateBatch.push(book);
+  placeholder.title=info.title;
+  placeholder.author=info.author||'';
+  placeholder.publishDate=info.publishDate?fmtDate(info.publishDate):'';
+  placeholder.publisher=info.publisher||'';
+  delete placeholder._loading;
   st.className='status';
-  st.innerHTML='✓ 已加入：'+esc(book.title);
+  st.innerHTML='✓ 已加入：'+esc(placeholder.title);
   renderDonateBatch();
 }
 function donateAddIsbn(){
@@ -2029,6 +2039,7 @@ function donateEditItem(idx){
     item.author=na;
     item.publishDate=fmtDate(np);
     item.publisher=npub;
+    delete item._loading;
     closeEditDonateDialog();
     renderDonateBatch();
     showToast('已更新書籍資料');
@@ -2056,6 +2067,17 @@ function renderDonateBatch(){
   submitBtn.disabled=false;
   helpBox.classList.add('hidden');
   el.innerHTML=donateBatch.map(function(b,i){
+    if(b._loading){
+      return '<div class="donate-item">' +
+        '<div class="di-info">' +
+          '<div class="di-title"><span class="spin"></span>查詢中…</div>' +
+          '<div class="di-meta">ISBN ' + esc(b.isbn) + '</div>' +
+        '</div>' +
+        '<div class="donate-item-actions">' +
+          '<button class="di-del" onclick="donateRemoveItem(' + i + ')">取消</button>' +
+        '</div>' +
+      '</div>';
+    }
     var hasMissing = !b.title || !b.author || !b.publishDate || !b.publisher;
     var tagHtml = hasMissing ? '<div class="di-missing-tag"><span class="warn-bang">!</span><span class="warn-text">有欄位未填寫</span></div>' : '';
     var metaParts = [];
@@ -2092,6 +2114,10 @@ function onIncompleteGoEdit(){
 async function submitDonation(){
   if(!donateBatch.length)return;
   var addr=myAddr();if(!addr){openLogin();return;}
+  if(donateBatch.some(function(b){return b._loading;})){
+    showToast('還有書籍資料查詢中，請稍候再提交', 'error');
+    return;
+  }
   var missingIdx = donateBatch.findIndex(function(b){ return !b.title || !b.author || !b.publishDate || !b.publisher; });
   if(missingIdx !== -1){
     document.getElementById('incompleteDonateOverlay').classList.remove('hidden');
