@@ -1009,8 +1009,19 @@ async function onISBN(isbn){
 }
 const GOOGLE_KEY = 'AIzaSyAWt8saUQMTjvCnbUO0d3SOqT5sk2lMypU';
 function hasCJK(s){return /[\u3400-\u9FFF]/.test(s||"");}
+function scoreBookInfo_(info){
+  if(!info)return -1;
+  return ['title','author','publishDate','publisher'].reduce(function(s,k){return s+(info[k]?String(info[k]).length:0);},0);
+}
+// 把 source 有、target 缺的欄位補進 target，不覆蓋 target 已經有的值
+function mergeBookInfoFront_(target,source){
+  target=target||{};
+  if(!source)return target;
+  ['title','author','publishDate','publisher'].forEach(function(k){ if(!target[k]&&source[k])target[k]=source[k]; });
+  return target;
+}
 async function fetchBook(isbn){
-  let best=null;
+  let google=null;
   // 1. Google Books (前端直連, 速度最快)
   for(const extra of ['','&country=TW']){
     try{
@@ -1023,28 +1034,33 @@ async function fetchBook(isbn){
         for(const it of j.items){
           const v=it.volumeInfo||{};
           const cand={title:v.title||'',author:(v.authors||[]).join('、'),publishDate:v.publishedDate||'',publisher:v.publisher||''};
-          if(hasCJK(cand.title))return cand;
-          if(!best&&cand.title)best=cand;
+          if(hasCJK(cand.title)&&(!google||scoreBookInfo_(cand)>scoreBookInfo_(google)))google=cand;
+          else if(!google&&cand.title)google=cand;
         }
       }
     }catch(e){}
   }
-  // 2. 有後端時, 透過後端代查中文書名 (博客來等)
-  if(backend && (!best || !hasCJK(best.title))){
+  // 2. 只要目前資料還不完整（沒書名、或有欄位空白），就繼續打後端補
+  //    （後端會比對三民／敦煌兩個中文書店的資料，挑內容比較完整的，再視情況用 Google Books 補洞），
+  //    不能 Google 隨便查到一個書名、卻放著作者／出版社／出版日期空白就直接用。
+  let backendRes=null;
+  const incomplete=!google||!google.title||!google.author||!google.publishDate||!google.publisher;
+  if(backend&&incomplete){
     try{
       const ctrl=new AbortController();
       const tid=setTimeout(()=>ctrl.abort(),4000);
       const r=await fetch(backend+'?action=lookup&isbn='+isbn,{signal:ctrl.signal});
       clearTimeout(tid);
       const j=await r.json();
-      if(j&&j.title){
-        if(hasCJK(j.title))return{title:j.title,author:j.author||'',publishDate:j.publishDate||'',publisher:j.publisher||''};
-        if(!best)best={title:j.title,author:j.author||'',publishDate:j.publishDate||'',publisher:j.publisher||''};
-      }
+      if(j&&j.title)backendRes={title:j.title,author:j.author||'',publishDate:j.publishDate||'',publisher:j.publisher||''};
     }catch(e){}
   }
-  // 3. Open Library 備援
-  if(!best){
+  // 後端資料通常比 Google 直連完整（多來源比對合併過），優先當主結果，Google 直連結果拿來補洞
+  let best=(backendRes&&hasCJK(backendRes.title))?backendRes:((google&&hasCJK(google.title))?google:(backendRes||google));
+  best=mergeBookInfoFront_(mergeBookInfoFront_({},best),backendRes);
+  best=mergeBookInfoFront_(best,google);
+  // 3. 都還沒查到書名時才用 Open Library 兜底
+  if(!best.title){
     try{
       const ctrl=new AbortController();
       const tid=setTimeout(()=>ctrl.abort(),3000);
@@ -1056,12 +1072,11 @@ async function fetchBook(isbn){
           try{const a=await fetch('https://openlibrary.org'+d.authors[0].key+'.json');author=(await a.json()).name||'';}catch(e){}
         }
         let publisher = (d.publishers && d.publishers[0]) ? (typeof d.publishers[0] === 'string' ? d.publishers[0] : (d.publishers[0].name || '')) : '';
-        const cand={title:d.title||'',author,publishDate:d.publish_date||'',publisher};
-        if(!best&&cand.title)best=cand;
+        best=mergeBookInfoFront_(best,{title:d.title||'',author,publishDate:d.publish_date||'',publisher});
       }
     }catch(e){}
   }
-  return best;
+  return best.title?best:null;
 }
 
 function showManual(isbn,info){
