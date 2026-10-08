@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>EMS 系統建置</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #0f172a;
+      --accent-c: #0d9488;
+      --accent-b: #ea580c;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 20px));
+      overflow-x: hidden;
+    }
+
+    /* 頂部固定頁首 */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: #ffffff;
+      padding: 12px 16px;
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* 標題與棟別樓層連動列同行排列 */
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-title-row h1 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+    }
+
+    /* 右上角選單：棟別 [ C棟 ][ B棟 ]  │  樓層 [ B1 ][ B2 ][ B3 ] */
+    .header-control-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ctrl-static-label {
+      font-size: 15.5px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.45);
+      white-space: nowrap;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .ctrl-btn-pills {
+      display: flex;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 3px;
+      border-radius: 9px;
+      gap: 2px;
+    }
+
+    .bldg-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .bldg-btn:hover {
+      color: #ffffff;
+    }
+
+    .bldg-btn.active-plan-a {
+      background: var(--accent-c);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(13, 148, 136, 0.5);
+    }
+
+    .bldg-btn.active-plan-b {
+      background: var(--accent-b);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.5);
+    }
+
+    .ctrl-divider {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 14px;
+      font-weight: 300;
+      user-select: none;
+    }
+
+    .floor-btn {
+      background: transparent;
+      border: none;
+      padding: 5px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .floor-btn:hover {
+      color: #ffffff;
+    }
+
+    .floor-btn.active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      font-weight: 700;
+    }
+
+
+    /* 主內容區 */
+    main {
+      max-width: 1400px;
+      margin: 12px auto 20px;
+      padding: 0 16px;
+    }
+
+    /* 平面圖專屬滿版排版 */
+    .content-layout {
+      display: block;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* 卡片容器 */
+    .card-panel {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-head-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #1e293b;
+    }
+
+    /* 平面圖檢視區 — 用 aspect-ratio 讓高度跟圖片等比縮放，完全消除黑邊 */
+    .map-viewport {
+      position: relative;
+      background: #1e293b;
+      width: 100%;
+      /* 圖片原始比例 1477 : 1108 (W:H)，padding-top trick 讓容器等比撐高 */
+      padding-top: calc(1108 / 1477 * 100%);
+      overflow: hidden;
+      user-select: none;
+      touch-action: pan-x pan-y pinch-zoom;
+    }
+
+    /* map-canvas 絕對定位填滿 viewport，transition 做縮放動畫 */
+    .map-canvas {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-origin: center center;
+    }
+
+    /* 圖片完全填滿 canvas，無黑邊；hotspot 百分比座標 100% 對齊圖片 */
+    .map-canvas img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* 地圖工具條 */
+    .map-controls-row {
+      padding: 10px 14px;
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .zoom-btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-zoom {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+
+    .btn-zoom:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-zoom.active-zoom {
+      background: #1e3a8a;
+      color: #ffffff;
+      border-color: #1e3a8a;
+      box-shadow: 0 2px 6px rgba(30, 58, 138, 0.3);
+    }
+
+    /* 地圖圖例 */
+    .map-legend-pills {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .legend-tag {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      color: #334155;
+    }
+
+    .legend-color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+    }
+
+    /* 平面圖標記 Hotspots (無大色塊遮擋・精緻呼吸燈效果) */
+    /* hotspotsContainer 覆蓋整個 map-canvas，讓 left/top % 精確對齊圖片 */
+    #hotspotsContainer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .map-hotspot {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 25;
+      touch-action: manipulation;
+      pointer-events: all;
+    }
+
+    .pulse-beacon {
+      position: relative;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 核心亮點 */
+    .beacon-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      position: relative;
+      z-index: 2;
+      transition: transform 0.2s ease;
+    }
+
+    .map-hotspot:hover .beacon-dot,
+    .map-hotspot.active-tip .beacon-dot {
+      transform: scale(1.3);
+    }
+
+    /* 外圈柔和呼吸光暈 */
+    .beacon-halo {
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      z-index: 1;
+      pointer-events: none;
+      animation: breathe-glow 2.2s ease-in-out infinite;
+    }
+
+    /* 擴散漣漪光環 (雷達呼吸燈) */
+    .beacon-ripple {
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 1.5px solid transparent;
+      z-index: 0;
+      pointer-events: none;
+      animation: ripple-pulse 2.2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+    }
+
+    @keyframes breathe-glow {
+      0%, 100% {
+        transform: scale(0.85);
+        opacity: 0.55;
+      }
+      50% {
+        transform: scale(1.35);
+        opacity: 1;
+      }
+    }
+
+    @keyframes ripple-pulse {
+      0% {
+        transform: scale(0.5);
+        opacity: 0.95;
+      }
+      70% {
+        transform: scale(1.85);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+
+    /* 色系定義 */
+    .pulse-beacon.beacon-taipower .beacon-dot { background: #eab308; }
+    .pulse-beacon.beacon-taipower .beacon-halo { background: radial-gradient(circle, rgba(234, 179, 8, 0.75) 0%, rgba(234, 179, 8, 0) 75%); }
+    .pulse-beacon.beacon-taipower .beacon-ripple { border-color: rgba(234, 179, 8, 0.85); }
+
+    .pulse-beacon.beacon-feed .beacon-dot { background: #ea580c; }
+    .pulse-beacon.beacon-feed .beacon-halo { background: radial-gradient(circle, rgba(234, 88, 12, 0.75) 0%, rgba(234, 88, 12, 0) 75%); }
+    .pulse-beacon.beacon-feed .beacon-ripple { border-color: rgba(234, 88, 12, 0.85); }
+
+    .pulse-beacon.beacon-ems .beacon-dot { background: #2563eb; }
+    .pulse-beacon.beacon-ems .beacon-halo { background: radial-gradient(circle, rgba(37, 99, 235, 0.75) 0%, rgba(37, 99, 235, 0) 75%); }
+    .pulse-beacon.beacon-ems .beacon-ripple { border-color: rgba(37, 99, 235, 0.85); }
+
+
+
+    /* 現場照片區 */
+    .photo-stage {
+      position: relative;
+      background: #0f172a;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      cursor: zoom-in;
+    }
+
+    .photo-stage img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .photo-stage:hover img {
+      transform: scale(1.02);
+    }
+
+    .photo-tag-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .photo-tap-hint {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.75);
+      color: #e2e8f0;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    /* 縮圖滾動列 */
+    .photo-thumb-strip {
+      display: flex;
+      padding: 10px 14px;
+      background: #f8fafc;
+      gap: 10px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border);
+      scrollbar-width: thin;
+    }
+
+    .photo-thumb-item {
+      width: 72px;
+      height: 48px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .photo-thumb-item.active {
+      opacity: 1;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
+
+    .photo-thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* 現場分析清單 (手機最佳化字體與行距) */
+    .analysis-card-body {
+      padding: 16px;
+    }
+
+    .analysis-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .analysis-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #334155;
+      line-height: 1.55;
+    }
+
+    .row-icon-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .badge-ok { background: #dcfce7; color: #15803d; }
+    .badge-warn { background: #fef3c7; color: #b45309; }
+    .badge-info { background: #e0f2fe; color: #0369a1; }
+
+    /* 全螢幕燈箱 Lightbox */
+    .lightbox-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      touch-action: pan-x pan-y pinch-zoom;
+    }
+
+    .lightbox-modal.active {
+      display: flex;
+    }
+
+    .lightbox-img {
+      max-width: 98%;
+      max-height: 85vh;
+      border-radius: 6px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      object-fit: contain;
+    }
+
+    .lightbox-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      color: #ffffff;
+      font-size: 34px;
+      cursor: pointer;
+      line-height: 1;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+    }
+
+    .lightbox-caption {
+      position: absolute;
+      bottom: 20px;
+      color: #f1f5f9;
+      font-size: 14px;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 90%;
+    }
+
+
+    /* 現場照片與細節 Dialog Modal */
+    .photo-dialog-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .photo-dialog-modal.active {
+      display: flex;
+    }
+
+    .photo-dialog-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(6px);
+    }
+
+    .photo-dialog-card {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: dialog-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes dialog-pop {
+      0% { transform: scale(0.92); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .dialog-header {
+      padding: 14px 18px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dialog-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dialog-title-group h3 {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .dialog-floor-pill {
+      font-size: 11px;
+      font-weight: 700;
+      background: #1e3a8a;
+      color: #ffffff;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .dialog-close-btn {
+      background: rgba(15, 23, 42, 0.08);
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 24px;
+      line-height: 1;
+      color: #475569;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .dialog-close-btn:hover {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    .dialog-photo-container {
+      position: relative;
+      background: #0f172a;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      user-select: none;
+      touch-action: pan-y;
+    }
+
+    .dialog-photo-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 42px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      border-radius: 50%;
+      font-size: 26px;
+      font-weight: bold;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.2s;
+    }
+
+    .nav-arrow:hover {
+      background: rgba(15, 23, 42, 0.95);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .nav-arrow-left { left: 12px; }
+    .nav-arrow-right { right: 12px; }
+
+    .dialog-body-content {
+      padding: 16px;
+      overflow-y: auto;
+      max-height: 38vh;
+    }
+
+    .dialog-thumb-strip {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+    }
+
+    .dialog-desc-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .dialog-badge-tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1e3a8a;
+      background: #eff6ff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      width: fit-content;
+      border: 1px solid #dbeafe;
+    }
+
+    .dialog-analysis-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .dialog-analysis-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13.5px;
+      color: #334155;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 固定頁首導覽 (棟別 ➔ 樓層 連動展開) -->
+  <header>
+    <div class="header-inner">
+      <div class="header-title-row">
+        <h1>⚡ EMS 系統建置</h1>
+
+        <!-- 頂欄右側選單：標籤與按鈕視覺分明設計 -->
+        <div class="header-control-bar">
+          <div class="ctrl-group">
+            <span class="ctrl-static-label">🏢 棟別</span>
+            <div class="ctrl-btn-pills">
+              <button class="bldg-btn active-plan-a" id="btnPlanA" onclick="switchPlan('A')">C棟</button>
+              <button class="bldg-btn" id="btnPlanB" onclick="switchPlan('B')">B棟</button>
+            </div>
+          </div>
+
+          <div class="ctrl-divider"></div>
+
+          <div class="ctrl-group">
+            <span class="ctrl-static-label">📍 樓層</span>
+            <div class="ctrl-btn-pills">
+              <button class="floor-btn active" id="tabB1" onclick="switchFloor('B1')">B1</button>
+              <button class="floor-btn" id="tabB2" onclick="switchFloor('B2')">B2</button>
+              <button class="floor-btn" id="tabB3" onclick="switchFloor('B3')">B3</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <main>
+    <div class="content-layout">
+      
+      <!-- 平面圖檢視卡片 -->
+      <div class="card-panel" id="panelMap">
+
+        <!-- 地圖畫布容器 -->
+        <div class="map-viewport" id="mapViewport">
+          <div class="map-canvas" id="mapCanvas">
+            <img id="mainMapImage" src="map_b1.jpg" alt="停車場平面圖">
+            <!-- 動態 Hotspots -->
+            <div id="hotspotsContainer"></div>
+          </div>
+        </div>
+
+        <!-- 地圖圖例列 -->
+        <div class="map-controls-row">
+          <div class="map-legend-pills">
+            <div class="legend-tag">
+              <span class="legend-color-dot" style="background: #eab308;"></span>
+              🟨 台電配電箱
+            </div>
+            <div class="legend-tag">
+              <span class="legend-color-dot" style="background: #ea580c;"></span>
+              🟧 60cm 供電箱
+            </div>
+            <div class="legend-tag">
+              <span class="legend-color-dot" style="background: #2563eb;"></span>
+              🟦 150cm EMS 配電盤
+            </div>
+          </div>
+          <div style="font-size: 11.5px; color: var(--text-muted);">
+            💡 點擊呼吸燈標記：可開啟現場實景照片
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+  </main>
+
+  <!-- 現場照片與細節 Dialog Modal (支援左右滑動與地圖同步連動) -->
+  <div class="photo-dialog-modal" id="photoDialogModal">
+    <div class="photo-dialog-backdrop" onclick="closePhotoDialog()"></div>
+    <div class="photo-dialog-card">
+      <!-- 頂欄：標題 + 頁碼 + 右上角 X 關閉按鈕 -->
+      <div class="dialog-header">
+        <div class="dialog-title-group">
+          <h3 id="dialogTitle">📷 C 棟 B1 現場照片</h3>
+        </div>
+        <button class="dialog-close-btn" onclick="closePhotoDialog()" aria-label="關閉">&times;</button>
+      </div>
+
+      <!-- 主體：大圖 + 左右切換箭頭 -->
+      <div class="dialog-photo-container" id="dialogSwipeStage">
+        <button class="nav-arrow nav-arrow-left" onclick="navDialogPhoto(-1)" id="btnNavLeft" aria-label="上一張">‹</button>
+        <img id="dialogMainImg" src="c_b1.jpg" alt="現場實況大圖">
+        <button class="nav-arrow nav-arrow-right" onclick="navDialogPhoto(1)" id="btnNavRight" aria-label="下一張">›</button>
+      </div>
+
+      <!-- 底部內容：縮圖 ＋ 文字描述列表 -->
+      <div class="dialog-body-content">
+        <div class="dialog-thumb-strip" id="dialogThumbStrip"></div>
+
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 方案資料集
+    const plansData = {
+      'A': {
+        title: '方案 A：C 棟設備區設置',
+        desc: '以 C 棟地下室（M~N 軸旁）台電配電場所 2 為主要供電出線點，牆面寬敞平整且具備現成電氣維修空間，不佔用既有車道縱深。',
+        btnClass: 'active-plan-a',
+        focusCoords: {
+          'B1': { x: 81, y: 68, scale: 2.2 },
+          'B2': { x: 79, y: 63, scale: 2.2 },
+          'B3': { x: 79, y: 60, scale: 2.2 }
+        },
+        hotspots: {
+          'B1': [
+            { left: '82.4%', top: '69.0%', type: 'beacon-ems', label: '🟦 150cm EMS 配電盤' },
+            { left: '78.9%', top: '60.1%', type: 'beacon-feed', label: '🟧 60cm 供電箱' }
+          ],
+          'B2': [
+            { left: '78.9%', top: '63.1%', type: 'beacon-ems', label: '🟦 150cm 垂直貫穿走線點' }
+          ],
+          'B3': [
+            { left: '78.8%', top: '59.4%', type: 'beacon-ems', label: '🟦 150cm 垂直貫穿抵達點' }
+          ]
+        },
+        photos: {
+          'B1': {
+            main: 'c_b1.jpg',
+            title: '📷 C 棟 B1 現場實況與設備牆',
+            badge: '📍 C棟 B1 落地電箱旁牆面',
+            gallery: [
+              { file: 'c_b1.jpg', label: 'B1 設備牆實況' }
+            ],
+            analysis: [
+              { type: 'ok', text: '<b>牆面空間極充裕：</b>米白色台電配電箱左側為整面內縮白色牆面，可完全容納 60cm 供電箱 ＋ 150cm EMS 配電盤（總寬約 210cm），並留有保養通道。' },
+              { type: 'ok', text: '<b>一次側引線距離極短：</b>供電箱可直接緊靠台電箱側邊開孔引進主電源，安全且施工成本最低。' },
+              { type: 'info', text: '<b>機車停放無衝擊：</b>前方為公共動線與既有機車位，盤體貼牆厚度約 20cm，不影響騎士牽車出入。' }
+            ]
+          },
+          'B2': {
+            main: 'c_b2.jpg',
+            title: '📷 C 棟 B2 現場通道與配線牆面',
+            badge: '📍 C棟 B2 垂直貫穿投影點',
+            gallery: [
+              { file: 'c_b2.jpg', label: 'B2 轉角牆面實況' }
+            ],
+            analysis: [
+              { type: 'ok', text: '<b>轉角走線順暢：</b>牆面平整並設有手動報警設備，上方具備充裕挑高走線槽（Cable Tray）。' },
+              { type: 'ok', text: '<b>車位安全：</b>非位於汽車格主停放死角，不影響住戶開門或倒車入庫視線。' }
+            ]
+          },
+          'B3': {
+            main: 'c_b3.jpg',
+            title: '📷 C 棟 B3 現場設備間與管道實況',
+            badge: '📍 C棟 B3 設備層管道走道',
+            gallery: [
+              { file: 'c_b3.jpg', label: 'B3 水箱與管道實況' }
+            ],
+            analysis: [
+              { type: 'info', text: '<b>現場管路較多：</b>現場有橘色污水/排水鑄鐵幹管（CAST IRON SOIL PIPE）與水箱結構。' },
+              { type: 'warn', text: '<b>施工注意事項：</b>垂直洗洞下至 B3 時，水電技師需現場精密放樣，確保貫穿孔避開既有水箱邊框與給排水主幹管。' }
+            ]
+          }
+        }
+      },
+      'B': {
+        title: '方案 B：B 棟設備區設置',
+        desc: '以 B 棟地下室（E~F 軸旁）台電配電場所 1 為供電點，向 F~G 軸機車區牆面引出設置 EMS 總盤，上下垂直樓層投影位置一致。',
+        btnClass: 'active-plan-b',
+        focusCoords: {
+          'B1': { x: 37, y: 77, scale: 2.2 },
+          'B2': { x: 41, y: 67, scale: 2.2 },
+          'B3': { x: 41, y: 67, scale: 2.2 }
+        },
+        hotspots: {
+          'B1': [
+            { left: '37.5%', top: '79.6%', type: 'beacon-feed', label: '🟧 60cm 供電箱' },
+            { left: '41.9%', top: '77.1%', type: 'beacon-ems', label: '🟦 150cm EMS 配電盤' }
+          ],
+          'B2': [
+            { left: '41.2%', top: '66.7%', type: 'beacon-ems', label: '🟦 150cm 垂直貫穿至 B2 車位背牆' }
+          ],
+          'B3': [
+            { left: '41.2%', top: '66.7%', type: 'beacon-ems', label: '🟦 150cm 垂直貫穿至 B3 車位背牆' }
+          ]
+        },
+        photos: {
+          'B1': {
+            main: 'b_b1_1.jpg',
+            title: '📷 B 棟 B1 現場實況與機車位側牆',
+            badge: '📍 B棟 B1 機車停車區白牆',
+            gallery: [
+              { file: 'b_b1_1.jpg', label: 'B1-1 牆面全景 (B024旁)' },
+              { file: 'b_b1_2.jpg', label: 'B1-2 機車格近景' }
+            ],
+            analysis: [
+              { type: 'info', text: '<b>設備牆面空間：</b>牆面長度足夠，但右側有矮磁磚檢修孔，左側有紅色消防立管，需安排在兩管件中間。' },
+              { type: 'warn', text: '<b>注意機車停放縱深：</b>地面為 B024、B025 機車格，150cm 配電盤若突出牆面 20~25cm，需確保機車龍頭不碰撞盤體。' },
+              { type: 'ok', text: '<b>一次側走線：</b>由左側台電配電場所穿出至 F 柱後轉至此面牆，距離約 1.5 公尺。' }
+            ]
+          },
+          'B2': {
+            main: 'b_b2.jpg',
+            title: '📷 B 棟 B2 現場車位背牆實況',
+            badge: '📍 B棟 B2 汽車格後方牆面',
+            gallery: [
+              { file: 'b_b2.jpg', label: 'B2 汽車格背牆' }
+            ],
+            analysis: [
+              { type: 'ok', text: '<b>垂直投影極平整：</b>垂直下至 B2 為汽車停車格後方平整白色牆壁，具備黃色車輪擋。' },
+              { type: 'ok', text: '<b>穿樓走線最單純：</b>無複雜水箱或排水幹管阻擋，上下貫通結構單純。' },
+              { type: 'warn', text: '<b>車主溝通注意：</b>線槽若貼車位後牆走，需向該車位車主說明不影響車輛停放空間。' }
+            ]
+          },
+          'B3': {
+            main: 'b_b3.jpg',
+            title: '📷 B 棟 B3 現場車位背牆實況',
+            badge: '📍 B棟 B3 車位背牆',
+            gallery: [
+              { file: 'b_b3.jpg', label: 'B3 車位實景' }
+            ],
+            analysis: [
+              { type: 'ok', text: '<b>上下貫穿完全對齊：</b>B3 亦為標準車位背牆，整體垂直縱深完全連貫。' },
+              { type: 'ok', text: '<b>施工工法標準：</b>全垂直軸線一致，立管施作成本較低。' }
+            ]
+          }
+        }
+      }
+    };
+
+    let currentPlan = 'A';
+    let currentFloor = 'B1';
+    let isZoomed = true; // 預設聚焦特寫，方便手機看清設備
+
+    function init() {
+      if (window.innerWidth <= 768) {
+        isZoomed = true;
+      }
+      updateUI();
+    }
+
+    // 切換方案 (C棟 vs B棟)
+    function switchPlan(planKey) {
+      currentPlan = planKey;
+      document.getElementById('btnPlanA').className = 'bldg-btn ' + (planKey === 'A' ? 'active-plan-a' : '');
+      document.getElementById('btnPlanB').className = 'bldg-btn ' + (planKey === 'B' ? 'active-plan-b' : '');
+      isZoomed = true;
+      updateUI();
+    }
+
+    // 切換樓層 (B1 vs B2 vs B3)
+    function switchFloor(floorKey) {
+      currentFloor = floorKey;
+      ['B1', 'B2', 'B3'].forEach(f => {
+        const btn = document.getElementById('tab' + f);
+        if (btn) {
+          if (f === floorKey) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+
+      document.getElementById('mainMapImage').src = `map_${floorKey.toLowerCase()}.jpg`;
+      updateUI();
+    }
+
+
+    // 更新介面
+    function updateUI() {
+      const plan = plansData[currentPlan];
+      const floorData = plan.photos[currentFloor];
+
+      // 更新 Hotspots
+      const container = document.getElementById('hotspotsContainer');
+      container.innerHTML = '';
+      const floorHotspots = plan.hotspots[currentFloor] || [];
+      floorHotspots.forEach(h => {
+        const pin = document.createElement('div');
+        pin.className = 'map-hotspot';
+        pin.style.left = h.left;
+        pin.style.top = h.top;
+        pin.title = h.label;
+        pin.onclick = (e) => {
+          e.stopPropagation();
+          openPhotoDialogForFloor(currentFloor);
+        };
+        pin.innerHTML = `
+          <div class="pulse-beacon ${h.type}">
+            <div class="beacon-ripple"></div>
+            <div class="beacon-halo"></div>
+            <div class="beacon-dot"></div>
+          </div>
+        `;
+        container.appendChild(pin);
+      });
+
+      // 套用地圖縮放 (預設始終聚焦設備區)
+      applyZoom(isZoomed);
+    }
+
+    function applyZoom(active) {
+      const canvas = document.getElementById('mapCanvas');
+      const scale = active ? plansData[currentPlan].focusCoords[currentFloor].scale : 1;
+
+      if (active) {
+        const coord = plansData[currentPlan].focusCoords[currentFloor];
+        canvas.style.transformOrigin = `${coord.x}% ${coord.y}%`;
+        canvas.style.transform = `scale(${coord.scale})`;
+      } else {
+        canvas.style.transformOrigin = 'center center';
+        canvas.style.transform = 'scale(1)';
+      }
+
+      // 讓呼吸燈與 Tooltip 反向縮放，視覺大小始終恆定不論地圖放大幾倍
+      const invScale = 1 / scale;
+      document.querySelectorAll('.pulse-beacon').forEach(el => {
+        el.style.transform = `scale(${invScale})`;
+      });
+    }
+
+    // 現場大圖與細節 Dialog Modal 控制邏輯 (支援左右滑動與背景地圖雙向連動)
+    const floorsList = ['B1', 'B2', 'B3'];
+    let dialogFloorIndex = 0;
+
+    function openPhotoDialogForFloor(floorKey) {
+      if (floorKey) {
+        currentFloor = floorKey;
+        switchFloor(floorKey);
+      }
+      dialogFloorIndex = floorsList.indexOf(currentFloor);
+      if (dialogFloorIndex === -1) dialogFloorIndex = 0;
+
+      updatePhotoDialogUI();
+      const modal = document.getElementById('photoDialogModal');
+      modal.classList.add('active');
+    }
+
+    function closePhotoDialog() {
+      const modal = document.getElementById('photoDialogModal');
+      modal.classList.remove('active');
+    }
+
+    function navDialogPhoto(dir) {
+      let newIdx = dialogFloorIndex + dir;
+      if (newIdx < 0) newIdx = floorsList.length - 1;
+      if (newIdx >= floorsList.length) newIdx = 0;
+      
+      dialogFloorIndex = newIdx;
+      const targetFloor = floorsList[dialogFloorIndex];
+      
+      // 切換照片時，同時連動切換背景地圖樓層與對應圖釘！
+      switchFloor(targetFloor);
+      updatePhotoDialogUI();
+    }
+
+    function updatePhotoDialogUI() {
+      const plan = plansData[currentPlan];
+      const floorKey = floorsList[dialogFloorIndex];
+      const floorData = plan.photos[floorKey];
+
+      const bldgText = currentPlan === 'A' ? 'C 棟' : 'B 棟';
+      document.getElementById('dialogTitle').textContent = `📷 ${bldgText} ${floorKey} 現場照片`;
+      document.getElementById('dialogMainImg').src = floorData.main;
+
+      // 更新 Dialog 內的縮圖列 (若該樓層有多張照片)
+      const stripEl = document.getElementById('dialogThumbStrip');
+      stripEl.innerHTML = '';
+      if (floorData.gallery && floorData.gallery.length > 1) {
+        stripEl.style.display = 'flex';
+        floorData.gallery.forEach((g, idx) => {
+          const item = document.createElement('div');
+          item.className = `photo-thumb-item ${idx === 0 ? 'active' : ''}`;
+          item.innerHTML = `<img src="${encodeURI(g.file)}" alt="${g.label}">`;
+          item.onclick = (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('#dialogThumbStrip .photo-thumb-item').forEach(t => t.classList.remove('active'));
+            item.classList.add('active');
+            document.getElementById('dialogMainImg').src = g.file;
+            
+          };
+          stripEl.appendChild(item);
+        });
+      } else {
+        stripEl.style.display = 'none';
+      }
+    }
+
+    // 手機觸控手勢滑動支援 (Swipe Left / Right)
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const swipeStage = document.getElementById('dialogSwipeStage');
+    if (swipeStage) {
+      swipeStage.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      swipeStage.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchEndX - touchStartX;
+        if (diff < -40) {
+          navDialogPhoto(1);  // 左滑 -> 下一張
+        } else if (diff > 40) {
+          navDialogPhoto(-1); // 右滑 -> 上一張
+        }
+      }, { passive: true });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePhotoDialog();
+    });
+
+    window.onload = init;
+  </script>
+</body>
+</html>
