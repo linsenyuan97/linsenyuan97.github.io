@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>社區 EMS 電動車充電智能管理系統 - 方案評估與管委會簡報</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #172554;
+      --accent-c: #0d9488;
+      --accent-b: #ea580c;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: #ffffff;
+      padding: 28px 24px 20px;
+      box-shadow: var(--shadow-md);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-title h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-tag {
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 2px 10px;
+      border-radius: 999px;
+      vertical-align: middle;
+    }
+
+    .header-title p {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    /* 控制面板 */
+    .plan-selector {
+      display: flex;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 5px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      gap: 6px;
+    }
+
+    .plan-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .plan-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .plan-btn.active-plan-a {
+      background: var(--accent-c);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(13, 148, 136, 0.4);
+    }
+
+    .plan-btn.active-plan-b {
+      background: var(--accent-b);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.4);
+    }
+
+    .plan-btn.active-compare {
+      background: #475569;
+      color: #ffffff;
+    }
+
+    main {
+      max-width: 1440px;
+      margin: 24px auto 0;
+      padding: 0 24px;
+    }
+
+    /* 方案快速摘要 Banner */
+    .summary-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px 24px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 20px;
+      transition: border-color 0.3s ease;
+    }
+
+    .summary-card.theme-c {
+      border-left: 6px solid var(--accent-c);
+    }
+
+    .summary-card.theme-b {
+      border-left: 6px solid var(--accent-b);
+    }
+
+    .summary-card.theme-compare {
+      border-left: 6px solid #475569;
+    }
+
+    .summary-info h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .summary-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .specs-pills {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .spec-pill {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .spec-pill span {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    /* 主操作展示區：兩欄版面 */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 1080px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 左側：平面圖檢視器 */
+    .viewer-panel {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fafafa;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .floor-tabs {
+      display: flex;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 8px;
+      gap: 3px;
+    }
+
+    .floor-tab {
+      background: transparent;
+      border: none;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .floor-tab:hover {
+      color: #0f172a;
+    }
+
+    .floor-tab.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .map-container {
+      position: relative;
+      background: #1e293b;
+      min-height: 480px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .map-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-origin: center center;
+    }
+
+    .map-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+    }
+
+    .map-toolbar {
+      padding: 12px 20px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .zoom-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+      border-color: var(--primary-light);
+      color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .btn-action.active-focus {
+      background: #1e3a8a;
+      color: #ffffff;
+      border-color: #1e3a8a;
+    }
+
+    /* 互動地圖上的標記 Pin */
+    .map-hotspot {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 20;
+      transition: transform 0.2s ease;
+    }
+
+    .map-hotspot:hover {
+      transform: translate(-50%, -50%) scale(1.15);
+      z-index: 35;
+    }
+
+    .hotspot-beacon {
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95), 0 4px 10px rgba(0,0,0,0.35);
+      position: relative;
+      white-space: nowrap;
+    }
+
+    .beacon-c { background: var(--accent-c); }
+    .beacon-b { background: var(--accent-b); }
+    .beacon-ems { background: #2563eb; }
+    .beacon-feed { background: #ea580c; }
+    .beacon-taipower { background: #eab308; color: #1e293b; }
+
+    .hotspot-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      box-shadow: var(--shadow-md);
+      z-index: 40;
+    }
+
+    .map-hotspot:hover .hotspot-tooltip {
+      opacity: 1;
+    }
+
+    /* 右側：現場實況照片與細節卡片 */
+    .detail-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .photo-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .photo-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+    }
+
+    .photo-card-header h3 {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .photo-frame {
+      position: relative;
+      background: #0f172a;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      cursor: zoom-in;
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .photo-frame:hover img {
+      transform: scale(1.03);
+    }
+
+    .photo-overlay-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .photo-thumbnails {
+      display: flex;
+      padding: 12px 16px;
+      background: #f8fafc;
+      gap: 10px;
+      overflow-x: auto;
+      border-top: 1px solid var(--border);
+    }
+
+    .photo-thumb {
+      width: 72px;
+      height: 48px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      opacity: 0.65;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .photo-thumb:hover {
+      opacity: 1;
+    }
+
+    .photo-thumb.active {
+      opacity: 1;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
+
+    .photo-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-analysis {
+      padding: 18px 20px;
+    }
+
+    .analysis-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .analysis-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13.5px;
+      color: #334155;
+    }
+
+    .item-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .icon-ok { background: #dcfce7; color: #15803d; }
+    .icon-warn { background: #fef3c7; color: #b45309; }
+    .icon-info { background: #e0f2fe; color: #0369a1; }
+
+    /* 垂直樓層走線透視卡片 */
+    .vertical-route-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+    }
+
+    .vertical-route-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .floor-step-list {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-left: 20px;
+      gap: 16px;
+    }
+
+    .floor-step-list::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 10px;
+      bottom: 10px;
+      width: 2px;
+      background: #cbd5e1;
+    }
+
+    .floor-step {
+      position: relative;
+    }
+
+    .floor-step::before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid var(--primary-light);
+    }
+
+    .floor-step-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .floor-step-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* 方案比較專屬區塊 (管委會評估專用) */
+    .comparison-section {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      padding: 28px;
+      margin-top: 28px;
+    }
+
+    .comparison-section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .comparison-section p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      margin-top: 10px;
+    }
+
+    .compare-table th, .compare-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .compare-table th {
+      background: #f8fafc;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .compare-table tr:hover {
+      background: #f8fafc;
+    }
+
+    .col-feature { width: 22%; font-weight: 600; }
+    .col-plana { width: 39%; background: rgba(13, 148, 136, 0.03); }
+    .col-planb { width: 39%; background: rgba(234, 88, 12, 0.03); }
+
+    .tag-recommend {
+      background: #ccfbf1;
+      color: #0f766e;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    .tag-alternative {
+      background: #ffedd5;
+      color: #c2410c;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    /* 燈箱 Modal */
+    .lightbox-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+    }
+
+    .lightbox-modal.active {
+      display: flex;
+    }
+
+    .lightbox-img {
+      max-width: 92%;
+      max-height: 90vh;
+      border-radius: 8px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: #ffffff;
+      font-size: 32px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .lightbox-caption {
+      position: absolute;
+      bottom: 25px;
+      color: #e2e8f0;
+      font-size: 15px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 8px 20px;
+      border-radius: 8px;
+    }
+
+    /* 圖例 Legend */
+    .map-legend {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #475569;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部頁首導覽 -->
+  <header>
+    <div class="header-content">
+      <div class="header-title">
+        <h1>
+          ⚡ 社區 EMS 充電系統建置評估
+          <span class="badge-tag">管委會審查版</span>
+        </h1>
+        <p>台電配電箱旁 60cm 供電箱 ＆ 150cm EMS 配電盤 設置位置與穿樓走線方案</p>
+      </div>
+
+      <!-- 方案切換按鈕組 -->
+      <div class="plan-selector">
+        <button class="plan-btn active-plan-a" id="btnPlanA" onclick="switchPlan('A')">
+          🏢 方案 A：C 棟設置 <span style="font-size: 11px; opacity: 0.9;">(推薦)</span>
+        </button>
+        <button class="plan-btn" id="btnPlanB" onclick="switchPlan('B')">
+          🏢 方案 B：B 棟設置
+        </button>
+        <button class="plan-btn" id="btnCompare" onclick="scrollToCompare()">
+          📊 方案綜合對照表
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 方案重點即時摘要 -->
+    <div class="summary-card theme-c" id="summaryCard">
+      <div class="summary-info">
+        <h2 id="planTitle">
+          方案 A：C 棟設備區設置（優先評估）
+          <span class="tag-recommend">推薦方案</span>
+        </h2>
+        <p class="summary-desc" id="planDesc">
+          以 C 棟地下室（M~N 軸旁）台電配電場所 2 為主要供電出線點，牆面寬敞平整且具備現成電氣維修空間，不佔用既有車道縱深。
+        </p>
+      </div>
+      <div class="specs-pills">
+        <div class="spec-pill">
+          <span>台電旁供電箱</span>
+          60 cm (緊貼台電箱)
+        </div>
+        <div class="spec-pill">
+          <span>EMS 配電總盤</span>
+          150 cm (平貼主牆面)
+        </div>
+        <div class="spec-pill">
+          <span>預計受影響車位</span>
+          <b style="color: #16a34a;">0 個 (完全無損)</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主要操作區：左側平面圖 + 右側實景照片聯動 -->
+    <div class="content-grid">
+      
+      <!-- 左欄：圖面檢視面板 -->
+      <div class="viewer-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            🗺️ 平面圖配置與走線路徑
+          </div>
+          <!-- 樓層切換 -->
+          <div class="floor-tabs">
+            <button class="floor-tab active" id="tabB1" onclick="switchFloor('B1')">B1 主設備層</button>
+            <button class="floor-tab" id="tabB2" onclick="switchFloor('B2')">B2 穿樓層</button>
+            <button class="floor-tab" id="tabB3" onclick="switchFloor('B3')">B3 穿樓層</button>
+          </div>
+        </div>
+
+        <!-- 地圖展示容器 -->
+        <div class="map-container">
+          <div class="map-wrapper" id="mapWrapper">
+            <img id="mainMapImage" class="map-image" src="B1地圖_標註版.jpg" alt="停車場平面圖">
+
+            <!-- 動態互動點標記圖層 (由 JS 動態生成所有設備圖釘) -->
+            <div id="hotspotsLayer"></div>
+          </div>
+        </div>
+
+        <!-- 視角與圖例工具列 -->
+        <div class="map-toolbar">
+          <div class="map-legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: #eab308;"></div>
+              <span>🟨 台電配電箱</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #ea580c;"></div>
+              <span>🟧 60cm 供電箱</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #2563eb;"></div>
+              <span>🟦 150cm EMS 配電盤</span>
+            </div>
+          </div>
+
+          <div class="zoom-controls">
+            <button class="btn-action active-focus" id="btnFocusPlan" onclick="toggleZoomFocus()">
+              🔍 局部聚焦設備區
+            </button>
+            <button class="btn-action" onclick="resetMapZoom()">
+              🔄 重設全區視角
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右欄：現場照片與管委會評估說明 -->
+      <div class="detail-panel">
+        
+        <!-- 現場實況照片展示卡 -->
+        <div class="photo-card">
+          <div class="photo-card-header">
+            <h3 id="photoTitle">📷 C 棟 B1 現場實況與設備牆</h3>
+            <span class="badge-tag" style="background: #f1f5f9; color: #475569; border: none;" id="photoBadge">
+              點擊照片可放大
+            </span>
+          </div>
+
+          <!-- 照片本體 -->
+          <div class="photo-frame" onclick="openLightbox()">
+            <img id="mainPhoto" src="C棟 B1.jpg" alt="現場實景">
+            <div class="photo-overlay-badge" id="photoOverlayBadge">
+              📍 C棟 B1 設備牆面
+            </div>
+          </div>
+
+          <!-- 縮圖快速切換列表 -->
+          <div class="photo-thumbnails" id="photoThumbs">
+            <!-- 由 JS 依方案動態產生 -->
+          </div>
+
+          <!-- 現場優缺點與尺寸判讀 -->
+          <div class="photo-analysis">
+            <ul class="analysis-list" id="analysisList">
+              <!-- 由 JS 動態注入 -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- 垂直各樓層貫穿路徑摘要 -->
+        <div class="vertical-route-card">
+          <h3 id="verticalTitle">🏢 垂直走線貫穿說明（B1 ➔ B2 ➔ B3）</h3>
+          <div class="floor-step-list" id="verticalSteps">
+            <!-- 由 JS 動態注入 -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 下方：方案 A vs 方案 B 管委會決策對照表 -->
+    <section class="comparison-section" id="compareSection">
+      <h2>⚖️ 方案 A vs 方案 B 決策評估對照表</h2>
+      <p>針對管委會最關切的「空間淨寬、住戶影響、施工洗洞安全、配線總成本、日後擴充」全面比較：</p>
+
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th class="col-feature">評估項目</th>
+            <th class="col-plana">
+              方案 A：C 棟設置
+              <span class="tag-recommend">推薦</span>
+            </th>
+            <th class="col-planb">
+              方案 B：B 棟設置
+              <span class="tag-alternative">備選</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>1. 設備牆空間充裕度</b></td>
+            <td>
+              <b style="color: var(--accent-c);">極優。</b><br>
+              台電箱旁為深長內凹平整牆面，容納 60cm 供電箱 + 150cm EMS 盤後仍有充裕淨寬，維修門完全開啟無障礙。
+            </td>
+            <td>
+              <b style="color: var(--accent-b);">普通。</b><br>
+              雖然牆面足夠，但緊鄰機車停車格（B024、B025），需嚴格確認盤體凸出厚度（約 20~25cm）是否影響機車牽引動線。
+            </td>
+          </tr>
+          <tr>
+            <td><b>2. 對住戶停車格影響</b></td>
+            <td>
+              <b>零影響。</b><br>
+              鄰近為公共機車動線與既有配電機房區，完全無損現有汽車車位與機車車位。
+            </td>
+            <td>
+              <b>微小風險。</b><br>
+              B1 盤體位於機車位側牆；B2/B3 電纜垂直貫穿位置位於汽車格後方牆面，雖然不影響停車，但車主心理感受需事先溝通。
+            </td>
+          </tr>
+          <tr>
+            <td><b>3. 垂直穿樓（下B2/B3）施工</b></td>
+            <td>
+              <b>需避開管線。</b><br>
+              B1/B2 垂直對應良好；但 B3 樓層為狹長設備空間（鄰近污廢水鑄鐵幹管與蓄水箱），貫穿洗洞時需技師精確放樣避開主管。
+            </td>
+            <td>
+              <b>單純順暢。</b><br>
+              各樓層垂直投影位置均為平整白色結構背牆，上下樓層垂直連貫洗洞施工最為標準簡單。
+            </td>
+          </tr>
+          <tr>
+            <td><b>4. 台電箱引線距離</b></td>
+            <td>
+              <b>極短（小於 1 公尺）。</b><br>
+              供電箱直接掛於台電箱旁牆面，大電纜引出長度極短，壓降最小、一次側施工安全性最高。
+            </td>
+            <td>
+              <b>短（約 1.5 ~ 2.5 公尺）。</b><br>
+              台電配電場所出線後需轉折穿過結構柱出線至 F 軸側牆，需額外加裝保護防護管槽。
+            </td>
+          </tr>
+          <tr>
+            <td><b>5. 全區車位拉線平衡性</b></td>
+            <td>
+              <b>東側車位拉線極佳。</b><br>
+              可由 C 棟主道上方天花板走線槽（Tray）平均輻射分布至各區。
+            </td>
+            <td>
+              <b>全區重心相對居中。</b><br>
+              B 棟位置偏社區中央，若未來全社區全覆蓋拉線，主幹道線槽展開距離較平均。
+            </td>
+          </tr>
+          <tr>
+            <td><b>6. 綜合建議結論</b></td>
+            <td>
+              <b style="color: var(--accent-c);">強烈推薦優先採納方案 A。</b><br>
+              「B1 設備端空間最大化、且完全不爭議現有機車/汽車動線」，日後台電或廠商保養驗收最無爭議。
+            </td>
+            <td>
+              <b>可作為替代備案。</b><br>
+              若 C 棟 B3 水箱設備空間經實地放樣確認洗洞受限，則可啟動方案 B 作為備案。
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- 照片放大 Lightbox Modal -->
+  <div class="lightbox-modal" id="lightboxModal" onclick="closeLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <img class="lightbox-img" id="lightboxImage" src="" alt="放大照片">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+
+  <script>
+    // 資料結構：方案 A 與 方案 B 各樓層的圖面、照片與分析資料
+    const plansData = {
+      'A': {
+        title: '方案 A：C 棟設備區設置（優先評估）',
+        desc: '以 C 棟地下室（M~N 軸旁）台電配電場所 2 為主要供電出線點，牆面寬敞平整且具備現成電氣維修空間，不佔用既有車道縱深。',
+        themeClass: 'theme-c',
+        btnClass: 'active-plan-a',
+        beaconClass: 'beacon-c',
+        beaconText: 'C棟',
+        // 聚焦座標 (百分比)
+        focusCoords: {
+          'B1': { x: 78, y: 65, scale: 2.2 },
+          'B2': { x: 78, y: 62, scale: 2.2 },
+          'B3': { x: 78, y: 62, scale: 2.2 }
+        },
+        // 標記在各樓層上的位置百分比
+        hotspots: {
+          'B1': [
+            { left: '83%', top: '75%', type: 'beacon-taipower', label: '🟨 台電配電場所2' },
+            { left: '79%', top: '62%', type: 'beacon-ems', label: '🟦 150cm EMS 配電盤' },
+            { left: '79%', top: '42%', type: 'beacon-feed', label: '🟧 60cm 供電箱' }
+          ],
+          'B2': [
+            { left: '79%', top: '47%', type: 'beacon-ems', label: '🟦 150cm 垂直貫穿走線點' }
+          ],
+          'B3': [
+            { left: '79%', top: '44%', type: 'beacon-ems', label: '🟦 150cm 垂直貫穿抵達點' }
+          ]
+        },
+        photos: {
+          'B1': {
+            main: 'C棟 B1.jpg',
+            title: '📷 C 棟 B1 現場實況與設備牆',
+            badge: '📍 C棟 B1 落地電箱旁牆面',
+            gallery: [
+              { file: 'C棟 B1.jpg', label: 'B1 設備牆實況' }
+            ],
+            analysis: [
+              { type: 'ok', text: '<b>牆面空間極充裕：</b>米白色台電配電箱左側為整面內縮白色牆面，可完全容納 60cm 供電箱 ＋ 150cm EMS 配電盤（總寬約 210cm），並留有保養通道。' },
+              { type: 'ok', text: '<b>一次側引線距離極短：</b>供電箱可直接緊靠台電箱側邊開孔引進主電源，安全且施工成本最低。' },
+              { type: 'info', text: '<b>機車停放無衝擊：</b>前方為公共動線與既有機車位，盤體貼牆厚度約 20cm，不影響騎士牽車出入。' }
+            ],
+            verticalSteps: [
+              { floor: 'B1 主機層', desc: '安裝 60cm 供電箱與 150cm EMS 盤，由此匯出各迴路主幹線。' },
+              { floor: '貫穿至 B2', desc: '走電信室/梯廳旁管道間或垂直洗洞孔下地至 B2 樓層天花板。' },
+              { floor: '貫穿至 B3', desc: '穿過 B2 樓板降至 B3，沿管道間上方展開線槽供電至全場各車位。' }
+            ]
+          },
+          'B2': {
+            main: 'C棟 B2.jpg',
+            title: '📷 C 棟 B2 現場通道與配線牆面',
+            badge: '📍 C棟 B2 垂直貫穿投影點',
+            gallery: [
+              { file: 'C棟 B2.jpg', label: 'B2 轉角牆面實況' }
+            ],
+            analysis: [
+              { type: 'ok', text: '<b>轉角走線順暢：</b>照片顯示牆面平整並設有手動報警設備，上方具備充裕挑高走線槽（Cable Tray）。' },
+              { type: 'ok', text: '<b>車位安全：</b>非位於汽車格主停放死角，不影響住戶開門或倒車入庫視線。' }
+            ],
+            verticalSteps: [
+              { floor: 'B1 來源', desc: '由 B1 C棟設備盤垂直引下主幹線（可採用電纜梯架或密封線槽）。' },
+              { floor: 'B2 分配層', desc: '在此處分接 B2 樓層分電盤或直接往兩側車位走天花板主幹線。' },
+              { floor: '續降 B3', desc: '同軸向下貫穿穿透樓板至 B3。' }
+            ]
+          },
+          'B3': {
+            main: 'C棟 B3.jpg',
+            title: '📷 C 棟 B3 現場設備間與管道實況',
+            badge: '📍 C棟 B3 設備層管道走道',
+            gallery: [
+              { file: 'C棟 B3.jpg', label: 'B3 水箱與管道實況' }
+            ],
+            analysis: [
+              { type: 'info', text: '<b>現場管路較多：</b>照片顯示有橘色污水/排水鑄鐵幹管（CAST IRON SOIL PIPE）與水箱結構。' },
+              { type: 'warn', text: '<b>施工注意事項：</b>垂直洗洞下至 B3 時，水電技師需現場精密放樣，確保貫穿孔避開既有水箱邊框與給排水主幹管。' }
+            ],
+            verticalSteps: [
+              { floor: '貫穿到達 B3', desc: '幹線穿入 B3 管道層，避開排水幹管與水箱壁架。' },
+              { floor: 'B3 末端分配', desc: '沿 B3 車道中央上方橫向展開電纜槽，完成所有 B3 充電車位出線。' }
+            ]
+          }
+        }
+      },
+
+      'B': {
+        title: '方案 B：B 棟設備區設置（備選方案）',
+        desc: '以 B 棟地下室（E~F 軸旁）台電配電場所 1 為供電點，向 F~G 軸機車區牆面引出設置 EMS 總盤，上下垂直樓層投影位置一致。',
+        themeClass: 'theme-b',
+        btnClass: 'active-plan-b',
+        beaconClass: 'beacon-b',
+        beaconText: 'B棟',
+        focusCoords: {
+          'B1': { x: 38, y: 72, scale: 2.2 },
+          'B2': { x: 38, y: 72, scale: 2.2 },
+          'B3': { x: 38, y: 72, scale: 2.2 }
+        },
+        hotspots: {
+          'B1': [
+            { left: '33%', top: '75%', type: 'beacon-taipower', label: '🟨 台電配電場所1' },
+            { left: '38%', top: '76%', type: 'beacon-feed', label: '🟧 60cm 供電箱' },
+            { left: '44%', top: '73%', type: 'beacon-ems', label: '🟦 150cm EMS 配電盤' }
+          ],
+          'B2': [
+            { left: '44%', top: '73%', type: 'beacon-ems', label: '🟦 150cm 垂直貫穿至 B2 車位背牆' }
+          ],
+          'B3': [
+            { left: '44%', top: '73%', type: 'beacon-ems', label: '🟦 150cm 垂直貫穿至 B3 車位背牆' }
+          ]
+        },
+        photos: {
+          'B1': {
+            main: 'B棟 B1-1.jpg',
+            title: '📷 B 棟 B1 現場實況與機車位側牆',
+            badge: '📍 B棟 B1 機車停車區白牆',
+            gallery: [
+              { file: 'B棟 B1-1.jpg', label: 'B1-1 牆面全景 (B024旁)' },
+              { file: 'B棟 B1-2.jpg', label: 'B1-2 機車格近景' }
+            ],
+            analysis: [
+              { type: 'info', text: '<b>設備牆面空間：</b>牆面長度足夠，但右側有矮磁磚檢修孔，左側有紅色消防立管，需安排在兩管件中間。' },
+              { type: 'warn', text: '<b>注意機車停放縱深：</b>地面為 B024、B025 機車格，150cm 配電盤若突出牆面 20~25cm，需確保機車龍頭不碰撞盤體。' },
+              { type: 'ok', text: '<b>一次側走線：</b>由左側台電配電場所穿出至 F 柱後轉至此面牆，距離約 1.5 公尺。' }
+            ],
+            verticalSteps: [
+              { floor: 'B1 主機層', desc: '於 F~G 軸機車側牆裝設 150cm EMS 盤，F 柱旁安裝 60cm 供電箱。' },
+              { floor: '垂直下穿 B2', desc: '沿該牆角處向下洗洞或利用管道穿透樓板。' },
+              { floor: '垂直下穿 B3', desc: '垂直直線貫通至 B3 相同座標牆面。' }
+            ]
+          },
+          'B2': {
+            main: 'B棟 B2.jpg',
+            title: '📷 B 棟 B2 現場車位背牆實況',
+            badge: '📍 B棟 B2 汽車格後方牆面',
+            gallery: [
+              { file: 'B棟 B2.jpg', label: 'B2 汽車格背牆' }
+            ],
+            analysis: [
+              { type: 'ok', text: '<b>垂直投影極平整：</b>垂直下至 B2 為汽車停車格後方平整白色牆壁，具備黃色車輪擋。' },
+              { type: 'ok', text: '<b>穿樓走線最單純：</b>無複雜水箱或排水幹管阻擋，上下貫通結構單純。' },
+              { type: 'warn', text: '<b>車主溝通注意：</b>線槽若貼車位後牆走，需向該車位車主說明不影響車輛停放空間。' }
+            ],
+            verticalSteps: [
+              { floor: 'B1 垂直引下', desc: '幹線從 B1 直線垂直穿透至 B2 頂端。' },
+              { floor: 'B2 車位出線', desc: '沿頂樑與天花板配置線槽展開至 B2 車位。' },
+              { floor: '續降 B3', desc: '同位置往下繼續垂直洗洞至 B3。' }
+            ]
+          },
+          'B3': {
+            main: 'B棟 B3.jpg',
+            title: '📷 B 棟 B3 現場車位背牆實況',
+            badge: '📍 B棟 B3 車位背牆',
+            gallery: [
+              { file: 'B棟 B3.jpg', label: 'B3 車位實景' }
+            ],
+            analysis: [
+              { type: 'ok', text: '<b>上下貫穿完全對齊：</b>B3 亦為標準車位背牆，整體垂直縱深完全連貫。' },
+              { type: 'ok', text: '<b>施工工法標準：</b>全垂直軸線一致，立管施作成本較低。' }
+            ],
+            verticalSteps: [
+              { floor: '貫穿到達 B3', desc: '電纜垂直抵達最底層 B3。' },
+              { floor: 'B3 全區布設', desc: '於天花板主車道展開，通往各車位充電樁。' }
+            ]
+          }
+        }
+      }
+    };
+
+    // 當前狀態
+    let currentPlan = 'A';
+    let currentFloor = 'B1';
+    let isZoomed = false;
+
+    // 初始化渲染
+    function init() {
+      updateUI();
+    }
+
+    // 切換方案
+    function switchPlan(planKey) {
+      currentPlan = planKey;
+      
+      // 更新按鈕樣式
+      document.getElementById('btnPlanA').className = 'plan-btn ' + (planKey === 'A' ? 'active-plan-a' : '');
+      document.getElementById('btnPlanB').className = 'plan-btn ' + (planKey === 'B' ? 'active-plan-b' : '');
+      document.getElementById('btnCompare').className = 'plan-btn';
+
+      // 重設縮放
+      isZoomed = false;
+      document.getElementById('btnFocusPlan').classList.remove('active-focus');
+
+      updateUI();
+    }
+
+    // 切換樓層
+    function switchFloor(floorKey) {
+      currentFloor = floorKey;
+      
+      // 更新 Tabs
+      ['B1', 'B2', 'B3'].forEach(f => {
+        const tab = document.getElementById('tab' + f);
+        if (f === floorKey) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+
+      // 更新地圖圖片
+      const mapImg = document.getElementById('mainMapImage');
+      mapImg.src = `${floorKey}地圖_標註版.jpg`;
+
+      updateUI();
+    }
+
+    // 更新介面內容
+    function updateUI() {
+      const plan = plansData[currentPlan];
+      const floorData = plan.photos[currentFloor];
+
+      // 更新頂部摘要卡片
+      const summaryCard = document.getElementById('summaryCard');
+      summaryCard.className = `summary-card ${plan.themeClass}`;
+      document.getElementById('planTitle').innerHTML = plan.title + (currentPlan === 'A' ? ' <span class="tag-recommend">推薦方案</span>' : ' <span class="tag-alternative">備選方案</span>');
+      document.getElementById('planDesc').textContent = plan.desc;
+
+      // 更新互動 Hotspots（支援同時顯示台電箱、60cm供電箱、150cm EMS盤）
+      const hotspotsContainer = document.getElementById('hotspotsLayer');
+      hotspotsContainer.innerHTML = '';
+      const floorHotspots = plan.hotspots[currentFloor] || [];
+      floorHotspots.forEach(h => {
+        const pin = document.createElement('div');
+        pin.className = 'map-hotspot';
+        pin.style.left = h.left;
+        pin.style.top = h.top;
+        pin.onclick = (e) => {
+          e.stopPropagation();
+          toggleZoomFocus();
+        };
+        pin.innerHTML = `
+          <div class="hotspot-beacon ${h.type}">${h.label}</div>
+          <div class="hotspot-tooltip">${h.label}（點擊聚焦）</div>
+        `;
+        hotspotsContainer.appendChild(pin);
+      });
+
+      // 更新右側照片卡
+      document.getElementById('photoTitle').textContent = floorData.title;
+      document.getElementById('photoOverlayBadge').textContent = floorData.badge;
+      document.getElementById('mainPhoto').src = floorData.main;
+
+      // 更新縮圖列表
+      const thumbsContainer = document.getElementById('photoThumbs');
+      thumbsContainer.innerHTML = '';
+      floorData.gallery.forEach((g, idx) => {
+        const thumbDiv = document.createElement('div');
+        thumbDiv.className = `photo-thumb ${idx === 0 ? 'active' : ''}`;
+        thumbDiv.innerHTML = `<img src="${encodeURI(g.file)}" alt="${g.label}">`;
+        thumbDiv.onclick = (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('.photo-thumb').forEach(t => t.classList.remove('active'));
+          thumbDiv.classList.add('active');
+          document.getElementById('mainPhoto').src = g.file;
+          document.getElementById('photoOverlayBadge').textContent = `📍 ${g.label}`;
+        };
+        thumbsContainer.appendChild(thumbDiv);
+      });
+
+      // 更新現場分析重點
+      const analysisContainer = document.getElementById('analysisList');
+      analysisContainer.innerHTML = '';
+      floorData.analysis.forEach(a => {
+        const li = document.createElement('li');
+        li.className = 'analysis-item';
+        let iconClass = a.type === 'ok' ? 'icon-ok' : (a.type === 'warn' ? 'icon-warn' : 'icon-info');
+        let iconChar = a.type === 'ok' ? '✓' : (a.type === 'warn' ? '⚠️' : 'ℹ️');
+        li.innerHTML = `
+          <div class="item-icon ${iconClass}">${iconChar}</div>
+          <div>${a.text}</div>
+        `;
+        analysisContainer.appendChild(li);
+      });
+
+      // 更新垂直走線說明
+      const verticalContainer = document.getElementById('verticalSteps');
+      verticalContainer.innerHTML = '';
+      floorData.verticalSteps.forEach(step => {
+        const stepDiv = document.createElement('div');
+        stepDiv.className = 'floor-step';
+        stepDiv.innerHTML = `
+          <div class="floor-step-title">${step.floor}</div>
+          <div class="floor-step-desc">${step.desc}</div>
+        `;
+        verticalContainer.appendChild(stepDiv);
+      });
+
+      // 檢查聚焦狀態
+      if (isZoomed) {
+        applyZoom(true);
+      } else {
+        applyZoom(false);
+      }
+    }
+
+    // 地圖放大聚焦
+    function toggleZoomFocus() {
+      isZoomed = !isZoomed;
+      applyZoom(isZoomed);
+      const btn = document.getElementById('btnFocusPlan');
+      if (isZoomed) {
+        btn.classList.add('active-focus');
+      } else {
+        btn.classList.remove('active-focus');
+      }
+    }
+
+    function resetMapZoom() {
+      isZoomed = false;
+      applyZoom(false);
+      document.getElementById('btnFocusPlan').classList.remove('active-focus');
+    }
+
+    function applyZoom(active) {
+      const wrapper = document.getElementById('mapWrapper');
+      if (active) {
+        const coord = plansData[currentPlan].focusCoords[currentFloor];
+        wrapper.style.transformOrigin = `${coord.x}% ${coord.y}%`;
+        wrapper.style.transform = `scale(${coord.scale})`;
+      } else {
+        wrapper.style.transformOrigin = 'center center';
+        wrapper.style.transform = 'scale(1)';
+      }
+    }
+
+    function focusCurrentHotspot() {
+      toggleZoomFocus();
+    }
+
+    // 捲動至比較表
+    function scrollToCompare() {
+      document.getElementById('compareSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 燈箱圖片放大
+    function openLightbox() {
+      const modal = document.getElementById('lightboxModal');
+      const img = document.getElementById('lightboxImage');
+      const caption = document.getElementById('lightboxCaption');
+      const currentSrc = document.getElementById('mainPhoto').src;
+      
+      img.src = currentSrc;
+      caption.textContent = document.getElementById('photoTitle').textContent;
+      modal.classList.add('active');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightboxModal').classList.remove('active');
+    }
+
+    // 鍵盤 ESC 關閉燈箱
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    // 啟動
+    window.onload = init;
+  </script>
+</body>
+</html>
