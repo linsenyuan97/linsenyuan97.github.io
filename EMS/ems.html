@@ -237,6 +237,46 @@
       pointer-events: none;
     }
 
+    /* 手機與電腦端地圖浮動放大縮放按鈕 */
+    .map-floating-zoom-btns {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      padding: 5px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .map-zoom-action-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    .map-zoom-action-btn:active {
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(0.92);
+    }
+
     /* 地圖工具條 */
     .map-controls-row {
       padding: 10px 14px;
@@ -817,6 +857,13 @@
 
         <!-- 地圖畫布容器 -->
         <div class="map-viewport" id="mapViewport">
+          <!-- 手機與電腦端浮動放大縮放按鈕 -->
+          <div class="map-floating-zoom-btns">
+            <button class="map-zoom-action-btn" onclick="zoomInMap()" title="放大">+</button>
+            <button class="map-zoom-action-btn" onclick="zoomOutMap()" title="縮小">−</button>
+            <button class="map-zoom-action-btn" onclick="resetMapZoom()" title="重置視野" style="font-size: 14px;">🔄</button>
+          </div>
+
           <div class="map-canvas" id="mapCanvas">
             <img id="mainMapImage" src="map_b1.jpg" alt="停車場平面圖">
             <!-- 動態 Hotspots -->
@@ -1051,9 +1098,19 @@
         }
       });
 
-      // 觸控拖曳
+      // 雙指 Pinch-to-Zoom 觸控手勢與單指平移
+      let pinchStartDist = 0;
+      let pinchStartScale = 1.0;
+
       viewport.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
+        if (e.touches.length === 2) {
+          isDraggingMap = false;
+          pinchStartDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          pinchStartScale = userScaleMultiplier;
+        } else if (e.touches.length === 1) {
           isDraggingMap = true;
           startX = e.touches[0].clientX - mapLastPanX;
           startY = e.touches[0].clientY - mapLastPanY;
@@ -1061,10 +1118,19 @@
       }, { passive: true });
 
       viewport.addEventListener('touchmove', (e) => {
-        if (!isDraggingMap || e.touches.length > 1) return;
-        mapPanX = e.touches[0].clientX - startX;
-        mapPanY = e.touches[0].clientY - startY;
-        applyZoom(isZoomed);
+        if (e.touches.length === 2 && pinchStartDist > 0) {
+          const dist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          const ratio = dist / pinchStartDist;
+          userScaleMultiplier = Math.min(4.0, Math.max(0.4, pinchStartScale * ratio));
+          applyZoom(isZoomed);
+        } else if (isDraggingMap && e.touches.length === 1) {
+          mapPanX = e.touches[0].clientX - startX;
+          mapPanY = e.touches[0].clientY - startY;
+          applyZoom(isZoomed);
+        }
       }, { passive: true });
 
       viewport.addEventListener('touchend', () => {
@@ -1079,6 +1145,7 @@
     // 切換方案 (C棟 vs B棟)
     function switchPlan(planKey) {
       currentPlan = planKey;
+      userScaleMultiplier = 1.0;
       mapPanX = 0; mapPanY = 0; mapLastPanX = 0; mapLastPanY = 0;
       document.getElementById('btnPlanA').className = 'bldg-btn ' + (planKey === 'A' ? 'active-plan-a' : '');
       document.getElementById('btnPlanB').className = 'bldg-btn ' + (planKey === 'B' ? 'active-plan-b' : '');
@@ -1089,6 +1156,7 @@
     // 切換樓層 (B1 vs B2 vs B3)
     function switchFloor(floorKey) {
       currentFloor = floorKey;
+      userScaleMultiplier = 1.0;
       mapPanX = 0; mapPanY = 0; mapLastPanX = 0; mapLastPanY = 0;
       ['B1', 'B2', 'B3'].forEach(f => {
         const btn = document.getElementById('tab' + f);
@@ -1139,6 +1207,24 @@
       applyZoom(isZoomed);
     }
 
+    let userScaleMultiplier = 1.0;
+
+    function zoomInMap() {
+      userScaleMultiplier = Math.min(3.5, userScaleMultiplier + 0.35);
+      applyZoom(isZoomed);
+    }
+
+    function zoomOutMap() {
+      userScaleMultiplier = Math.max(0.4, userScaleMultiplier - 0.35);
+      applyZoom(isZoomed);
+    }
+
+    function resetMapZoom() {
+      userScaleMultiplier = 1.0;
+      mapPanX = 0; mapPanY = 0; mapLastPanX = 0; mapLastPanY = 0;
+      applyZoom(isZoomed);
+    }
+
     let mapPanX = 0;
     let mapPanY = 0;
     let mapLastPanX = 0;
@@ -1149,21 +1235,22 @@
 
     function applyZoom(active) {
       const canvas = document.getElementById('mapCanvas');
-      const scale = active ? plansData[currentPlan].focusCoords[currentFloor].scale : 1;
+      const baseScale = active ? plansData[currentPlan].focusCoords[currentFloor].scale : 1;
+      const finalScale = baseScale * userScaleMultiplier;
 
       canvas.style.transition = isDraggingMap ? 'none' : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
 
       if (active) {
         const coord = plansData[currentPlan].focusCoords[currentFloor];
         canvas.style.transformOrigin = `${coord.x}% ${coord.y}%`;
-        canvas.style.transform = `scale(${coord.scale}) translate(${mapPanX}px, ${mapPanY}px)`;
+        canvas.style.transform = `scale(${finalScale}) translate(${mapPanX}px, ${mapPanY}px)`;
       } else {
         canvas.style.transformOrigin = 'center center';
-        canvas.style.transform = `translate(${mapPanX}px, ${mapPanY}px) scale(1)`;
+        canvas.style.transform = `translate(${mapPanX}px, ${mapPanY}px) scale(${finalScale})`;
       }
 
       // 讓呼吸燈與 Tooltip 反向縮放，視覺大小始終恆定不論地圖放大幾倍
-      const invScale = 1 / scale;
+      const invScale = 1 / finalScale;
       document.querySelectorAll('.pulse-beacon').forEach(el => {
         el.style.transform = `scale(${invScale})`;
       });
