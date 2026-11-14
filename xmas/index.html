@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>林森苑聖誕打卡</title>
+<meta name="theme-color" content="#14532D">
+<link rel="icon" type="image/png" sizes="64x64" href="xas/images/favicon-64.png">
+<link rel="apple-touch-icon" href="xas/images/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pine:#14532D; --pine-dark:#0F3D21; --pine-light:#E3F1E7;
+  --berry:#B91C1C; --berry-dark:#991B1B; --berry-light:#FDE8E8;
+  --amber:#B45309; --amber-light:#FEF3C7;
+  --ink:#1F2A24; --ink-soft:#56655C; --ink-muted:#8A9A90;
+  --surface:#fff; --bg:#F7F4EC; --line:#E4DCCB;
+  --radius:16px; --radius-sm:11px;
+  --shadow-card:0 4px 18px rgba(20,83,45,.10);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-tap-highlight-color:transparent;min-height:100dvh}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.header-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:10px;height:58px;padding:0 16px}
+.home-link{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink);flex-shrink:0;text-decoration:none}
+.home-link svg{width:22px;height:22px}
+.brand-icon{width:30px;height:30px;color:var(--pine);flex-shrink:0}
+.brand-title{font-size:18px;font-weight:900;color:var(--pine);margin:0;white-space:nowrap}
+.admin-tag{margin-left:auto;font-size:12px;font-weight:700;color:var(--berry);background:var(--berry-light);padding:3px 10px;border-radius:100px}
+
+main{max-width:640px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-inset-bottom,0px))}
+.banner{border-radius:var(--radius-sm);padding:12px 14px;font-size:14px;line-height:1.55;margin-bottom:14px}
+.banner.info{background:var(--pine-light);color:var(--pine-dark)}
+.banner.warn{background:var(--amber-light);color:#7C2D12}
+.banner.demo{background:#E0E7FF;color:#312E81}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:16px;margin-bottom:14px}
+h2{font-size:16px;font-weight:900;margin:0 0 10px;color:var(--pine-dark)}
+.muted{color:var(--ink-soft);font-size:13px;line-height:1.6}
+.rules{margin:0;padding-left:18px;font-size:13px;color:var(--ink-soft);line-height:1.8}
+
+/* 身分 */
+.field{margin-bottom:12px}
+.field>label{display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{flex:1;min-width:84px;padding:11px 8px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:15px;font-weight:700;color:var(--ink)}
+.chip.on{border-color:var(--pine);background:var(--pine);color:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+select,input[type=text],input[type=password],input[type=number]{width:100%;height:46px;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;font-size:16px;background:#fff;color:var(--ink)}
+select:focus,input:focus{outline:none;border-color:var(--pine)}
+.err{border-color:var(--berry)!important}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border:none;border-radius:12px;background:var(--pine);color:#fff;font-size:16px;font-weight:900}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--pine);border:1.5px solid var(--pine)}
+.btn.berry{background:var(--berry)}
+.btn.sm{height:36px;font-size:14px;border-radius:9px;width:auto;padding:0 16px}
+.id-line{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.id-line b{font-size:16px;flex:1;min-width:0}
+.santa{width:44px;height:44px;flex-shrink:0}
+.link-btn{background:none;border:none;color:var(--pine);font-weight:700;font-size:14px;text-decoration:underline;padding:4px}
+
+/* 進度 */
+.progress{display:flex;gap:6px;margin:6px 0 4px}
+.progress i{flex:1;height:10px;border-radius:100px;background:#E8E2D4}
+.progress i.ok{background:var(--pine)}
+.progress i.pend{background:#F2B94B}
+.prog-text{font-size:14px;font-weight:700;color:var(--pine-dark)}
+.spot{display:flex;flex-direction:column;gap:10px;padding:16px 0;border-top:1px solid var(--line)}
+.spot-head{display:flex;align-items:center;gap:12px}
+.spot-img{width:100%;max-height:260px;object-fit:cover;border-radius:var(--radius-sm);background:var(--pine-light);display:block}
+.spot:first-of-type{border-top:none}
+.spot-no{width:34px;height:34px;border-radius:50%;background:var(--pine-light);color:var(--pine-dark);font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.spot.ok .spot-no{background:var(--pine);color:#fff}
+.spot-main{flex:1;min-width:0}
+.spot-name{font-size:16px;font-weight:700}
+.spot-hint{font-size:14px;color:var(--ink-soft);margin:2px 0 3px}
+.chip-st{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:100px;margin-top:3px}
+.st-none{background:#EEF0EC;color:var(--ink-soft)}
+.st-pend{background:var(--amber-light);color:var(--amber)}
+.st-ok{background:var(--pine-light);color:var(--pine-dark)}
+.st-rej{background:var(--berry-light);color:var(--berry-dark)}
+.spot .btn{width:100%;height:44px;font-size:15px;border-radius:10px}
+.done-banner{background:var(--pine);color:#fff;border-radius:var(--radius-sm);padding:14px;font-weight:900;text-align:center;margin-top:12px}
+
+/* 上傳 sheet */
+.sheet-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));max-height:92dvh;overflow-y:auto}
+.sheet h3{margin:0 0 4px;font-size:19px;font-weight:900;color:var(--pine-dark)}
+.pick{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;min-height:150px;border:2px dashed var(--pine);border-radius:14px;background:var(--pine-light);color:var(--pine-dark);font-weight:700;font-size:15px;margin:12px 0}
+.pick svg{width:36px;height:36px}
+.preview{width:100%;max-height:300px;object-fit:contain;border-radius:12px;background:#000;margin:12px 0 8px;display:block}
+.sheet .who{font-size:13px;color:var(--ink-soft);margin-bottom:12px}
+.spin{width:18px;height:18px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite;display:inline-block}
+.spin.dark{border-color:rgba(20,83,45,.25);border-top-color:var(--pine)}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:120;background:rgba(15,61,33,.94);color:#fff;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:700;max-width:90%;text-align:center}
+.toast.bad{background:rgba(153,27,27,.95)}
+
+/* 管理員 */
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{flex:1;height:42px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-weight:700;font-size:15px;color:var(--ink-soft)}
+.tabs button.on{background:var(--pine);border-color:var(--pine);color:#fff}
+.filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filters .chip{flex:0 0 auto;min-width:0;padding:7px 14px;font-size:13px}
+.rv{display:flex;gap:12px;align-items:flex-start}
+.thumb{width:96px;height:96px;border-radius:10px;background:#ECE7DA;object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--ink-muted);font-size:12px;cursor:pointer;overflow:hidden;border:none;padding:0}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.rv-main{flex:1;min-width:0}
+.rv-main b{font-size:16px}
+.rv-meta{font-size:12px;color:var(--ink-muted);margin:2px 0}
+.ai{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:100px;margin-right:6px}
+.ai-ok{background:var(--pine-light);color:var(--pine-dark)}
+.ai-no{background:var(--berry-light);color:var(--berry-dark)}
+.ai-un{background:#EEF0EC;color:var(--ink-soft)}
+.rv-actions{display:flex;gap:8px;margin-top:10px}
+.rv-actions .btn{flex:1;height:38px;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--ink-soft);font-size:12px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:110;display:flex;align-items:center;justify-content:center;padding:16px}
+.overlay img{max-width:100%;max-height:100%;border-radius:8px}
+.empty{text-align:center;color:var(--ink-muted);padding:28px 0;font-size:14px}
+.gate{max-width:360px;margin:40px auto}
+
+/* ===== 聖誕氣氛 ===== */
+:root{--gold:#F2B94B;--snow:#fff}
+header{border-bottom:none;box-shadow:0 1px 0 var(--line)}
+header::after{content:"";position:absolute;left:0;right:0;top:100%;height:14px;pointer-events:none;
+  background:
+   radial-gradient(circle at 10px 6px,#EF4444 0 3.5px,transparent 4.5px) 0 0/64px 14px,
+   radial-gradient(circle at 26px 8px,#F2B94B 0 3.5px,transparent 4.5px) 0 0/64px 14px,
+   radial-gradient(circle at 42px 6px,#22C55E 0 3.5px,transparent 4.5px) 0 0/64px 14px,
+   radial-gradient(circle at 58px 8px,#60A5FA 0 3.5px,transparent 4.5px) 0 0/64px 14px;
+  filter:drop-shadow(0 0 3px rgba(255,255,255,.9));animation:twinkle 2.4s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:1}to{opacity:.55}}
+body{background:radial-gradient(circle at 85% 0%,rgba(242,185,75,.28),transparent 45%),linear-gradient(160deg,#1B6B3A 0%,#0F3D21 100%) fixed}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+  background:radial-gradient(circle,#fff 0 1.3px,transparent 2px) 0 0/46px 46px,radial-gradient(circle,#fff 0 1px,transparent 1.8px) 23px 23px/46px 46px}
+body.is-admin{background:var(--bg)}
+body.is-admin::before{display:none}
+main{position:relative}
+header{position:sticky}
+.hero{position:relative;margin:6px 0 16px;padding:14px 4px 4px;color:#fff}
+.hero>*{position:relative}
+main>.banner.demo{margin-top:14px}
+.hero-eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--gold);margin:0 0 6px}
+.hero h2{color:#fff;font-size:24px;line-height:1.3;margin:0 0 8px}
+.hero p{margin:0;font-size:14px;line-height:1.6;color:#DDEFE3;max-width:calc(100% - 96px)}
+.hero-date{color:var(--gold);white-space:nowrap}
+.hero h2{max-width:calc(100% - 20px)}
+.hero-tree{position:absolute!important;right:10px;bottom:0;width:86px;height:auto}
+
+.card h2::before{content:"❄";color:var(--berry);margin-right:6px;font-size:14px}
+.hero h2::before{content:none}
+.spot-no{width:68px;height:68px;font-size:14px;line-height:1.25;text-align:center;font-weight:900;background:var(--berry-light)!important;color:var(--berry)!important;border:3px solid var(--berry);box-shadow:0 0 0 3px #fff,0 0 0 4px var(--berry-light)}
+.spot-no.done,.spot.ok .spot-no{background:var(--pine-light)!important;color:var(--pine)!important;border-color:var(--pine);box-shadow:0 0 0 3px #fff,0 0 0 4px var(--pine-light)}
+.spot-img{box-shadow:0 3px 12px rgba(20,83,45,.18);border:3px solid #fff;outline:1px solid var(--line)}
+.progress i.ok{background:linear-gradient(90deg,#16A34A,#22C55E);box-shadow:0 0 8px rgba(34,197,94,.7)}
+.progress i.pend{box-shadow:0 0 8px rgba(242,185,75,.8)}
+.done-banner{background:linear-gradient(135deg,#B91C1C,#7F1D1D)!important;border:2px dashed var(--gold)}
+.snow{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+.snow i{position:absolute;top:-10px;background:#fff;border-radius:50%;opacity:.85;box-shadow:0 0 4px rgba(120,150,170,.5);animation:fall linear infinite}
+@keyframes fall{to{transform:translate3d(var(--dx),105vh,0)}}
+@media (prefers-reduced-motion:reduce){.snow{display:none}header::after{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l4 6h-2.5l3.5 5h-3l3.5 5H6l3.5-5h-3L10 8H8z"/><path d="M12 18v4"/></svg>
+    <h1 class="brand-title">林森苑聖誕打卡</h1>
+    <span class="admin-tag hidden" id="adminTag">管理員</span>
+  </div>
+</header>
+
+<main>
+  <div id="demoBanner" class="banner demo hidden">示範模式：尚未設定後端網址（XMAS_GAS_URL），目前資料只存在這個分頁的記憶體裡，重新整理就會消失。</div>
+
+  <!-- 住戶畫面 -->
+  <div id="resident" class="hidden">
+    <section class="hero">
+      <p class="hero-eyebrow">MERRY CHRISTMAS</p>
+      <h2>猜猜看，卡牌藏在哪？</h2>
+      <p><b class="hero-date" id="heroDate">12/01 ~ 12/25</b> 社區裡藏著 5 張聖誕打卡卡牌，看線索找到地點，拍下來就能參加抽獎。</p>
+      <svg class="hero-tree" viewBox="0 0 120 150" aria-hidden="true">
+        <polygon points="60,6 66,18 80,18 69,27 73,41 60,33 47,41 51,27 40,18 54,18" fill="#F2B94B"/>
+        <path d="M60 22 L88 62 H74 L98 98 H80 L110 136 H10 L40 98 H22 L46 62 H32 Z" fill="#22C55E"/>
+        <path d="M60 22 L88 62 H74 L98 98 H80 L110 136 H60 Z" fill="#16A34A"/>
+        <rect x="52" y="136" width="16" height="14" fill="#7A4A24"/>
+        <circle cx="48" cy="70" r="4" fill="#EF4444"/><circle cx="70" cy="96" r="4" fill="#F2B94B"/><circle cx="40" cy="112" r="4" fill="#60A5FA"/><circle cx="82" cy="122" r="4" fill="#EF4444"/><circle cx="60" cy="52" r="3.5" fill="#F2B94B"/>
+      </svg>
+    </section>
+    <div id="statusBanner"></div>
+    <div class="card">
+      <h2>活動說明</h2>
+      <ol class="rules">
+        <li>每一站都有一句線索，猜出地點後到現場找「聖誕打卡卡牌」並拍照上傳。</li>
+        <li>5 個地點都通過審核，才會列入聖誕節抽獎名單。</li>
+        <li>每一戶每個地點只有一張有效照片（審核中可重傳）。</li>
+        <li>請只拍卡牌，避免拍到人臉或車牌。</li>
+      </ol>
+    </div>
+
+    <div class="card" id="idCard"></div>
+    <div class="card" id="progressCard"></div>
+  </div>
+
+  <!-- 管理員畫面 -->
+  <div id="admin" class="hidden"></div>
+</main>
+
+<div id="sheetRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* ============================================================
+   林森苑聖誕打卡 — 前端
+   後端：gas/xmas.gs（獨立的 GAS 專案＋獨立試算表）
+   部署後把 Web App 網址貼到下面；留空則進入示範模式（資料只存記憶體）。
+   管理員：網址後面加 ?admin；QR code：網址後面加 ?spot=1~5
+   ============================================================ */
+const XMAS_GAS_URL = '';
+
+const HAO_LIST = [95, 97, 99];
+const DONG_MAP = {95:'A', 97:'B', 99:'C'};
+const LOU_RANGE = [2, 24];
+const ZHI_LIST = [1, 2, 3, 5];
+const ID_KEY = 'ls-xmas-id';
+const ADMIN_SS_KEY = 'ls-xmas-admin';
+const DEMO = !XMAS_GAS_URL;
+const IS_ADMIN = /[?&]admin\b/i.test(location.search);
+const QR_SPOT = Number(new URLSearchParams(location.search).get('spot')) || 0;
+
+let cfg = null;
+let me = null;            // {hao,lou,zhi,name}
+let status = null;        // {spotId:{status,attempts}}
+let pendingSpot = QR_SPOT;
+let adminKey = '';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fullAddr = a => `${a.hao}號${a.lou}樓之${a.zhi}`;
+const md = ymd => ymd.slice(5).replace('-', '/');
+const fmtTime = ms => ms ? new Date(ms).toLocaleString('zh-TW', {hour12:false, month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+
+function toast(msg, bad){
+  const el = document.createElement('div');
+  el.className = 'toast' + (bad ? ' bad' : '');
+  el.textContent = msg;
+  $('toastRoot').appendChild(el);
+  setTimeout(() => el.remove(), 3200);
+}
+
+/* ============ API（含示範模式） ============ */
+async function apiGet(action, params){
+  if(DEMO) return mockGet(action, params || {});
+  const qs = new URLSearchParams(Object.assign({action}, params || {}));
+  const r = await fetch(XMAS_GAS_URL + '?' + qs);
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error || '讀取失敗');
+  return j;
+}
+async function apiPost(event, payload){
+  if(DEMO) return mockPost(event, payload);
+  const r = await fetch(XMAS_GAS_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({event, payload})});
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error || '送出失敗');
+  return j;
+}
+
+/* ---- 示範模式的假後端 ---- */
+const SPOTS_DEMO = [{id:1,name:'接待大廳',hint:'進門第一個遇見的地方，24 小時有人幫你收包裹。'},{id:2,name:'中庭花園',hint:'綠意最多的地方，抬頭可見天空。'},{id:3,name:'游泳池',hint:'夏天最熱鬧，冬天最安靜的地方。'},{id:4,name:'戶外網球場',hint:'來回擊球的好地方，場地是綠色的。'},{id:5,name:'大門招牌',hint:'每天回家第一眼看到的，刻著社區名字的大石牆。'}];
+const mock = {rows:[], photos:{}, seq:2};
+function mockKey(a){ return a.hao+'-'+a.lou+'-'+a.zhi; }
+function mockStatus(key){
+  const st = {};
+  SPOTS_DEMO.forEach(s => st[s.id] = {status:'', attempts:0});
+  mock.rows.forEach(r => {
+    if(r.addrKey !== key) return;
+    const e = st[r.spotId]; e.attempts++;
+    if(r.status === '通過') e.status = '通過';
+    else if(r.status === '待審核' && e.status !== '通過') e.status = '待審核';
+    else if(r.status === '退回' && !e.status) e.status = '退回';
+  });
+  return st;
+}
+function mockStatusRes(a){
+  const st = mockStatus(mockKey(a));
+  return {ok:true, status:st, passed:SPOTS_DEMO.filter(s => st[s.id].status === '通過').length, total:SPOTS_DEMO.length};
+}
+function mockDrawList(){
+  const by = {};
+  mock.rows.forEach(r => { if(r.status !== '通過') return; (by[r.addrKey] = by[r.addrKey] || {addr:r.addr,name:r.name,spots:{},last:r.time}).spots[r.spotId] = 1; });
+  return Object.keys(by).map(k => by[k]).filter(e => Object.keys(e.spots).length === 5)
+    .map((e,i) => ({no:i+1, addr:e.addr, name:e.name, last:e.last}));
+}
+async function mockGet(action, p){
+  await new Promise(r => setTimeout(r, 250));
+  if(action === 'config') return {ok:true, spots:SPOTS_DEMO.map(x => ({id:x.id,hint:x.hint})), start:'2026-12-01', end:'2026-12-25', open:true, notStarted:false};
+  if(action === 'status') return mockStatusRes({hao:Number(p.hao), lou:Number(p.lou), zhi:Number(p.zhi)});
+  if(action === 'admin_list') return {ok:true, spots:SPOTS_DEMO, rows:mock.rows.slice().reverse()};
+  if(action === 'admin_photo') return {ok:true, dataUrl:mock.photos[p.id] || ''};
+  if(action === 'admin_draw_list') return {ok:true, list:mockDrawList()};
+  throw new Error('未知的 action');
+}
+async function mockPost(event, p){
+  await new Promise(r => setTimeout(r, 900));
+  if(event === 'submit'){
+    const a = {hao:Number(p.hao), lou:Number(p.lou), zhi:Number(p.zhi)};
+    const key = mockKey(a), spot = SPOTS_DEMO.find(s => s.id === Number(p.spotId));
+    const pre = mockStatus(key)[spot.id];
+    let replaced = false;
+    mock.rows.forEach(r => { if(r.addrKey === key && r.spotId === spot.id && (r.status === '待審核' || r.status === '通過')){ r.status = '已取代'; replaced = true; } });
+    const id = 'photo' + (mock.seq++);
+    mock.photos[id] = p.photo;
+    const ai = spot.id % 2 ? {result:'符合', reason:'看得到第 '+spot.id+' 站的聖誕打卡卡牌'} : {result:'無法判斷', reason:'照片偏暗，看不清楚卡牌文字'};
+    mock.rows.push({row:mock.rows.length+2, time:Date.now(), addrKey:key, addr:fullAddr(a), name:p.name, spotId:spot.id, spotName:spot.name,
+      photoId:id, aiResult:ai.result, aiReason:ai.reason, status:'待審核', note:''});
+    const res = mockStatusRes(a); res.ai = ai; res.replaced = replaced; return res;
+  }
+  if(event === 'admin_review'){
+    const r = mock.rows.find(x => x.row === Number(p.row));
+    if(!r) throw new Error('找不到這筆資料');
+    r.status = p.status; r.note = p.note || ''; return {ok:true};
+  }
+  if(event === 'admin_draw'){
+    const list = mockDrawList(), pool = list.slice();
+    for(let i = pool.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [pool[i],pool[j]] = [pool[j],pool[i]]; }
+    return {ok:true, winners:pool.slice(0, Math.min(Number(p.n), pool.length)), total:list.length};
+  }
+  throw new Error('未知的 event');
+}
+
+/* ============ 住戶畫面 ============ */
+function loadMe(){ try{ const s = JSON.parse(localStorage.getItem(ID_KEY) || 'null'); return (s && s.hao && s.name) ? s : null; }catch(e){ return null; } }
+function saveMe(v){ try{ localStorage.setItem(ID_KEY, JSON.stringify(v)); }catch(e){} }
+
+function makeSnow(){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const box = document.createElement('div'); box.className = 'snow'; box.setAttribute('aria-hidden', 'true');
+  for(let i = 0; i < 22; i++){
+    const s = document.createElement('i'), z = 3 + Math.random() * 4;
+    s.style.cssText = `left:${Math.random() * 100}%;width:${z}px;height:${z}px;--dx:${(Math.random() * 60 - 30).toFixed(0)}px;animation-duration:${(7 + Math.random() * 8).toFixed(1)}s;animation-delay:${(-Math.random() * 12).toFixed(1)}s`;
+    box.appendChild(s);
+  }
+  document.body.appendChild(box);
+}
+
+async function initResident(){
+  $('resident').classList.remove('hidden');
+  try{ cfg = await apiGet('config'); }
+  catch(e){ $('statusBanner').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
+  me = loadMe();
+  try{ const f = d => String(d || '').slice(5).replace('-', '/'); if(cfg.start && cfg.end) $('heroDate').textContent = f(cfg.start) + ' ~ ' + f(cfg.end); }catch(e){}
+  makeSnow();
+  renderStatusBanner();
+  renderIdCard();
+  if(me) await refreshStatus();
+  renderProgress();
+  maybeOpenPending();
+}
+
+function renderStatusBanner(){
+  const range = `活動期間 ${md(cfg.start)} ~ ${md(cfg.end)}`;
+  $('statusBanner').innerHTML = cfg.open
+    ? ''
+    : `<div class="banner warn">${range}，${cfg.notStarted ? '活動還沒開始，敬請期待！' : '活動已經結束，謝謝大家參與！'}</div>`;
+}
+
+const SANTA_SVG = `<svg class="santa" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="31" fill="#E3F1E7"/><path d="M12 46c0 10 9 16 20 16s20-6 20-16c0-4-3-9-6-11H18c-3 2-6 7-6 11z" fill="#fff"/><circle cx="32" cy="32" r="14" fill="#F8D2B0"/><path d="M17 38c2 14 10 20 15 20s13-6 15-20c-4 3-9 5-15 5s-11-2-15-5z" fill="#fff"/><ellipse cx="32" cy="41" rx="6" ry="3.5" fill="#F8D2B0" opacity=".0"/><circle cx="26.5" cy="30" r="1.8" fill="#1F2A24"/><circle cx="37.5" cy="30" r="1.8" fill="#1F2A24"/><circle cx="23.5" cy="35" r="2.6" fill="#F4A6A0" opacity=".7"/><circle cx="40.5" cy="35" r="2.6" fill="#F4A6A0" opacity=".7"/><path d="M27 38c2 2 8 2 10 0" stroke="#fff" stroke-width="0" fill="none"/><path d="M15 27c0-12 7-20 17-20s17 8 17 20c-10-4-24-4-34 0z" fill="#B91C1C"/><rect x="14" y="23" width="36" height="8" rx="4" fill="#fff"/><circle cx="50" cy="9" r="5" fill="#fff"/></svg>`;
+function renderIdCard(editing){
+  const box = $('idCard');
+  if(me && !editing){
+    box.innerHTML = `<div class="id-line">${SANTA_SVG}<b class="id-text">${esc(DONG_MAP[me.hao])}棟（${fullAddr(me)}）　${esc(me.name)}</b><button class="link-btn" id="editId">修改</button></div>`;
+    $('editId').onclick = () => renderIdCard(true);
+    return;
+  }
+  const cur = me || {hao:null, lou:'', zhi:'', name:''};
+  let lous = '<option value="">請選擇</option>';
+  for(let i = LOU_RANGE[0]; i <= LOU_RANGE[1]; i++) lous += `<option value="${i}"${cur.lou == i ? ' selected' : ''}>${i} 樓</option>`;
+  const zhis = '<option value="">請選擇</option>' + ZHI_LIST.map(z => `<option value="${z}"${cur.zhi == z ? ' selected' : ''}>之 ${z}</option>`).join('');
+  box.innerHTML = `
+    <h2>先填寫住戶資料</h2>
+    <p class="muted" style="margin:0 0 12px">一戶只能有一份打卡資料，請填寫實際的門牌。</p>
+    <div class="field"><label>棟別</label><div class="chips" id="haoChips">${HAO_LIST.map(h => `<button type="button" class="chip${cur.hao == h ? ' on' : ''}" data-hao="${h}">${DONG_MAP[h]} 棟<br><small style="font-weight:500;opacity:.8">${h} 號</small></button>`).join('')}</div></div>
+    <div class="row2 field"><div><label style="display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">樓層</label><select id="idLou">${lous}</select></div>
+    <div><label style="display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">之幾</label><select id="idZhi">${zhis}</select></div></div>
+    <div class="field"><label for="idName">姓名</label><input type="text" id="idName" maxlength="20" placeholder="請輸入姓名" value="${esc(cur.name)}"></div>
+    <button class="btn" id="saveId">確認</button>`;
+  let hao = cur.hao;
+  box.querySelectorAll('#haoChips .chip').forEach(b => b.onclick = () => {
+    hao = Number(b.dataset.hao);
+    box.querySelectorAll('#haoChips .chip').forEach(x => x.classList.toggle('on', x === b));
+  });
+  $('saveId').onclick = async () => {
+    const lou = Number($('idLou').value), zhi = Number($('idZhi').value), name = $('idName').value.trim();
+    $('idName').classList.toggle('err', !name);
+    $('idLou').classList.toggle('err', !lou);
+    $('idZhi').classList.toggle('err', !zhi);
+    if(!hao){ toast('請選擇棟別', true); return; }
+    if(!lou || !zhi || !name) return;
+    me = {hao, lou, zhi, name};
+    saveMe(me);
+    renderIdCard();
+    await refreshStatus();
+    renderProgress();
+    maybeOpenPending();
+  };
+}
+
+async function refreshStatus(){
+  if(!me) return;
+  try{
+    const r = await apiGet('status', {hao:me.hao, lou:me.lou, zhi:me.zhi});
+    status = r.status;
+  }catch(e){ toast(e.message, true); }
+}
+
+function renderProgress(){
+  const box = $('progressCard');
+  if(!cfg) return;
+  if(!me){ box.innerHTML = `<h2>打卡進度</h2><p class="muted" style="margin:0">填好住戶資料後，這裡會顯示 5 個地點的打卡進度。</p>`; return; }
+  const st = status || {};
+  const spots = cfg.spots;
+  const ok = spots.filter(s => st[s.id] && st[s.id].status === '通過').length;
+  const bars = spots.map(s => { const x = st[s.id] ? st[s.id].status : ''; return `<i class="${x === '通過' ? 'ok' : x === '待審核' ? 'pend' : ''}"></i>`; }).join('');
+  const rows = spots.map(s => {
+    const x = st[s.id] || {status:'', attempts:0};
+    // 圓圈：尚未打卡（紅）→ 打卡；已打卡（綠）→ 重新打卡；通過後也可重新打卡（傳錯照片時用，新照片會重新審核）
+    let badge = '尚未打卡', done = false, chip = '', btn = '打卡';
+    if(x.status === '通過'){ badge = '已打卡'; done = true; btn = '重新打卡'; }
+    else if(x.status === '待審核'){ badge = '已打卡'; done = true; chip = '<span class="chip-st st-pend">審核中</span>'; btn = '重新打卡'; }
+    else if(x.status === '退回'){ chip = '<span class="chip-st st-rej">未通過，請重拍</span>'; }
+    return `<div class="spot${x.status === '通過' ? ' ok' : ''}">
+      <div class="spot-head">
+        <div class="spot-no${done ? ' done' : ''}">${badge}</div>
+        <div class="spot-main"><div class="spot-name">第 ${s.id} 站</div><div class="spot-hint">${esc(s.hint || '')}</div>${chip}</div>
+      </div>
+      <img class="spot-img" src="images/spot${s.id}.jpg" alt="第 ${s.id} 站的卡牌" loading="lazy" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/spot${s.id}.svg'}else{this.remove()}">
+      ${btn && cfg.open ? `<button class="btn" data-spot="${s.id}">${btn}</button>` : ''}
+    </div>`;
+  }).join('');
+  box.innerHTML = `<h2>打卡進度</h2><div class="progress">${bars}</div><div class="prog-text">已通過 ${ok} / ${spots.length}</div>
+    <div style="margin-top:8px">${rows}</div>
+    ${ok === spots.length ? '<div class="done-banner">5 個地點全部通過，已列入抽獎名單！</div>' : ''}`;
+  box.querySelectorAll('button[data-spot]').forEach(b => b.onclick = () => openUpload(Number(b.dataset.spot)));
+}
+
+function maybeOpenPending(){
+  if(pendingSpot && me && cfg && cfg.open && cfg.spots.some(s => s.id === pendingSpot)){
+    const sid = pendingSpot; pendingSpot = 0;
+    const x = status && status[sid];
+    openUpload(sid);
+  }
+}
+
+/* ============ 上傳照片 ============ */
+function compressImage(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('讀取照片失敗'));
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('這個檔案不是可用的圖片'));
+      img.onload = () => {
+        const max = 1280; let w = img.width, h = img.height;
+        if(w > h && w > max){ h = h*max/w; w = max; } else if(h > max){ w = w*max/h; h = max; }
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', 0.72));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function openUpload(spotId){
+  if(!me || !cfg || !cfg.open) return;
+  const spot = cfg.spots.find(s => s.id === spotId);
+  if(!spot) return;
+  let photo = '', busy = false;
+  const root = $('sheetRoot');
+  root.innerHTML = `<div class="sheet-mask" id="sheetMask"><div class="sheet" role="dialog" aria-modal="true">
+    <h3>第 ${spot.id} 站</h3>
+    <div class="who">${esc(DONG_MAP[me.hao])}棟（${fullAddr(me)}）　${esc(me.name)}</div>
+    <p class="muted" style="margin:0">請到現場拍下「聖誕打卡卡牌」，要拍到完整的卡牌。線索：${esc(spot.hint || '')}</p>
+    <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden">
+    <button class="pick" id="pickBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>拍照或選擇照片</span>
+    </button>
+    <img id="preview" class="preview hidden" alt="照片預覽">
+    <div class="row2">
+      <button class="btn ghost" id="cancelBtn" type="button">取消</button>
+      <button class="btn" id="sendBtn" type="button" disabled>送出打卡</button>
+    </div>
+  </div></div>`;
+  document.body.style.overflow = 'hidden';
+  const close = () => { if(busy) return; root.innerHTML = ''; document.body.style.overflow = ''; };
+  $('cancelBtn').onclick = close;
+  $('sheetMask').addEventListener('click', e => { if(e.target.id === 'sheetMask') close(); });
+  $('pickBtn').onclick = () => $('photoInput').click();
+  $('photoInput').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = '';
+    if(!f) return;
+    try{
+      photo = await compressImage(f);
+      $('preview').src = photo;
+      $('preview').classList.remove('hidden');
+      $('pickBtn').querySelector('span').textContent = '重新拍照或選擇';
+      $('sendBtn').disabled = false;
+    }catch(err){ toast(err.message, true); }
+  };
+  $('sendBtn').onclick = async () => {
+    if(!photo || busy) return;
+    busy = true;
+    $('sendBtn').innerHTML = '<span class="spin"></span>上傳與 AI 初審中…';
+    $('sendBtn').disabled = true; $('cancelBtn').disabled = true;
+    try{
+      const res = await apiPost('submit', {hao:me.hao, lou:me.lou, zhi:me.zhi, name:me.name, spotId:spot.id, photo});
+      status = res.status;
+      busy = false; close();
+      renderProgress();
+      showResult(spot, res);
+    }catch(err){
+      busy = false;
+      $('sendBtn').textContent = '送出打卡';
+      $('sendBtn').disabled = false; $('cancelBtn').disabled = false;
+      toast(err.message, true);
+    }
+  };
+}
+
+function showResult(spot, res){
+  let msg;
+  if(res.ai && res.ai.result === '符合') msg = `已收到第 ${spot.id} 站的照片，AI 初判有看到卡牌，等管理員確認後就會通過。`;
+  else if(res.ai && res.ai.result === '不符') msg = `已收到第 ${spot.id} 站的照片，但 AI 沒有在照片中看到對應的卡牌。請確認拍到完整卡牌；若確定有拍到，可等管理員確認，或按「重傳」換一張。`;
+  else msg = `已收到第 ${spot.id} 站的照片，等管理員確認。`;
+  $('statusBanner').innerHTML = `<div class="banner info">${esc(msg)}${res.replaced ? '（已取代上一張）' : ''}</div>`;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ============ 管理員 ============ */
+async function initAdmin(){
+  document.body.classList.add('is-admin');
+  $('adminTag').classList.remove('hidden');
+  $('admin').classList.remove('hidden');
+  adminKey = sessionStorage.getItem(ADMIN_SS_KEY) || '';
+  if(DEMO){ adminKey = 'demo'; renderAdmin(); return; }
+  if(adminKey){ try{ await apiGet('admin_list', {key:adminKey}); renderAdmin(); return; }catch(e){ adminKey = ''; } }
+  renderGate();
+}
+
+function renderGate(msg){
+  $('admin').innerHTML = `<div class="card gate"><h2>管理員登入</h2>
+    <div class="field"><input type="password" id="gateKey" placeholder="管理密碼" autocomplete="current-password"></div>
+    ${msg ? `<p class="muted" style="color:var(--berry);margin:0 0 10px">${esc(msg)}</p>` : ''}
+    <button class="btn" id="gateBtn">登入</button></div>`;
+  const go = async () => {
+    const k = $('gateKey').value;
+    if(!k) return;
+    $('gateBtn').disabled = true;
+    try{
+      await apiGet('admin_list', {key:k});
+      adminKey = k; sessionStorage.setItem(ADMIN_SS_KEY, k);
+      renderAdmin();
+    }catch(e){ renderGate(e.message); }
+  };
+  $('gateBtn').onclick = go;
+  $('gateKey').onkeydown = e => { if(e.key === 'Enter') go(); };
+}
+
+let adminTab = 'review', adminFilter = '待審核', adminRows = [], drawState = {list:[], winners:[]};
+const photoCache = {};
+
+function renderAdmin(){
+  $('admin').innerHTML = `<div class="tabs"><button data-t="review">照片審核</button><button data-t="draw">抽獎</button></div><div id="adminBody"></div>`;
+  $('admin').querySelectorAll('.tabs button').forEach(b => {
+    b.classList.toggle('on', b.dataset.t === adminTab);
+    b.onclick = () => { adminTab = b.dataset.t; renderAdmin(); };
+  });
+  if(adminTab === 'review') loadReview(); else renderDraw();
+}
+
+async function loadReview(){
+  $('adminBody').innerHTML = '<div class="empty"><span class="spin dark"></span></div>';
+  try{ adminRows = (await apiGet('admin_list', {key:adminKey})).rows; }
+  catch(e){ $('adminBody').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
+  renderReview();
+}
+
+function renderReview(){
+  const body = $('adminBody');
+  const cnt = s => adminRows.filter(r => r.status === s).length;
+  const filters = ['待審核', '通過', '退回', '全部'];
+  const list = adminRows.filter(r => r.status !== '已取代' && (adminFilter === '全部' || r.status === adminFilter));
+  body.innerHTML = `<div class="filters">${filters.map(f => `<button class="chip${adminFilter === f ? ' on' : ''}" data-f="${f}">${f}${f !== '全部' ? '（' + cnt(f) + '）' : ''}</button>`).join('')}</div>
+    ${list.length ? '' : '<div class="empty">沒有符合的資料</div>'}
+    <div id="rvList"></div>`;
+  body.querySelectorAll('.filters .chip').forEach(b => b.onclick = () => { adminFilter = b.dataset.f; renderReview(); });
+  const holder = $('rvList');
+  list.forEach(r => {
+    const aiCls = r.aiResult === '符合' ? 'ai-ok' : r.aiResult === '不符' ? 'ai-no' : 'ai-un';
+    const stCls = r.status === '通過' ? 'st-ok' : r.status === '退回' ? 'st-rej' : 'st-pend';
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `<div class="rv">
+      <button class="thumb" data-photo="${esc(r.photoId)}" aria-label="放大照片">載入中…</button>
+      <div class="rv-main">
+        <div><b>${esc(r.addr)}</b>　${esc(r.name)}</div>
+        <div class="rv-meta">${esc(r.spotName)}・${fmtTime(r.time)}</div>
+        <div><span class="ai ${aiCls}">AI：${esc(r.aiResult || '未檢查')}</span><span class="chip-st ${stCls}" style="margin:0">${esc(r.status)}</span></div>
+        ${r.aiReason ? `<div class="rv-meta">${esc(r.aiReason)}</div>` : ''}
+        ${r.note ? `<div class="rv-meta">備註：${esc(r.note)}</div>` : ''}
+      </div></div>
+      <div class="rv-actions">
+        ${r.status !== '通過' ? '<button class="btn" data-act="ok">通過</button>' : ''}
+        ${r.status !== '退回' ? '<button class="btn berry" data-act="rej">退回</button>' : ''}
+      </div>`;
+    holder.appendChild(el);
+    const thumb = el.querySelector('.thumb');
+    loadPhoto(r.photoId).then(url => {
+      if(url){ thumb.innerHTML = `<img src="${url}" alt="">`; thumb.onclick = () => showOverlay(url); }
+      else thumb.textContent = '無照片';
+    }).catch(() => { thumb.textContent = '載入失敗'; });
+    el.querySelectorAll('[data-act]').forEach(b => b.onclick = () => review(r, b.dataset.act === 'ok' ? '通過' : '退回', b));
+  });
+}
+
+async function loadPhoto(id){
+  if(photoCache[id]) return photoCache[id];
+  const j = await apiGet('admin_photo', {key:adminKey, id});
+  photoCache[id] = j.dataUrl;
+  return j.dataUrl;
+}
+function showOverlay(url){
+  const o = document.createElement('div');
+  o.className = 'overlay';
+  o.innerHTML = `<img src="${url}" alt="">`;
+  o.onclick = () => o.remove();
+  document.body.appendChild(o);
+}
+
+async function review(r, newStatus, btn){
+  let note = '';
+  if(newStatus === '退回'){
+    const n = prompt('退回原因（選填，只有管理員看得到）：', r.note || '');
+    if(n === null) return;
+    note = n;
+  }
+  btn.disabled = true;
+  try{
+    await apiPost('admin_review', {key:adminKey, row:r.row, status:newStatus, note});
+    r.status = newStatus; r.note = note;
+    toast('已設為「' + newStatus + '」');
+    renderReview();
+  }catch(e){ btn.disabled = false; toast(e.message, true); }
+}
+
+async function renderDraw(){
+  const body = $('adminBody');
+  body.innerHTML = `<div class="card"><h2>抽獎名單</h2>
+    <p class="muted" style="margin:0 0 12px">5 個地點全部「通過」的住戶，一戶一筆。</p>
+    <div id="drawInfo"><span class="spin dark"></span></div></div>
+    <div class="card" id="drawCard"></div>`;
+  try{ drawState.list = (await apiGet('admin_draw_list', {key:adminKey})).list; }
+  catch(e){ $('drawInfo').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
+  const list = drawState.list;
+  $('drawInfo').innerHTML = `<div class="prog-text" style="margin-bottom:10px">目前共 ${list.length} 戶符合資格</div>
+    ${list.length ? `<table><thead><tr><th>編號</th><th>門牌</th><th>姓名</th></tr></thead><tbody>${list.map(w => `<tr><td>${w.no}</td><td>${esc(w.addr)}</td><td>${esc(w.name)}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">還沒有住戶集滿 5 個地點</div>'}
+    <div style="margin-top:12px"><button class="btn ghost" id="exportList"${list.length ? '' : ' disabled'}>匯出名單 Excel</button></div>`;
+  $('exportList').onclick = () => exportXlsx([['抽獎編號','門牌','姓名'], ...list.map(w => [w.no, w.addr, w.name])], '聖誕抽獎名單');
+  renderDrawCard();
+}
+
+function renderDrawCard(){
+  const list = drawState.list, win = drawState.winners;
+  $('drawCard').innerHTML = `<h2>抽獎</h2>
+    <div class="row2 field"><input type="number" id="drawN" min="1" value="1" inputmode="numeric" aria-label="抽出戶數"><button class="btn berry" id="drawBtn"${list.length ? '' : ' disabled'}>抽出得獎戶</button></div>
+    <p class="muted" style="margin:0">抽獎結果會同時記錄在試算表的 DrawResult 工作表（含抽獎時間）。</p>
+    ${win.length ? `<table style="margin-top:12px"><thead><tr><th>名次</th><th>編號</th><th>門牌</th><th>姓名</th></tr></thead><tbody>${win.map((w,i) => `<tr><td>${i+1}</td><td>${w.no}</td><td>${esc(w.addr)}</td><td>${esc(w.name)}</td></tr>`).join('')}</tbody></table>
+    <div style="margin-top:12px"><button class="btn ghost" id="exportWin">匯出得獎名單 Excel</button></div>` : ''}`;
+  $('drawBtn').onclick = async () => {
+    const n = Math.floor(Number($('drawN').value));
+    if(!(n > 0)){ toast('請輸入大於 0 的整數', true); return; }
+    if(!confirm('確定要抽出 ' + n + ' 戶？結果會被記錄下來。')) return;
+    $('drawBtn').disabled = true;
+    try{
+      const r = await apiPost('admin_draw', {key:adminKey, n});
+      drawState.winners = r.winners;
+      renderDrawCard();
+    }catch(e){ $('drawBtn').disabled = false; toast(e.message, true); }
+  };
+  if($('exportWin')) $('exportWin').onclick = () => exportXlsx([['名次','抽獎編號','門牌','姓名'], ...win.map((w,i) => [i+1, w.no, w.addr, w.name])], '聖誕得獎名單');
+}
+
+let _xlsxLoading = null;
+function ensureXLSX(){
+  if(window.XLSX) return Promise.resolve();
+  if(_xlsxLoading) return _xlsxLoading;
+  _xlsxLoading = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = resolve;
+    s.onerror = () => { _xlsxLoading = null; reject(new Error('Excel 匯出元件載入失敗')); };
+    document.head.appendChild(s);
+  });
+  return _xlsxLoading;
+}
+async function exportXlsx(rows, name){
+  try{
+    await ensureXLSX();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = rows[0].map(() => ({wch:16}));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, name);
+    XLSX.writeFile(wb, name + '.xlsx');
+  }catch(e){ toast(e.message, true); }
+}
+
+/* ============ 啟動 ============ */
+if(DEMO) $('demoBanner').classList.remove('hidden');
+if(IS_ADMIN) initAdmin(); else initResident();
+</script>
+</body>
+</html>
