@@ -206,6 +206,18 @@ header{background:
   linear-gradient(160deg,#1B6B3A 0%,#0F3D21 100%) fixed!important;box-shadow:none!important}
 body.is-admin header{background:var(--bg)!important;box-shadow:0 1px 0 var(--line)!important}
 body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
+
+.btn3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.btn3 .btn{height:46px;font-size:15px;padding:0}
+.btn.cancel{background:#fff;color:var(--berry);border:1.5px solid var(--berry)}
+.sheet h3{margin-bottom:10px}
+
+.progress i.grn{background:linear-gradient(90deg,#16A34A,#22C55E);box-shadow:0 0 8px rgba(34,197,94,.7)}
+.progress i.red{background:linear-gradient(90deg,#DC2626,#EF4444);box-shadow:0 0 8px rgba(239,68,68,.65)}
+.st-tag{font-size:14px;font-weight:700;margin-left:4px}
+.st-pend-t{color:var(--amber)}
+.st-rej-t{color:var(--berry)}
+.spot-hint{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -247,7 +259,7 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
     <section class="hero">
           <p class="hero-eyebrow">MERRY CHRISTMAS</p>
       <h2>猜猜看，卡牌藏在哪？</h2>
-      <p><b class="hero-date" id="heroDate">12/01 ~ 12/25</b> 社區裡藏著 5 張聖誕打卡卡牌，看線索找到地點，拍下來就能參加抽獎。</p>
+      <p><b class="hero-date" id="heroDate">12/01 ~ 12/25</b> 社區裡藏著 5 張聖誕打卡卡牌，看線索找到地點，拿著卡牌和自己一起拍照上傳，就能參加抽獎。</p>
       <svg class="hero-tree" viewBox="0 0 120 150" aria-hidden="true">
         <polygon points="60,6 66,18 80,18 69,27 73,41 60,33 47,41 51,27 40,18 54,18" fill="#F2B94B"/>
         <path d="M60 22 L88 62 H74 L98 98 H80 L110 136 H10 L40 98 H22 L46 62 H32 Z" fill="#22C55E"/>
@@ -262,10 +274,11 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
     <div class="card">
       <h2>活動說明</h2>
       <ol class="rules">
-        <li>每一站都有一句線索，猜出地點後到現場找「聖誕打卡卡牌」並拍照上傳。</li>
+        <li>每一站都有一句線索，猜出地點後到現場，找到那一站的「聖誕打卡卡牌」。</li>
+        <li>拿著卡牌，和自己（或家人）一起拍照上傳，卡牌上的站別和人都要拍清楚。</li>
         <li>5 個地點都通過審核，才會列入聖誕節抽獎名單。</li>
         <li>每一戶每個地點只有一張有效照片（審核中可重傳）。</li>
-        <li>請只拍卡牌，避免拍到人臉或車牌。</li>
+        <li>照片只用於活動審核，活動結束後會刪除。</li>
       </ol>
     </div>
 
@@ -381,7 +394,7 @@ async function mockPost(event, p){
     mock.rows.forEach(r => { if(r.addrKey === key && r.spotId === spot.id && (r.status === '待審核' || r.status === '通過')){ r.status = '已取代'; replaced = true; } });
     const id = 'photo' + (mock.seq++);
     mock.photos[id] = p.photo;
-    const ai = spot.id % 2 ? {result:'符合', reason:'看得到第 '+spot.id+' 站的聖誕打卡卡牌'} : {result:'無法判斷', reason:'照片偏暗，看不清楚卡牌文字'};
+    const ai = spot.id % 2 ? {result:'符合', reason:'看得到有人拿著第 '+spot.id+' 站的聖誕打卡卡牌'} : {result:'無法判斷', reason:'照片偏暗，看不清楚卡牌文字'};
     mock.rows.push({row:mock.rows.length+2, time:Date.now(), addrKey:key, addr:fullAddr(a), name:p.name, spotId:spot.id, spotName:spot.name,
       photoId:id, aiResult:ai.result, aiReason:ai.reason, status:'待審核', note:''});
     const res = mockStatusRes(a); res.ai = ai; res.replaced = replaced; return res;
@@ -491,24 +504,25 @@ function renderProgress(){
   const st = status || {};
   const spots = cfg.spots;
   const ok = spots.filter(s => st[s.id] && st[s.id].status === '通過').length;
-  const bars = spots.map(s => { const x = st[s.id] ? st[s.id].status : ''; return `<i class="${x === '通過' ? 'ok' : x === '待審核' ? 'pend' : ''}"></i>`; }).join('');
+  // 進度條：已打卡（審核中或已通過）的格子依序亮 綠・紅・綠・紅・綠，未打卡為灰色
+  const bars = spots.map((s, i) => { const x = st[s.id] ? st[s.id].status : ''; return `<i class="${(x === '通過' || x === '待審核') ? (i % 2 ? 'red' : 'grn') : ''}"></i>`; }).join('');
   const rows = spots.map(s => {
     const x = st[s.id] || {status:'', attempts:0};
     // 圓圈：尚未打卡（紅）→ 打卡；已打卡（綠）→ 重新打卡；通過後也可重新打卡（傳錯照片時用，新照片會重新審核）
     let badge = '尚未打卡', done = false, chip = '', btn = '打卡';
     if(x.status === '通過'){ badge = '已打卡'; done = true; btn = '重新打卡'; }
-    else if(x.status === '待審核'){ badge = '已打卡'; done = true; chip = '<span class="chip-st st-pend">審核中</span>'; btn = '重新打卡'; }
-    else if(x.status === '退回'){ chip = '<span class="chip-st st-rej">未通過，請重拍</span>'; }
+    else if(x.status === '待審核'){ badge = '已打卡'; done = true; chip = '<span class="st-tag st-pend-t">（審核中）</span>'; btn = '重新打卡'; }
+    else if(x.status === '退回'){ chip = '<span class="st-tag st-rej-t">（審核未通過）</span>'; }
     return `<div class="spot${x.status === '通過' ? ' ok' : ''}">
       <div class="spot-head">
         <div class="spot-no${done ? ' done' : ''}">${badge}</div>
-        <div class="spot-main"><div class="spot-name">第 ${s.id} 站</div><div class="spot-hint">${esc(s.hint || '')}</div>${chip}</div>
+        <div class="spot-main"><div class="spot-name">第 ${s.id} 站${chip}</div><div class="spot-hint">${esc(s.hint || '')}</div></div>
       </div>
       <img class="spot-img" src="images/spot${s.id}.jpg" alt="第 ${s.id} 站的卡牌" loading="lazy" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='images/spot${s.id}.svg'}else{this.remove()}">
       ${btn && cfg.open ? `<button class="btn" data-spot="${s.id}">${btn}</button>` : ''}
     </div>`;
   }).join('');
-  box.innerHTML = `<h2>打卡進度</h2><div class="progress">${bars}</div><div class="prog-text">已通過 ${ok} / ${spots.length}</div>
+  box.innerHTML = `<h2>打卡進度</h2><div class="progress">${bars}</div>
     <div style="margin-top:8px">${rows}</div>
     ${ok === spots.length ? '<div class="done-banner">5 個地點全部通過，已列入抽獎名單！</div>' : ''}`;
   box.querySelectorAll('button[data-spot]').forEach(b => b.onclick = () => openUpload(Number(b.dataset.spot)));
@@ -518,7 +532,7 @@ function maybeOpenPending(){
   if(pendingSpot && me && cfg && cfg.open && cfg.spots.some(s => s.id === pendingSpot)){
     const sid = pendingSpot; pendingSpot = 0;
     const x = status && status[sid];
-    openUpload(sid);
+    openUpload(sid, false);
   }
 }
 
@@ -543,70 +557,79 @@ function compressImage(file){
   });
 }
 
-function openUpload(spotId){
+function openUpload(spotId, gesture = true){
   if(!me || !cfg || !cfg.open) return;
   const spot = cfg.spots.find(s => s.id === spotId);
   if(!spot) return;
-  let photo = '', busy = false;
+  // 按下「打卡」直接開相機；拍完／選完照片才跳出確認視窗
+  const inp = pickInput();
+  inp.onchange = async e => {
+    const f = e.target.files[0]; e.target.value = '';
+    if(!f) return;
+    try{ showUploadDialog(spot, await compressImage(f)); }
+    catch(err){ toast(err.message, true); }
+  };
+  if(gesture) inp.click(); else showUploadDialog(spot, '');
+}
+
+function pickInput(){
+  let inp = $('photoInput');
+  if(!inp){
+    inp = document.createElement('input');
+    inp.type = 'file'; inp.id = 'photoInput'; inp.accept = 'image/*'; inp.setAttribute('capture', 'environment');
+    inp.className = 'hidden';
+    document.body.appendChild(inp);
+  }
+  return inp;
+}
+
+function showUploadDialog(spot, photo){
+  let busy = false;
   const root = $('sheetRoot');
-  root.innerHTML = `<div class="sheet-mask" id="sheetMask"><div class="sheet" role="dialog" aria-modal="true">
-    <h3>第 ${spot.id} 站</h3>
-    <div class="who">${esc(DONG_MAP[me.hao])}棟（${fullAddr(me)}）　${esc(me.name)}</div>
-    <p class="muted" style="margin:0">請到現場拍下「聖誕打卡卡牌」，要拍到完整的卡牌。線索：${esc(spot.hint || '')}</p>
-    <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden">
-    <button class="pick" id="pickBtn" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      <span>拍照或選擇照片</span>
-    </button>
-    <img id="preview" class="preview hidden" alt="照片預覽">
-    <div class="row2">
-      <button class="btn ghost" id="cancelBtn" type="button">取消</button>
-      <button class="btn" id="sendBtn" type="button" disabled>送出打卡</button>
+  root.innerHTML = `<div class="sheet-mask" id="sheetMask"><div class="sheet" role="dialog" aria-modal="true" aria-label="照片">
+    <h3>照片</h3>
+    <img id="preview" class="preview${photo ? '' : ' hidden'}" alt="照片預覽"${photo ? ` src="${photo}"` : ''}>
+    <div class="btn3">
+      <button class="btn cancel" id="cancelBtn" type="button">取消</button>
+      <button class="btn ghost" id="retakeBtn" type="button">重新拍照</button>
+      <button class="btn" id="sendBtn" type="button"${photo ? '' : ' disabled'}>送出</button>
     </div>
   </div></div>`;
   document.body.style.overflow = 'hidden';
   const close = () => { if(busy) return; root.innerHTML = ''; document.body.style.overflow = ''; };
   $('cancelBtn').onclick = close;
   $('sheetMask').addEventListener('click', e => { if(e.target.id === 'sheetMask') close(); });
-  $('pickBtn').onclick = () => $('photoInput').click();
-  $('photoInput').onchange = async e => {
-    const f = e.target.files[0]; e.target.value = '';
-    if(!f) return;
-    try{
-      photo = await compressImage(f);
-      $('preview').src = photo;
-      $('preview').classList.remove('hidden');
-      $('pickBtn').querySelector('span').textContent = '重新拍照或選擇';
-      $('sendBtn').disabled = false;
-    }catch(err){ toast(err.message, true); }
+  $('retakeBtn').onclick = () => {
+    const inp = pickInput();
+    inp.onchange = async e => {
+      const f = e.target.files[0]; e.target.value = '';
+      if(!f) return;
+      try{
+        photo = await compressImage(f);
+        $('preview').src = photo;
+        $('preview').classList.remove('hidden');
+        $('sendBtn').disabled = false;
+      }catch(err){ toast(err.message, true); }
+    };
+    inp.click();
   };
   $('sendBtn').onclick = async () => {
     if(!photo || busy) return;
     busy = true;
-    $('sendBtn').innerHTML = '<span class="spin"></span>上傳與 AI 初審中…';
-    $('sendBtn').disabled = true; $('cancelBtn').disabled = true;
+    $('sendBtn').innerHTML = '<span class="spin"></span>送出中…';
+    $('sendBtn').disabled = true; $('cancelBtn').disabled = true; $('retakeBtn').disabled = true;
     try{
       const res = await apiPost('submit', {hao:me.hao, lou:me.lou, zhi:me.zhi, name:me.name, spotId:spot.id, photo});
       status = res.status;
       busy = false; close();
       renderProgress();
-      showResult(spot, res);
     }catch(err){
       busy = false;
-      $('sendBtn').textContent = '送出打卡';
-      $('sendBtn').disabled = false; $('cancelBtn').disabled = false;
+      $('sendBtn').textContent = '送出';
+      $('sendBtn').disabled = false; $('cancelBtn').disabled = false; $('retakeBtn').disabled = false;
       toast(err.message, true);
     }
   };
-}
-
-function showResult(spot, res){
-  let msg;
-  if(res.ai && res.ai.result === '符合') msg = `已收到第 ${spot.id} 站的照片，AI 初判有看到卡牌，等管理員確認後就會通過。`;
-  else if(res.ai && res.ai.result === '不符') msg = `已收到第 ${spot.id} 站的照片，但 AI 沒有在照片中看到對應的卡牌。請確認拍到完整卡牌；若確定有拍到，可等管理員確認，或按「重傳」換一張。`;
-  else msg = `已收到第 ${spot.id} 站的照片，等管理員確認。`;
-  $('statusBanner').innerHTML = `<div class="banner info">${esc(msg)}${res.replaced ? '（已取代上一張）' : ''}</div>`;
-  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 /* ============ 管理員 ============ */
