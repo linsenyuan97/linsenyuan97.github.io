@@ -318,6 +318,12 @@ header{background:linear-gradient(95deg,#0F3D21 0%,#1B6B3A 50%,#9B1C1C 100%)!imp
 .clear-dialog h3{margin:0 0 16px;font-size:18px;font-weight:900;color:var(--ink);line-height:1.5}
 .clear-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .clear-btns .btn{height:46px}
+.reject-dialog{max-width:380px;text-align:left}
+.reject-dialog h3{margin-bottom:2px}
+.rj-sub{margin:0 0 10px;font-size:12px;color:var(--ink-soft)}
+.rj-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.rj-chips .chip{flex:0 0 auto;min-width:0;padding:6px 10px;font-size:13px;font-weight:700}
+.reject-dialog input{margin-bottom:12px}
 @media (max-width:380px){.hdr-deco{display:none}}
 
 .brand-icon{transform:none!important;width:34px!important;height:38px!important}
@@ -329,6 +335,30 @@ header{background:linear-gradient(95deg,#0F3D21 0%,#1B6B3A 50%,#9B1C1C 100%)!imp
   75%{rotate:14deg;filter:drop-shadow(0 0 8px rgba(242,185,75,.95))}
 }
 @media (prefers-reduced-motion:reduce){.brand-icon.tree-hint{animation:none}}
+
+.hdr-tree-box{position:relative;display:inline-flex;align-items:center;cursor:pointer}
+.tree-badge{
+  position:absolute;
+  top:-5px;
+  right:-8px;
+  background:#EF4444;
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  line-height:1;
+  padding:2.5px 5.5px;
+  border-radius:10px;
+  border:1.5px solid #fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
+  white-space:nowrap;
+  pointer-events:none;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  transition:all .2s ease;
+  z-index:2;
+}
+.tree-badge.done{
+  background:#16A34A;
+}
 #btnHdrTree{cursor:pointer;transition:transform .2s ease,filter .2s ease}
 #btnHdrTree:hover,#btnHdrTree:active{transform:scale(1.15);filter:drop-shadow(0 0 6px #F59E0B)}
 #btnHdrSanta{cursor:pointer;transition:filter .2s ease}
@@ -402,6 +432,8 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .stamp-cell.pend .sc-st{color:var(--amber)}
 .stamp-cell.rej{border-color:#FCA5A5;background:var(--berry-light)}
 .stamp-cell.rej .sc-st{color:var(--berry)}
+.stamp-cell.rej .sc-st.sc-reason{display:block;padding:4px 8px;border-radius:8px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E}
+.rej-reason{margin:-2px 0 2px;padding:10px 12px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:14px;font-weight:700;line-height:1.55}
 .stamp-cell.ok{border-color:var(--pine);background:var(--pine-light)}
 .stamp{align-self:flex-end;width:44px;height:44px;margin:-2px 2px 0 0;border:3px solid var(--berry);border-radius:50%;color:var(--berry);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;transform:rotate(-14deg)}
 
@@ -424,6 +456,24 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .gift .p4{--tx:-34px;--ty:-66px;animation-delay:1.35s}
 .gift .p5{--tx:36px;--ty:-68px;animation-delay:1.45s}
 @keyframes giftPop{0%{opacity:0;transform:translate(0,24px) scale(.3)}50%{opacity:1}100%{opacity:1;transform:translate(var(--tx),var(--ty)) scale(1)}}
+/* 金光爆發動畫 (Glow Effect) */
+.gift-glow-wrap{transform-origin:100px 98px;animation:giftGlowBurst 2s .55s ease-out forwards;opacity:0;pointer-events:none}
+@keyframes giftGlowBurst{
+  0%{opacity:0;transform:scale(.2)}
+  22%{opacity:1;transform:scale(1.4);filter:drop-shadow(0 0 16px #FDE68A)}
+  55%{opacity:.75;transform:scale(1.2);filter:drop-shadow(0 0 10px #F59E0B)}
+  100%{opacity:.3;transform:scale(1.05)}
+}
+
+/* 金色星光彩帶 (Confetti) */
+.done-confetti-box{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:9999;transition:opacity .6s ease}
+.confetti-item{position:absolute;top:-20px;pointer-events:none;animation:confettiFall linear forwards}
+@keyframes confettiFall{
+  0%{transform:translate3d(0,0,0) rotateX(0deg) rotateZ(0deg);opacity:1}
+  75%{opacity:1}
+  100%{transform:translate3d(var(--drift),105vh,0) rotateX(var(--rotX)) rotateZ(var(--rotZ));opacity:0}
+}
+
 .done-panel.confirm{padding-top:22px}
 .confirm-icon{font-size:46px;line-height:1}
 .candy-guide{margin:12px 0 2px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(242,185,75,.5);text-align:left;font-size:14px;line-height:1.6;color:#F1F5F2}
@@ -809,7 +859,10 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 </div>
 <header>
   <div class="header-inner">
-    <svg class="brand-icon" id="btnHdrTree" viewBox="0 0 40 44" aria-label="查看任務進度" role="button" tabindex="0"><polygon points="20,1 22.5,7 29,7 23.8,11 25.8,17 20,13.5 14.2,17 16.2,11 11,7 17.5,7" fill="#F2B94B"/><path d="M20 8L31 22H26L34 32H28L38 42H2L12 32H6L14 22H9Z" fill="#22C55E"/><path d="M20 8L31 22H26L34 32H28L38 42H20Z" fill="#16A34A"/><rect x="17" y="41" width="6" height="3" fill="#7A4A24"/><circle cx="16" cy="28" r="2" fill="#EF4444"/><circle cx="24" cy="34" r="2" fill="#F2B94B"/><circle cx="13" cy="38" r="2" fill="#60A5FA"/></svg>
+    <div class="hdr-tree-box" id="hdrTreeBox" aria-label="查看任務進度" role="button" tabindex="0">
+      <svg class="brand-icon" id="btnHdrTree" viewBox="0 0 40 44" aria-label="查看任務進度" role="button" tabindex="0"><polygon points="20,1 22.5,7 29,7 23.8,11 25.8,17 20,13.5 14.2,17 16.2,11 11,7 17.5,7" fill="#F2B94B"/><path d="M20 8L31 22H26L34 32H28L38 42H2L12 32H6L14 22H9Z" fill="#22C55E"/><path d="M20 8L31 22H26L34 32H28L38 42H20Z" fill="#16A34A"/><rect x="17" y="41" width="6" height="3" fill="#7A4A24"/><circle cx="16" cy="28" r="2" fill="#EF4444"/><circle cx="24" cy="34" r="2" fill="#F2B94B"/><circle cx="13" cy="38" r="2" fill="#60A5FA"/></svg>
+      <span class="tree-badge" id="treeBadge" style="display:none">0/4</span>
+    </div>
     <h1 class="brand-title">林森苑聖誕尋寶大作戰</h1>
     <svg class="hdr-sleigh" id="btnHdrSanta" aria-label="查看住戶資料與活動倒數" role="button" tabindex="0" viewBox="15 28 505 170">
       <defs>
@@ -1149,7 +1202,7 @@ function mockStatus(key){
   mock.rows.forEach(r => {
     if(r.addrKey !== key || !st[r.spotId] || r.status === '已取代') return;
     const e = st[r.spotId]; e.attempts++;
-    if(e.status !== '通過') e.status = r.status;
+    if(e.status !== '通過'){ e.status = r.status; e.reason = r.status === '退回' ? (r.note || '') : ''; }
   });
   return st;
 }
@@ -1586,6 +1639,7 @@ function showHuntInfoModal(){
 }
 
 function renderResidentFlow(){
+  updateHeaderTreeBadge();
   const hero = document.querySelector('#resident .hero');
   if(hero) hero.style.display = 'none';
   const staticRules = document.querySelector('#rulesCard') || document.querySelector('#resident > .card:not(#idCard):not(#progressCard):not(.countdown-card)');
@@ -2052,7 +2106,8 @@ async function initResident(){
   renderResidentFlow();
 
   if($('cdPill')) $('cdPill').onclick = () => showIntroDialog();
-  if($('btnHdrTree')) $('btnHdrTree').onclick = () => showTreeProgressDialog();
+  if($('hdrTreeBox')) $('hdrTreeBox').onclick = () => showTreeProgressDialog();
+  if($('btnHdrTree')) $('btnHdrTree').onclick = (e) => { e.stopPropagation(); showTreeProgressDialog(); };
   if($('btnHdrSanta')) $('btnHdrSanta').onclick = () => showSantaAccountDialog();
 
   if(me) await refreshStatus();
@@ -2213,10 +2268,15 @@ function propSvg(taskId){
   return '';
 }
 
+// 照片被退回時，在任務卡上顯示物業填的原因，住戶才知道要怎麼重拍
+function rejectReasonHtml(reason){
+  return `<div class="rej-reason">⚠ 未通過原因：${esc(reason || '照片不符合任務要求，請重新拍照上傳')}</div>`;
+}
+
 const STATE_UI = {
   ok:   {badge:'已通過', cls:'done', chip:''},
   pend: {badge:'審核中', cls:'pend', chip:'<span class="st-tag st-pend-t">（審核中）</span>'},
-  rej:  {badge:'未通過', cls:'', chip:'<span class="st-tag st-rej-t">（審核未通過，請重拍）</span>'},
+  rej:  {badge:'未通過', cls:'', chip:'<span class="st-tag st-rej-t">（審核未通過）</span>'},
   part: {badge:'進行中', cls:'pend', chip:''},
   '':   {badge:'尚未打卡', cls:'', chip:''}
 };
@@ -2263,7 +2323,28 @@ function buildTaskPreviewHtml(){
   <div style="margin-top:4px">${blocks}</div>`;
 }
 
+
+function updateHeaderTreeBadge(){
+  const badge = $('treeBadge');
+  if(!badge) return;
+  if(!me){
+    badge.style.display = 'none';
+    return;
+  }
+  const tasks = (cfg && cfg.tasks) || TASKS_DEMO;
+  const need = (cfg && cfg.tasksNeed) || 4;
+  const st = status || {};
+  const states = tasks.map(t => taskState(t, st));
+  const okN = states.filter(s => s.state === 'ok').length;
+  const done = okN >= need;
+  
+  badge.textContent = okN + '/' + need;
+  badge.classList.toggle('done', done);
+  badge.style.display = 'inline-flex';
+}
+
 function renderProgress(){
+  updateHeaderTreeBadge();
   const box = $('progressCard');
   if(!cfg) return;
   box.classList.remove('hidden');
@@ -2304,7 +2385,8 @@ function renderProgress(){
         const x = (st[sp.id] || {}).status || '';
         const c = x === '通過' ? 'ok' : x === '待審核' ? 'pend' : x === '退回' ? 'rej' : '';
         const mine = c === 'ok' || c === 'pend' ? getMyPhoto(sp.id) : '';
-        const stTag = c === 'pend' ? '<em class="sc-st">審核中</em>' : c === 'rej' ? '<em class="sc-st">審核未通過，請重拍</em>' : '';
+        const rs = (st[sp.id] || {}).reason;
+        const stTag = c === 'pend' ? '<em class="sc-st">審核中</em>' : c === 'rej' ? `<em class="sc-st sc-reason">⚠ 未通過原因：${esc(rs || '請重新拍照上傳')}</em>` : '';
         const action = c === 'ok' ? '<span class="stamp">已集</span>'   // 已集（通過）的格子不能再上傳
           : cfg.open ? `<button class="btn" type="button" data-spot="${sp.id}">${c === 'pend' ? '重新打卡' : c === 'rej' ? '重新拍照' : '打卡'}</button>` : '';
         return `<div class="stamp-cell ${c}">
@@ -2333,6 +2415,7 @@ function renderProgress(){
         <div class="spot-no ${ui.cls}">${ui.badge}</div>
         <div class="spot-main"><div class="spot-name">${title}${ui.chip}</div><div class="spot-hint">${esc(t.desc)}</div></div>
       </div>
+      ${x === '退回' ? rejectReasonHtml((st[t.id] || {}).reason) : ''}
       <div class="spot-scene${scene ? '' : ' plain'}" aria-label="${title}">
         ${scene ? `<img class="spot-img" src="${scene}" alt="" loading="lazy" onerror="this.remove()">` : ''}
         <div class="spot-card r${t.id % 2 ? 'a' : 'b'}${mine ? ' mine' : ''}">${mine ? `<img src="${mine}" alt="${title} 的打卡照片">` : propSvg(t.id)}</div>
@@ -2391,6 +2474,19 @@ function santaSvg(){
   return src.outerHTML.replace(/id="([^"]+)"/g, 'id="$1-dn"').replace(/url\(#([^)]+)\)/g, 'url(#$1-dn)').replace('class="warmup-sleigh"', 'class="done-sleigh"');
 }
 const GIFT_SVG = `<svg class="gift" viewBox="0 0 200 190" aria-hidden="true">
+  <defs>
+    <radialGradient id="giftGlowGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFBEB" stop-opacity="0.95"/>
+      <stop offset="30%" stop-color="#FDE68A" stop-opacity="0.85"/>
+      <stop offset="65%" stop-color="#F59E0B" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g class="gift-glow-wrap">
+    <ellipse cx="100" cy="96" rx="46" ry="22" fill="url(#giftGlowGrad)"/>
+    <polygon points="100,96 50,22 150,22" fill="url(#giftGlowGrad)" opacity="0.5"/>
+    <polygon points="100,96 75,10 125,10" fill="url(#giftGlowGrad)" opacity="0.65"/>
+  </g>
   <g class="gift-pop">
     <g class="p p1"><rect x="86" y="74" width="28" height="14" rx="7" fill="#EF4444"/><path d="M86 81l-8-6v12zM114 81l8-6v12z" fill="#FCA5A5"/></g>
     <path class="p p2" d="M100 62l6 13 14 2-10 9 3 14-13-7-13 7 3-14-10-9 14-2z" fill="#F2B94B"/>
@@ -2406,6 +2502,66 @@ const GIFT_SVG = `<svg class="gift" viewBox="0 0 200 190" aria-hidden="true">
     <path d="M100 80c-14-22-38-18-30-4 4 6 18 6 30 4z" fill="#F2B94B"/><path d="M100 80c14-22 38-18 30-4-4 6-18 6-30 4z" fill="#F2B94B"/>
   </g>
 </svg>`;
+
+
+function fireDoneEffects(mask){
+  // 1. 手機微震動 (Haptic Feedback) - 在盒蓋彈開瞬間觸發
+  setTimeout(() => {
+    try {
+      if('vibrate' in navigator) navigator.vibrate([35, 45, 55]);
+    } catch(e){}
+  }, 550);
+
+  // 2. 金色星光彩帶飄落 (Confetti) 2.5 秒
+  const box = document.createElement('div');
+  box.className = 'done-confetti-box';
+  mask.appendChild(box);
+
+  const colors = ['#F59E0B', '#FDE68A', '#EF4444', '#10B981', '#FFFFFF', '#60A5FA'];
+  const symbols = ['★', '✦', '🍬', '•', ''];
+  const count = 42;
+
+  for(let i = 0; i < count; i++){
+    const el = document.createElement('span');
+    el.className = 'confetti-item';
+    const sym = symbols[Math.floor(Math.random() * symbols.length)];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const left = (Math.random() * 92 + 4).toFixed(1);
+    const dur = (Math.random() * 0.9 + 1.8).toFixed(2);
+    const delay = (Math.random() * 0.7).toFixed(2);
+    const drift = ((Math.random() - 0.5) * 160).toFixed(0) + 'px';
+    const rotX = (Math.random() * 720).toFixed(0) + 'deg';
+    const rotZ = (Math.random() * 720).toFixed(0) + 'deg';
+
+    el.style.left = left + '%';
+    el.style.animationDuration = dur + 's';
+    el.style.animationDelay = delay + 's';
+    el.style.setProperty('--drift', drift);
+    el.style.setProperty('--rotX', rotX);
+    el.style.setProperty('--rotZ', rotZ);
+
+    if(sym){
+      el.textContent = sym;
+      el.style.fontSize = (Math.random() * 8 + 12).toFixed(0) + 'px';
+      el.style.color = color;
+      el.style.textShadow = '0 0 6px ' + color;
+    } else {
+      const w = (Math.random() * 5 + 6).toFixed(0) + 'px';
+      const h = (Math.random() * 8 + 10).toFixed(0) + 'px';
+      el.style.width = w;
+      el.style.height = h;
+      el.style.background = color;
+      el.style.borderRadius = (Math.random() > 0.5 ? '2px' : '50%');
+    }
+    box.appendChild(el);
+  }
+
+  // 2.5 秒後淡出並自 DOM 移除
+  setTimeout(() => {
+    box.style.opacity = '0';
+    setTimeout(() => box.remove(), 600);
+  }, 2500);
+}
 
 function showDoneModal(view){
   const old = $('doneMask'); if(old) old.remove();
@@ -2431,6 +2587,7 @@ function showDoneModal(view){
     mask.querySelector('.done-x').onclick = close;
     $('doneLater').onclick = close;
     $('doneClaim').onclick = async e => { if(await checkCandyBeforeClaim(e.currentTarget)) renderConfirm(); else close(); };
+    fireDoneEffects(mask);
   };
 
   const renderConfirm = () => {
@@ -2919,10 +3076,47 @@ function openViewer(rowNo){
   draw();
 }
 
+// 「未通過」時填原因：點常用原因或自己輸入；原因會顯示在住戶的任務卡上，讓住戶知道怎麼重拍
+const REJECT_REASONS = [
+  '看不到活動手牌',
+  '照片太暗或太模糊，看不清楚',
+  '看不到聖誕信物',
+  '拍攝地點不符合任務說明',
+  '看不到紅色或綠色的服飾配件',
+  '看不到手寫祝福文字',
+  '不是專用塗色畫紙'
+];
+function askRejectReason(r){
+  return new Promise(resolve => {
+    const mask = document.createElement('div');
+    mask.className = 'sheet-mask clear-mask';
+    mask.innerHTML = `<div class="clear-dialog reject-dialog" role="dialog" aria-modal="true" aria-labelledby="rjTitle">
+        <h3 id="rjTitle">未通過的原因</h3>
+        <p class="rj-sub">住戶會在任務卡上看到這段文字</p>
+        <div class="rj-chips">${REJECT_REASONS.map(t => `<button type="button" class="chip" data-r="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+        <input type="text" id="rjInput" maxlength="100" placeholder="或自己輸入原因" value="${esc(r.note || '')}">
+        <div class="clear-btns">
+          <button type="button" class="btn ghost" id="rjCancel">取消</button>
+          <button type="button" class="btn berry" id="rjOk">確定未通過</button>
+        </div>
+      </div>`;
+    document.body.appendChild(mask);
+    const input = mask.querySelector('#rjInput');
+    const done = v => { mask.remove(); resolve(v); };
+    mask.querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+      input.value = b.dataset.r;
+      mask.querySelectorAll('[data-r]').forEach(x => x.classList.toggle('on', x === b));
+    });
+    mask.querySelector('#rjCancel').onclick = () => done(null);
+    mask.onclick = e => { if(e.target === mask) done(null); };
+    mask.querySelector('#rjOk').onclick = () => done(input.value.trim());
+  });
+}
+
 async function review(r, newStatus, btn){
   let note = '';
   if(newStatus === '退回'){
-    const n = prompt('未通過原因（選填，只有管理員看得到）：', r.note || '');
+    const n = await askRejectReason(r);
     if(n === null) return false;
     note = n;
   }
