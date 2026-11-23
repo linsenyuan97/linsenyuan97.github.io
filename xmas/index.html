@@ -41,6 +41,7 @@ main{max-width:640px;margin:0 auto;padding:16px 16px calc(32px + env(safe-area-i
 .banner.warn{background:var(--amber-light);color:#7C2D12}
 .banner.demo{background:#E0E7FF;color:#312E81}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:16px;margin-bottom:14px}
+.card:empty{display:none!important}
 h2{font-size:16px;font-weight:900;margin:0 0 10px;color:var(--pine-dark)}
 .muted{color:var(--ink-soft);font-size:13px;line-height:1.6}
 .rules{margin:0;padding-left:18px;font-size:13px;color:var(--ink-soft);line-height:1.8}
@@ -89,7 +90,7 @@ select:focus,input:focus{outline:none;border-color:var(--pine)}
 .done-banner{background:var(--pine);color:#fff;border-radius:var(--radius-sm);padding:14px;font-weight:900;text-align:center;margin-top:12px}
 
 /* 上傳 sheet */
-.sheet-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:flex;align-items:flex-end;justify-content:center}
+.sheet-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:#fff;width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));max-height:92dvh;overflow-y:auto}
 .sheet h3{margin:0 0 4px;font-size:19px;font-weight:900;color:var(--pine-dark)}
 .pick{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;min-height:150px;border:2px dashed var(--pine);border-radius:14px;background:var(--pine-light);color:var(--pine-dark);font-weight:700;font-size:15px;margin:12px 0}
@@ -100,7 +101,7 @@ select:focus,input:focus{outline:none;border-color:var(--pine)}
 .spin.dark{border-color:rgba(20,83,45,.25);border-top-color:var(--pine)}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:120;background:rgba(15,61,33,.94);color:#fff;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:700;max-width:90%;text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:10005;background:rgba(15,61,33,.94);color:#fff;padding:12px 20px;border-radius:100px;font-size:14px;font-weight:700;max-width:90%;text-align:center}
 .toast.bad{background:rgba(153,27,27,.95)}
 
 /* 管理員 */
@@ -201,12 +202,55 @@ header::after{content:"";position:absolute;left:0;right:0;top:100%;height:14px;p
    radial-gradient(circle at 58px 8px,#60A5FA 0 3.5px,transparent 4.5px) 0 0/64px 14px;
   filter:drop-shadow(0 0 3px rgba(255,255,255,.9));animation:twinkle 2.4s ease-in-out infinite alternate}
 @keyframes twinkle{from{opacity:1}to{opacity:.55}}
-body{background:radial-gradient(circle at 85% 0%,rgba(242,185,75,.28),transparent 45%),linear-gradient(160deg,#1B6B3A 0%,#0F3D21 100%) fixed #14532D}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
-  background:radial-gradient(circle,#fff 0 1.3px,transparent 2px) 0 0/46px 46px,radial-gradient(circle,#fff 0 1px,transparent 1.8px) 23px 23px/46px 46px}
+/* ===== 聖誕夜背景（60% 深夜綠／30% 象牙白卡片／10% 聖誕紅與金色點綴） =====
+   ・深夜綠：上方近黑的墨綠 → 下方松綠，像聖誕夜的天空
+   ・暖色光點：零星的金色、紅色模糊光暈，像遠處窗戶或燈串失焦的光（紅色只當點綴，不和綠色漸層混合）
+   ・三層雪點：大小、亮度、間距都不同，看起來有遠有近，不像整齊的布紋
+   全部用 CSS 畫，不需額外圖片；放在 position:fixed 的圖層上，iPhone 也不會跑位 */
+:root{
+  --xmas-night:
+    radial-gradient(circle at 14% 18%,rgba(242,185,75,.30),transparent 9vmax),
+    radial-gradient(circle at 86% 11%,rgba(239,68,68,.22),transparent 8vmax),
+    radial-gradient(circle at 80% 46%,rgba(242,185,75,.16),transparent 10vmax),
+    radial-gradient(circle at 7% 63%,rgba(239,68,68,.14),transparent 9vmax),
+    radial-gradient(circle at 58% 82%,rgba(242,185,75,.12),transparent 10vmax),
+    radial-gradient(ellipse 120% 45% at 50% 0%,rgba(242,185,75,.14),transparent 70%),
+    linear-gradient(180deg,#17603A 0%,#0F4A2A 40%,#0C3320 100%);
+  /* 標題列用：同一組圖層但固定在畫面上（fixed），和頁面背景完全對齊，看起來就是背景延伸到最上方 */
+  --xmas-night-fixed:
+    radial-gradient(circle at 14% 18%,rgba(242,185,75,.30),transparent 9vmax) fixed,
+    radial-gradient(circle at 86% 11%,rgba(239,68,68,.22),transparent 8vmax) fixed,
+    radial-gradient(ellipse 120% 45% at 50% 0%,rgba(242,185,75,.14),transparent 70%) fixed,
+    linear-gradient(180deg,#17603A 0%,#0F4A2A 40%,#0C3320 100%) 0 0/100vw 100vh fixed;
+  --xmas-snowdots-fixed:
+    radial-gradient(circle,rgba(255,255,255,.85) 0 1.6px,transparent 2.3px) 7px 11px/97px 89px fixed,
+    radial-gradient(circle,rgba(255,255,255,.55) 0 1.1px,transparent 1.7px) 41px 53px/61px 67px fixed,
+    radial-gradient(circle,rgba(255,255,255,.3) 0 .8px,transparent 1.3px) 13px 5px/29px 37px fixed;
+  --xmas-snowdots:
+    radial-gradient(circle,rgba(255,255,255,.85) 0 1.6px,transparent 2.3px) 7px 11px/97px 89px,
+    radial-gradient(circle,rgba(255,255,255,.55) 0 1.1px,transparent 1.7px) 41px 53px/61px 67px,
+    radial-gradient(circle,rgba(255,255,255,.3) 0 .8px,transparent 1.3px) 13px 5px/29px 37px;
+  /* 底部雪丘（拉伸）＋樹林剪影（重複排列） */
+  --xmas-hills:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 90' preserveAspectRatio='none'%3E%3Cpath d='M0 58 Q70 38 150 54 T300 50 T400 52 V90 H0Z' fill='%23F8FAFC'/%3E%3Cpath d='M0 72 Q110 58 210 70 T400 66 V90 H0Z' fill='%23E2E8F0'/%3E%3C/svg%3E") 0 100%/100% 90px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 90'%3E%3Cg fill='%230A2E1A'%3E%3Cpath d='M18 66 L34 26 L50 66Z M38 70 L58 14 L78 70Z M70 68 L82 40 L94 68Z M262 68 L280 28 L298 68Z M290 70 L312 10 L334 70Z M330 68 L344 36 L358 68Z'/%3E%3C/g%3E%3C/svg%3E") 0 100%/400px 90px repeat-x;
+}
+/* 活動辦法彈窗頂端的橫幅：同一套聖誕夜配色（光點位置改成以橫幅本身計算） */
+.xmas-banner{padding-bottom:44px!important;background:
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 90' preserveAspectRatio='none'%3E%3Cpath d='M0 58 Q70 38 150 54 T300 50 T400 52 V90 H0Z' fill='%23F8FAFC'/%3E%3Cpath d='M0 72 Q110 58 210 70 T400 66 V90 H0Z' fill='%23E2E8F0'/%3E%3C/svg%3E") 0 100%/100% 40px no-repeat,
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 90'%3E%3Cg fill='%230A2E1A'%3E%3Cpath d='M18 66 L34 26 L50 66Z M38 70 L58 14 L78 70Z M70 68 L82 40 L94 68Z M262 68 L280 28 L298 68Z M290 70 L312 10 L334 70Z M330 68 L344 36 L358 68Z'/%3E%3C/g%3E%3C/svg%3E") 0 100%/200px 45px repeat-x,
+  radial-gradient(circle at 12% 20%,rgba(242,185,75,.32),transparent 28%),
+  radial-gradient(circle at 70% 12%,rgba(239,68,68,.24),transparent 24%),
+  radial-gradient(circle at 45% 95%,rgba(242,185,75,.16),transparent 30%),
+  radial-gradient(circle,rgba(255,255,255,.85) 0 1.4px,transparent 2px) 7px 11px/67px 59px,
+  radial-gradient(circle,rgba(255,255,255,.45) 0 1px,transparent 1.5px) 31px 23px/41px 37px,
+  linear-gradient(180deg,#17603A 0%,#0F4A2A 50%,#0C3320 100%) #0B2A1A}
+body{background:#0B2A1A}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:var(--xmas-snowdots),var(--xmas-night)}
+body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:90px;pointer-events:none;z-index:0;background:var(--xmas-hills)}
 body.is-admin{background:var(--bg)}
-body.is-admin::before{display:none}
-main{position:relative}
+body.is-admin::before,body.is-admin::after{display:none}
+main{position:relative;z-index:1}
 header{position:sticky}
 .hero{position:relative;margin:6px 0 16px;padding:14px 4px 4px;color:#fff}
 .hero>*{position:relative}
@@ -226,7 +270,8 @@ main>.banner.demo{margin-top:14px}
 .progress i.ok{background:linear-gradient(90deg,#16A34A,#22C55E);box-shadow:0 0 8px rgba(34,197,94,.7)}
 .progress i.pend{box-shadow:0 0 8px rgba(242,185,75,.8)}
 .done-banner{background:linear-gradient(135deg,#B91C1C,#7F1D1D)!important;border:2px dashed var(--gold)}
-.snow{position:fixed;inset:0;pointer-events:none;z-index:40;overflow:hidden}
+/* 圖層順序：開場遮罩 9999、完成彈窗 9998（兩者不會同時出現）→ 雪花 10000 → 上傳／活動辦法視窗 10001 → 提示訊息 10005 */
+.snow{position:fixed;inset:0;pointer-events:none;z-index:10000;overflow:hidden}
 .snow i{position:absolute;top:-10px;background:#fff;border-radius:50%;opacity:.85;box-shadow:0 0 4px rgba(120,150,170,.5);animation:fall linear infinite}
 @keyframes fall{to{transform:translate3d(var(--dx),105vh,0)}}
 @media (prefers-reduced-motion:reduce){.snow{display:none}header::after{animation:none}}
@@ -235,7 +280,7 @@ main>.banner.demo{margin-top:14px}
 .lane{position:relative;height:74px;margin:2px -16px 0;overflow:hidden}
 .sleigh{position:absolute;top:2px;left:0;width:170px;height:auto;animation:fly 20s linear infinite;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
 @keyframes fly{0%{transform:translate(-190px,6px) rotate(3deg)}50%{transform:translate(45vw,-4px) rotate(-2deg)}100%{transform:translate(105vw,6px) rotate(3deg)}}
-body:not(.is-admin) .card{position:relative;margin-top:22px}
+body:not(.is-admin) .card{position:relative;margin-top:22px;background:#FBF8F0;border-top:4px solid var(--berry)}   /* 象牙白卡片＋聖誕紅頂邊 */
 body:not(.is-admin) .card::before{content:"";position:absolute;left:14px;right:14px;top:-9px;height:10px;pointer-events:none;
   background:radial-gradient(circle at 16px 10px,#fff 0 8px,transparent 8.5px) 0 0/38px 10px repeat-x,
              radial-gradient(circle at 35px 10px,#fff 0 6px,transparent 6.5px) 0 0/38px 10px repeat-x;filter:drop-shadow(0 -1px 1px rgba(0,0,0,.08))}
@@ -251,20 +296,33 @@ header{background:linear-gradient(95deg,#0F3D21 0%,#1B6B3A 50%,#9B1C1C 100%)!imp
 .hdr-deco{margin-left:auto;color:var(--gold);font-size:13px;letter-spacing:.2em;opacity:.9;white-space:nowrap}
 .admin-tag + .hdr-deco,.hdr-deco + .admin-tag{margin-left:8px}
 .admin-tag{margin-left:0}
+.admin-clear{margin-left:auto;border:1.5px solid var(--berry);background:#fff;color:var(--berry);font-size:13px;font-weight:900;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.clear-mask{align-items:center;padding:16px}
+.clear-dialog{width:100%;max-width:340px;background:#fff;border-radius:16px;padding:20px 18px 16px;text-align:center;box-shadow:0 16px 40px rgba(0,0,0,.3)}
+.clear-dialog h3{margin:0 0 16px;font-size:18px;font-weight:900;color:var(--ink);line-height:1.5}
+.clear-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.clear-btns .btn{height:46px}
 @media (max-width:380px){.hdr-deco{display:none}}
 
 .brand-icon{transform:none!important;width:34px!important;height:38px!important}
+#btnHdrTree{cursor:pointer;transition:transform .2s ease,filter .2s ease}
+#btnHdrTree:hover,#btnHdrTree:active{transform:scale(1.15);filter:drop-shadow(0 0 6px #F59E0B)}
+#btnHdrSanta{cursor:pointer;transition:filter .2s ease}
+#btnHdrSanta:hover,#btnHdrSanta:active{filter:drop-shadow(0 0 8px #F59E0B)!important}
+@keyframes jumpPulse{
+  0%{transform:scale(1);box-shadow:0 0 0 0 rgba(20,83,45,.7)}
+  50%{transform:scale(1.02);box-shadow:0 0 0 10px rgba(245,158,11,.5)}
+  100%{transform:scale(1);box-shadow:0 0 0 0 rgba(20,83,45,0)}
+}
+.jump-pulse{animation:jumpPulse 1s ease-in-out 2;border:2px solid var(--gold)!important;border-radius:var(--radius-sm)}
 .hdr-sleigh{margin-left:auto;width:112px;height:auto;flex-shrink:0;transform:scaleX(-1);transform-origin:center;animation:bob 3.2s ease-in-out infinite;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 @keyframes bob{0%,100%{transform:scaleX(-1) translateY(2px) rotate(-1.5deg)}50%{transform:scaleX(-1) translateY(-3px) rotate(1.5deg)}}
 @media (max-width:360px){.hdr-sleigh{width:92px}.brand-title{font-size:18px!important}}
 @media (prefers-reduced-motion:reduce){.hdr-sleigh{animation:none}}
 
 /* 標題列背景與頁面一致 */
-header{background:
-  radial-gradient(circle,rgba(255,255,255,.5) 0 1.3px,transparent 2px) 0 0/46px 46px fixed,
-  radial-gradient(circle,rgba(255,255,255,.5) 0 1px,transparent 1.8px) 23px 23px/46px 46px fixed,
-  radial-gradient(circle at 85% 0%,rgba(242,185,75,.28),transparent 45%) fixed,
-  linear-gradient(160deg,#1B6B3A 0%,#0F3D21 100%) fixed #14532D!important;box-shadow:none!important}
+/* 標題列：和頁面同一組背景（固定在畫面上），背景一路延伸到最上方；標題列本身不透明，捲動時不會透出卡片 */
+header{background:var(--xmas-snowdots-fixed),var(--xmas-night-fixed) #17603A!important;box-shadow:none!important}
 body.is-admin header{background:var(--bg)!important;box-shadow:0 1px 0 var(--line)!important}
 body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 
@@ -324,7 +382,7 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .stamp{align-self:flex-end;width:44px;height:44px;margin:-2px 2px 0 0;border:3px solid var(--berry);border-radius:50%;color:var(--berry);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;transform:rotate(-14deg)}
 
 /* ===== 完成彈窗（聖誕老公公＋禮物盒打開）與領取糖果確認 ===== */
-.done-mask{position:fixed;inset:0;z-index:10002;background:rgba(5,20,10,.72);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.done-mask{position:fixed;inset:0;z-index:9998;background:rgba(5,20,10,.72);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
 .done-panel{position:relative;width:100%;max-width:400px;background-color:#0F3D21;border:2px solid var(--gold);border-radius:20px;padding:18px 18px 16px;text-align:center;color:#fff;box-shadow:0 16px 40px rgba(0,0,0,.45);margin:auto}
 .done-panel h3{margin:8px 0 6px;font-size:22px;font-weight:900;color:var(--gold);letter-spacing:.04em}
 .done-panel p{margin:0;font-size:15px;line-height:1.7;color:#DDEFE3}
@@ -371,7 +429,7 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .cd-footer{font-size:12px;color:#DDEFE3;line-height:1.4}
 
 /* ===== 主頁倒數計時卡（保留外框・內部數字純紅字無小框） ===== */
-.countdown-card{position:relative;background:#fff;border:2px solid var(--gold);border-radius:var(--radius);padding:14px 16px;margin:12px 0 16px;box-shadow:0 4px 18px rgba(20,83,45,.10);text-align:center;color:var(--ink)}
+.countdown-card{position:relative;background:#FBF8F0;border:2px solid var(--gold);border-radius:var(--radius);padding:14px 16px;margin:12px 0 16px;box-shadow:0 4px 18px rgba(20,83,45,.10);text-align:center;color:var(--ink)}
 .countdown-card .cd-header{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-bottom:6px}
 .countdown-card .cd-sub{font-size:16px;font-weight:900;color:var(--pine);text-align:center;letter-spacing:.04em}
 .countdown-card .cd-grid{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0 6px}
@@ -381,14 +439,15 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .countdown-card .cd-colon{font-size:24px;font-weight:900;color:var(--berry);align-self:center;margin:-14px 2px 0;opacity:.7}
 .countdown-card .cd-footer{font-size:13px;color:var(--ink-soft);font-weight:500;line-height:1.4;margin-top:6px}
 /* ===== 暖身期全覆蓋遮罩 ===== */
-.warmup-cover{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle,rgba(255,255,255,.5) 0 1.5px,transparent 2px) 0 0/48px 48px fixed,radial-gradient(circle,rgba(255,255,255,.4) 0 1px,transparent 1.8px) 24px 24px/48px 48px fixed,radial-gradient(circle at 50% 25%,rgba(242,185,75,.28),transparent 55%) fixed,linear-gradient(175deg,#0F3D21 0%,#14532D 45%,#7F1D1D 100%) fixed #0F3D21;display:flex;align-items:center;justify-content:center;padding:24px 16px;color:#fff;overflow-y:auto;transition:opacity .6s ease,visibility .6s ease}
+.warmup-cover{position:fixed;inset:0;z-index:9999;border-radius:0;background:var(--xmas-snowdots),var(--xmas-night) #0B2A1A;display:flex;align-items:center;justify-content:center;padding:24px 16px;color:#fff;overflow-y:auto;transition:opacity .6s ease,visibility .6s ease}
 .warmup-cover.fade-out{opacity:0;visibility:hidden;pointer-events:none}
-.warmup-content{max-width:440px;width:100%;text-align:center;margin:auto}
+.warmup-content{position:relative;z-index:1;max-width:440px;width:100%;text-align:center;margin:auto}
+.warmup-cover::after{content:"";position:fixed;left:0;right:0;bottom:0;height:90px;pointer-events:none;z-index:0;background:var(--xmas-hills)}
 .warmup-sleigh{width:380px;max-width:92vw;height:auto;margin:0 auto 10px;filter:drop-shadow(0 10px 22px rgba(0,0,0,.45));animation:floatSleigh 4s ease-in-out infinite;overflow:visible}
 @keyframes floatSleigh{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-8px) rotate(-1deg)}}
 .warmup-sub{font-size:14px;font-weight:700;color:var(--gold);letter-spacing:.15em;margin:0 0 6px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
 .warmup-title{font-size:24px;font-weight:900;color:#fff;margin:0 0 4px;letter-spacing:.05em;text-shadow:0 2px 8px rgba(0,0,0,.5)}
-.warmup-timer-box{background:rgba(255,255,255,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:2px solid var(--gold);border-radius:18px;padding:18px 16px;box-shadow:0 12px 30px rgba(0,0,0,.35);color:var(--ink);text-align:center}
+.warmup-timer-box{background:#FBF8F0;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:2px solid var(--gold);border-radius:18px;padding:18px 16px;box-shadow:0 12px 30px rgba(0,0,0,.35);color:var(--ink);text-align:center}
 .warmup-timer-tip{font-size:16px;font-weight:900;color:var(--pine);margin-bottom:8px;letter-spacing:.05em;text-align:center}
 #coverCdGrid{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0 8px}
 #coverCdGrid .cd-item{background:transparent;color:var(--berry);border:none;border-radius:0;box-shadow:none;padding:0 4px;min-width:46px}
@@ -715,9 +774,9 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 </div>
 <header>
   <div class="header-inner">
-    <svg class="brand-icon" viewBox="0 0 40 44" aria-hidden="true"><polygon points="20,1 22.5,7 29,7 23.8,11 25.8,17 20,13.5 14.2,17 16.2,11 11,7 17.5,7" fill="#F2B94B"/><path d="M20 8L31 22H26L34 32H28L38 42H2L12 32H6L14 22H9Z" fill="#22C55E"/><path d="M20 8L31 22H26L34 32H28L38 42H20Z" fill="#16A34A"/><rect x="17" y="41" width="6" height="3" fill="#7A4A24"/><circle cx="16" cy="28" r="2" fill="#EF4444"/><circle cx="24" cy="34" r="2" fill="#F2B94B"/><circle cx="13" cy="38" r="2" fill="#60A5FA"/></svg>
+    <svg class="brand-icon" id="btnHdrTree" viewBox="0 0 40 44" aria-label="查看任務進度" role="button" tabindex="0"><polygon points="20,1 22.5,7 29,7 23.8,11 25.8,17 20,13.5 14.2,17 16.2,11 11,7 17.5,7" fill="#F2B94B"/><path d="M20 8L31 22H26L34 32H28L38 42H2L12 32H6L14 22H9Z" fill="#22C55E"/><path d="M20 8L31 22H26L34 32H28L38 42H20Z" fill="#16A34A"/><rect x="17" y="41" width="6" height="3" fill="#7A4A24"/><circle cx="16" cy="28" r="2" fill="#EF4444"/><circle cx="24" cy="34" r="2" fill="#F2B94B"/><circle cx="13" cy="38" r="2" fill="#60A5FA"/></svg>
     <h1 class="brand-title">林森苑聖誕尋寶大作戰</h1>
-    <svg class="hdr-sleigh" aria-hidden="true" viewBox="15 28 505 170">
+    <svg class="hdr-sleigh" id="btnHdrSanta" aria-label="查看住戶資料與活動倒數" role="button" tabindex="0" viewBox="15 28 505 170">
       <defs>
         <linearGradient id="hGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFE082"/><stop offset="50%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient>
         <linearGradient id="hRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#EF4444"/><stop offset="100%" stop-color="#991B1B"/></linearGradient>
@@ -906,7 +965,7 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
         <circle cx="116" cy="-12" r="1.5" fill="#FDE68A"/>
       </g>
     </svg>
-    <span class="admin-tag hidden" id="adminTag">管理員</span>
+    <button type="button" class="admin-tag admin-clear hidden" id="adminTag">清除所有資料</button>
   </div>
 </header>
 
@@ -915,7 +974,7 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 
   <!-- 住戶畫面 -->
   <div id="resident" class="hidden">
-    <section class="hero">
+    <section class="hero" style="display:none">
       <p class="hero-eyebrow">遇見幸福好鄰居</p>
       <h2>林森苑聖誕尋寶大作戰</h2>
       <p><b class="hero-date" id="heroDate">12/19 (六) 08:00 ~ 12/24 (四) 22:00</b>（12/25 晚間抽獎）<br>探索社區公共區域、感謝物業清潔團隊、認識好鄰居！完成 6 項任務中的任意 4 項並上傳照片，經審核通過即可領取完賽聖誕糖果，並獲得聖誕大抽獎資格！</p>
@@ -932,8 +991,8 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 
     <!-- 倒數計時器 -->
     <div class="countdown-card" id="countdownCard">
-      <div class="cd-header">
-        <span class="cd-pill" id="cdPill" style="display:none"></span>
+      <div class="cd-header" style="display:flex;align-items:center;gap:8px">
+        <span class="cd-pill" id="cdPill" style="display:none;cursor:pointer" title="點擊查看活動辦法"></span>
         <span class="cd-sub" id="cdSubText">距離尋寶大作戰開始還有</span>
       </div>
       <div class="cd-grid" id="cdGrid">
@@ -948,7 +1007,7 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
       <div class="cd-footer" id="cdFooter" style="display:none"></div>
     </div>
     <div id="statusBanner"></div>
-    <div class="card">
+    <div class="card" id="rulesCard" style="display:none">
       <h2>活動辦法與隱私友善原則</h2>
       <ol class="rules">
         <li><b>闖關門檻</b>：活動期間內完成 6 項指定任務中的<b>任意 4 項</b>並拍照上傳，經審核通過即可獲得完賽禮（聖誕糖果）及聖誕大抽獎資格（每戶限領取一次）。</li>
@@ -960,8 +1019,8 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
       </ol>
     </div>
 
-    <div class="card" id="idCard"></div>
-    <div class="card" id="progressCard"></div>
+    <div class="card hidden" id="idCard"></div>
+    <div class="card hidden" id="progressCard"></div>
   </div>
 
   <!-- 管理員畫面 -->
@@ -1015,7 +1074,7 @@ function toast(msg, bad){
 
 /* ============ API（含示範模式） ============ */
 async function apiGet(action, params){
-  if(DEMO) return mockGet(action, params || {});
+  if(DEMO || IS_DEMO) return mockGet(action, params || {});
   const qs = new URLSearchParams(Object.assign({action}, params || {}));
   const r = await fetch(XMAS_GAS_URL + '?' + qs);
   const j = await r.json();
@@ -1023,7 +1082,7 @@ async function apiGet(action, params){
   return j;
 }
 async function apiPost(event, payload){
-  if(DEMO) return mockPost(event, payload);
+  if(DEMO || IS_DEMO) return mockPost(event, payload);
   const r = await fetch(XMAS_GAS_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({event, payload})});
   const j = await r.json();
   if(!j.ok) throw new Error(j.error || '送出失敗');
@@ -1084,7 +1143,7 @@ async function mockGet(action, p){
   if(action === 'config'){
     const now = Date.now(), st = new Date('2026-12-19T08:00:00+08:00').getTime(), et = new Date('2026-12-24T22:00:00+08:00').getTime();
     const isOpen = IS_DEMO || (now >= st && now <= et);
-    return {ok:true, tasks:TASKS_DEMO, tasksNeed:TASKS_NEED_DEMO, t3Need:T3_NEED_DEMO, start:'2026-12-19T08:00:00+08:00', end:'2026-12-24T22:00:00+08:00', drawTime:'2026-12-25T19:00:00+08:00', open:isOpen, notStarted:!IS_DEMO && (now < st), isEnded:!IS_DEMO && (now > et)};
+    return {ok:true, tasks:TASKS_DEMO, tasksNeed:TASKS_NEED_DEMO, t3Need:T3_NEED_DEMO, start:'2026-12-19T08:00:00+08:00', end:'2026-12-24T22:00:00+08:00', drawTime:'2026-12-25T19:00:00+08:00', clearLocked:now >= st && now < new Date('2026-12-26T00:00:00+08:00').getTime(), open:isOpen, notStarted:!IS_DEMO && (now < st), isEnded:!IS_DEMO && (now > et)};
   }
   if(action === 'status') return mockStatusRes({hao:Number(p.hao), lou:Number(p.lou), zhi:Number(p.zhi)});
   if(action === 'admin_list'){
@@ -1129,6 +1188,12 @@ async function mockPost(event, p){
     if(!r) throw new Error('找不到這筆資料');
     if(p.photoId && r.photoId !== p.photoId) throw new Error('住戶剛剛重新上傳了照片，請重新審核新照片');
     r.status = p.status; r.note = p.note || ''; return {ok:true};
+  }
+  if(event === 'admin_clear_all'){
+    if((await mockGet('config')).clearLocked) throw new Error('活動開始後到抽獎結束前不能清除資料');
+    const res = {ok:true, rows:mock.rows.length + Object.keys(mock.candy).length, photos:Object.keys(mock.photos).length};
+    mock.rows = []; mock.photos = {}; mock.candy = {};
+    return res;
   }
   if(event === 'claim_candy'){
     const a = {hao:Number(p.hao), lou:Number(p.lou), zhi:Number(p.zhi)}, key = mockKey(a);
@@ -1192,6 +1257,18 @@ function fmtPeriod(s, e){
   }
 }
 
+// 手機時間和伺服器時間的差距（毫秒）。倒數一律用 nowMs()，後端回應後自動校正；
+// 能不能上傳仍由後端用伺服器時間判斷，這裡只影響畫面顯示
+let clockOffset = 0;
+const nowMs = () => Date.now() + clockOffset;
+function syncClock(serverIso, sentAt, receivedAt){
+  const server = new Date(serverIso || '').getTime();
+  if(!server) return;
+  // 伺服器時間是在請求途中產生的，用「送出～收到」的中間點當作那一刻的手機時間，扣掉網路延遲的影響
+  clockOffset = server - Math.round((sentAt + receivedAt) / 2);
+  updateCountdown();
+}
+
 let countdownTimer = null;
 function startCountdown(){
   if(countdownTimer) clearInterval(countdownTimer);
@@ -1201,7 +1278,7 @@ function startCountdown(){
 function updateCountdown(){
   const card = $('countdownCard');
   if(!card) return;
-  const now = Date.now();
+  const now = nowMs();   // 已用伺服器時間校正
   const startTime = new Date(cfg && cfg.start ? cfg.start : '2026-12-19T08:00:00+08:00').getTime();
   const endTime = new Date(cfg && cfg.end ? cfg.end : '2026-12-24T22:00:00+08:00').getTime();
   const drawTime = new Date(cfg && cfg.drawTime ? cfg.drawTime : '2026-12-25T19:00:00+08:00').getTime();
@@ -1220,9 +1297,9 @@ function updateCountdown(){
   if(IS_DEMO || (now >= startTime && now < endTime)){
     phase = 'running';
     target = endTime;
-    pillText = '🔥 尋寶熱烈進行中';
+    pillText = '📋 活動辦法';
     subText = '離活動結束還剩多少時間';
-    footerText = '任務開放至 12/24 (四) 22:00 止，任選完成 4 項即可獲抽獎資格！';
+    footerText = '任務開放至 12/24 (四) 22:00 止';
   } else if(now < startTime){
     phase = 'warmup';
     target = startTime;
@@ -1260,10 +1337,10 @@ function updateCountdown(){
   const mins = Math.floor((totalSecs % 3600) / 60);
   const secs = totalSecs % 60;
   const pad = n => String(n).padStart(2, '0');
-  if($('cdDays')) $('cdDays').textContent = pad(days);
-  if($('cdHours')) $('cdHours').textContent = pad(hours);
-  if($('cdMins')) $('cdMins').textContent = pad(mins);
-  if($('cdSecs')) $('cdSecs').textContent = pad(secs);
+  document.querySelectorAll('#cdDays, #dialogCountdownCard #cdDays').forEach(el => el.textContent = pad(days));
+  document.querySelectorAll('#cdHours, #dialogCountdownCard #cdHours').forEach(el => el.textContent = pad(hours));
+  document.querySelectorAll('#cdMins, #dialogCountdownCard #cdMins').forEach(el => el.textContent = pad(mins));
+  document.querySelectorAll('#cdSecs, #dialogCountdownCard #cdSecs').forEach(el => el.textContent = pad(secs));
 
   // 全螢幕暖身遮罩（未開放時顯示，倒數至 12/19 08:00 正式開始）
   const cover = $('warmupCover');
@@ -1299,47 +1376,392 @@ function dismissWarmupCover(){
   }
 }
 
-function showHuntInfoModal(){
-  const old = $('huntInfoMask');
+const HERO_BANNER_HTML = `
+  <div class="xmas-banner" style="position:relative;border-radius:16px;padding:16px 18px;margin-bottom:14px;color:#fff;overflow:hidden">
+    <div style="max-width:calc(100% - 92px)">
+      <p style="font-size:13px;font-weight:700;color:#fff;margin:0 0 4px;opacity:0.95;letter-spacing:0.5px">遇見幸福好鄰居</p>
+      <h2 style="font-size:21px;font-weight:900;color:#fff;margin:0 0 6px;line-height:1.25">林森苑聖誕尋寶大作戰</h2>
+      <div style="font-weight:900;color:#F2B94B;font-size:14px;margin-bottom:6px">12/19 (六) 08:00 ~ 12/24 (四) 22:00（12/25 晚間抽獎）</div>
+      <div style="font-size:13px;color:#fff;line-height:1.6;opacity:0.95">探索社區公共區域、感謝物業清潔團隊、認識好鄰居！完成 6 項任務中的任意 4 項並上傳照片，經審核通過即可領取完賽聖誕糖果，並獲得聖誕大抽獎資格！</div>
+    </div>
+    <svg viewBox="0 0 120 150" aria-hidden="true" style="position:absolute;right:8px;bottom:8px;width:86px;height:auto">
+      <polygon points="60,6 66,18 80,18 69,27 73,41 60,33 47,41 51,27 40,18 54,18" fill="#F2B94B"/>
+      <path d="M60 22 L88 62 H74 L98 98 H80 L110 136 H10 L40 98 H22 L46 62 H32 Z" fill="#22C55E"/>
+      <path d="M60 22 L88 62 H74 L98 98 H80 L110 136 H60 Z" fill="#16A34A"/>
+      <rect x="52" y="136" width="16" height="14" fill="#7A4A24"/>
+      <rect x="4" y="128" width="26" height="22" fill="#EF4444"/><path d="M17 128v22M4 139h26" stroke="#fff" stroke-width="3"/><path d="M17 128c-6-8-12-2-6 0M17 128c6-8 12-2 6 0" stroke="#fff" stroke-width="2.5" fill="none"/>
+      <rect x="88" y="132" width="26" height="18" fill="#F2B94B"/><path d="M101 132v18M88 141h26" stroke="#B91C1C" stroke-width="3"/>
+      <circle cx="48" cy="70" r="4" fill="#EF4444"/><circle cx="70" cy="96" r="4" fill="#F2B94B"/><circle cx="40" cy="112" r="4" fill="#60A5FA"/><circle cx="82" cy="122" r="4" fill="#EF4444"/><circle cx="60" cy="52" r="3.5" fill="#F2B94B"/>
+    </svg>
+  </div>
+`;
+
+function showIntroDialog(isWarmupView = false){
+  const old = $('introDialogMask');
   if(old) old.remove();
 
-  // 活動辦法：直接從頁面既有的 rules 區塊取得
   const rulesEl = document.querySelector('.rules');
-  const rulesHtml = rulesEl
-    ? `<div class="card" style="box-shadow:none;border:1px solid var(--line);background:#FAFAF9;margin:0 0 14px;padding:14px">
-        <h4 style="margin:0 0 8px;font-size:15px;font-weight:900;color:var(--pine-dark)">📋 活動辦法與隱私友善原則</h4>
-        <ol class="rules" style="margin:0;padding-left:20px;font-size:13px;color:#374151;line-height:1.75">${rulesEl.innerHTML}</ol>
-       </div>`
-    : '';
+  const rulesHtml = rulesEl ? rulesEl.innerHTML : `
+    <li><b>闖關門檻</b>：活動期間內完成 6 項指定任務中的<b>任意 4 項</b>並拍照上傳，經審核通過即可獲得完賽禮（聖誕糖果）及聖誕大抽獎資格（每戶限領取一次）。</li>
+    <li><b>隱私友善原則</b>：所有合照任務皆<b>無需強制露臉</b>！可自由選擇戴口罩、以手牌遮臉、拍背影或手部比愛心等方式入鏡，安心參與。</li>
+    <li><b>任務進行時間</b>：2026/12/19 (六) 08:00 至 12/24 (四) 22:00 止（共 6 天）。</li>
+    <li><b>公開抽獎時間</b>：2026/12/25 (五) 晚上，由物業人員公開抽出並公告於社區群組及智生活。</li>
+    <li>每戶每個任務只有一張有效照片（審核中或退回可重新上傳）。照片僅用於管委會活動審核，活動結束後自動刪除。</li>
+  `;
 
-  const tasksHtml = typeof buildTaskPreviewHtml === 'function' ? buildTaskPreviewHtml() : '';
+  let warmupTaskSection = '';
+  if(isWarmupView){
+    const tasks = (cfg && cfg.tasks) || TASKS_DEMO;
+        const blocks = tasks.map(t => {
+      const title = '任務' + TASK_CN[t.id - 1] + '・' + esc(t.name);
+      if(t.spots){
+        const cells = t.spots.map(sp => `
+          <div class="stamp-cell">
+            <div class="sc-thumb">${SANTA_SVG}</div>
+            <div class="sc-main"><b>${esc(sp.name)}</b></div>
+          </div>`).join('');
+        return `<div class="spot task3">
+          <div class="spot-head">
+            <div class="spot-main"><div class="spot-name">${title}</div><div class="spot-hint">${esc(t.desc)}</div></div>
+          </div>
+          <div class="stamp-card">
+            <div class="stamp-head">探索地點（共 10 處・任選 6 處拍照上傳即過關）</div>
+            <div class="stamp-grid">${cells}</div>
+          </div>
+        </div>`;
+      }
+      const scene = TASK_SCENE[t.id];
+      return `<div class="spot">
+        <div class="spot-head">
+          <div class="spot-main"><div class="spot-name">${title}</div><div class="spot-hint">${esc(t.desc)}</div></div>
+        </div>
+        <div class="spot-scene${scene ? '' : ' plain'}" aria-label="${title}">
+          ${scene ? `<img class="spot-img" src="${scene}" alt="" loading="lazy" onerror="this.remove()">` : ''}
+          <div class="spot-card r${t.id % 2 ? 'a' : 'b'}">${propSvg(t.id)}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    warmupTaskSection = `
+      <div class="card" style="box-shadow:none;border:1px solid var(--line);background:#FAFAF9;margin:0 0 10px;padding:14px;border-radius:12px">
+        <div style="font-size:16px;font-weight:900;color:var(--pine-dark);padding-bottom:10px;border-bottom:1px solid var(--line)">任務</div>
+        <div style="margin-top:6px">${blocks}</div>
+      </div>
+    `;
+  }
 
   const mask = document.createElement('div');
-  mask.id = 'huntInfoMask';
+  mask.id = 'introDialogMask';
   mask.className = 'sheet-mask';
-  mask.style.zIndex = '10001';
+  mask.style.zIndex = '10005';
   mask.innerHTML = `
-    <div class="sheet" role="dialog" aria-modal="true" aria-label="尋寶活動內容">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span style="display:inline-block;padding:3px 10px;background:var(--pine-light);color:var(--pine);font-weight:700;font-size:12px;border-radius:12px">遇見幸福好鄰居</span>
-        <button type="button" class="link-btn" id="closeHuntX" style="font-size:20px;text-decoration:none;color:#6B7280;padding:2px 8px;cursor:pointer">✕</button>
-      </div>
-      <h3 style="margin:0 0 12px;font-size:20px;font-weight:900;color:var(--pine-dark)">🎯 聖誕尋寶大作戰・活動辦法與任務</h3>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="活動辦法" style="max-height:88vh;display:flex;flex-direction:column;border-radius:20px;max-width:540px;margin:auto;padding-top:14px">
 
-      <div style="font-size:14px;color:#374151;line-height:1.6;max-height:68vh;overflow-y:auto;padding-right:4px">
-        ${rulesHtml}
-        <div class="card" style="box-shadow:none;border:1px solid var(--line);padding:14px;background:#fff">
-          ${tasksHtml}
+      <div style="flex:1;overflow-y:auto;padding-right:4px;font-size:14px;color:#374151;line-height:1.6">
+        ${HERO_BANNER_HTML}
+
+        <div class="card" style="box-shadow:none;border:1px solid var(--line);background:#FAFAF9;margin:0 0 10px;padding:14px;border-radius:12px">
+          <h4 style="margin:0 0 8px;font-size:15px;font-weight:900;color:var(--pine-dark)">📋 活動辦法與隱私友善原則</h4>
+          <ol class="rules" style="margin:0;padding-left:20px;font-size:13px;color:#374151;line-height:1.75">
+            ${rulesHtml}
+          </ol>
         </div>
-        <div style="background:var(--pine-light);padding:10px 12px;border-radius:10px;color:var(--pine-dark);font-size:13px;line-height:1.6;margin-top:14px">
-          ⏱️ <b>任務開放時間</b>：12/19 (六) 08:00 ~ 12/24 (四) 22:00<br>
-          🎉 <b>大抽獎開獎</b>：12/25 (五) 晚間公開抽獎
-        </div>
+
+        ${warmupTaskSection}
       </div>
 
-      <div style="margin-top:16px;display:flex;gap:10px">
-        ${IS_DEMO ? '<button type="button" class="btn btn-warmup-start" id="btnModalStart" style="flex:1;height:44px;font-size:15px;background:#fff;border:2px solid var(--pine);color:var(--pine);font-weight:900">✨ 開始尋寶 (Demo)</button>' : ''}
-        <button type="button" class="btn" id="btnCloseHuntModal" style="flex:1;height:44px;font-size:15px;background:var(--pine)">我知道了・返回倒數</button>
+      <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--line)">
+        <button type="button" class="btn" id="btnStartHunt" style="width:100%;height:48px;font-size:16px;font-weight:900;background:var(--pine);color:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(20,83,45,.25);border:none;cursor:pointer">${isWarmupView ? '關閉返回' : '✨ 開始尋寶'}</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(mask);
+
+  const close = () => {
+    mask.remove();
+    if(!isWarmupView){
+      dismissWarmupCover();
+      renderResidentFlow();
+    }
+  };
+
+  if($('closeIntroX')) $('closeIntroX').onclick = close;
+  $('btnStartHunt').onclick = close;
+  mask.onclick = (e) => { if(e.target === mask) close(); };
+}
+
+function showHuntInfoModal(){
+  showIntroDialog(true);
+}
+
+function renderResidentFlow(){
+  const hero = document.querySelector('#resident .hero');
+  if(hero) hero.style.display = 'none';
+  const staticRules = document.querySelector('#rulesCard') || document.querySelector('#resident > .card:not(#idCard):not(#progressCard):not(.countdown-card)');
+  if(staticRules) staticRules.style.display = 'none';
+
+  const cdCard = $('countdownCard');
+  const idBox = $('idCard');
+  const progBox = $('progressCard');
+
+  if(cdCard) cdCard.style.display = 'block';
+
+  if(!me){
+    // 還沒按下確認（尚未填寫/儲存住戶資料）：
+    // 顯示：活動倒數時間區塊、填寫住戶資料區塊；任務區塊暫不顯示
+    if(idBox){
+      idBox.style.display = 'block';
+      idBox.classList.remove('hidden');
+      renderIdCard();
+    }
+    if(progBox){
+      progBox.style.display = 'none';
+      progBox.classList.add('hidden');
+    }
+  } else {
+    // 按下確認後（me 存在）：
+    // 只留下活動倒數時間區塊和任務區塊！
+    if(idBox){
+      idBox.style.display = 'none';
+      idBox.classList.add('hidden');
+    }
+    if(progBox){
+      progBox.style.display = 'block';
+      progBox.classList.remove('hidden');
+      renderProgress();
+    }
+  }
+}
+
+
+/* ============ 住戶確認後的 Intro 教學導覽 ============ */
+function startIntroTour(){
+  const old = $('tourMask');
+  if(old) old.remove();
+
+  const mask = document.createElement('div');
+  mask.id = 'tourMask';
+  mask.style.cssText = 'position:fixed;inset:0;z-index:10010;pointer-events:auto;overflow:hidden';
+
+  mask.innerHTML = `
+    <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+      <defs>
+        <mask id="tourCutout">
+          <rect width="100%" height="100%" fill="white"/>
+          <circle id="tourHole" cx="-999" cy="-999" r="28" fill="black"/>
+        </mask>
+      </defs>
+      <rect width="100%" height="100%" fill="rgba(0,0,0,0.78)" mask="url(#tourCutout)"/>
+      <circle id="tourRing" cx="-999" cy="-999" r="30" fill="none" stroke="#F59E0B" stroke-width="3" style="filter:drop-shadow(0 0 8px #F59E0B)"/>
+    </svg>
+    <div id="tourBubbleBox" style="position:absolute;z-index:10012;transition:all .3s ease"></div>
+  `;
+
+  document.body.appendChild(mask);
+
+  let currentStep = 1;
+
+  function renderTourStep(step){
+    currentStep = step;
+    const hole = $('tourHole');
+    const ring = $('tourRing');
+    const box = $('tourBubbleBox');
+    if(!hole || !ring || !box) return;
+
+    if(step === 1){
+      // 第 1 步：左上的聖誕樹亮其他暗
+      const tree = $('btnHdrTree');
+      const r = tree ? tree.getBoundingClientRect() : {left: 20, top: 15, width: 34, height: 34};
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const rad = Math.max(r.width, r.height) / 2 + 8;
+
+      hole.setAttribute('cx', cx);
+      hole.setAttribute('cy', cy);
+      hole.setAttribute('r', rad);
+      ring.setAttribute('cx', cx);
+      ring.setAttribute('cy', cy);
+      ring.setAttribute('r', rad + 2);
+
+      const bTop = cy + rad + 14;
+      const bLeft = Math.max(12, Math.min(window.innerWidth - 305, cx - 30));
+
+      box.style.top = bTop + 'px';
+      box.style.left = bLeft + 'px';
+      box.style.right = 'auto';
+
+      box.innerHTML = `
+        <div style="background:#fff;border-radius:18px;padding:16px;box-shadow:0 12px 36px rgba(0,0,0,.5);width:290px;position:relative;border:2px solid var(--gold)">
+          <div style="position:absolute;top:-10px;left:${Math.max(16, cx - bLeft - 8)}px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:10px solid var(--gold)"></div>
+          <div style="position:absolute;top:-7px;left:${Math.max(16, cx - bLeft - 8)}px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:9px solid #fff"></div>
+
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+            <div style="width:42px;height:42px;border-radius:50%;background:#FEF2F2;border:2px solid var(--berry);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+              ${SANTA_SVG}
+            </div>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:900;color:var(--berry);letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between"><span>🎅 尋寶小秘訣</span><span style="font-size:11px;color:#9CA3AF;font-weight:700">步驟 1 / 2</span></div>
+              <div style="font-size:15px;font-weight:900;color:var(--pine-dark);line-height:1.4">點此圖示可以快速了解任務完成率！</div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:14px;padding-top:10px;border-top:1px solid #F3F4F6">
+            <button type="button" class="btn" id="btnTourNext" style="padding:7px 18px;font-size:13px;background:var(--pine);color:#fff;border-radius:20px;font-weight:900;border:none;cursor:pointer">下一步 👉</button>
+          </div>
+        </div>
+      `;
+
+      if($('btnTourNext')) $('btnTourNext').onclick = (e) => { e.stopPropagation(); renderTourStep(2); };
+
+    } else if(step === 2){
+      // 第 2 步：右上的聖誕老人亮其他暗
+      const santa = $('btnHdrSanta');
+      const r = santa ? santa.getBoundingClientRect() : {left: window.innerWidth - 80, top: 15, width: 80, height: 40};
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const rad = Math.max(r.width, r.height) / 2 + 8;
+
+      hole.setAttribute('cx', cx);
+      hole.setAttribute('cy', cy);
+      hole.setAttribute('r', rad);
+      ring.setAttribute('cx', cx);
+      ring.setAttribute('cy', cy);
+      ring.setAttribute('r', rad + 2);
+
+      const bTop = cy + rad + 14;
+      const bRight = Math.max(12, Math.min(window.innerWidth - 305, window.innerWidth - cx - 40));
+
+      box.style.top = bTop + 'px';
+      box.style.left = 'auto';
+      box.style.right = bRight + 'px';
+
+      box.innerHTML = `
+        <div style="background:#fff;border-radius:18px;padding:16px;box-shadow:0 12px 36px rgba(0,0,0,.5);width:290px;position:relative;border:2px solid var(--gold)">
+          <div style="position:absolute;top:-10px;right:${Math.max(16, (window.innerWidth - bRight) - cx - 8)}px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:10px solid var(--gold)"></div>
+          <div style="position:absolute;top:-7px;right:${Math.max(16, (window.innerWidth - bRight) - cx - 8)}px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:9px solid #fff"></div>
+
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+            <div style="width:42px;height:42px;border-radius:50%;background:#FEF2F2;border:2px solid var(--berry);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+              ${SANTA_SVG}
+            </div>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:900;color:var(--berry);letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between"><span>🎅 尋寶小秘訣</span><span style="font-size:11px;color:#9CA3AF;font-weight:700">步驟 2 / 2</span></div>
+              <div style="font-size:15px;font-weight:900;color:var(--pine-dark);line-height:1.4">點此圖示可以確認目前登入資料！</div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:14px;padding-top:10px;border-top:1px solid #F3F4F6">
+            <button type="button" class="btn" id="btnTourDone" style="padding:7px 18px;font-size:13px;background:var(--pine);color:#fff;border-radius:20px;font-weight:900;border:none;cursor:pointer">開始尋寶 ✨</button>
+          </div>
+        </div>
+      `;
+
+      if($('btnTourDone')) $('btnTourDone').onclick = (e) => { e.stopPropagation(); mask.remove(); };
+    }
+  }
+
+  mask.onclick = (e) => {
+    if(e.target === mask){
+      if(currentStep === 1) renderTourStep(2);
+      else mask.remove();
+    }
+  };
+
+  renderTourStep(1);
+}
+
+/* ============ 點左上聖誕樹圖示：活動內容與任務完成度 Dialog ============ */
+function showTreeProgressDialog(){
+  const old = $('treeProgressMask');
+  if(old) old.remove();
+
+  const tasks = (cfg && cfg.tasks) || TASKS_DEMO;
+  const st = status || {};
+  const states = tasks.map(t => taskState(t, st));
+  const need = (cfg && cfg.tasksNeed) || 4;
+  const okCount = states.filter(s => s.state === 'ok').length;
+  const pendCount = states.filter(s => s.state === 'pend').length;
+  const done = okCount >= need;
+  const pct = Math.min(100, Math.round(okCount / need * 100));
+
+  // 6 格完成率進度條（與首頁完全一致）
+  const bars = states.map((s, i) => `<i class="${s.state === 'ok' ? (i % 2 ? 'red' : 'grn') : s.state === 'pend' ? 'pend' : ''}"></i>`).join('');
+  const left = Math.max(0, need - okCount);
+  const subMsg = okCount >= tasks.length ? '・全部完成，太厲害了！🎉'
+    : done ? '・已達領糖果門檻 🍬，也可以繼續挑戰全部完成！'
+    : `・再通過 ${left} 項即可領糖果`;
+
+  const gridHtml = tasks.map((t, i) => {
+    const s = states[i];
+    const isOk = s.state === 'ok';
+    const isPend = s.state === 'pend';
+    
+    let statusBadge = '';
+    let actionLink = '';
+
+    if(isOk){
+      statusBadge = '<span style="display:inline-block;padding:2px 7px;background:#DCFCE7;color:#166534;border-radius:6px;font-size:11px;font-weight:900;flex-shrink:0">已通過</span>';
+    } else if(isPend){
+      statusBadge = '<span style="display:inline-block;padding:2px 7px;background:#FEF3C7;color:#B45309;border-radius:6px;font-size:11px;font-weight:900;flex-shrink:0">審核中</span>';
+      actionLink = `<button type="button" class="tour-jump-btn" data-tid="${t.id}" style="padding:4px 12px;font-size:12px;background:#fff;border:1px solid #D97706;color:#B45309;border-radius:20px;cursor:pointer;font-weight:700">前往任務</button>`;
+    } else if(t.spots){
+      const pts = s.pts || 0;
+      if(pts >= (s.need || 6)){
+        statusBadge = '<span style="display:inline-block;padding:2px 7px;background:#DCFCE7;color:#166534;border-radius:6px;font-size:11px;font-weight:900;flex-shrink:0">已完成</span>';
+      } else {
+        statusBadge = `<span style="display:inline-block;padding:2px 7px;background:#FEF3C7;color:#92400E;border-radius:6px;font-size:11px;font-weight:700;flex-shrink:0">已集 ${pts}/${s.need || 6}</span>`;
+        actionLink = `<button type="button" class="tour-jump-btn" data-tid="${t.id}" style="padding:4px 12px;font-size:12px;background:var(--pine);color:#fff;border-radius:20px;border:none;cursor:pointer;font-weight:700">前往任務</button>`;
+      }
+    } else {
+      statusBadge = '<span style="display:inline-block;padding:2px 7px;background:#F3F4F6;color:#6B7280;border-radius:6px;font-size:11px;font-weight:900;flex-shrink:0">尚未打卡</span>';
+      actionLink = `<button type="button" class="tour-jump-btn" data-tid="${t.id}" style="padding:4px 12px;font-size:12px;background:var(--pine);color:#fff;border-radius:20px;border:none;cursor:pointer;font-weight:700">前往任務</button>`;
+    }
+
+    return `
+      <div style="background:#FAFAF9;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;min-height:92px">
+        <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:8px">
+          ${statusBadge}
+          <div style="font-size:13px;font-weight:900;color:var(--pine-dark);line-height:1.35">
+            任務${TASK_CN[t.id - 1]}・${esc(t.name)}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end">
+          ${actionLink}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  let rateHtml = '';
+  if(me){
+    const extraCompleted = okCount > need ? ('（共完成 ' + okCount + ' 項）') : '';
+    const pendingMsg = pendCount ? ('・審核中 ' + pendCount + ' 項') : '';
+    rateHtml = '<div class="rate' + (done ? ' done' : '') + '" style="margin-bottom:14px"><div class="rate-main"><div class="rate-title">任務完成率 <b>' + pct + '%</b></div><div class="progress">' + bars + '</div><div class="rate-sub">已通過 <b>' + Math.min(okCount, need) + '</b>／' + need + ' 項' + extraCompleted + pendingMsg + '<span>' + subMsg + '</span></div></div></div>';
+  }
+
+  const mask = document.createElement('div');
+  mask.id = 'treeProgressMask';
+  mask.className = 'sheet-mask';
+  mask.style.zIndex = '10006';
+
+  mask.innerHTML = `
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="任務進度總覽" style="max-height:88vh;display:flex;flex-direction:column;border-radius:20px;max-width:540px;margin:auto;padding-top:14px">
+
+      <div style="flex:1;overflow-y:auto;padding-right:4px;font-size:14px;color:#374151;line-height:1.6">
+        ${HERO_BANNER_HTML}
+
+        ${rateHtml}
+
+        <div style="margin-bottom:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${gridHtml}
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--line)">
+        <button type="button" class="btn" id="btnCloseTreeModal" style="width:100%;height:44px;font-size:15px;font-weight:900;background:var(--pine);color:#fff;border-radius:12px;border:none;cursor:pointer">關閉返回</button>
       </div>
     </div>
   `;
@@ -1347,17 +1769,120 @@ function showHuntInfoModal(){
   document.body.appendChild(mask);
 
   const close = () => mask.remove();
-  $('closeHuntX').onclick = close;
-  $('btnCloseHuntModal').onclick = close;
+  if($('closeTreeX')) $('closeTreeX').onclick = close;
+  $('btnCloseTreeModal').onclick = close;
   mask.onclick = (e) => { if(e.target === mask) close(); };
-  if(IS_DEMO && $('btnModalStart')){
-    $('btnModalStart').onclick = () => {
+
+  mask.querySelectorAll('.tour-jump-btn').forEach(btn => {
+    btn.onclick = () => {
+      const tid = Number(btn.dataset.tid);
       close();
-      dismissWarmupCover();
+      jumpToTaskCard(tid);
     };
+  });
+}
+function jumpToTaskCard(tid){
+  const spots = document.querySelectorAll('#progressCard .spot');
+  const target = spots[tid - 1];
+  if(target){
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.add('jump-pulse');
+    setTimeout(() => target.classList.remove('jump-pulse'), 2200);
   }
 }
 
+/* ============ 點右上聖誕老人圖示：住戶資料與活動倒數 Dialog ============ */
+function showSantaAccountDialog(){
+  const old = $('santaAccountMask');
+  if(old) old.remove();
+
+  let userSection = '';
+  if(me){
+    userSection = `
+      <div class="card" style="margin:0 0 14px;padding:12px 14px;background:#fff;border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow-sm)">
+        <div class="id-line" style="display:flex;align-items:center;gap:12px">
+          ${SANTA_SVG}
+          <b class="id-text" style="font-size:15px;color:var(--pine-dark);flex:1">
+            ${esc(DONG_MAP[me.hao])}棟（${fullAddr(me)}）　${esc(me.name)}
+          </b>
+          <button class="link-btn" id="btnEditMeFromSanta" style="color:var(--pine);font-weight:700;font-size:14px;text-decoration:underline;cursor:pointer">修改</button>
+        </div>
+      </div>
+    `;
+  }
+
+  const cdCard = $('countdownCard');
+  const cdCloneHtml = cdCard ? cdCard.innerHTML : '';
+
+  const mask = document.createElement('div');
+  mask.id = 'santaAccountMask';
+  mask.className = 'sheet-mask';
+  mask.style.zIndex = '10006';
+
+  mask.innerHTML = `
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="住戶資料與活動倒數" style="max-height:88vh;display:flex;flex-direction:column;border-radius:20px;max-width:540px;margin:auto;padding-top:14px">
+
+
+      <div style="flex:1;overflow-y:auto;padding-right:4px;font-size:14px;color:#374151;line-height:1.6">
+        <!-- 顯示住戶資料區塊 -->
+        ${userSection}
+
+        <!-- 顯示活動倒數區塊 -->
+        <div style="${userSection ? 'margin-top:10px' : ''}">
+          
+          <div class="countdown-card" id="dialogCountdownCard" style="margin:0;box-shadow:none;border:1px solid var(--line)">
+            ${cdCloneHtml}
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--line)">
+        <button type="button" class="btn" id="btnCloseSantaModal" style="width:100%;height:44px;font-size:15px;font-weight:900;background:var(--pine);color:#fff;border-radius:12px;border:none;cursor:pointer">關閉返回</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(mask);
+
+  const close = () => mask.remove();
+  if($('closeSantaX')) $('closeSantaX').onclick = close;
+  $('btnCloseSantaModal').onclick = close;
+  mask.onclick = (e) => { if(e.target === mask) close(); };
+
+  const dialogPill = mask.querySelector('.cd-pill');
+  if(dialogPill){
+    dialogPill.onclick = () => {
+      close();
+      showIntroDialog();
+    };
+  }
+
+  if($('btnEditMeFromSanta')){
+    $('btnEditMeFromSanta').onclick = () => {
+      close();
+      const idBox = $('idCard');
+      if(idBox){
+        idBox.style.display = 'block';
+        idBox.classList.remove('hidden');
+        renderIdCard(true);
+        idBox.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+  }
+
+  if($('btnGoFillMeFromSanta')){
+    $('btnGoFillMeFromSanta').onclick = () => {
+      close();
+      const idBox = $('idCard');
+      if(idBox){
+        idBox.style.display = 'block';
+        idBox.classList.remove('hidden');
+        renderIdCard(false);
+        idBox.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+  }
+}
 function initWarmupButtons(){
   const startBtn = $('btnWarmupStart');
   const infoBtn = $('btnWarmupInfo');
@@ -1383,14 +1908,32 @@ function initWarmupButtons(){
 async function initResident(){
   $('resident').classList.remove('hidden');
   initWarmupButtons();
+  // 先用預設活動時間＋手機時間立刻顯示倒數遮罩，不必等後端回應（Apps Script 常要 1～3 秒以上，
+  // 否則會先閃過活動內容、幾秒後才跳出倒數）；後端設定讀到後，倒數會自動改用後端的時間
+  makeSnow();          // 雪花也一打開就開始飄（開場遮罩上也看得到）
+  startCountdown();
+  const t0 = Date.now();
   try{ cfg = await apiGet('config'); }
-  catch(e){ $('statusBanner').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
+  catch(e){
+    console.warn('apiGet config error, fallback to mock:', e);
+    try{ cfg = await mockGet('config'); }
+    catch(err){ $('statusBanner').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
+  }
+  syncClock(cfg.serverTime, t0, Date.now());
   me = loadMe();
   try{ if(cfg.start && cfg.end) $('heroDate').textContent = fmtPeriod(cfg.start, cfg.end); }catch(e){}
-  makeSnow();
   renderStatusBanner();
   startCountdown();
-  renderIdCard();
+  // 活動未開始（暖身期）時優先呈現全螢幕倒數遮罩；活動開始後或未登入才主動彈出活動說明
+  const st = new Date('2026-12-19T08:00:00+08:00').getTime();
+  const isWarmup = (nowMs() < st) && !isCoverDismissed;
+  if(!me && !isWarmup) showIntroDialog();
+  renderResidentFlow();
+
+  if($('cdPill')) $('cdPill').onclick = () => showIntroDialog();
+  if($('btnHdrTree')) $('btnHdrTree').onclick = () => showTreeProgressDialog();
+  if($('btnHdrSanta')) $('btnHdrSanta').onclick = () => showSantaAccountDialog();
+
   if(me) await refreshStatus();
   renderProgress();
   maybeOpenPending();
@@ -1407,15 +1950,13 @@ const SANTA_SVG = `<svg class="santa" viewBox="0 0 64 64" aria-hidden="true"><ci
 function renderIdCard(editing){
   const box = $('idCard');
   if(!box) return;
-  if(cfg && !cfg.open && !me){
-    box.classList.add('hidden');
-    box.innerHTML = '';
-    return;
-  }
+  // 未填寫門牌時一律開放登記
   box.classList.remove('hidden');
   if(me && !editing){
-    box.innerHTML = `<div class="id-line">${SANTA_SVG}<b class="id-text">${esc(DONG_MAP[me.hao])}棟（${fullAddr(me)}）　${esc(me.name)}</b><button class="link-btn" id="editId">修改</button></div>`;
-    $('editId').onclick = () => renderIdCard(true);
+    // 按下確認，只留下活動倒數時間區塊和任務區塊
+    box.classList.add('hidden');
+    box.style.display = 'none';
+    box.innerHTML = '';
     return;
   }
   const cur = me || {hao:null, lou:'', zhi:'', name:''};
@@ -1423,7 +1964,7 @@ function renderIdCard(editing){
   for(let i = LOU_RANGE[0]; i <= LOU_RANGE[1]; i++) lous += `<option value="${i}"${cur.lou == i ? ' selected' : ''}>${i} 樓</option>`;
   const zhis = '<option value="">請選擇</option>' + ZHI_LIST.map(z => `<option value="${z}"${cur.zhi == z ? ' selected' : ''}>之 ${z}</option>`).join('');
   box.innerHTML = `
-    <h2>先填寫住戶資料</h2>
+    <h2>請填寫住戶資料</h2>
     <p class="muted" style="margin:0 0 12px">一戶只能有一份打卡資料，請填寫實際的門牌。</p>
     <div class="field"><label>棟別</label><div class="chips" id="haoChips">${HAO_LIST.map(h => `<button type="button" class="chip${cur.hao == h ? ' on' : ''}" data-hao="${h}">${DONG_MAP[h]} 棟<br><small style="font-weight:500;opacity:.8">${h} 號</small></button>`).join('')}</div></div>
     <div class="row2 field"><div><label style="display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">樓層</label><select id="idLou">${lous}</select></div>
@@ -1444,10 +1985,13 @@ function renderIdCard(editing){
     if(!lou || !zhi || !name) return;
     me = {hao, lou, zhi, name};
     saveMe(me);
-    renderIdCard();
+    renderResidentFlow();
     await refreshStatus();
     renderProgress();
     maybeOpenPending();
+
+    // 先顯示一個 Intro 的教學！
+    startIntroTour();
   };
 }
 
@@ -1574,8 +2118,9 @@ function renderProgress(){
   if(!cfg) return;
   box.classList.remove('hidden');
   if(!me){
-    // 還沒填住戶資料時：直接呈現 任務完成率 0% 與活動任務（不顯示尚未打卡、打卡按鈕、已通過 0／4 項）
-    box.innerHTML = buildTaskPreviewHtml() + `<div style="text-align:center;padding:12px;color:var(--ink-soft);font-size:13px;background:var(--pine-light);border-radius:10px;margin-top:12px">💡 請先於上方填寫住戶門牌與姓名，確認後即可開始進行拍照打卡上傳！</div>`;
+    box.style.display = 'none';
+    box.classList.add('hidden');
+    box.innerHTML = '';
     return;
   }
   const st = status || {};
@@ -1657,6 +2202,7 @@ function renderProgress(){
     <div style="margin-top:4px">${blocks}</div>`;
   box.querySelectorAll('[data-spot]').forEach(b => { if(b.tagName === 'BUTTON') b.onclick = () => openUpload(Number(b.dataset.spot)); });
   if($('candyBtn')) $('candyBtn').onclick = () => showDoneModal('confirm');
+
   maybeShowDoneModal();
 }
 
@@ -1868,8 +2414,8 @@ function showUploadDialog(spot, photo){
 /* ============ 管理員 ============ */
 async function initAdmin(){
   document.body.classList.add('is-admin');
-  $('adminTag').classList.remove('hidden');
   $('admin').classList.remove('hidden');
+  $('adminTag').onclick = showClearDialog;   // 「清除所有資料」按鈕：登入後才顯示（renderAdmin 裡打開）
   adminKey = sessionStorage.getItem(ADMIN_SS_KEY) || '';
   if(DEMO){ adminKey = 'demo'; renderAdmin(); return; }
   if(adminKey){ try{ await apiGet('admin_list', {key:adminKey}); renderAdmin(); return; }catch(e){ adminKey = ''; } }
@@ -1878,7 +2424,7 @@ async function initAdmin(){
 
 function renderGate(msg){
   $('admin').innerHTML = `<div class="card gate"><h2>管理員登入</h2>
-    <div class="field"><input type="password" id="gateKey" placeholder="管理密碼" autocomplete="current-password"></div>
+    <div class="field"><input type="text" id="gateKey" placeholder="管理密碼" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
     ${msg ? `<p class="muted" style="color:var(--berry);margin:0 0 10px">${esc(msg)}</p>` : ''}
     <button class="btn" id="gateBtn">登入</button></div>`;
   const go = async () => {
@@ -1898,7 +2444,59 @@ function renderGate(msg){
 let adminTab = 'review', adminFilter = '待審核', adminRows = [], doneList = [];
 const photoCache = {};
 
+// 清除所有資料：確認對話框 →「清除資料」才呼叫後端刪除所有紀錄與照片；「不要清除」直接關閉
+function showClearDialog(){
+  if(!adminKey) return;
+  const old = $('clearMask'); if(old) old.remove();
+  const mask = document.createElement('div');
+  mask.id = 'clearMask';
+  mask.className = 'sheet-mask clear-mask';
+  mask.innerHTML = `<div class="clear-dialog" role="alertdialog" aria-modal="true" aria-labelledby="clearTitle">
+      <h3 id="clearTitle">是否要清除所有資料和照片？</h3>
+      <div class="clear-btns">
+        <button type="button" class="btn berry" id="clearYes">清除資料</button>
+        <button type="button" class="btn ghost" id="clearNo">不要清除</button>
+      </div>
+    </div>`;
+  document.body.appendChild(mask);
+  let busy = false;
+  const close = () => { if(!busy) mask.remove(); };
+  $('clearNo').onclick = close;
+  mask.onclick = e => { if(e.target === mask) close(); };
+  $('clearYes').onclick = async () => {
+    if(busy) return;
+    busy = true;
+    $('clearYes').innerHTML = '<span class="spin"></span>清除中…';
+    $('clearYes').disabled = true; $('clearNo').disabled = true;
+    try{
+      const r = await apiPost('admin_clear_all', {key:adminKey});
+      Object.keys(photoCache).forEach(k => delete photoCache[k]);
+      adminRows = []; doneList = [];
+      busy = false; close();
+      toast(`已清除 ${r.rows || 0} 筆資料、${r.photos || 0} 張照片`);
+      renderAdmin();
+    }catch(e){
+      busy = false;
+      $('clearYes').textContent = '清除資料';
+      $('clearYes').disabled = false; $('clearNo').disabled = false;
+      toast(e.message, true);
+    }
+  };
+}
+
+// 「清除所有資料」從活動開始到抽獎當天結束都不顯示（依後端時間判斷；後端在這段期間也會拒絕清除）
+let clearBtnChecked = false;
+async function refreshClearBtn(){
+  if(clearBtnChecked) return;
+  try{
+    const c = await apiGet('config');
+    clearBtnChecked = true;
+    $('adminTag').classList.toggle('hidden', !!c.clearLocked);
+  }catch(e){ $('adminTag').classList.add('hidden'); }
+}
+
 function renderAdmin(){
+  refreshClearBtn();
   $('admin').innerHTML = `<div class="tabs"><button data-t="review">照片審核</button><button data-t="done">完賽名單</button></div><div id="adminBody"></div>`;
   $('admin').querySelectorAll('.tabs button').forEach(b => {
     b.classList.toggle('on', b.dataset.t === adminTab);
