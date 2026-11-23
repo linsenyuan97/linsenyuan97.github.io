@@ -305,6 +305,14 @@ header{background:linear-gradient(95deg,#0F3D21 0%,#1B6B3A 50%,#9B1C1C 100%)!imp
 @media (max-width:380px){.hdr-deco{display:none}}
 
 .brand-icon{transform:none!important;width:34px!important;height:38px!important}
+/* 第一次進來時，左上聖誕樹晃動幾秒＋金色光暈，提示可以點它看活動辦法（用 rotate 屬性，不受上面 transform:none 影響） */
+.brand-icon.tree-hint{transform-origin:50% 100%;animation:treeWiggle .55s ease-in-out 6}
+@keyframes treeWiggle{
+  0%,100%{rotate:0deg;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
+  25%{rotate:-14deg;filter:drop-shadow(0 0 8px rgba(242,185,75,.95))}
+  75%{rotate:14deg;filter:drop-shadow(0 0 8px rgba(242,185,75,.95))}
+}
+@media (prefers-reduced-motion:reduce){.brand-icon.tree-hint{animation:none}}
 #btnHdrTree{cursor:pointer;transition:transform .2s ease,filter .2s ease}
 #btnHdrTree:hover,#btnHdrTree:active{transform:scale(1.15);filter:drop-shadow(0 0 6px #F59E0B)}
 #btnHdrSanta{cursor:pointer;transition:filter .2s ease}
@@ -1166,6 +1174,12 @@ async function mockPost(event, p){
     const a = {hao:Number(p.hao), lou:Number(p.lou), zhi:Number(p.zhi)};
     const key = mockKey(a), spot = SPOTS_DEMO.find(s => s.id === Number(p.spotId));
     if(!spot) throw new Error('找不到這個任務');
+    // 與後端相同：同一支手機最近一次上傳若是別戶且未滿 10 分鐘，就擋下
+    const last = p.deviceId ? mock.rows.filter(r => r.device === p.deviceId).sort((x, y) => y.time - x.time)[0] : null;
+    if(last && last.addrKey !== key){
+      const wait = last.time + 10 * 60000 - Date.now();
+      if(wait > 0) throw new Error('這支手機剛為 ' + unitText(last.addrKey) + ' 上傳，請 ' + Math.ceil(wait / 60000) + ' 分鐘後再幫其他住戶上傳');
+    }
     const st = mockStatus(key)[spot.id], hash = mockHash(p.photo);
     if(st.status === '通過') throw new Error('「' + spot.name + '」已經通過審核，不需要再上傳');
     if(mock.rows.some(r => r.addrKey === key && r.spotId === spot.id && r.hash === hash && r.status !== '已取代')){ const d = mockStatusRes(a); d.duplicate = true; return d; }
@@ -1176,10 +1190,10 @@ async function mockPost(event, p){
     if(pending){
       // 待審中重傳：蓋掉同一筆（舊照片刪除）
       delete mock.photos[pending.photoId];
-      Object.assign(pending, {time:Date.now(), name:p.name, photoId:id, hash});
+      Object.assign(pending, {time:Date.now(), name:p.name, photoId:id, hash, device:p.deviceId || ''});
     }else{
       mock.rows.push({row:mock.rows.length+2, time:Date.now(), addrKey:key, addr:fullAddr(a), name:p.name, spotId:spot.id, taskId:spot.taskId, spotName:spot.name,
-        photoId:id, aiResult:'未檢查', aiReason:'', status:'待審核', note:'', hash});
+        photoId:id, aiResult:'未檢查', aiReason:'', status:'待審核', note:'', hash, device:p.deviceId || ''});
     }
     const res = mockStatusRes(a); res.replaced = !!pending; return res;
   }
@@ -1233,6 +1247,35 @@ function makeThumb(dataUrl){
 }
 function loadMe(){ try{ const s = JSON.parse(localStorage.getItem(ID_KEY) || 'null'); return (s && s.hao && s.name) ? s : null; }catch(e){ return null; } }
 function saveMe(v){ try{ localStorage.setItem(ID_KEY, JSON.stringify(v)); }catch(e){} }
+
+/* ---- 同一支手機換戶上傳要間隔 10 分鐘 ----
+   DEVICE_KEY：這支手機瀏覽器裡的隨機裝置代碼（不是真的手機序號，清除瀏覽器資料就會換）
+   BOUND_KEY ：這支手機最近一次上傳成功的戶別和時間；10 分鐘內換成別戶就先在手機上擋（後端也會用裝置代碼再擋一次） */
+const DEVICE_KEY = 'ls-xmas-device', BOUND_KEY = 'ls-xmas-last-upload', DEVICE_COOLDOWN_MIN = 10;
+let deviceIdMem = '';
+function deviceId(){
+  try{
+    let id = localStorage.getItem(DEVICE_KEY);
+    if(!id){
+      id = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12));
+      localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  }catch(e){
+    if(!deviceIdMem) deviceIdMem = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+    return deviceIdMem;
+  }
+}
+const meKey = () => me ? `${me.hao}-${me.lou}-${me.zhi}` : '';
+function lastUpload(){ try{ return JSON.parse(localStorage.getItem(BOUND_KEY) || 'null'); }catch(e){ return null; } }
+function setBound(){ try{ localStorage.setItem(BOUND_KEY, JSON.stringify({key:meKey(), time:nowMs()})); }catch(e){} }
+// 10 分鐘內剛幫別戶上傳過：回傳提示文字；可以上傳就回傳空字串
+function deviceBlockMsg(){
+  const l = lastUpload();
+  if(!l || !me || l.key === meKey()) return '';
+  const wait = l.time + DEVICE_COOLDOWN_MIN * 60000 - nowMs();
+  return wait > 0 ? `這支手機剛為 ${unitText(l.key)} 上傳，請 ${Math.ceil(wait / 60000)} 分鐘後再幫其他住戶上傳` : '';
+}
 
 function makeSnow(){
   if(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
@@ -1444,7 +1487,7 @@ function showIntroDialog(isWarmupView = false){
 
     warmupTaskSection = `
       <div class="card" style="box-shadow:none;border:1px solid var(--line);background:#FAFAF9;margin:0 0 10px;padding:14px;border-radius:12px">
-        <div style="font-size:16px;font-weight:900;color:var(--pine-dark);padding-bottom:10px;border-bottom:1px solid var(--line)">任務</div>
+        <div style="font-size:16px;font-weight:900;color:var(--pine-dark);padding-bottom:10px;border-bottom:1px solid var(--line)">活動任務內容</div>
         <div style="margin-top:6px">${blocks}</div>
       </div>
     `;
@@ -1859,14 +1902,11 @@ function showSantaAccountDialog(){
 
   if($('btnEditMeFromSanta')){
     $('btnEditMeFromSanta').onclick = () => {
-      close();
-      const idBox = $('idCard');
-      if(idBox){
-        idBox.style.display = 'block';
-        idBox.classList.remove('hidden');
-        renderIdCard(true);
-        idBox.scrollIntoView({ behavior: 'smooth' });
-      }
+      // 不關閉 dialog，直接在 dialog 內切換成填寫表單
+      const sheet = mask.querySelector('.sheet');
+      if(!sheet) return;
+      sheet.innerHTML = renderIdFormHtml();
+      bindIdFormInSheet(sheet, mask);
     };
   }
 
@@ -1883,6 +1923,64 @@ function showSantaAccountDialog(){
     };
   }
 }
+/* ---- Dialog 內嵌表單輔助函式（showSantaAccountDialog 修改模式） ---- */
+function renderIdFormHtml(){
+  const cur = me || {hao:null, lou:'', zhi:'', name:''};
+  let lous = '<option value="">請選擇</option>';
+  for(let i = LOU_RANGE[0]; i <= LOU_RANGE[1]; i++) lous += '<option value="' + i + '"' + (cur.lou == i ? ' selected' : '') + '>' + i + ' 樓</option>';
+  const zhis = '<option value="">請選擇</option>' + ZHI_LIST.map(z => '<option value="' + z + '"' + (cur.zhi == z ? ' selected' : '') + '>之 ' + z + '</option>').join('');
+  const haoChips = HAO_LIST.map(h => '<button type="button" class="chip' + (cur.hao == h ? ' on' : '') + '" data-hao="' + h + '">' + DONG_MAP[h] + ' 棟<br><small style="font-weight:500;opacity:.8">' + h + ' 號</small></button>').join('');
+  return '<div class="sheet" role="dialog" aria-modal="true" aria-label="修改住戶資料" style="max-height:88vh;display:flex;flex-direction:column;border-radius:20px;max-width:540px;margin:auto;padding-top:14px">'
+    + '<div style="flex:1;overflow-y:auto;padding-right:4px">'
+    + '<h2 style="margin:0 0 6px;font-size:17px;font-weight:900;color:var(--pine-dark)">請填寫住戶資料</h2>'
+    + '<p class="muted" style="margin:0 0 12px">一戶只能有一份打卡資料，請填寫實際的門牌。</p>'
+    + '<div class="field"><label>棟別</label><div class="chips" id="haoChipsD">' + haoChips + '</div></div>'
+    + '<div class="row2 field"><div><label style="display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">樓層</label><select id="idLouD">' + lous + '</select></div>'
+    + '<div><label style="display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px">之幾</label><select id="idZhiD">' + zhis + '</select></div></div>'
+    + '<div class="field"><label for="idNameD">姓名</label><input type="text" id="idNameD" maxlength="20" placeholder="請輸入姓名" value="' + esc(cur.name) + '"></div>'
+    + '</div>'
+    + '<div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--line);display:flex;gap:10px">'
+    + '<button type="button" id="saveIdD" style="flex:1;height:48px;font-size:16px;font-weight:900;background:var(--pine);color:#fff;border-radius:12px;border:none;cursor:pointer">確認</button>'
+    + '<button type="button" id="cancelEditD" style="flex:0 0 auto;height:48px;padding:0 18px;font-size:14px;font-weight:700;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer;color:var(--ink-soft)">取消</button>'
+    + '</div>'
+    + '</div>';
+}
+
+function bindIdFormInSheet(sheet, mask){
+  let hao = (me || {}).hao || null;
+  sheet.querySelectorAll('#haoChipsD .chip').forEach(b => b.onclick = () => {
+    hao = Number(b.dataset.hao);
+    sheet.querySelectorAll('#haoChipsD .chip').forEach(x => x.classList.toggle('on', x === b));
+  });
+  const saveBtn = sheet.querySelector('#saveIdD');
+  if(saveBtn) saveBtn.onclick = async () => {
+    const louEl = sheet.querySelector('#idLouD');
+    const zhiEl = sheet.querySelector('#idZhiD');
+    const nameEl = sheet.querySelector('#idNameD');
+    const lou = Number(louEl.value), zhi = Number(zhiEl.value), name = nameEl.value.trim();
+    nameEl.classList.toggle('err', !name);
+    louEl.classList.toggle('err', !lou);
+    zhiEl.classList.toggle('err', !zhi);
+    if(!hao){ toast('請選擇棟別', true); return; }
+    if(!lou || !zhi || !name) return;
+    // 換成別的門牌：先清掉上一戶的進度，避免讀取完成前畫面顯示上一戶的完成度（或誤跳上一戶的完成彈窗）
+    if(!me || me.hao !== hao || me.lou !== lou || me.zhi !== zhi){ status = null; summary = null; }
+    me = {hao, lou, zhi, name};
+    saveMe(me);
+    mask.remove();
+    renderResidentFlow();
+    await refreshStatus();
+    renderProgress();
+    maybeOpenPending();
+    startIntroTour();
+  };
+  const cancelBtn = sheet.querySelector('#cancelEditD');
+  if(cancelBtn) cancelBtn.onclick = () => {
+    mask.remove();
+    showSantaAccountDialog();
+  };
+}
+
 function initWarmupButtons(){
   const startBtn = $('btnWarmupStart');
   const infoBtn = $('btnWarmupInfo');
@@ -1937,6 +2035,33 @@ async function initResident(){
   if(me) await refreshStatus();
   renderProgress();
   maybeOpenPending();
+  hintTreeOnce();
+}
+
+// 第一次進來（每支手機一次）：等開場遮罩、彈窗、教學導覽都關掉、真的看到主頁時，左上聖誕樹晃動幾秒
+const TREE_HINT_KEY = 'ls-xmas-tree-hint';
+function hintTreeOnce(){
+  try{ if(localStorage.getItem(TREE_HINT_KEY)) return; }catch(e){}
+  const tree = $('btnHdrTree');
+  if(!tree) return;
+  const coverOpen = () => { const c = $('warmupCover'); return c && !c.classList.contains('hidden') && !c.classList.contains('fade-out'); };
+  const overlayOpen = () => coverOpen() || document.querySelector('#tourMask, #introDialogMask, .sheet-mask, #doneMask');
+  let waited = 0;
+  const tick = () => {
+    if(overlayOpen()){
+      waited += 600;
+      if(waited < 10 * 60 * 1000) setTimeout(tick, 600);   // 最多等 10 分鐘，之後下次進來再提示
+      return;
+    }
+    setTimeout(() => {
+      if(overlayOpen()){ setTimeout(tick, 600); return; }
+      tree.classList.remove('tree-hint'); void tree.getBoundingClientRect();   // 重新觸發動畫
+      tree.classList.add('tree-hint');
+      tree.addEventListener('animationend', () => tree.classList.remove('tree-hint'), {once:true});
+      try{ localStorage.setItem(TREE_HINT_KEY, '1'); }catch(e){}
+    }, 700);
+  };
+  tick();
 }
 
 function renderStatusBanner(){
@@ -1983,6 +2108,8 @@ function renderIdCard(editing){
     $('idZhi').classList.toggle('err', !zhi);
     if(!hao){ toast('請選擇棟別', true); return; }
     if(!lou || !zhi || !name) return;
+    // 換成別的門牌：先清掉上一戶的進度（同上）
+    if(!me || me.hao !== hao || me.lou !== lou || me.zhi !== zhi){ status = null; summary = null; }
     me = {hao, lou, zhi, name};
     saveMe(me);
     renderResidentFlow();
@@ -2201,7 +2328,7 @@ function renderProgress(){
     </div>
     <div style="margin-top:4px">${blocks}</div>`;
   box.querySelectorAll('[data-spot]').forEach(b => { if(b.tagName === 'BUTTON') b.onclick = () => openUpload(Number(b.dataset.spot)); });
-  if($('candyBtn')) $('candyBtn').onclick = () => showDoneModal('confirm');
+  if($('candyBtn')) $('candyBtn').onclick = async e => { if(await checkCandyBeforeClaim(e.currentTarget)) showDoneModal('confirm'); };
 
   maybeShowDoneModal();
 }
@@ -2265,7 +2392,7 @@ function showDoneModal(view){
     </div>`;
     mask.querySelector('.done-x').onclick = close;
     $('doneLater').onclick = close;
-    $('doneClaim').onclick = renderConfirm;
+    $('doneClaim').onclick = async e => { if(await checkCandyBeforeClaim(e.currentTarget)) renderConfirm(); else close(); };
   };
 
   const renderConfirm = () => {
@@ -2290,14 +2417,45 @@ function showDoneModal(view){
         setTimeout(close, 1600);
       }catch(err){
         busy = false;
-        $('cfOk').textContent = '確認'; $('cfOk').disabled = false; $('cfCancel').disabled = false;
         toast(err.message, true);
-        refreshStatus().then(renderProgress);   // 可能已經在別支手機領過，重新整理狀態
+        // 可能剛好在別支手機領過：重新讀取狀態並更新畫面；已領過就直接關掉視窗
+        await refreshStatus();
+        renderProgress();
+        if(summary && summary.candy && summary.candy.claimed){ close(); return; }
+        $('cfOk').textContent = '確認'; $('cfOk').disabled = false; $('cfCancel').disabled = false;
       }
     };
   };
 
   if(view === 'confirm') renderConfirm(); else renderDone();
+}
+
+// 按「領取糖果」時，先向後端確認這一戶目前的狀態（避免不同手機同時登入同一戶而重複領取）：
+// 已領過 → 提示領取時間並更新畫面；還沒完成 → 提示並更新畫面；可以領 → 回傳 true，再顯示「確認已領取糖果」
+async function checkCandyBeforeClaim(btn){
+  if(!me) return false;
+  const label = btn ? btn.innerHTML : '';
+  if(btn){ btn.disabled = true; btn.innerHTML = '<span class="spin dark"></span>確認中…'; }
+  try{
+    applyStatus(await apiGet('status', {hao:me.hao, lou:me.lou, zhi:me.zhi}));
+  }catch(e){
+    toast('無法確認領取狀態，請稍後再試', true);
+    if(btn){ btn.disabled = false; btn.innerHTML = label; }
+    return false;
+  }
+  if(btn && btn.isConnected){ btn.disabled = false; btn.innerHTML = label; }
+  const candy = (summary && summary.candy) || {};
+  if(candy.claimed){
+    toast(`這一戶已在 ${fmtTime(candy.time)} 領過糖果了`, true);
+    renderProgress();
+    return false;
+  }
+  if(!summary || !summary.completed){
+    toast('目前通過的任務還不到 4 項，暫時不能領取糖果', true);
+    renderProgress();
+    return false;
+  }
+  return true;
 }
 
 function maybeOpenPending(){
@@ -2332,6 +2490,8 @@ function openUpload(spotId, gesture = true){
   if(!me || !cfg || !cfg.open) return;
   const spot = slotById(spotId);
   if(!spot) return;
+  const block = deviceBlockMsg();
+  if(block){ toast(block, true); return; }   // 先在手機上擋，不用拍完才被拒絕
   // 按下「打卡」直接開相機；拍完／選完照片才跳出確認視窗
   const inp = pickInput();
   inp.onchange = async e => {
@@ -2390,7 +2550,8 @@ function showUploadDialog(spot, photo){
     $('sendBtn').innerHTML = '<span class="spin"></span>送出中…';
     $('sendBtn').disabled = true; $('cancelBtn').disabled = true; $('retakeBtn').disabled = true;
     try{
-      const res = await apiPost('submit', {hao:me.hao, lou:me.lou, zhi:me.zhi, name:me.name, spotId:spot.id, photo});
+      const res = await apiPost('submit', {hao:me.hao, lou:me.lou, zhi:me.zhi, name:me.name, spotId:spot.id, photo, deviceId:deviceId()});
+      setBound();   // 記下這支手機最近一次上傳的戶別和時間
       applyStatus(res);
       if(res.duplicate) toast(`這張照片剛剛已經送出過了，不用重複上傳`);
       else{
