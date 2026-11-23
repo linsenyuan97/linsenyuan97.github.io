@@ -1,0 +1,185 @@
+<svg class="warmup-sleigh" aria-hidden="true" viewBox="0 0 520 230">
+      <defs>
+        <linearGradient id="sGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFE082"/><stop offset="50%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient>
+        <linearGradient id="sRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#DC2626"/><stop offset="100%" stop-color="#881337"/></linearGradient>
+        <linearGradient id="sDeer" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#C88A58"/><stop offset="60%" stop-color="#935626"/><stop offset="100%" stop-color="#6E3710"/></linearGradient>
+        <linearGradient id="sDeerBelly" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FDF2E9"/><stop offset="100%" stop-color="#EED5B7"/></linearGradient>
+        <linearGradient id="sGreen" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#065F46"/></linearGradient>
+        <linearGradient id="sBlue" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#1E40AF"/></linearGradient>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.5" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
+      </defs>
+
+      <!-- 月亮與夜空星辰 -->
+      <g opacity="0.9">
+        <circle cx="75" cy="55" r="32" fill="#FFFBEB" opacity="0.25" filter="url(#glow)"/>
+        <path d="M88,32 A28,28 0 1 0 88,78 A22,22 0 1 1 88,32 Z" fill="#FDE68A" opacity="0.95"/>
+        <path d="M230,22 Q230,30 238,30 Q230,30 230,38 Q230,30 222,30 Q230,30 230,22 Z" fill="#FDE68A" opacity="0.9"/>
+        <path d="M480,45 Q480,51 486,51 Q480,51 480,57 Q480,51 474,51 Q480,51 480,45 Z" fill="#FDE68A" opacity="0.8"/>
+        <circle cx="170" cy="48" r="2" fill="#fff" opacity="0.75"/>
+        <circle cx="290" cy="18" r="1.5" fill="#fff" opacity="0.6"/>
+        <circle cx="380" cy="35" r="2.5" fill="#FDE68A" opacity="0.85"/>
+      </g>
+
+      <!-- 魔法星塵軌跡 -->
+      <g opacity="0.7">
+        <circle cx="140" cy="185" r="2" fill="#FDE68A"/>
+        <circle cx="115" cy="192" r="3" fill="#FDE68A"/>
+        <circle cx="85" cy="198" r="1.5" fill="#fff"/>
+        <circle cx="55" cy="202" r="2.5" fill="#FDE68A"/>
+      </g>
+
+      <!-- 金色飄逸韁繩 -->
+      <path d="M205,118 Q 285,130 365,108" fill="none" stroke="url(#sGold)" stroke-width="2.5"/>
+      <path d="M205,123 Q 290,140 375,115" fill="none" stroke="url(#sGold)" stroke-width="2" opacity="0.85"/>
+
+      <!-- 雪橇、禮物與聖誕老人（分層渲染：後壁/禮物 -> 聖誕老人 -> 前座艙/滑軌） -->
+      <g transform="translate(25, 30)">
+        <!-- 1. 雪橇內側暗部靠背 -->
+        <path d="M42,95 C38,68 55,50 82,52 L145,56 C165,56 182,75 192,105 L60,105 Z" fill="#6B111A"/>
+
+        <!-- 2. 後座滿載的大禮物袋與繽紛禮物盒（高聳露出） -->
+        <!-- 金棕色大禮物袋 -->
+        <path d="M48,110 C42,65 65,42 98,45 C122,48 135,70 132,108 Z" fill="#854D0E"/>
+        <path d="M78,48 Q88,40 102,46" stroke="url(#sGold)" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+
+        <!-- 綠色大禮物盒（金色十字絲帶蝴蝶結） -->
+        <g transform="translate(52, 60) rotate(-12)">
+          <rect x="0" y="0" width="36" height="34" rx="4" fill="url(#sGreen)" stroke="#064E3B" stroke-width="1"/>
+          <rect x="14" y="0" width="8" height="34" fill="url(#sGold)"/>
+          <rect x="0" y="13" width="36" height="8" fill="url(#sGold)"/>
+          <!-- 雙耳蝴蝶結 -->
+          <ellipse cx="18" cy="-2" rx="4" ry="3" fill="url(#sGold)"/>
+          <path d="M18,-1 C11,-10 4,-8 13,-2 Z" fill="url(#sGold)"/>
+          <path d="M18,-1 C25,-10 32,-8 23,-2 Z" fill="url(#sGold)"/>
+        </g>
+
+        <!-- 亮藍色禮物盒（雪白絲帶蝴蝶結） -->
+        <g transform="translate(86, 52) rotate(10)">
+          <rect x="0" y="0" width="32" height="30" rx="3" fill="url(#sBlue)" stroke="#1E3A8A" stroke-width="1"/>
+          <rect x="13" y="0" width="6" height="30" fill="#FFFFFF"/>
+          <rect x="0" y="12" width="32" height="6" fill="#FFFFFF"/>
+          <ellipse cx="16" cy="-2" rx="3.5" ry="3" fill="#FFFFFF"/>
+          <path d="M16,-1 C10,-9 5,-7 12,-2 Z" fill="#FFFFFF"/>
+          <path d="M16,-1 C22,-9 27,-7 20,-2 Z" fill="#FFFFFF"/>
+        </g>
+
+        <!-- 金黃色小禮物盒（紅色絲帶） -->
+        <g transform="translate(70, 35) rotate(4)">
+          <rect x="0" y="0" width="26" height="24" rx="3" fill="url(#sGold)" stroke="#B45309" stroke-width="1"/>
+          <rect x="10" y="0" width="6" height="24" fill="#DC2626"/>
+          <rect x="0" y="9" width="26" height="6" fill="#DC2626"/>
+          <circle cx="13" cy="0" r="3.5" fill="#DC2626"/>
+          <path d="M13,0 C8,-6 4,-5 10,-1 Z" fill="#DC2626"/>
+          <path d="M13,0 C18,-6 22,-5 16,-1 Z" fill="#DC2626"/>
+        </g>
+
+        <!-- 3. 聖誕老公公（清晰大尺寸，半身探出在雪橇上方） -->
+        <g transform="translate(122, 10)">
+          <!-- 圓潤紅袍大衣 -->
+          <path d="M15,58 C10,58 4,75 2,102 L64,102 C62,75 56,58 46,58 Z" fill="url(#sRed)"/>
+          <!-- 黑色腰帶與大金扣 -->
+          <rect x="3" y="86" width="60" height="11" fill="#18181B"/>
+          <rect x="25" y="82" width="16" height="18" rx="2" fill="none" stroke="url(#sGold)" stroke-width="3.5"/>
+          <rect x="31" y="88" width="4" height="6" fill="url(#sGold)"/>
+          <!-- 大衣中央白毛邊 -->
+          <rect x="28" y="58" width="10" height="26" fill="#FFFFFF" rx="2"/>
+
+          <!-- 右手向前握韁繩 -->
+          <path d="M46,68 Q66,74 72,85" stroke="url(#sRed)" stroke-width="12" stroke-linecap="round" fill="none"/>
+          <circle cx="70" cy="83" r="6" fill="#FFFFFF"/>
+          <circle cx="75" cy="86" r="6.5" fill="#047857"/>
+
+          <!-- 左手向上開朗揮手 -->
+          <path d="M16,68 Q2,58 0,44" stroke="url(#sRed)" stroke-width="11" stroke-linecap="round" fill="none"/>
+          <circle cx="0" cy="42" r="5.5" fill="#FFFFFF"/>
+          <circle cx="-1" cy="36" r="6.5" fill="#047857"/>
+
+          <!-- 圓圓大頭與紅潤臉蛋 -->
+          <circle cx="33" cy="36" r="18" fill="#FBCFE8"/>
+          <circle cx="22" cy="38" r="5" fill="#F43F5E" opacity="0.45"/>
+          <circle cx="44" cy="38" r="5" fill="#F43F5E" opacity="0.45"/>
+          <!-- 微笑瞇瞇眼 -->
+          <path d="M21,32 Q25,28 29,32" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <path d="M37,32 Q41,28 45,32" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <!-- 紅通通大圓鼻 -->
+          <ellipse cx="33" cy="36" rx="5.5" ry="4.5" fill="#FB7185"/>
+
+          <!-- 超蓬鬆雪白大鬍子 -->
+          <path d="M14,40 C10,58 16,78 33,80 C50,78 56,58 52,40 C46,45 39,46 33,46 C27,46 20,45 14,40 Z" fill="#FFFFFF" filter="url(#glow)"/>
+          <path d="M16,42 C12,58 18,74 33,76 C48,74 54,58 50,42 C44,46 38,47 33,47 C28,47 22,46 16,42 Z" fill="#FFFFFF"/>
+          <!-- 白白大八字鬍 -->
+          <path d="M33,41 C24,41 18,48 16,51 C22,51 28,47 33,45 C38,47 44,51 50,51 C48,48 42,41 33,41 Z" fill="#F3F4F6"/>
+
+          <!-- 白白粗眉毛 -->
+          <path d="M20,27 Q25,24 29,27" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+          <path d="M37,27 Q41,24 46,27" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+
+          <!-- 經典聖誕帽 -->
+          <path d="M15,25 C15,10 28,3 46,8 C51,18 47,25 47,25 Z" fill="url(#sRed)"/>
+          <rect x="13" y="21" width="38" height="10" rx="5" fill="#FFFFFF"/>
+          <path d="M45,8 Q60,9 62,26" fill="none" stroke="url(#sRed)" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="63" cy="28" r="6.5" fill="#FFFFFF" filter="url(#glow)"/>
+        </g>
+
+        <!-- 4. 雪橇前側車身（高度控制在 y=95~140，不擋住聖誕老人與禮物） -->
+        <path d="M38,105 C34,92 48,88 78,90 L148,94 C178,94 195,102 204,124 C208,138 185,142 155,140 L60,140 C42,140 36,125 38,105 Z" fill="url(#sRed)"/>
+        <!-- 金色流線滾邊 -->
+        <path d="M38,102 C35,90 48,86 78,88 L150,92 C180,92 198,102 206,125" fill="none" stroke="url(#sGold)" stroke-width="5" stroke-linecap="round"/>
+        <!-- 車側金色古典渦形紋飾 -->
+        <path d="M68,118 Q115,135 172,114" fill="none" stroke="url(#sGold)" stroke-width="3.5" stroke-linecap="round" opacity="0.95"/>
+        <circle cx="68" cy="118" r="4" fill="url(#sGold)"/>
+        <circle cx="172" cy="114" r="4" fill="url(#sGold)"/>
+
+        <!-- 5. 雪橇金色底座與雙層滑軌（Runners） -->
+        <path d="M72,138 L62,162 M118,138 L112,162 M172,138 L170,162" stroke="url(#sGold)" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M22,162 L198,162 C222,162 236,148 232,136 C228,124 214,124 210,132 C208,140 218,146 226,144" fill="none" stroke="url(#sGold)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- 靈動優雅的飛馳麋鹿 -->
+      <g transform="translate(340, 25)">
+        <!-- 遠端後腿 -->
+        <path d="M38,105 Q30,128 12,142 Q8,145 2,140 Q10,130 25,115" fill="#6E3710"/>
+        <!-- 遠端前腿（空中曲折躍起） -->
+        <path d="M95,105 Q112,120 128,118 Q135,118 132,112 Q120,110 102,96" fill="#6E3710"/>
+        <!-- 可愛小翹尾巴 -->
+        <path d="M22,90 Q12,88 15,98 Q22,102 26,95 Z" fill="#EED5B7"/>
+
+        <!-- 鹿身主軀幹流線 -->
+        <path d="M26,92 C24,78 40,68 62,72 C78,74 95,78 108,68 C115,62 120,45 118,28 C126,38 130,52 124,68 C120,78 112,85 106,94 C95,108 85,112 65,112 C42,112 28,106 26,92 Z" fill="url(#sDeer)"/>
+        <!-- 腹部與胸口柔美白毛 -->
+        <path d="M112,75 C108,86 98,96 82,98 C72,99 65,112 55,112 C48,112 40,108 38,102 C45,106 58,106 70,102 C88,96 102,90 112,75 Z" fill="url(#sDeerBelly)"/>
+        <path d="M124,68 C120,75 112,82 105,82 C108,76 112,70 115,64 Z" fill="url(#sDeerBelly)"/>
+
+        <!-- 近端修長後腿（向後蹬展） -->
+        <path d="M48,102 C45,118 36,135 22,154 C18,158 12,156 12,150 C18,140 32,125 38,106 Z" fill="url(#sDeer)"/>
+        <path d="M20,154 L12,150 L10,155 L17,159 Z" fill="#1F2937"/>
+
+        <!-- 近端飛躍前腿（向前伸展） -->
+        <path d="M98,98 C108,110 125,128 140,126 C146,125 145,118 138,116 C126,114 115,102 106,90 Z" fill="url(#sDeer)"/>
+        <path d="M140,126 L138,116 L144,116 L145,124 Z" fill="#1F2937"/>
+
+        <!-- 鹿頭部、精緻鹿角與發光紅鼻子 -->
+        <g transform="translate(112, 10)">
+          <path d="M4,28 C6,18 16,10 26,12 C34,14 42,20 48,22 C48,26 40,32 32,32 C22,32 10,34 4,28 Z" fill="url(#sDeer)"/>
+          <!-- 耳朵 -->
+          <path d="M12,14 C6,6 8,0 12,2 C16,4 18,10 16,16 Z" fill="url(#sDeer)"/>
+          <path d="M11,12 C8,6 10,2 12,4 C14,6 15,10 13,13 Z" fill="#FBCFE8"/>
+          <!-- 水汪汪黑色大眼睛 -->
+          <ellipse cx="26" cy="18" rx="3.5" ry="4.5" fill="#18181B"/>
+          <circle cx="27.5" cy="16.5" r="1.5" fill="#FFFFFF"/>
+          
+          <!-- 魯道夫發光紅鼻子 -->
+          <circle cx="48" cy="22" r="5.5" fill="#EF4444" filter="url(#glow)"/>
+          <circle cx="46.5" cy="20.5" r="1.8" fill="#FFFFFF" opacity="0.8"/>
+
+          <!-- 優雅分叉金色鹿角 -->
+          <path d="M18,10 C18,-6 26,-18 32,-24 M25,-12 C32,-16 38,-15 42,-18 M22,-4 C28,-6 32,-4 36,-6" fill="none" stroke="#78350F" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
+          <path d="M22,10 C22,-8 32,-22 40,-30 M30,-14 C38,-20 46,-18 52,-22 M26,-4 C34,-8 40,-5 46,-8 M36,-24 C42,-26 46,-30 46,-34" fill="none" stroke="url(#sGold)" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- 聖誕紅色鈴鐺項圈 -->
+          <path d="M4,34 C10,32 18,31 24,35" stroke="#DC2626" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <circle cx="14" cy="37" r="4.5" fill="url(#sGold)" filter="url(#glow)"/>
+          <circle cx="14" cy="37" r="1.2" fill="#78350F"/>
+        </g>
+      </g>
+    </svg>
