@@ -318,6 +318,20 @@ header{background:linear-gradient(95deg,#0F3D21 0%,#1B6B3A 50%,#9B1C1C 100%)!imp
 .clear-dialog h3{margin:0 0 16px;font-size:18px;font-weight:900;color:var(--ink);line-height:1.5}
 .clear-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .clear-btns .btn{height:46px}
+.news-dialog{max-width:380px;text-align:left}
+.news-dialog h3{text-align:center;margin-bottom:12px}
+.news-list{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:8px;max-height:55vh;overflow-y:auto}
+.news-list li{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:10px;font-size:15px;line-height:1.45}
+.news-list li>span{flex:none;font-size:16px}
+.news-list li b{display:block;color:var(--ink)}
+.news-list li em{display:block;font-style:normal;font-weight:700}
+.news-list li small{display:block;font-size:13px;color:#92400E}
+.news-list li.ok{background:#E3F1E7;border:1px solid #A7D3B4}
+.news-list li.ok em{color:#15803D}
+.news-list li.rej{background:#FEF3C7;border:1px solid #FCD34D}
+.news-list li.rej em{color:#92400E}
+.flash-new{animation:flashNew 1.1s ease-in-out 3}
+@keyframes flashNew{0%,100%{box-shadow:0 0 0 0 rgba(242,185,75,0)}50%{box-shadow:0 0 0 5px rgba(242,185,75,.9)}}
 .reject-dialog{max-width:380px;text-align:left}
 .reject-dialog h3{margin-bottom:2px}
 .rj-sub{margin:0 0 10px;font-size:12px;color:var(--ink-soft)}
@@ -490,6 +504,39 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .candy-guide .cg-place{color:var(--gold);font-weight:700;margin-bottom:6px}
 .candy-guide .cg-place b{color:#fff}
 .candy-guide ol{margin:0;padding-left:20px}
+.done-follow{margin-top:14px;padding:14px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(242,185,75,.5);text-align:left}
+.df-title{color:var(--gold);font-weight:900;font-size:15px;margin-bottom:4px}
+.df-desc{margin:0 0 10px!important;font-size:14px!important;line-height:1.6!important;color:#F1F5F2!important}
+.df-desc b{color:#fff}
+.df-btn{display:flex;align-items:center;justify-content:center;height:44px;border-radius:10px;background:#fff;color:#14532D;font-weight:900;text-decoration:none;font-size:15px}
+.df-line{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.df-qr{background:#fff;border-radius:12px;padding:10px;min-width:168px;min-height:168px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.df-qr img,.df-qr canvas{display:block}
+.df-code{margin-top:6px;font-size:13px;font-weight:700;color:#14532D;letter-spacing:.08em}
+.df-err{font-size:13px;color:#92400E;line-height:1.6}
+.df-line-btn{display:flex;align-items:center;justify-content:center;width:100%;height:44px;border-radius:10px;background:#06C755;color:#fff;font-weight:900;text-decoration:none;font-size:15px}
+.df-line-btn[aria-disabled]{opacity:.5;pointer-events:none}
+.df-line small{font-size:12px;line-height:1.6;color:#C9D8CE}
+.is-query #resident{display:none!important}
+.q-card h2{margin:0 0 10px}
+.q-card .row2 label{display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px}
+.q-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.q-num{border-radius:12px;background:#FEF2F2;border:1.5px solid var(--gold);padding:10px;text-align:center}
+.q-num b{display:block;font-size:30px;font-weight:900;color:#B91C1C;line-height:1.2}
+.q-num span{font-size:13px;font-weight:700;color:var(--ink-soft)}
+.q-unit{font-size:20px;font-weight:900;color:var(--ink)}
+.q-sum{margin:6px 0 12px;padding:8px 12px;border-radius:10px;background:#F1F5F2;font-weight:700;font-size:14px;color:var(--ink)}
+.q-sum.done{background:#E3F1E7;color:#15803D}
+.q-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.q-list li{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.q-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px}
+.q-row b{color:var(--ink)}
+.q-st{flex:none;font-style:normal;font-weight:700;font-size:14px;color:var(--ink-soft)}
+.q-st.ok{color:#15803D}.q-st.pend{color:#B45309}.q-st.rej{color:#B91C1C}
+.q-sub{font-size:13px;color:#B45309;margin-top:4px}
+.q-list .rej-reason{margin-top:6px}
+.q-back{text-align:center;margin:6px 0 0}
+.q-back a{color:#fff;font-weight:700}
 .candy-guide .cg-note{margin-top:8px;font-size:12px;color:#C9D8CE}
 .done-panel p.staff-only{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(242,185,75,.15);color:#FDE68A;font-size:14px}
 .done-panel p.mis-tap{margin-top:8px;font-size:12px;color:#C9D8CE}
@@ -1175,6 +1222,7 @@ const ADMIN_SS_KEY = 'ls-xmas-admin';
 const DEMO = !XMAS_GAS_URL;
 const IS_ADMIN = /[?&]admin\b/i.test(location.search);
 const IS_DEMO = /[?&]demo\b/i.test(location.search);
+const IS_QUERY = !IS_ADMIN && /[?&]q\b/i.test(location.search);   // 審核結果查詢頁（?q）
 let isCoverDismissed = false;
 const QR_SPOT = Number(new URLSearchParams(location.search).get('spot')) || 0;
 
@@ -1220,8 +1268,8 @@ async function apiPost(event, payload){
 const TASKS_DEMO = [
   {id:1, name:'感謝聖誕守護神', desc:'向工作人員獻上聖誕祝福，並在大廳任一聖誕裝飾旁，與社區工作人員（物業秘書、保全或清潔人員皆可）手持活動手牌合照一張。'},
   {id:2, name:'遇見聖誕好鄰居', desc:'向鄰居獻上聖誕祝福，邀請「非同戶別」的社區鄰居，一起在社區大廳聖誕樹前手持活動手牌合照一張。'},
-  {id:3, name:'林森苑聖誕大尋寶', desc:'在社區公共區域尋找藏起來的「聖誕信物」並與之合照，集滿 6 個不同地點的信物即完成任務。公設內的信物都放在靠近窗戶處，隔著玻璃就能拍，不用刷卡進入。',
-    spots:[{id:31,name:'A 棟一樓梯廳・環保室周邊'},{id:32,name:'B 棟一樓梯廳・環保室周邊'},{id:33,name:'C 棟一樓梯廳・環保室周邊'},{id:34,name:'大廳物業櫃檯區'},{id:35,name:'健身房'},{id:36,name:'球室'},{id:37,name:'兒童遊戲室'},{id:38,name:'A 棟小閱覽室'},{id:39,name:'C 棟大會議室'},{id:40,name:'宴會廳'}]},
+  {id:3, name:'林森苑聖誕大尋寶', desc:'在社區公共區域尋找藏起來的聖誕小物！後續將公佈小物的參考圖（包含一般版與隱藏版），在社區找到後拍下照片上傳即可完成任務。公設內的小物放在靠近窗戶處，隔著玻璃就能拍，不用刷卡進入。',
+   spots:[{id:31},{id:32},{id:33},{id:34},{id:35},{id:36},{id:37},{id:38},{id:39},{id:40}]},
   {id:4, name:'聖誕紅綠穿搭秀', desc:'穿戴含有「紅色」或「綠色」元素的服飾或配件（如帽子、圍巾、髮飾、襪子等），於社區內任一角落留下穿搭照片。'},
   {id:5, name:'聖誕樹下的祝福', desc:'向大廳櫃檯索取聖誕祝福小卡，親手寫下聖誕或新年祝福並掛上大廳聖誕樹，拍下「手寫小卡片（含祝福文字）」上傳。'},
   {id:6, name:'林森苑聖誕小小畫家', desc:'向大廳櫃檯領取專用塗色畫紙，完成創意塗色後拍照上傳，並將實體畫作繳交給物業櫃檯（由工作人員張貼佈置，打造社區聖誕畫廊）。'}
@@ -1270,9 +1318,14 @@ async function mockGet(action, p){
   if(action === 'config'){
     const now = Date.now(), st = new Date('2026-12-19T08:00:00+08:00').getTime(), et = new Date('2026-12-24T22:00:00+08:00').getTime();
     const isOpen = IS_DEMO || (now >= st && now <= et);
-    return {ok:true, tasks:TASKS_DEMO, tasksNeed:TASKS_NEED_DEMO, t3Need:T3_NEED_DEMO, start:'2026-12-19T08:00:00+08:00', end:'2026-12-24T22:00:00+08:00', drawTime:'2026-12-25T19:00:00+08:00', clearLocked:now >= st && now < new Date('2026-12-26T00:00:00+08:00').getTime(), open:isOpen, notStarted:!IS_DEMO && (now < st), isEnded:!IS_DEMO && (now > et)};
+    return {ok:true, tasks:TASKS_DEMO, tasksNeed:TASKS_NEED_DEMO, t3Need:T3_NEED_DEMO, start:'2026-12-19T08:00:00+08:00', end:'2026-12-24T22:00:00+08:00', drawTime:'2026-12-25T19:00:00+08:00', clearLocked:now >= st && now < new Date('2026-12-26T00:00:00+08:00').getTime(), lineOaId:IS_DEMO ? '@demo' : '', open:isOpen, notStarted:!IS_DEMO && (now < st), isEnded:!IS_DEMO && (now > et)};
   }
   if(action === 'status') return mockStatusRes({hao:Number(p.hao), lou:Number(p.lou), zhi:Number(p.zhi)});
+  if(action === 'stats'){
+    const keys = [...new Set(mock.rows.filter(r => r.status !== '已取代').map(r => r.addrKey))];
+    const done = keys.filter(k => { const [hao, lou, zhi] = k.split('-').map(Number); return mockStatusRes({hao, lou, zhi}).completed; }).length;
+    return {ok:true, joinCount:keys.length, doneCount:done, time:Date.now()};
+  }
   if(action === 'admin_list'){
     // 與後端相同：nth＝第幾次上傳；dup＝同一張照片也出現在別戶／別的任務
     const cnt = {};
@@ -1597,21 +1650,21 @@ function showIntroDialog(isWarmupView = false){
         const blocks = tasks.map(t => {
       const title = '任務' + TASK_CN[t.id - 1] + '・' + esc(t.name);
       if(t.spots){
-        const cells = t.spots.map(sp => `
-          <div class="stamp-cell">
-            <div class="sc-thumb">${SANTA_SVG}</div>
-            <div class="sc-main"><b>${esc(sp.name)}</b></div>
-          </div>`).join('');
+        // Task3 warmup: show simplified snowman preview (0 parts)
+        const t3WarmupHtml = `<div class="t3-scene" style="height:160px">
+          <div class="t3-buildings" style="bottom:20px">${buildingSceneSvg()}</div>
+          <div class="t3-snowman" style="bottom:18px">${snowmanSvg(0)}</div>
+          <div class="t3-ground"></div>
+        </div>
+        <div class="t3-dots">${t.spots.map((_,i)=>`<div class="t3-dot">${i+1}</div>`).join('')}</div>
+        <div class="t3-upload-hint">集滿 6 個就完成任務，集滿 10 個讓雪人完整現身 ⛄</div>`;
         return `<div class="spot task3">
           <div class="spot-head">
             <div class="spot-main"><div class="spot-name">${title}</div><div class="spot-hint">${esc(t.desc)}</div></div>
           </div>
-          <div class="stamp-card">
-            <div class="stamp-head">探索地點（共 10 處・任選 6 處拍照上傳即過關）</div>
-            <div class="stamp-grid">${cells}</div>
-          </div>
+          ${t3WarmupHtml}
         </div>`;
-      }
+            }
       const scene = TASK_SCENE[t.id];
       return `<div class="spot">
         <div class="spot-head">
@@ -1892,7 +1945,7 @@ function showTreeProgressDialog(){
   // 卡片：左邊狀態方塊（兩行字）、右邊「任務○」＋前往任務按鈕
   const gridHtml = tasks.map((t, i) => {
     const s = states[i];
-    let stCls = '', stTxt = '尚未<br>打卡', action = `<button type="button" class="tour-jump-btn tp-go" data-tid="${t.id}">前往任務</button>`;
+    let stCls = '', stTxt = '尚未<br>上傳', action = `<button type="button" class="tour-jump-btn tp-go" data-tid="${t.id}">前往任務</button>`;
     if(t.spots){
       const pts = s.pts || 0, need3 = s.need || 6;
       if(pts >= need3){ stCls = 'ok'; stTxt = '已<br>完成'; action = '<span class="tp-done">✓ 已完成</span>'; }
@@ -2164,7 +2217,11 @@ async function initResident(){
   if($('hdrUserBox')) $('hdrUserBox').onclick = () => showSantaAccountDialog();
   if($('btnHdrSanta')) $('btnHdrSanta').onclick = (e) => { e.stopPropagation(); showSantaAccountDialog(); };
 
-  if(me) await refreshStatus();
+  if(me){
+    lastNewsCheck = Date.now();
+    const news = await refreshStatus({news:true});
+    if(news.length) showReviewNews(news);
+  }
   renderProgress();
   maybeOpenPending();
   hintTreeOnce();
@@ -2254,12 +2311,112 @@ function renderIdCard(editing){
   };
 }
 
-async function refreshStatus(){
-  if(!me) return;
+// opt.news：順便和上次看過的狀態比對，回傳有變化的審核結果；opt.quiet：讀取失敗不跳錯誤訊息
+async function refreshStatus(opt){
+  opt = opt || {};
+  if(!me) return [];
   try{
     applyStatus(await apiGet('status', {hao:me.hao, lou:me.lou, zhi:me.zhi}));
-  }catch(e){ toast(e.message, true); }
+    return opt.news ? takeReviewNews() : [];
+  }catch(e){ if(!opt.quiet) toast(e.message, true); return []; }
 }
+
+/* ============ 審核結果更新提示 ============ */
+// 每一戶在這支手機記住「上次看到的各格狀態」（狀態＋第幾次上傳），下次打開或切回網頁時比對：
+// 變成「通過」或「未通過」的格子就跳出提示。第一次在這支手機登入這一戶只記下來，不提示。
+const REVIEW_SEEN_KEY = 'ls-xmas-review-seen';
+function statusSig(st){
+  const o = {};
+  Object.keys(st || {}).forEach(k => { const e = st[k]; if(e && e.status) o[k] = e.status + '#' + (e.attempts || 0); });
+  return o;
+}
+function takeReviewNews(){
+  if(!me || !status) return [];
+  const key = doneShownKey();
+  let all = {};
+  try{ all = JSON.parse(localStorage.getItem(REVIEW_SEEN_KEY) || '{}') || {}; }catch(e){}
+  const prev = all[key], cur = statusSig(status);
+  all[key] = cur;
+  try{ localStorage.setItem(REVIEW_SEEN_KEY, JSON.stringify(all)); }catch(e){}
+  if(!prev) return [];
+  return Object.keys(cur)
+    .filter(id => { const x = status[id].status; return (x === '通過' || x === '退回') && prev[id] !== cur[id]; })
+    .map(id => ({id:Number(id), status:status[id].status, reason:status[id].reason || ''}))
+    .sort((a, b) => taskOrder(a.id) - taskOrder(b.id));
+}
+const taskOrder = id => id >= 31 ? 3 + (id - 30) / 100 : id;   // 依任務順序排（任務三的信物格排在任務三）
+function showReviewNews(news){
+  const old = $('newsMask'); if(old) old.remove();
+  const okN = news.filter(n => n.status === '通過').length;
+  const items = news.map(n => {
+    const sp = slotById(n.id);
+    const name = esc(sp && sp.short ? sp.name : sp && sp.taskId === 3 ? '任務三・聖誕信物' : (sp ? sp.name : ''));
+    return n.status === '通過'
+      ? `<li class="ok"><span>✅</span><div><b>${name}</b><em>已通過</em></div></li>`
+      : `<li class="rej"><span>⚠</span><div><b>${name}</b><em>未通過：${esc(n.reason || '照片不符合任務要求')}</em><small>請依照原因重新拍照上傳</small></div></li>`;
+  }).join('');
+  const mask = document.createElement('div');
+  mask.id = 'newsMask';
+  mask.className = 'sheet-mask clear-mask';
+  mask.innerHTML = `<div class="clear-dialog news-dialog" role="alertdialog" aria-modal="true" aria-labelledby="newsTitle">
+      <h3 id="newsTitle">${okN ? '🎉 ' : '📋 '}有 ${news.length} 項審核結果更新</h3>
+      <ul class="news-list">${items}</ul>
+      <div class="clear-btns" style="grid-template-columns:1fr"><button type="button" class="btn" id="newsOk">我知道了</button></div>
+    </div>`;
+  document.body.appendChild(mask);
+  const close = () => {
+    mask.remove();
+    flashUpdated(news);
+    maybeShowDoneModal();   // 這次審核剛好完賽：看完更新再跳完成彈窗
+  };
+  $('newsOk').onclick = close;
+  mask.onclick = e => { if(e.target === mask) close(); };
+}
+// 有更新的任務卡（任務三是那一格）閃一下，並捲到第一張
+function flashUpdated(news){
+  let first = null;
+  let hadT3 = false;
+  news.forEach(n => {
+    if(n.id >= 31){
+      // 任務三：找 t3-dot 並閃爍，同時觸發雪人部位動畫
+      const dot = document.querySelector(`.t3-dot:nth-child(${n.id - 30})`);
+      if(dot){ if(!first) first = dot; dot.classList.remove('flash-new'); void dot.offsetWidth; dot.classList.add('flash-new'); }
+      hadT3 = true;
+    } else {
+      const el = document.querySelector(`.spot[data-tid="${n.id}"]`);
+      if(!el) return;
+      if(!first) first = el;
+      el.classList.remove('flash-new'); void el.offsetWidth;
+      el.classList.add('flash-new');
+      el.addEventListener('animationend', () => el.classList.remove('flash-new'), {once:true});
+    }
+  });
+  // 觸發雪人部位 pop 動畫（找到最新通過的那個 part）
+  if(hadT3){
+    const parts = document.querySelectorAll('.snow-part.revealed');
+    parts.forEach(p => {
+      p.classList.remove('popping'); void p.offsetWidth;
+      p.classList.add('popping');
+      p.addEventListener('animationend', () => p.classList.remove('popping'), {once:true});
+    });
+  }
+  if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
+}
+// 從其他 App 切回這個網頁時重新讀取（相機拍照回來、或有視窗開著時不打擾；30 秒內不重複讀）
+let lastNewsCheck = 0;
+async function checkReviewNews(){
+  if(IS_ADMIN || !me || !cfg || document.visibilityState !== 'visible') return;
+  const cover = $('warmupCover');
+  if((cover && !cover.classList.contains('hidden')) || document.querySelector('.sheet-mask, #doneMask, #tourMask, #introDialogMask, #rvViewer')) return;
+  if(Date.now() - lastNewsCheck < 30000) return;
+  lastNewsCheck = Date.now();
+  const news = await refreshStatus({news:true, quiet:true});
+  if(document.querySelector('.sheet-mask, #doneMask, #tourMask, #introDialogMask')) return;   // 讀取期間住戶開了別的視窗
+  if(news.length) showReviewNews(news);
+  renderProgress();
+}
+document.addEventListener('visibilitychange', checkReviewNews);
+window.addEventListener('pageshow', e => { if(e.persisted) checkReviewNews(); });
 // 後端回傳的狀態：各格 status＋完成摘要（通過幾項、是否完成、糖果是否已領）
 function applyStatus(r){
   status = r.status;
@@ -2297,8 +2454,263 @@ function taskState(t, st){
 }
 
 // 任務插圖（疊在示意圖上）
+
+// ===== Task 3: Snowman + Building Scene =====
+const SNOWMAN_PARTS = [
+  // Part 1: Bottom ball
+  '<ellipse class="snow-part" data-p="0" cx="0" cy="0" rx="28" ry="26" fill="#E8F4F8" stroke="#B0CCE0" stroke-width="1.5"/>',
+  // Part 2: Middle ball
+  '<ellipse class="snow-part" data-p="1" cx="0" cy="-40" rx="21" ry="19" fill="#EDF6FA" stroke="#B0CCE0" stroke-width="1.2"/>',
+  // Part 3: Head
+  '<ellipse class="snow-part" data-p="2" cx="0" cy="-72" rx="15" ry="14" fill="#F2F8FC" stroke="#B0CCE0" stroke-width="1"/>',
+  // Part 4: Eyes
+  '<g class="snow-part" data-p="3"><circle cx="-5" cy="-75" r="2.2" fill="#1F2937"/><circle cx="5" cy="-75" r="2.2" fill="#1F2937"/></g>',
+  // Part 5: Carrot nose + smile
+  '<g class="snow-part" data-p="4"><polygon points="0,-71 6,-70 0,-68" fill="#F97316"/><path d="M-5,-66 Q0,-63 5,-66" fill="none" stroke="#374151" stroke-width="1.2" stroke-linecap="round"/></g>',
+  // Part 6: Christmas scarf
+  '<g class="snow-part" data-p="5"><rect x="-22" y="-55" width="44" height="8" rx="4" fill="#DC2626"/><rect x="-10" y="-52" width="12" height="14" rx="3" fill="#16A34A"/><circle cx="2" cy="-47" r="2" fill="#FDE68A"/></g>',
+  // Part 7: Branch arms
+  '<g class="snow-part" data-p="6"><line x1="-21" y1="-42" x2="-40" y2="-52" stroke="#6B4C2A" stroke-width="2.5" stroke-linecap="round"/><line x1="-40" y1="-52" x2="-46" y2="-46" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/><line x1="-40" y1="-52" x2="-38" y2="-44" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/><line x1="21" y1="-42" x2="40" y2="-52" stroke="#6B4C2A" stroke-width="2.5" stroke-linecap="round"/><line x1="40" y1="-52" x2="46" y2="-46" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/><line x1="40" y1="-52" x2="38" y2="-44" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/></g>',
+  // Part 8: Top hat
+  '<g class="snow-part" data-p="7"><rect x="-14" y="-99" width="28" height="27" rx="2" fill="#111827"/><rect x="-18" y="-73" width="36" height="5" rx="2" fill="#1F2937"/><rect x="-7" y="-96" width="14" height="4" rx="2" fill="#DC2626"/></g>',
+  // Part 9: Candy cane
+  '<g class="snow-part" data-p="8"><path d="M44,-30 Q52,-30 52,-22 Q52,-14 44,-14" fill="none" stroke="#E5E7EB" stroke-width="4" stroke-linecap="round"/><path d="M44,-30 Q52,-30 52,-22 Q52,-14 44,-14" fill="none" stroke="#DC2626" stroke-width="4" stroke-linecap="round" stroke-dasharray="4 4"/></g>',
+  // Part 10: Aurora + stars celebration
+  '<g class="snow-part" data-p="9"><circle cx="0" cy="-72" r="22" fill="none" stroke="#FDE68A" stroke-width="1" opacity=".8" stroke-dasharray="3 3"><animateTransform attributeName="transform" type="rotate" from="0 0 -72" to="360 0 -72" dur="8s" repeatCount="indefinite"/></circle><text x="-50" y="-108" font-size="12" fill="#FDE68A" opacity=".9">⭐</text><text x="38" y="-112" font-size="10" fill="#A78BFA" opacity=".9">✨</text><text x="-38" y="-58" font-size="9" fill="#6EE7B7" opacity=".8">❄</text><text x="30" y="-52" font-size="9" fill="#93C5FD" opacity=".8">❄</text></g>'
+];
+
+function buildingSceneSvg(){
+  // 林森苑三棟建築物輪廓（簡化版）
+  return `<svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="300" height="130">
+  <defs>
+    <linearGradient id="b1grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C8C0B2"/>
+      <stop offset="100%" stop-color="#A89E8A"/>
+    </linearGradient>
+    <linearGradient id="b2grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D4CCB8"/>
+      <stop offset="100%" stop-color="#B8AA94"/>
+    </linearGradient>
+    <linearGradient id="snowGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8F4F8"/>
+      <stop offset="100%" stop-color="#D0E8F0"/>
+    </linearGradient>
+  </defs>
+  <!-- Left building (A棟) -->
+  <rect x="10" y="30" width="68" height="90" rx="2" fill="url(#b1grad)"/>
+  <rect x="10" y="25" width="68" height="8" rx="1" fill="#B8AA94"/>
+  <rect x="20" y="22" width="48" height="6" rx="1" fill="#A89E8A"/>
+  <!-- windows left -->
+  <rect x="16" y="38" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="31" y="38" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="46" y="38" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="61" y="38" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="16" y="52" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="31" y="52" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="46" y="52" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="61" y="52" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="16" y="66" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="31" y="66" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="46" y="66" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="61" y="66" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="16" y="80" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="31" y="80" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="46" y="80" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="61" y="80" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <!-- Snow on left building roof -->
+  <ellipse cx="44" cy="23" rx="34" ry="4" fill="white" opacity=".7"/>
+
+  <!-- Center building (B棟) - tallest -->
+  <rect x="105" y="10" width="90" height="110" rx="2" fill="url(#b2grad)"/>
+  <rect x="105" y="4" width="90" height="8" rx="1" fill="#C8C0B0"/>
+  <rect x="118" y="0" width="64" height="6" rx="1" fill="#B8AA94"/>
+  <rect x="136" y="-4" width="28" height="6" rx="1" fill="#A89E8A"/>
+  <!-- windows center -->
+  <rect x="113" y="18" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="132" y="18" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="151" y="18" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="170" y="18" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="113" y="34" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="132" y="34" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="151" y="34" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="170" y="34" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="113" y="50" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="132" y="50" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="151" y="50" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="170" y="50" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="113" y="66" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="132" y="66" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="151" y="66" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="170" y="66" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="113" y="82" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="132" y="82" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="151" y="82" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="170" y="82" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
+  <!-- Snow on center building -->
+  <ellipse cx="150" cy="2" rx="45" ry="5" fill="white" opacity=".75"/>
+
+  <!-- Right building (C棟) -->
+  <rect x="222" y="40" width="68" height="80" rx="2" fill="url(#b1grad)"/>
+  <rect x="222" y="34" width="68" height="8" rx="1" fill="#B8AA94"/>
+  <rect x="232" y="30" width="48" height="6" rx="1" fill="#A89E8A"/>
+  <!-- windows right -->
+  <rect x="228" y="48" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="243" y="48" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="258" y="48" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="273" y="48" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="228" y="62" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="243" y="62" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="258" y="62" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="273" y="62" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="228" y="76" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="243" y="76" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <rect x="258" y="76" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
+  <rect x="273" y="76" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
+  <!-- Snow on right building -->
+  <ellipse cx="256" cy="32" rx="34" ry="4" fill="white" opacity=".7"/>
+  
+  <!-- Ground snow -->
+  <ellipse cx="150" cy="126" rx="150" ry="8" fill="url(#snowGrad)"/>
+</svg>`;
+}
+
+function snowmanSvg(pts){
+  // Build SVG with revealed parts based on pts (number completed)
+  const partsHtml = SNOWMAN_PARTS.map((p, i) => {
+    const revealed = i < pts;
+    // Add revealed class inline since we're generating static HTML
+    return p.replace('class="snow-part"', `class="snow-part${revealed ? ' revealed' : ''}"`);
+  }).join('\n  ');
+  return `<svg viewBox="-60 -115 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="90" height="90" style="filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))">
+  ${partsHtml}
+</svg>`;
+}
+
+let replaySnowmanTimers = [];
+function replaySnowman(pts, containerSelector){
+  replaySnowmanTimers.forEach(t => clearTimeout(t));
+  replaySnowmanTimers = [];
+
+  const root = containerSelector ? document.querySelector(containerSelector) : document;
+  if(!root) return;
+  const parts = root.querySelectorAll('.snow-part');
+  if(!parts.length) return;
+
+  // 1. 全部部位暫時隱藏
+  parts.forEach(p => { p.classList.remove('revealed','popping'); });
+
+  // 2. 嚴格「只播放到目前已完成的任務階段 (pts)」
+  const maxParts = Math.min(Number(pts) || 0, parts.length);
+  for(let i = 0; i < maxParts; i++){
+    const timer = setTimeout(() => {
+      if(parts[i]){
+        parts[i].classList.add('revealed','popping');
+        parts[i].addEventListener('animationend', () => parts[i].classList.remove('popping'), {once:true});
+      }
+    }, i * 360);
+    replaySnowmanTimers.push(timer);
+  }
+}
+
+function getTask3Pts(){
+  const st = status || {};
+  const tasks = (cfg && cfg.tasks) || TASKS_DEMO;
+  const t3 = tasks.find(t => t.id === 3 || t.spots);
+  if(!t3 || !t3.spots) return 0;
+  return t3.spots.filter(s => (st[s.id] || {}).status === '通過').length;
+}
+
+function renderTask3Card(t, st, cfg_obj){
+  const spotStates = t.spots.map(sp => ({sp, x:(st[sp.id]||{}).status||'', reason:(st[sp.id]||{}).reason||''}));
+  const pts = spotStates.filter(ss => ss.x === '通過').length;
+  const need = (cfg_obj && cfg_obj.t3Need) || 6;
+  const isOpen = cfg_obj && cfg_obj.open;
+  const done = pts >= need;
+
+  // Dots row (10 dots)
+  const dots = spotStates.map((ss, i) => {
+    const c = ss.x === '通過' ? 'ok' : ss.x === '待審核' ? 'pend' : ss.x === '退回' ? 'rej' : '';
+    const icon = ss.x === '通過' ? '✓' : ss.x === '待審核' ? '⏳' : ss.x === '退回' ? '✗' : (i+1);
+    const title = ss.x === '通過' ? '已集章' : ss.x === '待審核' ? '審核中' : ss.x === '退回' ? '未通過，請重拍' : `點擊上傳第${i+1}個`;
+    const btn = (c !== 'ok' && isOpen) ? `<button type="button" data-spot="${ss.sp.id}" title="${title}" aria-label="拍照上傳第${i+1}個小物" style="position:absolute;inset:0;border:none;background:transparent;border-radius:50%;cursor:pointer"></button>` : '';
+    return `<div class="t3-dot ${c}" title="${title}">${icon}${btn}</div>`;
+  }).join('');
+
+  // Build the whole card HTML
+  return `<div class="t3-scene" id="t3scene">
+    <div class="t3-scene-stars">${starfieldSvg()}</div>
+    ${pts >= 10 ? '<div class="t3-aurora t3-aurora-active">'+auroraSvg()+'</div>' : ''}
+    <div class="t3-buildings">${buildingSceneSvg()}</div>
+    <div class="t3-snowman">${snowmanSvg(pts)}</div>
+    <div class="t3-ground"></div>
+    ${pts > 0 ? `<button type="button" class="t3-replay-btn" onclick="replaySnowman(${pts}, '#t3scene')" aria-label="重播雪人組裝動畫">▶ 重播組裝 (${pts}/10)</button>` : ''}
+  </div>
+  <div class="t3-dots">${dots}</div>
+  <div class="t3-upload-hint">${pts >= 10 ? '🎉 雪人完整現身！滿分通途！' : done ? '✅ 任務完成！繼續找讓雪人更完整 ⛄' : `已集 ${pts} 個，再找 ${need-pts} 個完成任務 ⛄`}</div>`;
+}
+
+function starfieldSvg(){
+  // Simple static star field
+  const stars = [
+    [20,15],[60,8],[100,20],[140,5],[180,18],[220,10],[260,22],[290,8],
+    [40,30],[80,25],[120,35],[160,28],[200,33],[240,20],[280,30],
+    [10,45],[50,42],[90,48],[130,40],[170,45],[210,38],[250,44]
+  ];
+  return '<svg width="100%" height="60" viewBox="0 0 300 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">' +
+    stars.map(([x,y], i) => `<circle cx="${x}" cy="${y}" r="${(i%3===0?1.5:i%3===1?1:0.7)}" fill="white" opacity="${(.4+i*0.02).toFixed(2)}"><animate attributeName="opacity" values="${(.3+i*0.02).toFixed(2)};${(.8+i*0.01).toFixed(2)};${(.3+i*0.02).toFixed(2)}" dur="${(2+i*0.3).toFixed(1)}s" repeatCount="indefinite"/></circle>`).join('') +
+    '</svg>';
+}
+
+function auroraSvg(){
+  return '<svg width="100%" height="80" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><defs><linearGradient id="aurora1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#6EE7B7" stop-opacity=".0"/><stop offset="30%" stop-color="#A78BFA" stop-opacity=".6"/><stop offset="60%" stop-color="#6EE7B7" stop-opacity=".5"/><stop offset="100%" stop-color="#93C5FD" stop-opacity=".0"/></linearGradient></defs><path d="M0,20 Q75,5 150,25 Q225,45 300,15 L300,0 L0,0Z" fill="url(#aurora1)"><animate attributeName="d" values="M0,20 Q75,5 150,25 Q225,45 300,15 L300,0 L0,0Z;M0,30 Q75,15 150,10 Q225,30 300,25 L300,0 L0,0Z;M0,20 Q75,5 150,25 Q225,45 300,15 L300,0 L0,0Z" dur="6s" repeatCount="indefinite"/></path></svg>';
+}
+
 function propSvg(taskId){
   const F = `font-family="'Noto Sans TC','Microsoft JhengHei',sans-serif"`;
+  if(taskId === 3){
+    // 任務三：聖誕尋寶小物參考圖（一般款＋隱藏版）
+    return `<svg viewBox="0 0 360 270" aria-hidden="true">
+      <rect width="360" height="270" rx="20" fill="#FBF8F0"/>
+      <rect x="12" y="12" width="336" height="246" rx="13" fill="none" stroke="#14532D" stroke-width="3"/>
+      
+      <!-- 標題橫幅 -->
+      <rect x="45" y="24" width="270" height="36" rx="18" fill="#14532D"/>
+      <text x="180" y="49" text-anchor="middle" font-size="17" font-weight="900" fill="#FDE68A" ${F}>🔍 聖誕尋寶小物參考圖</text>
+      
+      <!-- 左邊：一般版小物 -->
+      <g transform="translate(38, 72)">
+        <rect width="130" height="138" rx="14" fill="#fff" stroke="#E5E7EB" stroke-width="2"/>
+        <circle cx="65" cy="52" r="32" fill="#FEF2F2"/>
+        <!-- 聖誕公仔小物圖示 -->
+        <circle cx="65" cy="44" r="16" fill="#F87171"/>
+        <circle cx="65" cy="64" r="22" fill="#EF4444"/>
+        <circle cx="58" cy="42" r="2" fill="#1F2937"/>
+        <circle cx="72" cy="42" r="2" fill="#1F2937"/>
+        <polygon points="65,45 65,49 70,47" fill="#F59E0B"/>
+        <rect x="52" y="54" width="26" height="6" rx="3" fill="#10B981"/>
+        <!-- 標籤 -->
+        <rect x="18" y="100" width="94" height="24" rx="12" fill="#DCFCE7"/>
+        <text x="65" y="117" text-anchor="middle" font-size="12" font-weight="900" fill="#166534" ${F}>一般款小物 🎁</text>
+      </g>
+      
+      <!-- 右邊：隱藏版小物 -->
+      <g transform="translate(192, 72)">
+        <rect width="130" height="138" rx="14" fill="#FFFBEB" stroke="#FDE68A" stroke-width="2"/>
+        <circle cx="65" cy="52" r="32" fill="#FEF3C7"/>
+        <!-- 閃爍金光問號隱藏版 -->
+        <text x="65" y="68" text-anchor="middle" font-size="44" font-weight="900" fill="#D97706" ${F}>？</text>
+        <polygon points="32,32 34,26 40,28 35,33 37,39 32,35 27,39 29,33 24,28 30,26" fill="#F59E0B"/>
+        <polygon points="98,30 99,25 104,27 100,31 102,36 98,33 94,36 96,31 92,27 97,25" fill="#F59E0B"/>
+        <!-- 標籤 -->
+        <rect x="18" y="100" width="94" height="24" rx="12" fill="#FEF3C7"/>
+        <text x="65" y="117" text-anchor="middle" font-size="12" font-weight="900" fill="#B45309" ${F}>✨ 隱藏款小物</text>
+      </g>
+      
+      <!-- 底部提醒小字 -->
+      <text x="180" y="240" text-anchor="middle" font-size="13" font-weight="700" fill="#4B5563" ${F}>依實物為準・拍下合照上傳即可過關</text>
+    </svg>`;
+  }
+
   if(taskId === 1){
     // 任務一沿用原本的打卡卡牌圖（聖誕樹＋林森苑聖誕打卡）
     return `<svg viewBox="0 0 360 270" aria-hidden="true"><rect width="360" height="270" rx="20" fill="#FBF8F0"/><rect x="12" y="12" width="336" height="246" rx="13" fill="none" stroke="#B91C1C" stroke-width="3"/><polygon points="180,34 187,48 202,48 190,57 195,72 180,63 165,72 170,57 158,48 173,48" fill="#F2B94B"/><path d="M180 52L216 106H198L226 146H204L236 188H124L156 146H134L162 106H144Z" fill="#14532D"/><rect x="171" y="188" width="18" height="16" fill="#7A4A24"/><text x="180" y="236" text-anchor="middle" font-size="26" font-weight="900" fill="#14532D" ${F}>林森苑聖誕打卡</text></svg>`;
@@ -2332,7 +2744,7 @@ const STATE_UI = {
   pend: {badge:'審核中', cls:'pend', chip:'<span class="st-tag st-pend-t">（審核中）</span>'},
   rej:  {badge:'未通過', cls:'', chip:'<span class="st-tag st-rej-t">（審核未通過）</span>'},
   part: {badge:'進行中', cls:'pend', chip:''},
-  '':   {badge:'尚未打卡', cls:'', chip:''}
+  '':   {badge:'尚未上傳', cls:'', chip:''}
 };
 
 function buildTaskPreviewHtml(){
@@ -2341,19 +2753,19 @@ function buildTaskPreviewHtml(){
   const blocks = tasks.map(t => {
     const title = `任務${TASK_CN[t.id - 1]}・${esc(t.name)}`;
     if(t.spots){
-      const cells = t.spots.map(sp => `
-        <div class="stamp-cell">
-          <div class="sc-thumb">${SANTA_SVG}</div>
-          <div class="sc-main"><b>${esc(sp.name)}</b></div>
-        </div>`).join('');
+      // 任務三：雪人拼圖卡（靜態預覽，0部位）
+      const t3PreviewHtml = `<div class="t3-scene" style="height:160px">
+        <div class="t3-buildings" style="bottom:20px">${buildingSceneSvg()}</div>
+        <div class="t3-snowman" style="bottom:18px">${snowmanSvg(0)}</div>
+        <div class="t3-ground"></div>
+      </div>
+      <div class="t3-dots">${t.spots.map((_,i)=>`<div class="t3-dot">${i+1}</div>`).join('')}</div>
+      <div class="t3-upload-hint">集滿 6 個就完成任務，集滿 10 個讓雪人完整現身 ⛄</div>`;
       return `<div class="spot task3">
         <div class="spot-head">
           <div class="spot-main"><div class="spot-name">${title}</div><div class="spot-hint">${esc(t.desc)}</div></div>
         </div>
-        <div class="stamp-card">
-          <div class="stamp-head">探索地點（共 10 處・任選 6 處拍照上傳即過關）</div>
-          <div class="stamp-grid">${cells}</div>
-        </div>
+        ${t3PreviewHtml}
       </div>`;
     }
     const scene = TASK_SCENE[t.id];
@@ -2455,45 +2867,35 @@ function renderProgress(){
     : done ? '・已達領糖果門檻 🍬，也可以繼續挑戰全部完成！'
     : `・再通過 ${left} 項即可領糖果`;
   const candyBtn = !done ? '' : candy.claimed
-    ? `<button class="candy-btn claimed" type="button" disabled>✓ 已領糖果<small>${fmtTime(candy.time)}</small></button>`
-    : `<button class="candy-btn" type="button" id="candyBtn">🍬 領取糖果</button>`;
+    ? `<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <button class="candy-btn claimed" type="button" disabled>✓ 已領糖果<small>${fmtTime(candy.time)}</small></button>
+        <button class="link-btn" type="button" id="btnProgReplay" style="font-size:12px;color:var(--pine);text-decoration:underline;cursor:pointer;padding:2px 4px">▶ 重播完賽慶祝動畫</button>
+       </div>`
+    : `<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <button class="candy-btn" type="button" id="candyBtn">🍬 領取糖果</button>
+        <button class="link-btn" type="button" id="btnProgReplay" style="font-size:12px;color:var(--pine);text-decoration:underline;cursor:pointer;padding:2px 4px">▶ 重播完賽慶祝動畫</button>
+       </div>`;
 
   const blocks = tasks.map((t, i) => {
     const s = states[i], ui = STATE_UI[s.state];
     const title = `任務${TASK_CN[t.id - 1]}・${esc(t.name)}`;
     if(t.spots){
-      // 任務三：集章卡，一個地點一格
-      // 每格：左邊縮圖（未上傳＝聖誕老人頭像；有上傳＝自己傳的照片縮圖），右邊地點、狀態、綠色打卡按鈕
-      const cells = t.spots.map(sp => {
-        const x = (st[sp.id] || {}).status || '';
-        const c = x === '通過' ? 'ok' : x === '待審核' ? 'pend' : x === '退回' ? 'rej' : '';
-        const mine = c === 'ok' || c === 'pend' ? getMyPhoto(sp.id) : '';
-        const rs = (st[sp.id] || {}).reason;
-        const stTag = c === 'pend' ? '<em class="sc-st">審核中</em>' : c === 'rej' ? `<em class="sc-st sc-reason">⚠ 未通過原因：${esc(rs || '請重新拍照上傳')}</em>` : '';
-        const action = c === 'ok' ? '<span class="stamp">已集</span>'   // 已集（通過）的格子不能再上傳
-          : cfg.open ? `<button class="btn" type="button" data-spot="${sp.id}">${c === 'pend' ? '重新打卡' : c === 'rej' ? '重新拍照' : '打卡'}</button>` : '';
-        return `<div class="stamp-cell ${c}">
-          <div class="sc-thumb">${mine ? `<img src="${mine}" alt="${esc(sp.name)} 的打卡照片">` : SANTA_SVG}</div>
-          <div class="sc-main"><b>${esc(sp.name)}</b>${stTag}${action}</div>
-        </div>`;
-      }).join('');
+      // 任務三：雪人拼圖卡（10個spot = 10個雪人部位）
+      const t3Html = renderTask3Card(t, st, cfg);
       return `<div class="spot task3${s.state === 'ok' ? ' ok' : ''}">
         <div class="spot-head">
           <div class="spot-no ${ui.cls}">${s.state === 'ok' ? '已完成' : ui.badge}</div>
           <div class="spot-main"><div class="spot-name">${title}</div><div class="spot-hint">${esc(t.desc)}</div></div>
         </div>
-        <div class="stamp-card">
-          <div class="stamp-head">已集 <b>${s.pts}</b>／${s.need} 個信物${s.pts >= s.need ? '・任務完成！' : ''}</div>
-          <div class="stamp-grid">${cells}</div>
-        </div>
+        ${t3Html}
       </div>`;
     }
     const x = (st[t.id] || {}).status || '';
     const mine = (x === '通過' || x === '待審核') ? getMyPhoto(t.id) : '';
     // 已通過的任務不能再上傳；待審中可以重傳（取代原本那張）；未通過可以重拍
-    const btn = x === '待審核' ? '重新打卡' : x === '退回' ? '重新拍照' : '打卡';
+    const btn = x === '待審核' ? '換一張照片' : x === '退回' ? '重新拍照' : '拍照上傳';
     const scene = TASK_SCENE[t.id];
-    return `<div class="spot${s.state === 'ok' ? ' ok' : ''}">
+    return `<div class="spot${s.state === 'ok' ? ' ok' : ''}" data-tid="${t.id}">
       <div class="spot-head">
         <div class="spot-no ${ui.cls}">${ui.badge}</div>
         <div class="spot-main"><div class="spot-name">${title}${ui.chip}</div><div class="spot-hint">${esc(t.desc)}</div></div>
@@ -2518,8 +2920,136 @@ function renderProgress(){
     <div style="margin-top:4px">${blocks}</div>`;
   box.querySelectorAll('[data-spot]').forEach(b => { if(b.tagName === 'BUTTON') b.onclick = () => openUpload(Number(b.dataset.spot)); });
   if($('candyBtn')) $('candyBtn').onclick = async e => { if(await checkCandyBeforeClaim(e.currentTarget)) showDoneModal('confirm'); };
+  if($('btnProgReplay')) $('btnProgReplay').onclick = () => showDoneModal('done');
 
   maybeShowDoneModal();
+}
+
+/* ============ 完賽後：查詢頁＋加入林森苑官方 LINE ============ */
+// LINE 通知沿用官方 LINE 的門牌綁定：住戶加入官方 LINE 並綁定門牌後，審核後會推播一次；之後在 LINE 輸入「聖誕」查詢
+function queryUrl(){ return location.pathname + '?q' + (IS_DEMO ? '&demo' : ''); }
+function lineAddUrl(){ return `https://line.me/R/ti/p/${encodeURIComponent(cfg.lineOaId)}`; }
+function followUpHtml(){
+  const line = cfg && cfg.lineOaId;
+  return `<div class="done-follow">
+    <div class="df-title">之後的審核結果怎麼看？</div>
+    <p class="df-desc">可以透過<b>查詢頁面</b>了解目前審核結果${line ? '，或是<b>加入林森苑官方 LINE</b>，在審核後將審核結果推播通知' : ''}。</p>
+    <a class="df-btn" href="${queryUrl()}">🔍 開啟查詢頁面</a>
+    ${line ? `<div class="df-line">
+      <div class="df-qr" id="dfQr"><span class="spin dark"></span></div>
+      <a class="df-line-btn" href="${lineAddUrl()}" target="_blank" rel="noopener">加入林森苑官方 LINE</a>
+      <small>用 LINE 掃描 QR Code（或在這支手機按上面的按鈕）加入好友，並依照官方 LINE 的指示<b>綁定門牌</b>，審核後就會通知您。<br>因為通知則數有限，LINE 只會通知一次審核結果，之後請在官方 LINE 輸入「<b>聖誕</b>」查詢。</small>
+    </div>` : ''}
+  </div>`;
+}
+async function setupLineBind(){
+  const box = $('dfQr');
+  if(!box || !cfg.lineOaId) return;
+  try{
+    await loadQrLib();
+    if(!box.isConnected) return;
+    box.innerHTML = '';
+    new QRCode(box, {text:lineAddUrl(), width:148, height:148, correctLevel:QRCode.CorrectLevel.M});
+    box.insertAdjacentHTML('beforeend', `<div class="df-code">${esc(cfg.lineOaId)}</div>`);
+  }catch(e){
+    // QR Code 畫不出來：顯示官方帳號 ID，按鈕照常可用
+    if(box.isConnected) box.innerHTML = `<div class="df-code" style="font-size:16px">LINE 搜尋 ID<br>${esc(cfg.lineOaId)}</div>`;
+  }
+}
+let qrLibPromise = null;
+function loadQrLib(){
+  if(window.QRCode) return Promise.resolve();
+  if(!qrLibPromise) qrLibPromise = new Promise((resolve, reject) => {
+    const sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    sc.onload = resolve;
+    sc.onerror = () => { qrLibPromise = null; reject(new Error('QR Code 載入失敗')); };
+    document.head.appendChild(sc);
+  });
+  return qrLibPromise;
+}
+
+/* ============ 審核結果查詢頁（?q） ============ */
+// 輸入門牌就能看六項任務的審核結果（不顯示姓名和照片），上方顯示目前完成任務的戶數
+async function initQuery(){
+  document.body.classList.add('is-query');
+  makeSnow();
+  const root = document.createElement('div');
+  root.id = 'queryPage';
+  $('resident').after(root);
+  root.innerHTML = `<div class="card q-card"><h2>🔍 審核結果查詢</h2><div id="qStats" class="q-stats"><span class="spin dark"></span></div></div>
+    <div class="card q-card" id="qForm"></div>
+    <div id="qResult"></div>
+    <p class="q-back"><a href="${location.pathname}${IS_DEMO ? '?demo' : ''}">‹ 回到活動首頁</a></p>`;
+  try{ cfg = await apiGet('config'); }
+  catch(e){ try{ cfg = await mockGet('config'); }catch(err){ $('qStats').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; } }
+  apiGet('stats').then(r => {
+    $('qStats').innerHTML = `<div class="q-num"><b>${r.doneCount}</b><span>戶已完成任務</span></div>
+      <div class="q-num"><b>${r.joinCount}</b><span>戶參加</span></div>`;
+  }).catch(() => { $('qStats').innerHTML = '<span class="muted">目前無法取得統計</span>'; });
+  renderQueryForm();
+}
+function renderQueryForm(){
+  const cur = loadMe() || {hao:null, lou:'', zhi:''};
+  let lous = '<option value="">請選擇</option>';
+  for(let i = LOU_RANGE[0]; i <= LOU_RANGE[1]; i++) lous += `<option value="${i}"${cur.lou == i ? ' selected' : ''}>${i} 樓</option>`;
+  const zhis = '<option value="">請選擇</option>' + ZHI_LIST.map(z => `<option value="${z}"${cur.zhi == z ? ' selected' : ''}>之 ${z}</option>`).join('');
+  const box = $('qForm');
+  box.innerHTML = `<p class="muted" style="margin:0 0 12px">選擇門牌即可查看各項任務的審核結果。</p>
+    <div class="field"><label>棟別</label><div class="chips" id="qHao">${HAO_LIST.map(h => `<button type="button" class="chip${cur.hao == h ? ' on' : ''}" data-hao="${h}">${DONG_MAP[h]} 棟<br><small style="font-weight:500;opacity:.8">${h} 號</small></button>`).join('')}</div></div>
+    <div class="row2 field"><div><label for="qLou">樓層</label><select id="qLou">${lous}</select></div>
+    <div><label for="qZhi">之幾</label><select id="qZhi">${zhis}</select></div></div>
+    <button class="btn" id="qGo">查詢</button>`;
+  let hao = cur.hao;
+  box.querySelectorAll('#qHao .chip').forEach(b => b.onclick = () => {
+    hao = Number(b.dataset.hao);
+    box.querySelectorAll('#qHao .chip').forEach(x => x.classList.toggle('on', x === b));
+  });
+  const go = async () => {
+    const lou = Number($('qLou').value), zhi = Number($('qZhi').value);
+    if(!hao){ toast('請選擇棟別', true); return; }
+    $('qLou').classList.toggle('err', !lou); $('qZhi').classList.toggle('err', !zhi);
+    if(!lou || !zhi) return;
+    const btn = $('qGo');
+    btn.disabled = true; btn.innerHTML = '<span class="spin"></span>查詢中…';
+    try{
+      const r = await apiGet('status', {hao, lou, zhi});
+      renderQueryResult(`${hao}-${lou}-${zhi}`, r);
+    }catch(e){ toast(e.message, true); }
+    btn.disabled = false; btn.textContent = '查詢';
+  };
+  $('qGo').onclick = go;
+  if(hao && cur.lou && cur.zhi) go();   // 這支手機登記過門牌：直接查
+}
+function renderQueryResult(key, r){
+  const st = r.status || {};
+  const lab = e => {
+    const x = (e || {}).status || '';
+    return x === '通過' ? '<em class="q-st ok">✅ 通過</em>'
+      : x === '待審核' ? '<em class="q-st pend">⏳ 審核中</em>'
+      : x === '退回' ? '<em class="q-st rej">⚠ 未通過</em>'
+      : '<em class="q-st">尚未上傳</em>';
+  };
+  const items = (cfg.tasks || []).map(t => {
+    const title = `任務${TASK_CN[t.id - 1]}・${esc(t.name)}`;
+    if(t.spots){
+      const ts = taskState(t, st);
+      const pend = t.spots.filter(sp => (st[sp.id] || {}).status === '待審核').length;
+      const rej = t.spots.filter(sp => (st[sp.id] || {}).status === '退回');
+      return `<li><div class="q-row"><b>${title}</b>${ts.state === 'ok' ? '<em class="q-st ok">✅ 通過</em>' : `<em class="q-st${pend ? ' pend' : ''}">已集 ${ts.pts}／${ts.need}</em>`}</div>
+        ${pend ? `<div class="q-sub">審核中 ${pend} 個</div>` : ''}
+        ${rej.map(sp => `<div class="rej-reason">⚠ ${esc(sp.name || '聖誕信物')} 未通過原因：${esc(st[sp.id].reason || '照片不符合任務要求，請重新拍照上傳')}</div>`).join('')}</li>`;
+    }
+    const e = st[t.id] || {};
+    return `<li><div class="q-row"><b>${title}</b>${lab(e)}</div>${e.status === '退回' ? rejectReasonHtml(e.reason) : ''}</li>`;
+  }).join('');
+  const need = r.need || cfg.tasksNeed || 4, ok = r.passedTasks || 0;
+  $('qResult').innerHTML = `<div class="card q-card">
+    <div class="q-unit">${esc(unitText(key))}</div>
+    <div class="q-sum${r.completed ? ' done' : ''}">${r.completed ? `🎉 已完成任務（通過 ${ok} 項）${r.candy && r.candy.claimed ? '・已領糖果' : '・可到 ' + esc(CANDY_PLACE) + ' 領取糖果'}` : `已通過 ${ok}／${need} 項，再通過 ${need - ok} 項即可領糖果`}</div>
+    <ul class="q-list">${items}</ul>
+    <p class="muted" style="margin:10px 0 0;font-size:12px">查詢時間：${fmtTime(Date.now())}</p>
+  </div>`;
 }
 
 /* ============ 完成彈窗＋領取糖果 ============ */
@@ -2541,7 +3071,7 @@ function candyGuideHtml(){
 function doneShownKey(){ return me ? `${me.hao}-${me.lou}-${me.zhi}` : ''; }
 function maybeShowDoneModal(){
   if(!summary || !summary.completed || (summary.candy && summary.candy.claimed)) return;
-  if($('doneMask')) return;
+  if($('doneMask') || $('newsMask')) return;
   let shown = {};
   try{ shown = JSON.parse(localStorage.getItem(DONE_SHOWN_KEY) || '{}') || {}; }catch(e){}
   if(shown[doneShownKey()]) return;   // 每一戶在這支手機只自動跳一次，之後用進度列右邊的「領取糖果」
@@ -2657,20 +3187,56 @@ function showDoneModal(view){
   mask.onclick = e => { if(e.target === mask) close(); };
 
   const renderDone = () => {
+    const pts = getTask3Pts();
     mask.innerHTML = `<div class="done-panel" role="dialog" aria-modal="true" aria-label="任務完成">
       <button type="button" class="done-x" aria-label="關閉">✕</button>
       ${santaSvg()}
-      ${GIFT_SVG}
+      <div class="done-gift-wrap" id="doneGiftWrap">${GIFT_SVG}</div>
+      <div class="done-sm-card">
+        <div class="done-sm-scene">
+          <div class="t3-buildings" style="bottom:6px;transform:translateX(-50%) scale(0.68);transform-origin:bottom center">${buildingSceneSvg()}</div>
+          <div class="t3-snowman" id="doneSnowman" style="bottom:4px;transform:translateX(-50%) scale(0.78);transform-origin:bottom center">${snowmanSvg(pts)}</div>
+          <div class="t3-ground" style="height:14px"></div>
+        </div>
+        <div class="done-sm-info">
+          <span>⛄ 社區雪人打造進度：<b>${pts}</b> / 10 個部位</span>
+          ${pts > 0 ? `<button type="button" class="t3-replay-sm-btn" id="replayDoneSnowman" title="重播雪人組裝動畫">▶ 重播雪人</button>` : ''}
+        </div>
+      </div>
       <h3>恭喜！您已完成任務</h3>
       <p>可以領取聖誕糖果了 🍬<br><small>${esc(unitText(doneShownKey()))}・${esc(me.name)}</small></p>
       ${candyGuideHtml()}
       <button type="button" class="candy-btn big" id="doneClaim">我在櫃檯了，出示給工作人員</button>
-      <button type="button" class="done-later" id="doneLater">稍後再領</button>
+      <div class="done-sub-btns">
+        <button type="button" class="done-replay-btn" id="doneReplay">▶ 重播完賽慶祝動畫</button>
+        <button type="button" class="done-later" id="doneLater">稍後再領</button>
+      </div>
+      ${followUpHtml()}
     </div>`;
     mask.querySelector('.done-x').onclick = close;
     $('doneLater').onclick = close;
     $('doneClaim').onclick = async e => { if(await checkCandyBeforeClaim(e.currentTarget)) renderConfirm(); else close(); };
+
+    const doneReplayBtn = $('doneReplay');
+    if(doneReplayBtn) doneReplayBtn.onclick = () => {
+      const oldBox = mask.querySelector('.done-confetti-box');
+      if(oldBox) oldBox.remove();
+      fireDoneEffects(mask);
+      const gw = $('doneGiftWrap');
+      if(gw) gw.innerHTML = GIFT_SVG;
+      replaySnowman(pts, '#doneSnowman');
+    };
+
+    const smReplayBtn = $('replayDoneSnowman');
+    if(smReplayBtn) smReplayBtn.onclick = () => {
+      replaySnowman(pts, '#doneSnowman');
+    };
+
     fireDoneEffects(mask);
+    setupLineBind();
+    if(pts > 0){
+      setTimeout(() => replaySnowman(pts, '#doneSnowman'), 300);
+    }
   };
 
   const renderConfirm = () => {
@@ -2828,7 +3394,7 @@ function openUpload(spotId, gesture = true){
   if(!spot) return;
   const block = deviceBlockMsg();
   if(block){ toast(block, true); return; }   // 先在手機上擋，不用拍完才被拒絕
-  // 按下「打卡」直接開相機；拍完／選完照片才跳出確認視窗
+  // 按下「拍照上傳」直接開相機；拍完／選完照片才跳出確認視窗
   const inp = pickInput();
   inp.onchange = async e => {
     const f = e.target.files[0]; e.target.value = '';
@@ -2845,7 +3411,7 @@ function pickInput(){
   if(!inp){
     inp = document.createElement('input');
     inp.type = 'file'; inp.id = 'photoInput'; inp.accept = 'image/*';
-    // 一般瀏覽器：按打卡直接開相機；FB／IG 內建瀏覽器常不支援直接開相機，改成讓住戶選「拍照或相簿」
+    // 一般瀏覽器：按拍照上傳直接開相機；FB／IG 內建瀏覽器常不支援直接開相機，改成讓住戶選「拍照或相簿」
     if(!(/FBAN|FBAV|FB_IAB|Instagram/i.test(navigator.userAgent || ''))) inp.setAttribute('capture', 'environment');
     inp.className = 'hidden';
     document.body.appendChild(inp);
@@ -2898,7 +3464,8 @@ function showUploadDialog(spot, photo){
       applyStatus(res);
       if(res.duplicate) toast(`這張照片剛剛已經送出過了，不用重複上傳`);
       else{
-        toast(`已送出「${spot.short}」，等待審核`);
+        if(HAND_IN[spot.taskId]) showHandInDialog(spot);
+        else toast(`已送出「${spot.short}」，等待審核`);
         const th = await makeThumb(photo); if(th) saveMyPhoto(spot.id, th);
       }
       busy = false; close();
@@ -2947,6 +3514,24 @@ function renderGate(msg){
 
 let adminTab = 'review', adminFilter = '待審核', adminRows = [], doneList = [];
 const photoCache = {};
+
+// 任務五、六：照片送出後，提醒住戶掛上小卡／交出作品
+const HAND_IN = {5:"請將小卡掛上大廳聖誕樹", 6:"請將作品交至櫃檯"};
+function showHandInDialog(spot){
+  const old = $("handInMask"); if(old) old.remove();
+  const mask = document.createElement("div");
+  mask.id = "handInMask";
+  mask.className = "sheet-mask clear-mask";
+  mask.innerHTML = `<div class="clear-dialog" role="alertdialog" aria-modal="true" aria-labelledby="handInTitle">
+      <div class="muted" style="margin-bottom:6px">已送出「${esc(spot.short)}」，等待審核</div>
+      <h3 id="handInTitle" style="margin-bottom:16px;color:#B91C1C">${HAND_IN[spot.taskId]}</h3>
+      <div class="clear-btns" style="grid-template-columns:1fr"><button type="button" class="btn" id="handInOk">我知道了</button></div>
+    </div>`;
+  document.body.appendChild(mask);
+  const close = () => mask.remove();
+  $("handInOk").onclick = close;
+  mask.onclick = e => { if(e.target === mask) close(); };
+}
 
 // 清除所有資料：確認對話框 →「清除資料」才呼叫後端刪除所有紀錄與照片；「不要清除」直接關閉
 function showClearDialog(){
@@ -3348,6 +3933,46 @@ html,body{margin:0;background:#E5E7EB;font-family:"Noto Sans TC","Microsoft Jhen
 .c p{margin:0;font-size:20pt;font-weight:700;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .c span{font-weight:400;color:#374151}
 @media print{html,body{background:#fff}.bar{display:none}.page{margin:0}}
+
+/* ===== Replay Buttons & Done Snowman ===== */
+.t3-replay-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.45);color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;backdrop-filter:blur(4px);transition:all .2s;z-index:5;display:flex;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.t3-replay-btn:hover{background:rgba(0,0,0,.75);border-color:#FDE68A;color:#FDE68A;transform:scale(1.03)}
+.t3-replay-btn:empty{display:none}
+
+.done-sm-card{background:rgba(0,0,0,.28);border:1px solid rgba(253,230,138,.35);border-radius:14px;padding:8px 8px 10px;margin:10px auto 12px;max-width:340px}
+.done-sm-scene{position:relative;width:100%;height:105px;background:linear-gradient(180deg,#141e30 0%,#243b55 70%,#1a3a1a 100%);border-radius:10px;overflow:hidden}
+.done-sm-info{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:12px;color:#FEF3C7;padding:0 4px}
+.done-sm-info b{color:var(--gold);font-size:14px}
+.t3-replay-sm-btn{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;font-size:11px;font-weight:700;padding:3px 10px;cursor:pointer;transition:all .2s}
+.t3-replay-sm-btn:hover{background:rgba(255,255,255,.3);color:#FDE68A}
+
+.done-sub-btns{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.done-sub-btns button{flex:1;margin:0}
+.done-replay-btn{background:linear-gradient(135deg,rgba(253,230,138,.28),rgba(245,158,11,.28));border:1.5px solid var(--gold);color:#FFFBEB;font-size:14px;font-weight:900;padding:10px 14px;border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.done-replay-btn:hover{background:linear-gradient(135deg,rgba(253,230,138,.42),rgba(245,158,11,.42));color:#fff;transform:translateY(-1px)}
+/* ========= Task3 Snowman Scene ========= */
+.t3-scene{position:relative;width:100%;height:200px;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 40%,#0f3460 70%,#1a3a1a 85%,#2d5a1b 100%);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.t3-scene-stars{position:absolute;inset:0;pointer-events:none}
+.t3-aurora{position:absolute;top:0;left:0;right:0;height:80px;opacity:0.6;pointer-events:none}
+.t3-buildings{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);width:300px;height:130px}
+.t3-ground{position:absolute;bottom:0;left:0;right:0;height:32px;background:linear-gradient(180deg,#e8f4f8 0%,#d0e8f0 100%);border-radius:0 0 12px 12px}
+.t3-snowman{position:absolute;bottom:28px;left:50%;transform:translateX(-50%)}
+.snow-part{opacity:0;transform-box:fill-box;transform-origin:50% 100%}
+.snow-part.revealed{opacity:1}
+.snow-part.popping{animation:snowPartPop .65s cubic-bezier(.34,1.5,.64,1) forwards}
+.t3-aurora-active{animation:auroraGlow 3s ease-in-out infinite}
+@keyframes snowPartPop{0%{transform:scale(0) translateY(10px);opacity:0}60%{transform:scale(1.15) translateY(-2px);opacity:1}100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes auroraGlow{0%,100%{opacity:.4}50%{opacity:.8}}
+@keyframes starTwinkle{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(220px) rotate(360deg);opacity:0}}
+/* Task3 10-dot stamp bar */
+.t3-dots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:10px 0 4px}
+.t3-dot{width:40px;height:40px;border-radius:50%;border:2.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;position:relative}
+.t3-dot.ok{background:var(--pine);border-color:var(--pine);color:#fff;cursor:default}
+.t3-dot.pend{background:#FEF9C3;border-color:#EAB308;color:#854D0E}
+.t3-dot.rej{background:#FEF2F2;border-color:#EF4444;color:#B91C1C}
+.t3-dot button{position:absolute;inset:0;border:none;background:transparent;border-radius:50%;cursor:pointer;width:100%;height:100%}
+.t3-upload-hint{font-size:12px;color:#6B7280;text-align:center;margin-top:4px}
 </style></head><body>
 <div class="bar">共 ${list.length} 戶・${pages.length} 頁 <button onclick="print()">列印 / 另存 PDF</button></div>
 ${pages.join('')}
@@ -3378,7 +4003,7 @@ if(IN_FB_IG){
   const m = document.querySelector('main'); if(m) m.prepend(b);
 }
 
-if(IS_ADMIN) initAdmin(); else initResident();
+if(IS_ADMIN) initAdmin(); else if(IS_QUERY) initQuery(); else initResident();
 </script>
 </body>
 </html>
