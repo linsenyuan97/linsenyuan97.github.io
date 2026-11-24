@@ -2833,32 +2833,27 @@ function getTask3Pts(){
 // 任務三：集章卡，一個地點一格、兩格一排（地點名稱只是代號，看縮圖就知道自己拍過哪裡）
 // 每格：左邊縮圖（未上傳＝聖誕老人頭像；審核中／通過＝自己傳的照片縮圖），右邊地點、狀態／未通過原因、綠色按鈕
 function renderTask3Card(t, st, cfg_obj){
-  const spotStates = t.spots.map(sp => ({sp, x:(st[sp.id]||{}).status||'', reason:(st[sp.id]||{}).reason||''}));
-  const pts = spotStates.filter(ss => ss.x === '通過').length;
   const need = (cfg_obj && cfg_obj.t3Need) || 6;
   const isOpen = !!(cfg_obj && cfg_obj.open);
-  const done = pts >= need;
-
-  // Dots row (10 dots)
-  const dots = spotStates.map((ss, i) => {
-    const c = ss.x === '通過' ? 'ok' : ss.x === '待審核' ? 'pend' : ss.x === '退回' ? 'rej' : '';
-    const icon = ss.x === '通過' ? '✓' : ss.x === '待審核' ? '⏳' : ss.x === '退回' ? '✗' : (i+1);
-    const title = ss.x === '通過' ? '已集章' : ss.x === '待審核' ? '審核中' : ss.x === '退回' ? '未通過，請重拍' : `點擊上傳第${i+1}個`;
-    const btn = (c !== 'ok' && isOpen) ? `<button type="button" data-spot="${ss.sp.id}" title="${title}" aria-label="拍照上傳第${i+1}個小物" style="position:absolute;inset:0;border:none;background:transparent;border-radius:50%;cursor:pointer"></button>` : '';
-    return `<div class="t3-dot ${c}" title="${title}">${icon}${btn}</div>`;
+  const pts = t.spots.filter(sp => (st[sp.id] || {}).status === '通過').length;
+  const cells = t.spots.map((sp, i) => {
+    const x = (st[sp.id] || {}).status || '';
+    const c = x === '通過' ? 'ok' : x === '待審核' ? 'pend' : x === '退回' ? 'rej' : '';
+    const name = sp.name || ('小物地點' + 'ABCDEFGHIJ'[i]);
+    const mine = c === 'ok' || c === 'pend' ? getMyPhoto(sp.id) : '';
+    const rs = (st[sp.id] || {}).reason;
+    const stTag = c === 'pend' ? '<em class="sc-st">審核中</em>' : c === 'rej' ? `<em class="sc-st sc-reason">⚠ 未通過原因：${esc(rs || '請重新拍照上傳')}</em>` : '';
+    const action = c === 'ok' ? '<span class="stamp">已集</span>'   // 已集（通過）的格子不能再上傳
+      : isOpen ? `<button class="btn" type="button" data-spot="${sp.id}">${c === 'pend' ? '換一張照片' : c === 'rej' ? '重新拍照' : '拍照上傳'}</button>` : '';
+    return `<div class="stamp-cell ${c}" data-cell="${sp.id}">
+      <div class="sc-thumb">${mine ? `<img src="${mine}" alt="${esc(name)} 的照片">` : SANTA_SVG}</div>
+      <div class="sc-main"><b>${esc(name)}</b>${stTag}${action}</div>
+    </div>`;
   }).join('');
-
-  // Build the whole card HTML
-  return `<div class="t3-scene" id="t3scene">
-    <div class="t3-scene-stars">${starfieldSvg()}</div>
-    ${pts >= 10 ? '<div class="t3-aurora t3-aurora-active">'+auroraSvg()+'</div>' : ''}
-    <div class="t3-buildings">${buildingSceneSvg()}</div>
-    <div class="t3-snowman">${snowmanSvg(pts)}</div>
-    <div class="t3-ground"></div>
-    ${pts > 0 ? `<button type="button" class="t3-replay-btn" onclick="replaySnowman(${pts}, '#t3scene')" aria-label="重播雪人組裝動畫">▶ 重播組裝 (${pts}/10)</button>` : ''}
-  </div>
-  <div class="t3-dots">${dots}</div>
-  <div class="t3-upload-hint">${pts >= 10 ? '🎉 雪人完整現身！滿分通途！' : done ? '✅ 任務完成！繼續找讓雪人更完整 ⛄' : `已集 ${pts} 個，再找 ${need-pts} 個完成任務 ⛄`}</div>`;
+  return `<div class="stamp-card">
+    <div class="stamp-head">已集 <b>${pts}</b>／${need} 個信物${pts >= need ? '・任務完成！' : ''}</div>
+    <div class="stamp-grid">${cells}</div>
+  </div>`;
 }
 
 function starfieldSvg(){
