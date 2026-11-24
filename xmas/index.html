@@ -484,6 +484,17 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .stamp-cell.rej{border-color:#FCA5A5;background:var(--berry-light)}
 .stamp-cell.rej .sc-st{color:var(--berry)}
 .stamp-cell.rej .sc-st.sc-reason{display:block;padding:4px 8px;border-radius:8px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E}
+/* 任務三：卡片縮小、兩格一排，減少整體高度 */
+.stamp-card .stamp-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.stamp-card .stamp-cell{padding:6px;gap:7px}
+.stamp-card .sc-thumb{width:46px;height:46px;border-radius:8px}
+.stamp-card .sc-thumb .santa{width:40px;height:40px}
+.stamp-card .sc-main{gap:4px}
+.stamp-card .stamp-cell b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stamp-card .sc-st{font-size:11px;line-height:1.4}
+.stamp-card .stamp-cell.rej .sc-st.sc-reason{padding:3px 6px;border-radius:6px}
+.stamp-card .stamp-cell .btn{height:32px;font-size:13px;padding:0 4px;white-space:nowrap}
+.stamp-card .stamp{width:36px;height:36px;font-size:12px;border-width:2.5px;align-self:flex-start;margin:0}
 .rej-reason{margin:-2px 0 2px;padding:10px 12px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:14px;font-weight:700;line-height:1.55}
 .stamp-cell.ok{border-color:var(--pine);background:var(--pine-light)}
 .stamp{align-self:flex-end;width:44px;height:44px;margin:-2px 2px 0 0;border:3px solid var(--berry);border-radius:50%;color:var(--berry);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;transform:rotate(-14deg)}
@@ -619,6 +630,52 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 @media (prefers-reduced-motion:reduce){.btn-warmup-info{animation:none}}
 
 
+
+
+/* ===== 照片右下角林森苑專屬騎縫印章 ===== */
+.spot-card.mine{
+  width:auto;
+  height:82%;
+  aspect-ratio:1/1;
+  border:4px solid #fff;
+  border-radius:10px;
+  background:#fff;
+  overflow:visible!important; /* 讓印章可以跨角蓋在照片與背景上 */
+  position:absolute;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+}
+.spot-card.mine img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:6px;
+}
+.photo-corner-stamp{
+  position:absolute;
+  right:0;
+  bottom:0;
+  transform:translate(50%, 50%) rotate(-14deg);
+  width:92px;
+  height:92px;
+  pointer-events:none;
+  z-index:15;
+  filter:drop-shadow(0 2px 5px rgba(185,28,28,.28));
+  animation:stampDrop .5s cubic-bezier(.2,.9,.3,1.2) forwards;
+}
+.photo-corner-stamp svg{
+  width:100%;
+  height:100%;
+  display:block;
+}
+@keyframes stampDrop{
+  0%{transform:translate(50%, 50%) rotate(-32deg) scale(2.2);opacity:0}
+  60%{transform:translate(50%, 50%) rotate(-12deg) scale(.94);opacity:1}
+  80%{transform:translate(50%, 50%) rotate(-15deg) scale(1.04)}
+  100%{transform:translate(50%, 50%) rotate(-14deg) scale(1);opacity:.94}
+}
+.preview-wrap{position:relative;display:inline-block;max-width:100%;margin:0 auto}
+.preview-wrap .photo-corner-stamp{width:86px;height:86px}
 
 </style>
 </head>
@@ -1661,13 +1718,7 @@ function showIntroDialog(isWarmupView = false){
       const title = '任務' + TASK_CN[t.id - 1] + '・' + esc(t.name);
       if(t.spots){
         // Task3 warmup: show simplified snowman preview (0 parts)
-        const t3WarmupHtml = `<div class="t3-scene" style="height:160px">
-          <div class="t3-buildings" style="bottom:20px">${buildingSceneSvg()}</div>
-          <div class="t3-snowman" style="bottom:18px">${snowmanSvg(0)}</div>
-          <div class="t3-ground"></div>
-        </div>
-        <div class="t3-dots">${t.spots.map((_,i)=>`<div class="t3-dot">${i+1}</div>`).join('')}</div>
-        <div class="t3-upload-hint">集滿 6 個就完成任務，集滿 10 個讓雪人完整現身 ⛄</div>`;
+        const t3WarmupHtml = `${renderTask3Card(t, {}, {t3Need:(cfg && cfg.t3Need) || 6, open:false})}`;
         return `<div class="spot task3">
           <div class="spot-head">
             <div class="spot-main"><div class="spot-name">${title}</div><div class="spot-hint">${esc(t.desc)}</div></div>
@@ -2498,9 +2549,9 @@ function flashUpdated(news){
   let hadT3 = false;
   news.forEach(n => {
     if(n.id >= 31){
-      // 任務三：找 t3-dot 並閃爍，同時觸發雪人部位動畫
-      const dot = document.querySelector(`.t3-dot:nth-child(${n.id - 30})`);
-      if(dot){ if(!first) first = dot; dot.classList.remove('flash-new'); void dot.offsetWidth; dot.classList.add('flash-new'); }
+      // 任務三：閃那一格地點卡片
+      const cell = document.querySelector(`.stamp-cell[data-cell="${n.id}"]`);
+      if(cell){ if(!first) first = cell; cell.classList.remove('flash-new'); void cell.offsetWidth; cell.classList.add('flash-new'); cell.addEventListener('animationend', () => cell.classList.remove('flash-new'), {once:true}); }
       hadT3 = true;
     } else {
       const el = document.querySelector(`.spot[data-tid="${n.id}"]`);
@@ -2546,6 +2597,45 @@ function applyStatus(r){
 /* ============ 六大任務 ============ */
 const TASK_CN = '一二三四五六';
 // 示意圖：現有的社區照片可用的先放上去，沒有的任務只顯示插圖（缺少的照片之後補）
+
+/* ============ 林森苑專屬聖誕認證印章（蓋在照片右下角，1/4圓跨角） ============ */
+const LIN_SEN_YUAN_STAMP_SVG = `<svg class="lsy-stamp-svg" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true">
+  <defs>
+    <path id="lsyArcT" d="M 16,70 A 54,54 0 1,1 124,70" fill="none"/>
+    <path id="lsyArcB" d="M 124,70 A 54,54 0 0,1 16,70" fill="none"/>
+  </defs>
+  <g stroke="#B91C1C" fill="#B91C1C">
+    <!-- 外雙圈邊框 -->
+    <circle cx="70" cy="70" r="66" fill="none" stroke-width="3"/>
+    <circle cx="70" cy="70" r="62" fill="none" stroke-width="1.2" stroke-dasharray="3 2"/>
+    <!-- 內雙圈邊框 -->
+    <circle cx="70" cy="70" r="41" fill="none" stroke-width="1.6"/>
+    <circle cx="70" cy="70" r="38" fill="none" stroke-width="0.8" stroke-dasharray="2 1.5"/>
+    
+    <!-- 左右兩側小五角星 -->
+    <polygon points="12,70 14,66 17,70 14,74" fill="#B91C1C" stroke="none"/>
+    <polygon points="123,70 126,66 128,70 126,74" fill="#B91C1C" stroke="none"/>
+
+    <!-- 環形文字（上方：★ 百慶 ‧ 林森苑 ★） -->
+    <text font-size="11.5" font-weight="900" letter-spacing="2.2" stroke="none" fill="#B91C1C">
+      <textPath href="#lsyArcT" xlink:href="#lsyArcT" startOffset="50%" text-anchor="middle">★ 百慶 ‧ 林森苑 ★</textPath>
+    </text>
+    <!-- 環形文字（下方：2026 聖誕尋寶認證） -->
+    <text font-size="9.5" font-weight="900" letter-spacing="1.6" stroke="none" fill="#B91C1C">
+      <textPath href="#lsyArcB" xlink:href="#lsyArcB" startOffset="50%" text-anchor="middle">2026 聖誕尋寶認證</textPath>
+    </text>
+
+    <!-- 中心小聖誕樹圖騰 -->
+    <polygon points="70,44 75,50 72,50 76,55 64,55 68,50 65,50" fill="#B91C1C" stroke="none"/>
+    <rect x="69" y="55" width="2" height="3" fill="#B91C1C" stroke="none"/>
+    
+    <!-- 核心文字「林森苑」 -->
+    <text x="70" y="73" text-anchor="middle" font-size="17" font-weight="900" letter-spacing="3" stroke="none" fill="#B91C1C">林森苑</text>
+    <!-- 認證狀態文字 -->
+    <text x="70" y="86" text-anchor="middle" font-size="8.5" font-weight="700" letter-spacing="1.5" stroke="none" fill="#B91C1C">VERIFIED</text>
+  </g>
+</svg>`;
+
 const TASK_SCENE = {1:'images/spot1.jpg', 2:'images/spot1.jpg', 4:'images/spot4.jpg', 5:'images/spot1.jpg', 6:'images/spot3.jpg'};
 
 function allSlots(){
@@ -2740,11 +2830,13 @@ function getTask3Pts(){
   return t3.spots.filter(s => (st[s.id] || {}).status === '通過').length;
 }
 
+// 任務三：集章卡，一個地點一格、兩格一排（地點名稱只是代號，看縮圖就知道自己拍過哪裡）
+// 每格：左邊縮圖（未上傳＝聖誕老人頭像；審核中／通過＝自己傳的照片縮圖），右邊地點、狀態／未通過原因、綠色按鈕
 function renderTask3Card(t, st, cfg_obj){
   const spotStates = t.spots.map(sp => ({sp, x:(st[sp.id]||{}).status||'', reason:(st[sp.id]||{}).reason||''}));
   const pts = spotStates.filter(ss => ss.x === '通過').length;
   const need = (cfg_obj && cfg_obj.t3Need) || 6;
-  const isOpen = cfg_obj && cfg_obj.open;
+  const isOpen = !!(cfg_obj && cfg_obj.open);
   const done = pts >= need;
 
   // Dots row (10 dots)
@@ -2874,13 +2966,7 @@ function buildTaskPreviewHtml(){
     const title = `任務${TASK_CN[t.id - 1]}・${esc(t.name)}`;
     if(t.spots){
       // 任務三：雪人拼圖卡（靜態預覽，0部位）
-      const t3PreviewHtml = `<div class="t3-scene" style="height:160px">
-        <div class="t3-buildings" style="bottom:20px">${buildingSceneSvg()}</div>
-        <div class="t3-snowman" style="bottom:18px">${snowmanSvg(0)}</div>
-        <div class="t3-ground"></div>
-      </div>
-      <div class="t3-dots">${t.spots.map((_,i)=>`<div class="t3-dot">${i+1}</div>`).join('')}</div>
-      <div class="t3-upload-hint">集滿 6 個就完成任務，集滿 10 個讓雪人完整現身 ⛄</div>`;
+      const t3PreviewHtml = `${renderTask3Card(t, {}, {t3Need:(cfg && cfg.t3Need) || 6, open:false})}`;
       return `<div class="spot task3">
         <div class="spot-head">
           <div class="spot-main"><div class="spot-name">${title}</div><div class="spot-hint">${esc(t.desc)}</div></div>
@@ -3072,7 +3158,7 @@ function renderProgress(){
       ${x === '退回' ? rejectReasonHtml((st[t.id] || {}).reason) : ''}
       <div class="spot-scene${scene ? '' : ' plain'}" aria-label="${title}">
         ${scene ? `<img class="spot-img" src="${scene}" alt="" loading="lazy" onerror="this.remove()">` : ''}
-        <div class="spot-card r${t.id % 2 ? 'a' : 'b'}${mine ? ' mine' : ''}">${mine ? `<img src="${mine}" alt="${title} 的打卡照片">` : propSvg(t.id)}</div>
+        <div class="spot-card r${t.id % 2 ? 'a' : 'b'}${mine ? ' mine' : ''}">${mine ? `<img src="${mine}" alt="${title} 的打卡照片"><div class="photo-corner-stamp">${LIN_SEN_YUAN_STAMP_SVG}</div>` : propSvg(t.id)}</div>
       </div>
       ${x === '通過' ? '<button class="btn" type="button" disabled>✓ 已通過</button>' : cfg.open ? `<button class="btn" data-spot="${t.id}">${btn}</button>` : ''}
     </div>`;
@@ -3539,7 +3625,10 @@ function showUploadDialog(spot, photo){
   const root = $('sheetRoot');
   root.innerHTML = `<div class="sheet-mask" id="sheetMask"><div class="sheet" role="dialog" aria-modal="true" aria-label="照片">
     <h3>${esc(spot.name)}</h3>
-    <img id="preview" class="preview${photo ? '' : ' hidden'}" alt="照片預覽"${photo ? ` src="${photo}"` : ''}>
+    <div class="preview-wrap">
+      <img id="preview" class="preview${photo ? '' : ' hidden'}" alt="照片預覽"${photo ? ` src="${photo}"` : ''}>
+      <div class="photo-corner-stamp${photo ? '' : ' hidden'}" id="previewStamp">${LIN_SEN_YUAN_STAMP_SVG}</div>
+    </div>
     <div class="btn3">
       <button class="btn cancel" id="cancelBtn" type="button">取消</button>
       <button class="btn ghost" id="retakeBtn" type="button">重新拍照</button>
@@ -3558,7 +3647,7 @@ function showUploadDialog(spot, photo){
       try{
         photo = await compressImage(f);
         $('preview').src = photo;
-        $('preview').classList.remove('hidden');
+        $('preview').classList.remove('hidden'); const ps = $('previewStamp'); if(ps) ps.classList.remove('hidden');
         $('sendBtn').disabled = false;
       }catch(err){ toast(err.message, true); }
     };
