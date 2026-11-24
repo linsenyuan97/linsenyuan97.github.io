@@ -3191,47 +3191,24 @@ function renderProgress(){
   maybeShowDoneModal();
 }
 
-/* ============ 完賽彈窗：審核結果怎麼看＋加入林森苑官方 LINE ============ */
+/* ============ 完賽彈窗：審核結果怎麼看＋加入林森苑住戶服務站 LINE ============ */
 // LINE 通知沿用官方 LINE 的門牌綁定：住戶加入官方 LINE 並綁定門牌後，審核後會推播一次；之後在 LINE 輸入「聖誕」查詢
-function lineAddUrl(){ return `https://line.me/R/ti/p/${encodeURIComponent(cfg.lineOaId)}`; }
+// 用同一個分頁開啟 line.me/R/ti/p/ 連結：手機會直接切到 LINE App 的「加入好友」畫面（開新分頁在 iPhone 常只會打開網頁）
+// 林森苑住戶服務站 LINE 的加好友短網址（官方帳號後台「增加好友工具 → 建立網址」產生，可在後台統計加入管道）
+const LINE_ADD_URL = 'https://lin.ee/VSB6O8L';
+function lineAddUrl(){ return LINE_ADD_URL; }
 function followUpHtml(){
   const line = cfg && cfg.lineOaId;
   return `<div class="done-follow">
     <div class="df-title">之後的審核結果怎麼看？</div>
-    <p class="df-desc">關掉這個視窗後，在首頁按「<b>查看審核結果</b>」就能看到各任務的審核結果${line ? '；也可以<b>加入林森苑官方 LINE</b>，在審核後將審核結果推播通知' : ''}。</p>
+    <p class="df-desc">關掉這個視窗後，在首頁按「<b>查看審核結果</b>」就能看到各任務的審核結果${line ? '；也可以<b>加入林森苑住戶服務站 LINE</b>，在審核後將審核結果推播通知' : ''}。</p>
     ${line ? `<div class="df-line">
-      <div class="df-qr" id="dfQr"><span class="spin dark"></span></div>
-      <a class="df-line-btn" href="${lineAddUrl()}" target="_blank" rel="noopener">加入林森苑官方 LINE</a>
-      <small>用 LINE 掃描 QR Code（或在這支手機按上面的按鈕）加入好友，並依照官方 LINE 的指示<b>綁定門牌</b>，審核後就會通知您。<br>因為通知則數有限，LINE 只會通知一次審核結果，之後請在官方 LINE 輸入「<b>聖誕</b>」查詢。</small>
+      <a class="df-line-btn" href="${lineAddUrl()}">加入林森苑住戶服務站 LINE</a>
+      <small>按上面的按鈕加入好友（LINE 搜尋 ID：${esc(cfg.lineOaId)}），並依照住戶服務站 LINE 的指示<b>綁定門牌</b>，審核後就會通知您。<br>因為通知則數有限，LINE 只會通知一次審核結果，之後請在住戶服務站 LINE 輸入「<b>聖誕</b>」查詢。</small>
     </div>` : ''}
   </div>`;
 }
-async function setupLineBind(){
-  const box = $('dfQr');
-  if(!box || !cfg.lineOaId) return;
-  try{
-    await loadQrLib();
-    if(!box.isConnected) return;
-    box.innerHTML = '';
-    new QRCode(box, {text:lineAddUrl(), width:148, height:148, correctLevel:QRCode.CorrectLevel.M});
-    box.insertAdjacentHTML('beforeend', `<div class="df-code">${esc(cfg.lineOaId)}</div>`);
-  }catch(e){
-    // QR Code 畫不出來：顯示官方帳號 ID，按鈕照常可用
-    if(box.isConnected) box.innerHTML = `<div class="df-code" style="font-size:16px">LINE 搜尋 ID<br>${esc(cfg.lineOaId)}</div>`;
-  }
-}
-let qrLibPromise = null;
-function loadQrLib(){
-  if(window.QRCode) return Promise.resolve();
-  if(!qrLibPromise) qrLibPromise = new Promise((resolve, reject) => {
-    const sc = document.createElement('script');
-    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-    sc.onload = resolve;
-    sc.onerror = () => { qrLibPromise = null; reject(new Error('QR Code 載入失敗')); };
-    document.head.appendChild(sc);
-  });
-  return qrLibPromise;
-}
+function setupLineBind(){}   // 已拿掉 QR Code，只留加入官方 LINE 的按鈕
 
 /* ============ 完成彈窗＋領取糖果 ============ */
 const DONE_SHOWN_KEY = 'ls-xmas-done-shown';
