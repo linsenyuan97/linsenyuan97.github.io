@@ -1228,8 +1228,11 @@ const ID_KEY = 'ls-xmas-id';
 const ADMIN_SS_KEY = 'ls-xmas-admin';
 const DEMO = !XMAS_GAS_URL;
 const IS_ADMIN = /[?&]admin\b/i.test(location.search);
-const IS_DEMO = /[?&]demo\b/i.test(location.search);
-const IS_QUERY = !IS_ADMIN && /[?&]q\b/i.test(location.search);   // ?q：LINE 訊息裡的連結，打開後直接顯示審核結果
+// ?demo 示範模式：只在活動開始前可以用（給物業／管委會預覽）。活動開始後一律當成沒有參數，
+// 避免有人用示範模式做出假的「完賽」「已領糖果」畫面。是否已開始以後端時間為準（啟動時確認，見最下方）
+const DEMO_UNTIL = new Date('2026-12-19T08:00:00+08:00').getTime();
+const WANT_DEMO = /[?&]demo\b/i.test(location.search);
+const IS_DEMO = WANT_DEMO && Date.now() < DEMO_UNTIL;
 let isCoverDismissed = false;
 const QR_SPOT = Number(new URLSearchParams(location.search).get('spot')) || 0;
 
@@ -2338,10 +2341,8 @@ async function initResident(){
     const news = await refreshStatus({news:true});
     if(news.length) showReviewNews(news);
   }
-  if(IS_QUERY) finMoreOpen = true;
   renderProgress();
   maybeOpenPending();
-  if(IS_QUERY && me && !(summary && summary.completed) && !document.querySelector('.sheet-mask, #doneMask')) showTreeProgressDialog();
   hintTreeOnce();
   checkUrlAnimationParams();
 }
@@ -4117,7 +4118,26 @@ if(IN_FB_IG){
   const m = document.querySelector('main'); if(m) m.prepend(b);
 }
 
-if(IS_ADMIN) initAdmin(); else initResident();
+// 帶了 ?demo：先拿掉參數的網址（活動開始後、或無法確認時就改開這個）
+function dropDemoParam(){
+  const u = new URL(location.href);
+  u.searchParams.delete('demo');
+  location.replace(u.toString());
+}
+// 示範模式要後端確認「活動還沒開始」才放行（避免把手機時間調回去就能進示範模式）；查不到也不放行
+async function demoAllowedByServer(){
+  if(DEMO) return true;   // 根本沒有後端（開發中）
+  try{
+    const r = await fetch(XMAS_GAS_URL + '?action=config');
+    const j = await r.json();
+    return !!(j && j.ok && j.notStarted && new Date(j.serverTime).getTime() < DEMO_UNTIL);
+  }catch(e){ return false; }
+}
+(async () => {
+  if(WANT_DEMO && !IS_DEMO){ dropDemoParam(); return; }                     // 手機時間已過活動開始
+  if(IS_DEMO && !(await demoAllowedByServer())){ dropDemoParam(); return; } // 後端時間已過活動開始
+  if(IS_ADMIN) initAdmin(); else initResident();
+})();
 </script>
 </body>
 </html>
