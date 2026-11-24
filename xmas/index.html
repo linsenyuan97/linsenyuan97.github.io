@@ -495,6 +495,10 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .stamp-card .stamp-cell.rej .sc-st.sc-reason{padding:3px 6px;border-radius:6px}
 .stamp-card .stamp-cell .btn{height:32px;font-size:13px;padding:0 4px;white-space:nowrap}
 .stamp-card .stamp{width:36px;height:36px;font-size:12px;border-width:2.5px;align-self:flex-start;margin:0}
+.stamp-card .sc-thumb{position:relative}
+.lsy-seal{position:absolute;right:1px;bottom:1px;width:30px;height:30px;transform:rotate(-14deg);opacity:.92;animation:sealIn .45s cubic-bezier(.34,1.6,.64,1) both}
+@keyframes sealIn{from{transform:rotate(-14deg) scale(1.8);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:.92}}
+.stamp-card .sc-st.sc-ok{color:var(--pine)}
 .rej-reason{margin:-2px 0 2px;padding:10px 12px;border-radius:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#92400E;font-size:14px;font-weight:700;line-height:1.55}
 .stamp-cell.ok{border-color:var(--pine);background:var(--pine-light)}
 .stamp{align-self:flex-end;width:44px;height:44px;margin:-2px 2px 0 0;border:3px solid var(--berry);border-radius:50%;color:var(--berry);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;transform:rotate(-14deg)}
@@ -677,6 +681,45 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .preview-wrap{position:relative;display:inline-block;max-width:100%;margin:0 auto}
 .preview-wrap .photo-corner-stamp{width:86px;height:86px}
 
+/* ===== Replay Buttons & Done Snowman ===== */
+.t3-replay-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.45);color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;backdrop-filter:blur(4px);transition:all .2s;z-index:5;display:flex;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.t3-replay-btn:hover{background:rgba(0,0,0,.75);border-color:#FDE68A;color:#FDE68A;transform:scale(1.03)}
+.t3-replay-btn:empty{display:none}
+
+.done-sm-card{background:rgba(0,0,0,.28);border:1px solid rgba(253,230,138,.35);border-radius:14px;padding:8px 8px 10px;margin:10px auto 12px;max-width:340px}
+.done-sm-scene{position:relative;width:100%;height:105px;background:linear-gradient(180deg,#141e30 0%,#243b55 70%,#1a3a1a 100%);border-radius:10px;overflow:hidden}
+.done-sm-info{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:12px;color:#FEF3C7;padding:0 4px}
+.done-sm-info b{color:var(--gold);font-size:14px}
+.t3-replay-sm-btn{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;font-size:11px;font-weight:700;padding:3px 10px;cursor:pointer;transition:all .2s}
+.t3-replay-sm-btn:hover{background:rgba(255,255,255,.3);color:#FDE68A}
+
+.done-sub-btns{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.done-sub-btns button{flex:1;margin:0}
+.done-replay-btn{background:linear-gradient(135deg,rgba(253,230,138,.28),rgba(245,158,11,.28));border:1.5px solid var(--gold);color:#FFFBEB;font-size:14px;font-weight:900;padding:10px 14px;border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.done-replay-btn:hover{background:linear-gradient(135deg,rgba(253,230,138,.42),rgba(245,158,11,.42));color:#fff;transform:translateY(-1px)}
+/* ========= Task3 Snowman Scene ========= */
+.t3-scene{position:relative;width:100%;height:200px;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 40%,#0f3460 70%,#1a3a1a 85%,#2d5a1b 100%);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.t3-scene-stars{position:absolute;inset:0;pointer-events:none}
+.t3-aurora{position:absolute;top:0;left:0;right:0;height:80px;opacity:0.6;pointer-events:none}
+.t3-buildings{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);width:300px;height:130px}
+.t3-ground{position:absolute;bottom:0;left:0;right:0;height:32px;background:linear-gradient(180deg,#e8f4f8 0%,#d0e8f0 100%);border-radius:0 0 12px 12px}
+.t3-snowman{position:absolute;bottom:28px;left:50%;transform:translateX(-50%)}
+.snow-part{opacity:0;transform-box:fill-box;transform-origin:50% 100%}
+.snow-part.revealed{opacity:1}
+.snow-part.popping{animation:snowPartPop .65s cubic-bezier(.34,1.5,.64,1) forwards}
+.t3-aurora-active{animation:auroraGlow 3s ease-in-out infinite}
+@keyframes snowPartPop{0%{transform:scale(0) translateY(10px);opacity:0}60%{transform:scale(1.15) translateY(-2px);opacity:1}100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes auroraGlow{0%,100%{opacity:.4}50%{opacity:.8}}
+@keyframes starTwinkle{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(220px) rotate(360deg);opacity:0}}
+/* Task3 10-dot stamp bar */
+.t3-dots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:10px 0 4px}
+.t3-dot{width:40px;height:40px;border-radius:50%;border:2.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;position:relative}
+.t3-dot.ok{background:var(--pine);border-color:var(--pine);color:#fff;cursor:default}
+.t3-dot.pend{background:#FEF9C3;border-color:#EAB308;color:#854D0E}
+.t3-dot.rej{background:#FEF2F2;border-color:#EF4444;color:#B91C1C}
+.t3-dot button{position:absolute;inset:0;border:none;background:transparent;border-radius:50%;cursor:pointer;width:100%;height:100%}
+.t3-upload-hint{font-size:12px;color:#6B7280;text-align:center;margin-top:4px}
 </style>
 </head>
 <body>
@@ -1718,7 +1761,7 @@ function showIntroDialog(isWarmupView = false){
       const title = '任務' + TASK_CN[t.id - 1] + '・' + esc(t.name);
       if(t.spots){
         // Task3 warmup: show simplified snowman preview (0 parts)
-        const t3WarmupHtml = `${renderTask3Card(t, {}, {t3Need:(cfg && cfg.t3Need) || 6, open:false})}`;
+        const t3WarmupHtml = `${renderTask3Card(t, {}, {t3Need:(cfg && cfg.t3Need) || 6, open:false, preview:true})}`;
         return `<div class="spot task3">
           <div class="spot-head">
             <div class="spot-main"><div class="spot-name">${title}</div><div class="spot-hint">${esc(t.desc)}</div></div>
@@ -2667,119 +2710,50 @@ function taskState(t, st){
 
 // ===== Task 3: Snowman + Building Scene =====
 const SNOWMAN_PARTS = [
-  // Part 1: Bottom ball
-  '<ellipse class="snow-part" data-p="0" cx="0" cy="0" rx="28" ry="26" fill="#E8F4F8" stroke="#B0CCE0" stroke-width="1.5"/>',
-  // Part 2: Middle ball
-  '<ellipse class="snow-part" data-p="1" cx="0" cy="-40" rx="21" ry="19" fill="#EDF6FA" stroke="#B0CCE0" stroke-width="1.2"/>',
-  // Part 3: Head
-  '<ellipse class="snow-part" data-p="2" cx="0" cy="-72" rx="15" ry="14" fill="#F2F8FC" stroke="#B0CCE0" stroke-width="1"/>',
-  // Part 4: Eyes
-  '<g class="snow-part" data-p="3"><circle cx="-5" cy="-75" r="2.2" fill="#1F2937"/><circle cx="5" cy="-75" r="2.2" fill="#1F2937"/></g>',
-  // Part 5: Carrot nose + smile
-  '<g class="snow-part" data-p="4"><polygon points="0,-71 6,-70 0,-68" fill="#F97316"/><path d="M-5,-66 Q0,-63 5,-66" fill="none" stroke="#374151" stroke-width="1.2" stroke-linecap="round"/></g>',
-  // Part 6: Christmas scarf
-  '<g class="snow-part" data-p="5"><rect x="-22" y="-55" width="44" height="8" rx="4" fill="#DC2626"/><rect x="-10" y="-52" width="12" height="14" rx="3" fill="#16A34A"/><circle cx="2" cy="-47" r="2" fill="#FDE68A"/></g>',
-  // Part 7: Branch arms
-  '<g class="snow-part" data-p="6"><line x1="-21" y1="-42" x2="-40" y2="-52" stroke="#6B4C2A" stroke-width="2.5" stroke-linecap="round"/><line x1="-40" y1="-52" x2="-46" y2="-46" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/><line x1="-40" y1="-52" x2="-38" y2="-44" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/><line x1="21" y1="-42" x2="40" y2="-52" stroke="#6B4C2A" stroke-width="2.5" stroke-linecap="round"/><line x1="40" y1="-52" x2="46" y2="-46" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/><line x1="40" y1="-52" x2="38" y2="-44" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/></g>',
-  // Part 8: Top hat
-  '<g class="snow-part" data-p="7"><rect x="-14" y="-99" width="28" height="27" rx="2" fill="#111827"/><rect x="-18" y="-73" width="36" height="5" rx="2" fill="#1F2937"/><rect x="-7" y="-96" width="14" height="4" rx="2" fill="#DC2626"/></g>',
-  // Part 9: Candy cane
-  '<g class="snow-part" data-p="8"><path d="M44,-30 Q52,-30 52,-22 Q52,-14 44,-14" fill="none" stroke="#E5E7EB" stroke-width="4" stroke-linecap="round"/><path d="M44,-30 Q52,-30 52,-22 Q52,-14 44,-14" fill="none" stroke="#DC2626" stroke-width="4" stroke-linecap="round" stroke-dasharray="4 4"/></g>',
-  // Part 10: Aurora + stars celebration
-  '<g class="snow-part" data-p="9"><circle cx="0" cy="-72" r="22" fill="none" stroke="#FDE68A" stroke-width="1" opacity=".8" stroke-dasharray="3 3"><animateTransform attributeName="transform" type="rotate" from="0 0 -72" to="360 0 -72" dur="8s" repeatCount="indefinite"/></circle><text x="-50" y="-108" font-size="12" fill="#FDE68A" opacity=".9">⭐</text><text x="38" y="-112" font-size="10" fill="#A78BFA" opacity=".9">✨</text><text x="-38" y="-58" font-size="9" fill="#6EE7B7" opacity=".8">❄</text><text x="30" y="-52" font-size="9" fill="#93C5FD" opacity=".8">❄</text></g>'
+  // 雪人兩顆球（身體＋頭），共 10 個部位：每集到一個信物就多拼上一個
+  // Part 1: 身體（大球）
+  '<ellipse class="snow-part" data-p="0" cx="0" cy="-26" rx="30" ry="28" fill="#E8F4F8" stroke="#B0CCE0" stroke-width="1.5"/>',
+  // Part 2: 頭（小球）
+  '<ellipse class="snow-part" data-p="1" cx="0" cy="-68" rx="18" ry="17" fill="#F2F8FC" stroke="#B0CCE0" stroke-width="1.2"/>',
+  // Part 3: 眼睛
+  '<g class="snow-part" data-p="2"><circle cx="-6" cy="-72" r="2.4" fill="#1F2937"/><circle cx="6" cy="-72" r="2.4" fill="#1F2937"/></g>',
+  // Part 4: 紅蘿蔔鼻子＋微笑
+  '<g class="snow-part" data-p="3"><polygon points="0,-68 8,-66.5 0,-64.5" fill="#F97316"/><path d="M-6,-61 Q0,-57.5 6,-61" fill="none" stroke="#374151" stroke-width="1.3" stroke-linecap="round"/></g>',
+  // Part 5: 聖誕圍巾（在頭和身體之間）
+  '<g class="snow-part" data-p="4"><rect x="-21" y="-55" width="42" height="8" rx="4" fill="#DC2626"/><rect x="8" y="-51" width="9" height="16" rx="3" fill="#16A34A"/><circle cx="-12" cy="-51" r="1.8" fill="#FDE68A"/><circle cx="0" cy="-51" r="1.8" fill="#FDE68A"/></g>',
+  // Part 6: 身體的鈕扣
+  '<g class="snow-part" data-p="5"><circle cx="0" cy="-38" r="2.6" fill="#1F2937"/><circle cx="0" cy="-27" r="2.6" fill="#1F2937"/><circle cx="0" cy="-16" r="2.6" fill="#1F2937"/></g>',
+  // Part 7: 樹枝手臂
+  '<g class="snow-part" data-p="6"><line x1="-27" y1="-36" x2="-46" y2="-48" stroke="#6B4C2A" stroke-width="2.6" stroke-linecap="round"/><line x1="-41" y1="-45" x2="-47" y2="-40" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/><line x1="27" y1="-36" x2="46" y2="-48" stroke="#6B4C2A" stroke-width="2.6" stroke-linecap="round"/><line x1="41" y1="-45" x2="48" y2="-41" stroke="#6B4C2A" stroke-width="1.8" stroke-linecap="round"/></g>',
+  // Part 8: 高帽
+  '<g class="snow-part" data-p="7"><rect x="-13" y="-109" width="26" height="25" rx="2" fill="#111827"/><rect x="-19" y="-86" width="38" height="5" rx="2" fill="#1F2937"/><rect x="-13" y="-92" width="26" height="4" fill="#DC2626"/></g>',
+  // Part 9: 拐杖糖（靠在身體右邊）
+  '<g class="snow-part" data-p="8"><path d="M38,-2 L38,-26 Q38,-34 45,-34 Q52,-34 52,-27" fill="none" stroke="#F3F4F6" stroke-width="4" stroke-linecap="round"/><path d="M38,-2 L38,-26 Q38,-34 45,-34 Q52,-34 52,-27" fill="none" stroke="#DC2626" stroke-width="4" stroke-linecap="round" stroke-dasharray="4 4"/></g>',
+  // Part 10: 完成慶祝（星光環繞）
+  '<g class="snow-part" data-p="9"><circle cx="0" cy="-68" r="25" fill="none" stroke="#FDE68A" stroke-width="1" opacity=".8" stroke-dasharray="3 3"><animateTransform attributeName="transform" type="rotate" from="0 0 -68" to="360 0 -68" dur="8s" repeatCount="indefinite"/></circle><text x="-52" y="-100" font-size="12" fill="#FDE68A" opacity=".9">⭐</text><text x="40" y="-104" font-size="10" fill="#A78BFA" opacity=".9">✨</text><text x="-46" y="-60" font-size="9" fill="#6EE7B7" opacity=".8">❄</text><text x="34" y="-60" font-size="9" fill="#93C5FD" opacity=".8">❄</text></g>'
 ];
 
 function buildingSceneSvg(){
-  // 林森苑三棟建築物輪廓（簡化版）
+  // 林森苑三棟（一樣高、不標棟別），雪人站在中間那棟前面（.t3-snowman 置中）
+  const lit = '1010010110100101101001011';   // 窗戶亮燈的固定排列（1＝亮）
+  const bld = (x, label, k) => {
+    let w = '';
+    for(let r = 0; r < 5; r++) for(let c = 0; c < 4; c++){
+      const on = lit[(r * 4 + c + k * 3) % lit.length] === '1';
+      w += `<rect x="${x + 8 + c * 17}" y="${36 + r * 16}" width="11" height="9" rx="1" fill="${on ? '#F7D375' : '#4A5158'}" opacity="${on ? '.9' : '.5'}"/>`;
+    }
+    return `<rect x="${x}" y="22" width="76" height="98" rx="2" fill="url(#bldGrad)"/>
+    <rect x="${x - 2}" y="17" width="80" height="7" rx="1" fill="#B8AA94"/>
+    <rect x="${x + 14}" y="12" width="48" height="6" rx="1" fill="#A89E8A"/>
+    <ellipse cx="${x + 38}" cy="12" rx="32" ry="3.5" fill="#fff" opacity=".8"/>
+    ${w}`;
+  };
   return `<svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="300" height="130">
   <defs>
-    <linearGradient id="b1grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#C8C0B2"/>
-      <stop offset="100%" stop-color="#A89E8A"/>
-    </linearGradient>
-    <linearGradient id="b2grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#D4CCB8"/>
-      <stop offset="100%" stop-color="#B8AA94"/>
-    </linearGradient>
-    <linearGradient id="snowGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#E8F4F8"/>
-      <stop offset="100%" stop-color="#D0E8F0"/>
-    </linearGradient>
+    <linearGradient id="bldGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D4CCB8"/><stop offset="100%" stop-color="#A89E8A"/></linearGradient>
+    <linearGradient id="snowGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8F4F8"/><stop offset="100%" stop-color="#D0E8F0"/></linearGradient>
   </defs>
-  <!-- Left building (A棟) -->
-  <rect x="10" y="30" width="68" height="90" rx="2" fill="url(#b1grad)"/>
-  <rect x="10" y="25" width="68" height="8" rx="1" fill="#B8AA94"/>
-  <rect x="20" y="22" width="48" height="6" rx="1" fill="#A89E8A"/>
-  <!-- windows left -->
-  <rect x="16" y="38" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="31" y="38" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="46" y="38" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="61" y="38" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="16" y="52" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="31" y="52" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="46" y="52" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="61" y="52" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="16" y="66" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="31" y="66" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="46" y="66" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="61" y="66" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="16" y="80" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="31" y="80" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="46" y="80" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="61" y="80" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <!-- Snow on left building roof -->
-  <ellipse cx="44" cy="23" rx="34" ry="4" fill="white" opacity=".7"/>
-
-  <!-- Center building (B棟) - tallest -->
-  <rect x="105" y="10" width="90" height="110" rx="2" fill="url(#b2grad)"/>
-  <rect x="105" y="4" width="90" height="8" rx="1" fill="#C8C0B0"/>
-  <rect x="118" y="0" width="64" height="6" rx="1" fill="#B8AA94"/>
-  <rect x="136" y="-4" width="28" height="6" rx="1" fill="#A89E8A"/>
-  <!-- windows center -->
-  <rect x="113" y="18" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="132" y="18" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="151" y="18" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="170" y="18" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="113" y="34" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="132" y="34" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="151" y="34" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="170" y="34" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="113" y="50" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="132" y="50" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="151" y="50" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="170" y="50" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="113" y="66" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="132" y="66" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="151" y="66" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="170" y="66" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="113" y="82" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="132" y="82" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="151" y="82" width="14" height="10" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="170" y="82" width="14" height="10" rx="1" fill="#4A5158" opacity=".5"/>
-  <!-- Snow on center building -->
-  <ellipse cx="150" cy="2" rx="45" ry="5" fill="white" opacity=".75"/>
-
-  <!-- Right building (C棟) -->
-  <rect x="222" y="40" width="68" height="80" rx="2" fill="url(#b1grad)"/>
-  <rect x="222" y="34" width="68" height="8" rx="1" fill="#B8AA94"/>
-  <rect x="232" y="30" width="48" height="6" rx="1" fill="#A89E8A"/>
-  <!-- windows right -->
-  <rect x="228" y="48" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="243" y="48" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="258" y="48" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="273" y="48" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="228" y="62" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="243" y="62" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="258" y="62" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="273" y="62" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="228" y="76" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="243" y="76" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <rect x="258" y="76" width="11" height="8" rx="1" fill="#F7D375" opacity=".9"/>
-  <rect x="273" y="76" width="11" height="8" rx="1" fill="#4A5158" opacity=".5"/>
-  <!-- Snow on right building -->
-  <ellipse cx="256" cy="32" rx="34" ry="4" fill="white" opacity=".7"/>
-  
-  <!-- Ground snow -->
+  ${bld(14, 'A', 0)}${bld(112, 'B', 1)}${bld(210, 'C', 2)}
   <ellipse cx="150" cy="126" rx="150" ry="8" fill="url(#snowGrad)"/>
 </svg>`;
 }
@@ -2832,6 +2806,14 @@ function getTask3Pts(){
 
 // 任務三：集章卡，一個地點一格、兩格一排（地點名稱只是代號，看縮圖就知道自己拍過哪裡）
 // 每格：左邊縮圖（未上傳＝聖誕老人頭像；審核中／通過＝自己傳的照片縮圖），右邊地點、狀態／未通過原因、綠色按鈕
+// 林森苑圓章（任務三集章通過時，蓋在照片右下角）
+const LSY_SEAL_SVG = `<svg class="lsy-seal" viewBox="0 0 40 40" role="img" aria-label="林森苑集章">
+  <circle cx="20" cy="20" r="18" fill="rgba(255,255,255,.55)" stroke="#B91C1C" stroke-width="2.6"/>
+  <circle cx="20" cy="20" r="14.5" fill="none" stroke="#B91C1C" stroke-width="1"/>
+  <text x="20" y="23.6" text-anchor="middle" font-size="9.6" font-weight="900" fill="#B91C1C" font-family="'Noto Sans TC','Microsoft JhengHei',sans-serif" letter-spacing="-.4">林森苑</text>
+  <polygon points="20,4.6 21,7.2 23.6,7.2 21.5,8.8 22.3,11.3 20,9.8 17.7,11.3 18.5,8.8 16.4,7.2 19,7.2" fill="#B91C1C"/>
+  <path d="M10 29.5 Q20 34 30 29.5" fill="none" stroke="#B91C1C" stroke-width="1"/>
+</svg>`;
 function renderTask3Card(t, st, cfg_obj){
   const need = (cfg_obj && cfg_obj.t3Need) || 6;
   const isOpen = !!(cfg_obj && cfg_obj.open);
@@ -2842,15 +2824,25 @@ function renderTask3Card(t, st, cfg_obj){
     const name = sp.name || ('小物地點' + 'ABCDEFGHIJ'[i]);
     const mine = c === 'ok' || c === 'pend' ? getMyPhoto(sp.id) : '';
     const rs = (st[sp.id] || {}).reason;
-    const stTag = c === 'pend' ? '<em class="sc-st">審核中</em>' : c === 'rej' ? `<em class="sc-st sc-reason">⚠ 未通過原因：${esc(rs || '請重新拍照上傳')}</em>` : '';
-    const action = c === 'ok' ? '<span class="stamp">已集</span>'   // 已集（通過）的格子不能再上傳
+    const stTag = c === 'ok' ? '<em class="sc-st sc-ok">✓ 已集章</em>' : c === 'pend' ? '<em class="sc-st">審核中</em>' : c === 'rej' ? `<em class="sc-st sc-reason">⚠ 未通過原因：${esc(rs || '請重新拍照上傳')}</em>` : '';
+    const action = c === 'ok' ? ''   // 已集（通過）的格子不能再上傳；照片右下角蓋林森苑圓章
       : isOpen ? `<button class="btn" type="button" data-spot="${sp.id}">${c === 'pend' ? '換一張照片' : c === 'rej' ? '重新拍照' : '拍照上傳'}</button>` : '';
     return `<div class="stamp-cell ${c}" data-cell="${sp.id}">
-      <div class="sc-thumb">${mine ? `<img src="${mine}" alt="${esc(name)} 的照片">` : SANTA_SVG}</div>
+      <div class="sc-thumb">${mine ? `<img src="${mine}" alt="${esc(name)} 的照片">` : SANTA_SVG}${c === 'ok' ? LSY_SEAL_SVG : ''}</div>
       <div class="sc-main"><b>${esc(name)}</b>${stTag}${action}</div>
     </div>`;
   }).join('');
-  return `<div class="stamp-card">
+  // 上方：A／B／C 三棟前的雪人，每集一個信物就多拼上一個部位（預覽畫面不加 id，避免和主畫面重複）
+  const preview = !!(cfg_obj && cfg_obj.preview);
+  const scene = `<div class="t3-scene"${preview ? '' : ' id="t3scene"'} style="height:170px">
+    <div class="t3-scene-stars">${starfieldSvg()}</div>
+    ${pts >= 10 ? '<div class="t3-aurora t3-aurora-active">' + auroraSvg() + '</div>' : ''}
+    <div class="t3-buildings">${buildingSceneSvg()}</div>
+    <div class="t3-snowman">${snowmanSvg(pts)}</div>
+    <div class="t3-ground"></div>
+    ${pts > 0 && !preview ? `<button type="button" class="t3-replay-btn" onclick="replaySnowman(${pts}, '#t3scene')" aria-label="重播雪人組裝動畫">▶ 重播組裝 (${pts}/10)</button>` : ''}
+  </div>`;
+  return `${scene}<div class="stamp-card">
     <div class="stamp-head">已集 <b>${pts}</b>／${need} 個信物${pts >= need ? '・任務完成！' : ''}</div>
     <div class="stamp-grid">${cells}</div>
   </div>`;
@@ -2961,7 +2953,7 @@ function buildTaskPreviewHtml(){
     const title = `任務${TASK_CN[t.id - 1]}・${esc(t.name)}`;
     if(t.spots){
       // 任務三：雪人拼圖卡（靜態預覽，0部位）
-      const t3PreviewHtml = `${renderTask3Card(t, {}, {t3Need:(cfg && cfg.t3Need) || 6, open:false})}`;
+      const t3PreviewHtml = `${renderTask3Card(t, {}, {t3Need:(cfg && cfg.t3Need) || 6, open:false, preview:true})}`;
       return `<div class="spot task3">
         <div class="spot-head">
           <div class="spot-main"><div class="spot-name">${title}</div><div class="spot-hint">${esc(t.desc)}</div></div>
@@ -4133,45 +4125,6 @@ html,body{margin:0;background:#E5E7EB;font-family:"Noto Sans TC","Microsoft Jhen
 .c span{font-weight:400;color:#374151}
 @media print{html,body{background:#fff}.bar{display:none}.page{margin:0}}
 
-/* ===== Replay Buttons & Done Snowman ===== */
-.t3-replay-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.45);color:#fff;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;backdrop-filter:blur(4px);transition:all .2s;z-index:5;display:flex;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.t3-replay-btn:hover{background:rgba(0,0,0,.75);border-color:#FDE68A;color:#FDE68A;transform:scale(1.03)}
-.t3-replay-btn:empty{display:none}
-
-.done-sm-card{background:rgba(0,0,0,.28);border:1px solid rgba(253,230,138,.35);border-radius:14px;padding:8px 8px 10px;margin:10px auto 12px;max-width:340px}
-.done-sm-scene{position:relative;width:100%;height:105px;background:linear-gradient(180deg,#141e30 0%,#243b55 70%,#1a3a1a 100%);border-radius:10px;overflow:hidden}
-.done-sm-info{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:12px;color:#FEF3C7;padding:0 4px}
-.done-sm-info b{color:var(--gold);font-size:14px}
-.t3-replay-sm-btn{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:12px;font-size:11px;font-weight:700;padding:3px 10px;cursor:pointer;transition:all .2s}
-.t3-replay-sm-btn:hover{background:rgba(255,255,255,.3);color:#FDE68A}
-
-.done-sub-btns{display:flex;gap:10px;justify-content:center;margin-top:10px}
-.done-sub-btns button{flex:1;margin:0}
-.done-replay-btn{background:linear-gradient(135deg,rgba(253,230,138,.28),rgba(245,158,11,.28));border:1.5px solid var(--gold);color:#FFFBEB;font-size:14px;font-weight:900;padding:10px 14px;border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
-.done-replay-btn:hover{background:linear-gradient(135deg,rgba(253,230,138,.42),rgba(245,158,11,.42));color:#fff;transform:translateY(-1px)}
-/* ========= Task3 Snowman Scene ========= */
-.t3-scene{position:relative;width:100%;height:200px;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 40%,#0f3460 70%,#1a3a1a 85%,#2d5a1b 100%);border-radius:12px;overflow:hidden;margin-bottom:12px}
-.t3-scene-stars{position:absolute;inset:0;pointer-events:none}
-.t3-aurora{position:absolute;top:0;left:0;right:0;height:80px;opacity:0.6;pointer-events:none}
-.t3-buildings{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);width:300px;height:130px}
-.t3-ground{position:absolute;bottom:0;left:0;right:0;height:32px;background:linear-gradient(180deg,#e8f4f8 0%,#d0e8f0 100%);border-radius:0 0 12px 12px}
-.t3-snowman{position:absolute;bottom:28px;left:50%;transform:translateX(-50%)}
-.snow-part{opacity:0;transform-box:fill-box;transform-origin:50% 100%}
-.snow-part.revealed{opacity:1}
-.snow-part.popping{animation:snowPartPop .65s cubic-bezier(.34,1.5,.64,1) forwards}
-.t3-aurora-active{animation:auroraGlow 3s ease-in-out infinite}
-@keyframes snowPartPop{0%{transform:scale(0) translateY(10px);opacity:0}60%{transform:scale(1.15) translateY(-2px);opacity:1}100%{transform:scale(1) translateY(0);opacity:1}}
-@keyframes auroraGlow{0%,100%{opacity:.4}50%{opacity:.8}}
-@keyframes starTwinkle{0%,100%{opacity:.3}50%{opacity:1}}
-@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(220px) rotate(360deg);opacity:0}}
-/* Task3 10-dot stamp bar */
-.t3-dots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:10px 0 4px}
-.t3-dot{width:40px;height:40px;border-radius:50%;border:2.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;position:relative}
-.t3-dot.ok{background:var(--pine);border-color:var(--pine);color:#fff;cursor:default}
-.t3-dot.pend{background:#FEF9C3;border-color:#EAB308;color:#854D0E}
-.t3-dot.rej{background:#FEF2F2;border-color:#EF4444;color:#B91C1C}
-.t3-dot button{position:absolute;inset:0;border:none;background:transparent;border-radius:50%;cursor:pointer;width:100%;height:100%}
-.t3-upload-hint{font-size:12px;color:#6B7280;text-align:center;margin-top:4px}
 </style></head><body>
 <div class="bar">共 ${list.length} 戶・${pages.length} 頁 <button onclick="print()">列印 / 另存 PDF</button></div>
 ${pages.join('')}
