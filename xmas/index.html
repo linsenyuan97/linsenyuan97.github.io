@@ -428,6 +428,33 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 /* ===== 六大任務：完成率、狀態、集章卡 ===== */
 .spot-no.pend{background:var(--amber-light)!important;color:var(--amber)!important;border-color:var(--amber)}
 .spot-scene.plain{background:#E3F1E7}
+.fin-tree{margin:-16px -16px 12px;padding:14px 16px 12px;border-radius:var(--radius) var(--radius) 0 0;background:radial-gradient(ellipse at 50% 30%,#1E5E3A 0%,#0F3D21 70%);text-align:center;color:#fff}
+.ct-svg{display:block;width:100%;max-width:300px;margin:0 auto}
+.ct-svg .orn{transform-box:fill-box;transform-origin:center top;animation:ornIn .5s ease-out both}
+@keyframes ornIn{from{opacity:0;transform:translateY(-8px) scale(.4)}to{opacity:1;transform:none}}
+.ct-svg .garland{animation:garland 1.6s linear infinite}
+@keyframes garland{to{stroke-dashoffset:-16}}
+.ct-star{opacity:.45;transform-box:fill-box;transform-origin:center}
+.ct-star.on{opacity:1;filter:drop-shadow(0 0 6px #FDE68A);animation:starPulse 2.4s ease-in-out infinite}
+@keyframes starPulse{50%{transform:scale(1.12)}}
+.ct-cap{margin-top:6px;font-size:17px;font-weight:900}
+.ct-cap b{font-size:28px;color:var(--gold);margin:0 4px}
+.ct-sub{font-size:12px;color:#C9D8CE;margin-top:2px}
+.fin-card{text-align:center;padding:4px 0 14px;border-bottom:1px solid var(--line)}
+.fin-title{font-size:19px;font-weight:900;color:var(--berry)}
+.fin-who{margin-top:4px;font-size:15px;font-weight:700;color:var(--ink)}
+.fin-count{margin-top:2px;font-size:14px;color:var(--ink-soft)}
+.fin-count b{color:var(--pine-dark);font-size:18px}
+.fin-claimed{margin:12px auto 0;display:inline-block;padding:8px 14px;border-radius:999px;background:var(--pine-light);color:var(--pine);font-weight:900;font-size:14px}
+.fin-draw{margin-top:10px;font-size:13px;color:var(--ink-soft)}
+.fin-more{margin-top:10px}
+.fin-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border:1.5px solid var(--pine);border-radius:12px;background:#fff;color:var(--pine-dark);font-size:15px;font-weight:900;text-align:left;cursor:pointer}
+.fin-toggle small{display:block;font-size:12px;font-weight:700;color:#B45309;margin-top:2px}
+.fin-toggle i{font-style:normal;transition:transform .2s}
+.fin-more.open .fin-toggle i{transform:rotate(180deg)}
+.fin-body{display:none;margin-top:4px}
+.fin-more.open .fin-body{display:block}
+@media (prefers-reduced-motion:reduce){.ct-svg .orn,.ct-svg .garland,.ct-star.on{animation:none}}
 .rate{display:flex;align-items:center;gap:12px;padding:2px 0 14px;border-bottom:1px solid var(--line)}
 .rate-main{flex:1;min-width:0}
 .rate-title{font-size:15px;font-weight:900;color:var(--pine-dark)}
@@ -517,26 +544,6 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .df-line-btn{display:flex;align-items:center;justify-content:center;width:100%;height:44px;border-radius:10px;background:#06C755;color:#fff;font-weight:900;text-decoration:none;font-size:15px}
 .df-line-btn[aria-disabled]{opacity:.5;pointer-events:none}
 .df-line small{font-size:12px;line-height:1.6;color:#C9D8CE}
-.is-query #resident{display:none!important}
-.q-card h2{margin:0 0 10px}
-.q-card .row2 label{display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px}
-.q-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.q-num{border-radius:12px;background:#FEF2F2;border:1.5px solid var(--gold);padding:10px;text-align:center}
-.q-num b{display:block;font-size:30px;font-weight:900;color:#B91C1C;line-height:1.2}
-.q-num span{font-size:13px;font-weight:700;color:var(--ink-soft)}
-.q-unit{font-size:20px;font-weight:900;color:var(--ink)}
-.q-sum{margin:6px 0 12px;padding:8px 12px;border-radius:10px;background:#F1F5F2;font-weight:700;font-size:14px;color:var(--ink)}
-.q-sum.done{background:#E3F1E7;color:#15803D}
-.q-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.q-list li{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
-.q-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px}
-.q-row b{color:var(--ink)}
-.q-st{flex:none;font-style:normal;font-weight:700;font-size:14px;color:var(--ink-soft)}
-.q-st.ok{color:#15803D}.q-st.pend{color:#B45309}.q-st.rej{color:#B91C1C}
-.q-sub{font-size:13px;color:#B45309;margin-top:4px}
-.q-list .rej-reason{margin-top:6px}
-.q-back{text-align:center;margin:6px 0 0}
-.q-back a{color:#fff;font-weight:700}
 .candy-guide .cg-note{margin-top:8px;font-size:12px;color:#C9D8CE}
 .done-panel p.staff-only{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(242,185,75,.15);color:#FDE68A;font-size:14px}
 .done-panel p.mis-tap{margin-top:8px;font-size:12px;color:#C9D8CE}
@@ -1222,7 +1229,7 @@ const ADMIN_SS_KEY = 'ls-xmas-admin';
 const DEMO = !XMAS_GAS_URL;
 const IS_ADMIN = /[?&]admin\b/i.test(location.search);
 const IS_DEMO = /[?&]demo\b/i.test(location.search);
-const IS_QUERY = !IS_ADMIN && /[?&]q\b/i.test(location.search);   // 審核結果查詢頁（?q）
+const IS_QUERY = !IS_ADMIN && /[?&]q\b/i.test(location.search);   // ?q：LINE 訊息裡的連結，打開後直接顯示審核結果
 let isCoverDismissed = false;
 const QR_SPOT = Number(new URLSearchParams(location.search).get('spot')) || 0;
 
@@ -2186,6 +2193,105 @@ function initWarmupButtons(){
   }
 }
 
+
+/* ============ 網址參數動畫展示（?Finish 及 ?Snowman） ============ */
+function isFourTasksCompleted(){
+  if(!me || !status) return false;
+  const tasks = (cfg && cfg.tasks) || TASKS_DEMO;
+  const need = (cfg && cfg.tasksNeed) || 4;
+  const states = tasks.map(t => taskState(t, status));
+  const okN = states.filter(s => s.state === 'ok').length;
+  return okN >= need;
+}
+
+function isTask3Completed(){
+  if(!me || !status) return false;
+  const tasks = (cfg && cfg.tasks) || TASKS_DEMO;
+  const t3 = tasks.find(t => t.id === 3 || t.spots);
+  if(!t3) return false;
+  const s = taskState(t3, status);
+  return s.state === 'ok';
+}
+
+function showUnitSelectDialog(){
+  const old = $('santaAccountMask'); if(old) old.remove();
+  const mask = document.createElement('div');
+  mask.id = 'santaAccountMask';
+  mask.className = 'sheet-mask';
+  mask.style.zIndex = '10006';
+  mask.innerHTML = renderIdFormHtml();
+  document.body.appendChild(mask);
+  const sheet = mask.querySelector('.sheet');
+  bindIdFormInSheet(sheet, mask);
+  mask.onclick = (e) => { if(e.target === mask) mask.remove(); };
+}
+
+function checkUrlAnimationParams(){
+  const p = new URLSearchParams(location.search);
+  const keys = [...p.keys()].map(k => k.toLowerCase());
+  const hash = (location.hash || '').toLowerCase();
+  const hasFinish = keys.includes('finish') || hash.includes('finish');
+  const hasSnowman = keys.includes('snowman') || hash.includes('snowman');
+
+  if(!hasFinish && !hasSnowman) return;
+
+  // 1. 如果都還沒有登入，還是要進入到選戶別
+  if(!me){
+    dismissWarmupCover();
+    const mask = $('introDialogMask'); if(mask) mask.remove();
+    showUnitSelectDialog();
+    const idBox = $('idCard');
+    if(idBox){
+      idBox.classList.remove('hidden');
+      idBox.style.display = 'block';
+      renderIdCard(true);
+    }
+    return;
+  }
+
+  // 2. 如果點 Finish
+  if(hasFinish){
+    dismissWarmupCover();
+    const mask = $('introDialogMask'); if(mask) mask.remove();
+
+    // 如果還沒有完成四個任務，點 Finish 就是進到首頁
+    if(!isFourTasksCompleted()){
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // 已完成四個任務：彈出完賽慶祝動畫
+    const pts = getTask3Pts();
+    setTimeout(() => {
+      showDoneModal('done', pts);
+    }, 280);
+    return;
+  }
+
+  // 3. 如果點 Snowman
+  if(hasSnowman){
+    dismissWarmupCover();
+    const mask = $('introDialogMask'); if(mask) mask.remove();
+
+    // 跳到任務三
+    const t3 = $('t3scene') || document.querySelector('.spot.task3');
+    if(t3){
+      t3.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // 如果還沒有完成任務三，點 Snowman 就是進到跳到任務三（不自動播放組裝動畫）
+    if(!isTask3Completed()){
+      return;
+    }
+
+    // 已完成任務三：自動播放雪人組裝動畫（只播放到目前已完成的任務階段）
+    const pts = getTask3Pts();
+    setTimeout(() => {
+      replaySnowman(pts, '#t3scene');
+    }, 450);
+  }
+}
+
 async function initResident(){
   $('resident').classList.remove('hidden');
   initWarmupButtons();
@@ -2205,10 +2311,20 @@ async function initResident(){
   try{ if(cfg.start && cfg.end) $('heroDate').textContent = fmtPeriod(cfg.start, cfg.end); }catch(e){}
   renderStatusBanner();
   startCountdown();
+  // 網址含 ?Finish 或 ?Snowman 時，立即跳過開場倒數遮罩與活動說明彈窗
+  const urlKeys = [...new URLSearchParams(location.search).keys()].map(k => k.toLowerCase());
+  const hashKey = (location.hash || '').toLowerCase();
+  const hasAnimParam = urlKeys.includes('finish') || urlKeys.includes('snowman') || hashKey.includes('finish') || hashKey.includes('snowman');
+  if(hasAnimParam){
+    isCoverDismissed = true;
+    const cover = $('warmupCover');
+    if(cover){ cover.style.display = 'none'; cover.classList.add('hidden'); }
+  }
+
   // 活動未開始（暖身期）時優先呈現全螢幕倒數遮罩；活動開始後或未登入才主動彈出活動說明
   const st = new Date('2026-12-19T08:00:00+08:00').getTime();
   const isWarmup = (nowMs() < st) && !isCoverDismissed;
-  if(!me && !isWarmup) showIntroDialog();
+  if(!me && !isWarmup && !hasAnimParam) showIntroDialog();
   renderResidentFlow();
 
   if($('cdPill')) $('cdPill').onclick = () => showIntroDialog();
@@ -2222,9 +2338,12 @@ async function initResident(){
     const news = await refreshStatus({news:true});
     if(news.length) showReviewNews(news);
   }
+  if(IS_QUERY) finMoreOpen = true;
   renderProgress();
   maybeOpenPending();
+  if(IS_QUERY && me && !(summary && summary.completed) && !document.querySelector('.sheet-mask, #doneMask')) showTreeProgressDialog();
   hintTreeOnce();
+  checkUrlAnimationParams();
 }
 
 // 第一次進來（每支手機一次）：等開場遮罩、彈窗、教學導覽都關掉、真的看到主頁時，左上聖誕樹晃動幾秒
@@ -2838,6 +2957,55 @@ function updateHeaderTreeBadge(){
   }
 }
 
+/* ============ 完賽模式：社區聖誕樹（每完成一戶，樹上多一顆吊飾） ============ */
+let finMoreOpen = false;            // 「查看審核結果／繼續挑戰其他任務」是否展開
+let doneStats = null, doneStatsAt = 0;
+function loadDoneStats(force){
+  if(!force && doneStats && Date.now() - doneStatsAt < 60000) return;
+  doneStatsAt = Date.now();
+  apiGet('stats').then(r => {
+    doneStats = r;
+    const el = $('finTree');
+    if(el) el.innerHTML = communityTreeHtml();
+  }).catch(() => {});
+}
+// 吊飾位置：在樹的輪廓裡用固定亂數排好，畫面每次打開都一樣；完成戶數越多，亮起的吊飾越多
+const TREE_SLOTS = (function(){
+  let seed = 20261225;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const tiers = [[52, 120, 14, 58], [104, 190, 22, 86], [170, 262, 30, 116]];   // [上緣 y, 下緣 y, 上緣半寬, 下緣半寬]
+  const inTree = (x, y) => tiers.some(([t, b, wt, wb]) => y >= t + 10 && y <= b - 6 && Math.abs(x - 150) <= wt + (wb - wt) * (y - t) / (b - t) - 9);
+  const pts = [];
+  let guard = 0;
+  while(pts.length < 160 && guard++ < 40000){
+    const x = 40 + rnd() * 220, y = 62 + rnd() * 196;
+    if(inTree(x, y) && pts.every(p => (p[0] - x) ** 2 + (p[1] - y) ** 2 > 11.5 * 11.5)) pts.push([Math.round(x), Math.round(y)]);
+  }
+  return pts;
+})();
+const ORN_COLORS = ['#EF4444', '#F2B94B', '#60A5FA', '#F9FAFB', '#EC4899', '#A78BFA'];
+function communityTreeHtml(){
+  const n = doneStats ? doneStats.doneCount : null;
+  const lit = Math.min(n || 0, TREE_SLOTS.length);
+  const orns = TREE_SLOTS.slice(0, lit).map(([x, y], i) => {
+    const c = ORN_COLORS[i % ORN_COLORS.length];
+    return `<g class="orn" style="animation-delay:${Math.min(i * 40, 2400)}ms"><line x1="${x}" y1="${y - 7}" x2="${x}" y2="${y - 4}" stroke="#F2B94B" stroke-width="1.2"/><circle cx="${x}" cy="${y}" r="4.2" fill="${c}"/><circle cx="${x - 1.3}" cy="${y - 1.3}" r="1.2" fill="#fff" opacity=".7"/></g>`;
+  }).join('');
+  // 燈串（裝飾用，固定）
+  const garland = `<path d="M108 100 Q150 118 192 98 M92 160 Q150 182 210 156 M78 228 Q150 252 224 224" stroke="#FDE68A" stroke-width="1.5" fill="none" stroke-dasharray="1 7" stroke-linecap="round" class="garland"/>`;
+  return `<svg viewBox="0 0 300 300" class="ct-svg" role="img" aria-label="社區聖誕樹，目前有 ${n === null ? '…' : n} 戶完成任務">
+      <ellipse cx="150" cy="286" rx="120" ry="12" fill="#fff" opacity=".9"/>
+      <rect x="138" y="258" width="24" height="26" rx="3" fill="#7A4A24"/>
+      <polygon points="150,52 208,120 92,120" fill="#1F7A45"/><polygon points="150,104 236,190 64,190" fill="#1A6B3C"/><polygon points="150,170 266,262 34,262" fill="#155E33"/>
+      <polygon points="150,52 208,120 150,120" fill="#000" opacity=".08"/><polygon points="150,104 236,190 150,190" fill="#000" opacity=".08"/><polygon points="150,170 266,262 150,262" fill="#000" opacity=".08"/>
+      <path d="M92 120 Q150 130 208 120 M64 190 Q150 202 236 190 M34 262 Q150 276 266 262" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".85"/>
+      ${garland}${orns}
+      <polygon class="ct-star${lit ? ' on' : ''}" points="150,22 157,38 174,38 160,48 166,64 150,54 134,64 140,48 126,38 143,38" fill="#F2B94B"/>
+    </svg>
+    <div class="ct-cap">${n === null ? '<span class="spin"></span>' : `目前已有 <b>${n}</b> 戶完成任務`}</div>
+    <div class="ct-sub">每完成一戶，社區聖誕樹就多一顆吊飾 🎄</div>`;
+}
+
 function renderProgress(){
   updateHeaderTreeBadge();
   const box = $('progressCard');
@@ -2909,7 +3077,33 @@ function renderProgress(){
     </div>`;
   }).join('');
 
-  box.innerHTML = `<div class="rate${done ? ' done' : ''}">
+  // 完賽模式：社區聖誕樹（完成戶數＝吊飾）＋恭喜卡，六項任務收在「查看審核結果／繼續挑戰其他任務」裡
+  if(done){
+    const rejN = tasks.reduce((n, t) => n + (t.spots ? t.spots : [t]).filter(sp => {
+      const x = (st[sp.id] || {}).status;
+      return x === '退回' && taskState(t, st).state !== 'ok';
+    }).length, 0);
+    const moreTag = okN >= tasks.length ? '已完成全部 ' + tasks.length + ' 項任務，太厲害了！'
+      : [pendN ? `${pendN} 項審核中` : '', rejN ? `${rejN} 項未通過` : ''].filter(Boolean).join('、');
+    box.innerHTML = `<div class="fin-tree" id="finTree">${communityTreeHtml()}</div>
+      <div class="fin-card">
+        <div class="fin-title">🎉 恭喜完成這次聖誕尋寶任務！</div>
+        <div class="fin-who">${esc(unitText(doneShownKey()))}・${esc(me.name)}</div>
+        <div class="fin-count">已挑選 <b>${okN}</b>／${tasks.length} 項</div>
+        ${candy.claimed
+          ? `<div class="fin-claimed">✓ 已於 ${fmtTime(candy.time)} 領取糖果</div>`
+          : `<button class="candy-btn big" type="button" id="candyBtn">🍬 領取糖果</button>`}
+        <div class="fin-draw">12/25 晚間公開抽獎，敬請期待</div>
+      </div>
+      <div class="fin-more${finMoreOpen ? ' open' : ''}">
+        <button type="button" class="fin-toggle" id="finToggle" aria-expanded="${finMoreOpen}">
+          <span>查看審核結果／繼續挑戰其他任務${moreTag ? `<small>${moreTag}</small>` : ''}</span><i aria-hidden="true">▾</i>
+        </button>
+        <div class="fin-body">${blocks}</div>
+      </div>`;
+    $('finToggle').onclick = () => { finMoreOpen = !finMoreOpen; renderProgress(); };
+    loadDoneStats();
+  }else box.innerHTML = `<div class="rate${done ? ' done' : ''}">
       <div class="rate-main">
         <div class="rate-title">任務完成率 <b>${pct}%</b></div>
         <div class="progress">${bars}</div>
@@ -2925,16 +3119,14 @@ function renderProgress(){
   maybeShowDoneModal();
 }
 
-/* ============ 完賽後：查詢頁＋加入林森苑官方 LINE ============ */
+/* ============ 完賽彈窗：審核結果怎麼看＋加入林森苑官方 LINE ============ */
 // LINE 通知沿用官方 LINE 的門牌綁定：住戶加入官方 LINE 並綁定門牌後，審核後會推播一次；之後在 LINE 輸入「聖誕」查詢
-function queryUrl(){ return location.pathname + '?q' + (IS_DEMO ? '&demo' : ''); }
 function lineAddUrl(){ return `https://line.me/R/ti/p/${encodeURIComponent(cfg.lineOaId)}`; }
 function followUpHtml(){
   const line = cfg && cfg.lineOaId;
   return `<div class="done-follow">
     <div class="df-title">之後的審核結果怎麼看？</div>
-    <p class="df-desc">可以透過<b>查詢頁面</b>了解目前審核結果${line ? '，或是<b>加入林森苑官方 LINE</b>，在審核後將審核結果推播通知' : ''}。</p>
-    <a class="df-btn" href="${queryUrl()}">🔍 開啟查詢頁面</a>
+    <p class="df-desc">關掉這個視窗後，在首頁按「<b>查看審核結果</b>」就能看到各任務的審核結果${line ? '；也可以<b>加入林森苑官方 LINE</b>，在審核後將審核結果推播通知' : ''}。</p>
     ${line ? `<div class="df-line">
       <div class="df-qr" id="dfQr"><span class="spin dark"></span></div>
       <a class="df-line-btn" href="${lineAddUrl()}" target="_blank" rel="noopener">加入林森苑官方 LINE</a>
@@ -2967,89 +3159,6 @@ function loadQrLib(){
     document.head.appendChild(sc);
   });
   return qrLibPromise;
-}
-
-/* ============ 審核結果查詢頁（?q） ============ */
-// 輸入門牌就能看六項任務的審核結果（不顯示姓名和照片），上方顯示目前完成任務的戶數
-async function initQuery(){
-  document.body.classList.add('is-query');
-  makeSnow();
-  const root = document.createElement('div');
-  root.id = 'queryPage';
-  $('resident').after(root);
-  root.innerHTML = `<div class="card q-card"><h2>🔍 審核結果查詢</h2><div id="qStats" class="q-stats"><span class="spin dark"></span></div></div>
-    <div class="card q-card" id="qForm"></div>
-    <div id="qResult"></div>
-    <p class="q-back"><a href="${location.pathname}${IS_DEMO ? '?demo' : ''}">‹ 回到活動首頁</a></p>`;
-  try{ cfg = await apiGet('config'); }
-  catch(e){ try{ cfg = await mockGet('config'); }catch(err){ $('qStats').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; } }
-  apiGet('stats').then(r => {
-    $('qStats').innerHTML = `<div class="q-num"><b>${r.doneCount}</b><span>戶已完成任務</span></div>
-      <div class="q-num"><b>${r.joinCount}</b><span>戶參加</span></div>`;
-  }).catch(() => { $('qStats').innerHTML = '<span class="muted">目前無法取得統計</span>'; });
-  renderQueryForm();
-}
-function renderQueryForm(){
-  const cur = loadMe() || {hao:null, lou:'', zhi:''};
-  let lous = '<option value="">請選擇</option>';
-  for(let i = LOU_RANGE[0]; i <= LOU_RANGE[1]; i++) lous += `<option value="${i}"${cur.lou == i ? ' selected' : ''}>${i} 樓</option>`;
-  const zhis = '<option value="">請選擇</option>' + ZHI_LIST.map(z => `<option value="${z}"${cur.zhi == z ? ' selected' : ''}>之 ${z}</option>`).join('');
-  const box = $('qForm');
-  box.innerHTML = `<p class="muted" style="margin:0 0 12px">選擇門牌即可查看各項任務的審核結果。</p>
-    <div class="field"><label>棟別</label><div class="chips" id="qHao">${HAO_LIST.map(h => `<button type="button" class="chip${cur.hao == h ? ' on' : ''}" data-hao="${h}">${DONG_MAP[h]} 棟<br><small style="font-weight:500;opacity:.8">${h} 號</small></button>`).join('')}</div></div>
-    <div class="row2 field"><div><label for="qLou">樓層</label><select id="qLou">${lous}</select></div>
-    <div><label for="qZhi">之幾</label><select id="qZhi">${zhis}</select></div></div>
-    <button class="btn" id="qGo">查詢</button>`;
-  let hao = cur.hao;
-  box.querySelectorAll('#qHao .chip').forEach(b => b.onclick = () => {
-    hao = Number(b.dataset.hao);
-    box.querySelectorAll('#qHao .chip').forEach(x => x.classList.toggle('on', x === b));
-  });
-  const go = async () => {
-    const lou = Number($('qLou').value), zhi = Number($('qZhi').value);
-    if(!hao){ toast('請選擇棟別', true); return; }
-    $('qLou').classList.toggle('err', !lou); $('qZhi').classList.toggle('err', !zhi);
-    if(!lou || !zhi) return;
-    const btn = $('qGo');
-    btn.disabled = true; btn.innerHTML = '<span class="spin"></span>查詢中…';
-    try{
-      const r = await apiGet('status', {hao, lou, zhi});
-      renderQueryResult(`${hao}-${lou}-${zhi}`, r);
-    }catch(e){ toast(e.message, true); }
-    btn.disabled = false; btn.textContent = '查詢';
-  };
-  $('qGo').onclick = go;
-  if(hao && cur.lou && cur.zhi) go();   // 這支手機登記過門牌：直接查
-}
-function renderQueryResult(key, r){
-  const st = r.status || {};
-  const lab = e => {
-    const x = (e || {}).status || '';
-    return x === '通過' ? '<em class="q-st ok">✅ 通過</em>'
-      : x === '待審核' ? '<em class="q-st pend">⏳ 審核中</em>'
-      : x === '退回' ? '<em class="q-st rej">⚠ 未通過</em>'
-      : '<em class="q-st">尚未上傳</em>';
-  };
-  const items = (cfg.tasks || []).map(t => {
-    const title = `任務${TASK_CN[t.id - 1]}・${esc(t.name)}`;
-    if(t.spots){
-      const ts = taskState(t, st);
-      const pend = t.spots.filter(sp => (st[sp.id] || {}).status === '待審核').length;
-      const rej = t.spots.filter(sp => (st[sp.id] || {}).status === '退回');
-      return `<li><div class="q-row"><b>${title}</b>${ts.state === 'ok' ? '<em class="q-st ok">✅ 通過</em>' : `<em class="q-st${pend ? ' pend' : ''}">已集 ${ts.pts}／${ts.need}</em>`}</div>
-        ${pend ? `<div class="q-sub">審核中 ${pend} 個</div>` : ''}
-        ${rej.map(sp => `<div class="rej-reason">⚠ ${esc(sp.name || '聖誕信物')} 未通過原因：${esc(st[sp.id].reason || '照片不符合任務要求，請重新拍照上傳')}</div>`).join('')}</li>`;
-    }
-    const e = st[t.id] || {};
-    return `<li><div class="q-row"><b>${title}</b>${lab(e)}</div>${e.status === '退回' ? rejectReasonHtml(e.reason) : ''}</li>`;
-  }).join('');
-  const need = r.need || cfg.tasksNeed || 4, ok = r.passedTasks || 0;
-  $('qResult').innerHTML = `<div class="card q-card">
-    <div class="q-unit">${esc(unitText(key))}</div>
-    <div class="q-sum${r.completed ? ' done' : ''}">${r.completed ? `🎉 已完成任務（通過 ${ok} 項）${r.candy && r.candy.claimed ? '・已領糖果' : '・可到 ' + esc(CANDY_PLACE) + ' 領取糖果'}` : `已通過 ${ok}／${need} 項，再通過 ${need - ok} 項即可領糖果`}</div>
-    <ul class="q-list">${items}</ul>
-    <p class="muted" style="margin:10px 0 0;font-size:12px">查詢時間：${fmtTime(Date.now())}</p>
-  </div>`;
 }
 
 /* ============ 完成彈窗＋領取糖果 ============ */
@@ -3176,7 +3285,7 @@ function fireDoneEffects(mask){
   }, 2500);
 }
 
-function showDoneModal(view){
+function showDoneModal(view, customPts){
   const old = $('doneMask'); if(old) old.remove();
   const mask = document.createElement('div');
   mask.id = 'doneMask';
@@ -3187,7 +3296,9 @@ function showDoneModal(view){
   mask.onclick = e => { if(e.target === mask) close(); };
 
   const renderDone = () => {
-    const pts = getTask3Pts();
+    const realPts = getTask3Pts();
+    const pts = (typeof customPts === 'number') ? customPts : (realPts || (customPts === 'preview' ? 10 : 0));
+    const uText = me ? `${esc(unitText(doneShownKey()))}・${esc(me.name)}` : '林森苑社區・展示模式';
     mask.innerHTML = `<div class="done-panel" role="dialog" aria-modal="true" aria-label="任務完成">
       <button type="button" class="done-x" aria-label="關閉">✕</button>
       ${santaSvg()}
@@ -3204,7 +3315,7 @@ function showDoneModal(view){
         </div>
       </div>
       <h3>恭喜！您已完成任務</h3>
-      <p>可以領取聖誕糖果了 🍬<br><small>${esc(unitText(doneShownKey()))}・${esc(me.name)}</small></p>
+      <p>可以領取聖誕糖果了 🍬<br><small>${uText}</small></p>
       ${candyGuideHtml()}
       <button type="button" class="candy-btn big" id="doneClaim">我在櫃檯了，出示給工作人員</button>
       <div class="done-sub-btns">
@@ -3215,7 +3326,10 @@ function showDoneModal(view){
     </div>`;
     mask.querySelector('.done-x').onclick = close;
     $('doneLater').onclick = close;
-    $('doneClaim').onclick = async e => { if(await checkCandyBeforeClaim(e.currentTarget)) renderConfirm(); else close(); };
+    $('doneClaim').onclick = async e => {
+      if(!me){ toast('展示模式下無法登記領取糖果'); return; }
+      if(await checkCandyBeforeClaim(e.currentTarget)) renderConfirm(); else close();
+    };
 
     const doneReplayBtn = $('doneReplay');
     if(doneReplayBtn) doneReplayBtn.onclick = () => {
@@ -4003,7 +4117,7 @@ if(IN_FB_IG){
   const m = document.querySelector('main'); if(m) m.prepend(b);
 }
 
-if(IS_ADMIN) initAdmin(); else if(IS_QUERY) initQuery(); else initResident();
+if(IS_ADMIN) initAdmin(); else initResident();
 </script>
 </body>
 </html>
