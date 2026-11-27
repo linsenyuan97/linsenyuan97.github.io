@@ -264,6 +264,16 @@ header::after{content:"";position:absolute;left:0;right:0;top:100%;height:14px;p
 body{background:#0B2A1A}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;background:var(--xmas-snowdots),var(--xmas-night)}
 body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:90px;pointer-events:none;z-index:0;background:var(--xmas-hills)}
+
+body.is-admin #appLoader,
+body.is-admin .app-loader-mask,
+body.is-admin .app-loader-snow{
+  display:none !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
 body.is-admin{background:var(--bg)}
 body.is-admin::before,body.is-admin::after{display:none}
 main{position:relative;z-index:1}
@@ -465,7 +475,6 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .ct-sub{font-size:12px;color:#C9D8CE;margin-top:2px}
 .fin-card{text-align:center;padding:4px 0 14px;border-bottom:1px solid var(--line)}
 .fin-title{font-size:19px;font-weight:900;color:var(--berry)}
-.fin-who{margin-top:4px;font-size:15px;font-weight:700;color:var(--ink)}
 .fin-count{margin-top:2px;font-size:14px;color:var(--ink-soft)}
 .fin-count b{color:var(--pine-dark);font-size:18px}
 .fin-claimed{margin:12px auto 0;display:inline-block;padding:8px 14px;border-radius:999px;background:var(--pine-light);color:var(--pine);font-weight:900;font-size:14px}
@@ -872,19 +881,27 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .app-loader-santa{
   position:absolute;
   bottom:24px;
-  left:-180px;
+  left:-200px;
   width:175px;
   height:auto;
   z-index:15;
-  animation:appSantaEnter 2.5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation:appSantaFly 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   filter:drop-shadow(0 8px 14px rgba(0,0,0,0.5));
 }
-@keyframes appSantaEnter{
-  0%{left:-190px;transform:translateY(8px) scale(0.92) rotate(-3deg);opacity:0}
-  20%{opacity:1}
-  65%{left:45%;transform:translateX(-50%) translateY(-3px) scale(1) rotate(1deg);opacity:1}
-  80%{left:50%;transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);opacity:1}
-  100%{left:50%;transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);opacity:1}
+@keyframes appSantaFly{
+  /* 從左側外飛進來 */
+  0%  {left:-200px; transform:translateY(10px) scale(0.9) rotate(-4deg); opacity:0}
+  8%  {left:0px;    transform:translateY(2px)  scale(0.97) rotate(-1deg); opacity:1}
+  /* 飛越中央建築上空，微微上揚 */
+  30% {left:20%;   transform:translateY(-6px) scale(1.02) rotate(1deg);  opacity:1}
+  50% {left:50%;   transform:translateX(-50%) translateY(-10px) scale(1) rotate(0deg); opacity:1}
+  /* 繼續往右飛，微微下沉加速 */
+  72% {left:75%;   transform:translateY(-4px) scale(0.98) rotate(2deg);  opacity:1}
+  88% {left:calc(100% + 50px); transform:translateY(6px) scale(0.93) rotate(4deg);  opacity:0.4}
+  /* 淡出後瞬間重置回左側（這段在不可見狀態發生） */
+  95% {left:calc(100% + 200px); opacity:0}
+  96% {left:-200px; transform:translateY(10px) scale(0.9) rotate(-4deg); opacity:0}
+  100%{left:-200px; transform:translateY(10px) scale(0.9) rotate(-4deg); opacity:0}
 }
 .app-loader-bob{
   animation:appSleighBob 0.65s ease-in-out infinite alternate;
@@ -935,6 +952,18 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 </head>
 <body>
 <!-- 全螢幕載入遮罩：三棟大樓背景＋聖誕老人進社區動畫＋飄雪 -->
+<script>
+(function(){
+  try{
+    var isAdmin = /[?&]admin\b/i.test(location.search);
+    var u = JSON.parse(localStorage.getItem('ls-xmas-id') || 'null');
+    var hasLoggedIn = !!(u && u.hao && u.name);
+    if(isAdmin || !hasLoggedIn){
+      document.write('<style>#appLoader, .app-loader-mask, .app-loader-snow{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;}</style>');
+    }
+  }catch(e){}
+})();
+</script>
 <div id="appLoader" class="app-loader-mask">
   <!-- 飄雪粒子層 -->
   <div class="app-loader-snow" aria-hidden="true">
@@ -2051,6 +2080,14 @@ let summary = null;       // {passedTasks, need, completed, candy:{claimed,time}
 let pendingSpot = QR_SPOT;
 let adminKey = '';
 
+// HAND_IN：哪些任務上傳後需要「交出信物」彈窗（目前此活動無此流程，預留空物件）
+const HAND_IN = {};
+
+// showHandInDialog：交出信物說明彈窗（HAND_IN 為空時永遠不會被呼叫，預留實作以防 ReferenceError）
+function showHandInDialog(spot){
+  // 此活動無需交出信物，保留空函式以防呼叫方參照到未定義
+}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fullAddr = a => `${a.hao}號${a.lou}樓之${a.zhi}`;
@@ -2486,6 +2523,18 @@ const HERO_BANNER_COMPACT_HTML = `
   </div>
 `;
 
+
+function maybeShowIntroDialog(){
+  try{
+    if(localStorage.getItem('ls-xmas-intro-seen')) return;
+  }catch(e){}
+  showIntroDialog(false);
+}
+
+
+// 依使用者需求：照片上傳後畫面立即呈現「審核中」，無需額外彈窗打擾
+function maybeShowWaitReview(){}
+
 function showIntroDialog(isWarmupView = false){
   const old = $('introDialogMask');
   if(old) old.remove();
@@ -2563,6 +2612,7 @@ function showIntroDialog(isWarmupView = false){
   document.body.appendChild(mask);
 
   const close = () => {
+    try{ localStorage.setItem('ls-xmas-intro-seen', '1'); }catch(e){}
     mask.remove();
     if(!isWarmupView){
       dismissWarmupCover();
@@ -3226,8 +3276,18 @@ function checkUrlAnimationParams(){
 }
 
 async function initResident(){
-  showAppLoading();
+  me = loadMe(); // 程式先取一下，看看是否有登入
+  const hasLoggedIn = !!(me && me.hao && me.name);
   const loadStartTime = Date.now();
+
+  if(hasLoggedIn && !IS_ADMIN){
+    showAppLoading(`正在同步 ${unitText(doneShownKey())}・${me.name} 的尋寶進度 🎄`);
+  } else {
+    hideAppLoading();
+    const ldr = $('appLoader');
+    if(ldr) ldr.style.display = 'none';
+  }
+
   $('resident').classList.remove('hidden');
   initWarmupButtons();
   makeSnow();
@@ -3245,15 +3305,14 @@ async function initResident(){
   }
   syncClock(cfg.serverTime, t0, Date.now());
   if(IS_DEMO){ cfg.open = true; cfg.notStarted = false; }
-  me = loadMe();
   try{ if(cfg.start && cfg.end) $('heroDate').textContent = fmtPeriod(cfg.start, cfg.end); }catch(e){}
   renderStatusBanner();
   startCountdown();
+  renderResidentFlow();
 
   // 若已有登入戶別，更新載入文字並先行等待進度讀取完畢
   let news = [];
-  if(me){
-    showAppLoading(`正在同步 ${unitText(doneShownKey())}・${me.name} 的尋寶進度 🎄`);
+  if(hasLoggedIn && !IS_ADMIN){
     lastNewsCheck = Date.now();
     news = await refreshStatus({news:true});
   }
@@ -3270,33 +3329,32 @@ async function initResident(){
 
   // 活動未開始（暖身期）時優先呈現全螢幕倒數遮罩；活動開始後或未登入才主動彈出活動說明
   const st = new Date('2026-12-19T08:00:00+08:00').getTime();
-  const isWarmup = (nowMs() < st) && !isCoverDismissed;
-  if(!me && !isWarmup && !hasAnimParam) showIntroDialog();
+  const isNotStarted = !IS_DEMO && (nowMs() < st);
+  if(!isNotStarted && !hasAnimParam){
+    maybeShowIntroDialog();
+  }
 
-  // 重要：此時 status 已由 refreshStatus 完全取得！
-  // 再渲染畫面，確保一打開看到的就是正確的審核中／已通過狀態！
-  renderResidentFlow();
-  renderProgress();
-  updateHeaderTreeBadge();
-  updateHeaderUserBadge();
-
-  if($('cdPill')) $('cdPill').onclick = () => showIntroDialog();
-  if($('hdrTreeBox')) $('hdrTreeBox').onclick = () => showTreeProgressDialog();
-  if($('btnHdrTree')) $('btnHdrTree').onclick = (e) => { e.stopPropagation(); showTreeProgressDialog(); };
-  if($('hdrUserBox')) $('hdrUserBox').onclick = () => showSantaAccountDialog();
-  if($('btnHdrSanta')) $('btnHdrSanta').onclick = (e) => { e.stopPropagation(); showSantaAccountDialog(); };
-
-  // 保證載入動畫至少播放 600ms（既有感又不會拖延），讀取完成後平滑淡出！
-  const elapsed = Date.now() - loadStartTime;
-  const minDelay = Math.max(0, 600 - elapsed);
-  setTimeout(() => {
+  if(hasLoggedIn && !IS_ADMIN){
+    // 保證已登入住戶有足夠視覺平滑同步感（約 600ms），讀取完成後淡出！
+    const elapsed = Date.now() - loadStartTime;
+    const minDelay = Math.max(0, 600 - elapsed);
+    setTimeout(() => {
+      hideAppLoading();
+      renderResidentFlow();
+      if(news && news.length) showReviewNews(news);
+      maybeOpenPending();
+      // 已移除 maybeShowWaitReview
+      hintTreeOnce();
+      checkUrlAnimationParams();
+    }, minDelay);
+  } else {
+    // 未登入住戶：毫無延遲，直接隱藏遮罩進入主畫面
     hideAppLoading();
-    if(news && news.length) showReviewNews(news);
+    const ldr = $('appLoader');
+    if(ldr) ldr.style.display = 'none';
     maybeOpenPending();
-    if(me && !document.querySelector('.sheet-mask, #doneMask, #tourMask, #introDialogMask')) maybeShowWaitReview();
-    hintTreeOnce();
     checkUrlAnimationParams();
-  }, minDelay);
+  }
 }
 
 // 第一次進來（每支手機一次）：等開場遮罩、彈窗、教學導覽都關掉、真的看到主頁時，左上聖誕樹晃動幾秒
@@ -3723,7 +3781,10 @@ function renderTask3Card(t, st, cfg_obj){
     ${pts > 0 && !preview ? `<button type="button" class="t3-replay-btn" onclick="replaySnowman(${pts}, '#t3scene')" aria-label="重播雪人組裝動畫">▶ 重播組裝 (${pts}/10)</button>` : ''}
   </div>`;
   return `${scene}<div class="stamp-card">
-    <div class="stamp-head">已集 <b>${pts}</b>／${need} 個信物${pts >= need ? '・任務完成！' : ''}</div>
+    <div class="stamp-head" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span>已集 <b>${pts}</b>／${need} 個信物${pts >= need ? '・任務完成！' : ''}</span>
+      <button type="button" class="chip on" onclick="showPropDialog(3)" style="margin:0;font-size:12px;padding:3px 10px;background:#14532D;color:#FDE68A;border:none;border-radius:999px;cursor:pointer">🔍 小物長什麼樣子？</button>
+    </div>
     <div class="stamp-grid">${cells}</div>
   </div>`;
 }
@@ -3742,6 +3803,30 @@ function starfieldSvg(){
 
 function auroraSvg(){
   return '<svg width="100%" height="80" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><defs><linearGradient id="aurora1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#6EE7B7" stop-opacity=".0"/><stop offset="30%" stop-color="#A78BFA" stop-opacity=".6"/><stop offset="60%" stop-color="#6EE7B7" stop-opacity=".5"/><stop offset="100%" stop-color="#93C5FD" stop-opacity=".0"/></linearGradient></defs><path d="M0,20 Q75,5 150,25 Q225,45 300,15 L300,0 L0,0Z" fill="url(#aurora1)"><animate attributeName="d" values="M0,20 Q75,5 150,25 Q225,45 300,15 L300,0 L0,0Z;M0,30 Q75,15 150,10 Q225,30 300,25 L300,0 L0,0Z;M0,20 Q75,5 150,25 Q225,45 300,15 L300,0 L0,0Z" dur="6s" repeatCount="indefinite"/></path></svg>';
+}
+
+
+function showPropDialog(taskId){
+  const old = $('propMask'); if(old) old.remove();
+  const mask = document.createElement('div');
+  mask.id = 'propMask';
+  mask.className = 'sheet-mask clear-mask';
+  mask.innerHTML = `<div class="clear-dialog" role="dialog" aria-modal="true" style="max-width:380px;padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h3 style="margin:0;font-size:17px;color:#14532D">🔍 尋寶小物參考圖</h3>
+      <button type="button" class="btn ghost" id="propCloseBtn" style="padding:4px 10px;font-size:13px">關閉 ✕</button>
+    </div>
+    <div style="background:#FBF8F0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+      ${propSvg(taskId)}
+    </div>
+    <p style="margin:12px 0 0;font-size:13px;color:#4B5563;line-height:1.5;text-align:center">
+      在社區公共區域（公設窗邊、大廳、走廊角落）找到上面這兩款小物，拍照上傳就能集章！
+    </p>
+  </div>`;
+  document.body.appendChild(mask);
+  const close = () => mask.remove();
+  $('propCloseBtn').onclick = close;
+  mask.onclick = e => { if(e.target.id === 'propMask') close(); };
 }
 
 function propSvg(taskId){
@@ -4077,7 +4162,6 @@ function renderProgress(){
     box.innerHTML = `<div class="fin-tree" id="finTree">${communityTreeHtml()}</div>
       <div class="fin-card">
         <div class="fin-title">🎉 恭喜完成這次聖誕尋寶任務！</div>
-        <div class="fin-who">${esc(unitText(doneShownKey()))}・${esc(me.name)}</div>
         <div class="fin-count">已挑選 <b>${okN}</b>／${tasks.length} 項</div>
         ${candy.claimed
           ? `<div class="fin-claimed">✓ 已於 ${fmtTime(candy.time)} 領取糖果</div>`
@@ -4577,97 +4661,8 @@ function showUploadDialog(spot, photo){
 
 
 /* ============ 管理員 ============ */
-async function initAdmin(){
-  document.body.classList.add('is-admin');
-  $('admin').classList.remove('hidden');
-  $('adminTag').onclick = showClearDialog;   // 「清除所有資料」按鈕：登入後才顯示（renderAdmin 裡打開）
-  adminKey = sessionStorage.getItem(ADMIN_SS_KEY) || '';
-  if(DEMO){ adminKey = 'demo'; renderAdmin(); return; }
-  if(adminKey){ try{ await apiGet('admin_list', {key:adminKey}); renderAdmin(); return; }catch(e){ adminKey = ''; } }
-  renderGate();
-}
-
-function renderGate(msg){
-  $('admin').innerHTML = `<div class="card gate"><h2>管理員登入</h2>
-    <div class="field"><input type="text" id="gateKey" placeholder="管理密碼" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
-    ${msg ? `<p class="muted" style="color:var(--berry);margin:0 0 10px">${esc(msg)}</p>` : ''}
-    <button class="btn" id="gateBtn">登入</button></div>`;
-  const go = async () => {
-    const k = $('gateKey').value;
-    if(!k) return;
-    $('gateBtn').disabled = true;
-    try{
-      await apiGet('admin_list', {key:k});
-      adminKey = k; sessionStorage.setItem(ADMIN_SS_KEY, k);
-      renderAdmin();
-    }catch(e){ renderGate(e.message); }
-  };
-  $('gateBtn').onclick = go;
-  $('gateKey').onkeydown = e => { if(e.key === 'Enter') go(); };
-}
-
 let adminTab = 'review', adminFilter = '待審核', adminRows = [], doneList = [];
 const photoCache = {};
-
-// 任務五、六：照片送出後，提醒住戶掛上小卡／交出作品
-const HAND_IN = {5:"請將小卡掛上大廳聖誕樹", 6:"請將作品交至櫃檯"};
-function showHandInDialog(spot){
-  const old = $("handInMask"); if(old) old.remove();
-  const mask = document.createElement("div");
-  mask.id = "handInMask";
-  mask.className = "sheet-mask clear-mask";
-  mask.innerHTML = `<div class="clear-dialog" role="alertdialog" aria-modal="true" aria-labelledby="handInTitle">
-      <h3 id="handInTitle" style="margin-bottom:16px;color:#B91C1C">${HAND_IN[spot.taskId]}</h3>
-      <div class="clear-btns" style="grid-template-columns:1fr"><button type="button" class="btn" id="handInOk">我知道了</button></div>
-    </div>`;
-  document.body.appendChild(mask);
-  const close = () => { mask.remove(); maybeShowWaitReview(); };
-  $("handInOk").onclick = close;
-  mask.onclick = e => { if(e.target === mask) close(); };
-}
-
-// 送出（審核中＋通過）滿 need 項跳一次、6 項全部送出再跳一次：提示等待審核，並建議加入林森苑住戶服務站 LINE
-// 每戶在這支手機記住已跳過哪一階段（4 → 6）；完成彈窗開著時先不跳，下次打開網頁再補
-const WAIT_SHOWN_KEY = 'ls-xmas-wait-shown';
-function maybeShowWaitReview(){
-  if(!me || !cfg || !status || $('doneMask')) return;
-  const tasks = cfg.tasks || [], need = cfg.tasksNeed || 4;
-  const sentN = tasks.map(t => taskState(t, status).state).filter(x => x === 'ok' || x === 'pend').length;
-  const okN = tasks.map(t => taskState(t, status).state).filter(x => x === 'ok').length;
-  const level = sentN >= tasks.length ? tasks.length : sentN >= need ? need : 0;
-  if(!level) return;
-  if(level === need && summary && summary.completed) return;   // 已完賽：由完成彈窗處理
-  if(level === tasks.length && okN >= tasks.length) return;     // 6 項都通過了，不用再等審核
-  let shown = {};
-  try{ shown = JSON.parse(localStorage.getItem(WAIT_SHOWN_KEY) || '{}') || {}; }catch(e){}
-  const had = Number(shown[doneShownKey()]) >= 1000000 ? need : Number(shown[doneShownKey()]) || 0;   // 舊版存的是時間＝已跳過 4 項
-  if(had >= level) return;
-  shown[doneShownKey()] = level;
-  try{ localStorage.setItem(WAIT_SHOWN_KEY, JSON.stringify(shown)); }catch(e){}
-  const all = level === tasks.length;
-  const old = $('waitMask'); if(old) old.remove();
-  const line = cfg.lineOaId;
-  const mask = document.createElement('div');
-  mask.id = 'waitMask';
-  mask.className = 'sheet-mask clear-mask';
-  mask.innerHTML = `<div class="clear-dialog wait-dialog" role="alertdialog" aria-modal="true" aria-labelledby="waitTitle">
-      <div class="wait-icon">${all ? '🎉' : '📮'}</div>
-      <h3 id="waitTitle">${all ? `太厲害了！${tasks.length} 項任務全部送出` : `已送出 ${sentN} 項任務，等待審核`}</h3>
-      <p class="wait-desc">${all
-        ? `請等待審核結果。${summary && summary.completed ? '' : `審核通過 ${need} 項後，就可以到 ${esc(CANDY_PLACE)} 領取聖誕糖果 🍬<br>`}`
-        : `審核通過 ${need} 項後，就可以到 ${esc(CANDY_PLACE)} 領取聖誕糖果 🍬<br>`}審核結果會顯示在每個任務卡片上，重新打開網頁就看得到。</p>
-      ${line ? `<div class="wait-line">
-        <b>想第一時間知道結果？</b>
-        <span>加入林森苑住戶服務站 LINE 並綁定門牌，審核後會通知您。</span>
-        <a class="df-line-btn" href="${lineAddUrl()}">加入林森苑住戶服務站 LINE</a>
-      </div>` : ''}
-      <div class="clear-btns" style="grid-template-columns:1fr"><button type="button" class="btn ghost" id="waitOk">我知道了</button></div>
-    </div>`;
-  document.body.appendChild(mask);
-  const close = () => mask.remove();
-  $('waitOk').onclick = close;
-  mask.onclick = e => { if(e.target === mask) close(); };
-}
 
 // 清除所有資料：確認對話框 →「清除資料」才呼叫後端刪除所有紀錄與照片；「不要清除」直接關閉
 function showClearDialog(){
@@ -4709,19 +4704,58 @@ function showClearDialog(){
   };
 }
 
-// 「清除所有資料」從活動開始到抽獎當天結束都不顯示（依後端時間判斷；後端在這段期間也會拒絕清除）
-let clearBtnChecked = false;
-async function refreshClearBtn(){
-  if(clearBtnChecked) return;
-  try{
-    const c = await apiGet('config');
-    clearBtnChecked = true;
-    $('adminTag').classList.toggle('hidden', !!c.clearLocked);
-  }catch(e){ $('adminTag').classList.add('hidden'); }
+async function initAdmin(){
+  document.body.classList.add('is-admin');
+  const ldr = $('appLoader');
+  if(ldr){ ldr.style.display = 'none'; try{ ldr.remove(); }catch(e){} }
+  hideAppLoading();
+  const resEl = $('resident');
+  if(resEl) resEl.classList.add('hidden');
+  $('admin').classList.remove('hidden');
+  $('adminTag').onclick = showClearDialog;   // 「清除所有資料」按鈕：登入後才顯示（renderAdmin 裡打開）
+  adminKey = sessionStorage.getItem(ADMIN_SS_KEY) || '';
+  if(DEMO){ adminKey = 'demo'; renderAdmin(); return; }
+  if(adminKey){
+    try{
+      await apiGet('admin_list', {key:adminKey});
+      renderAdmin();
+      return;
+    }catch(e){
+      adminKey = '';
+      sessionStorage.removeItem(ADMIN_SS_KEY);
+    }
+  }
+  renderGate();
+}
+
+function renderGate(msg){
+  $('admin').innerHTML = `<div class="card gate"><h2>管理員登入</h2>
+    <div class="field"><input type="password" id="gateKey" placeholder="請輸入管理密碼" autocomplete="current-password" spellcheck="false"></div>
+    ${msg ? `<p class="muted" style="color:var(--berry);margin:0 0 10px;font-weight:700">${esc(msg)}</p>` : ''}
+    <button class="btn" id="gateBtn">登入</button></div>`;
+  const input = $('gateKey');
+  if(input && typeof input.focus === 'function'){ setTimeout(() => { try{ input.focus(); }catch(e){} }, 100); }
+  const go = async () => {
+    const k = (input.value || '').trim();
+    if(!k) return;
+    const btn = $('gateBtn');
+    btn.disabled = true;
+    btn.textContent = '登入驗證中...';
+    try{
+      await apiGet('admin_list', {key:k});
+      adminKey = k;
+      sessionStorage.setItem(ADMIN_SS_KEY, k);
+      renderAdmin();
+    }catch(e){
+      renderGate(e.message || '管理密碼錯誤，請重新輸入');
+    }
+  };
+  $('gateBtn').onclick = go;
+  input.onkeydown = e => { if(e.key === 'Enter') go(); };
 }
 
 function renderAdmin(){
-  refreshClearBtn();
+  $('adminTag').classList.remove('hidden');
   $('admin').innerHTML = `<div class="tabs"><button data-t="review">照片審核</button><button data-t="done">完賽名單</button></div><div id="adminBody"></div>`;
   $('admin').querySelectorAll('.tabs button').forEach(b => {
     b.classList.toggle('on', b.dataset.t === adminTab);
