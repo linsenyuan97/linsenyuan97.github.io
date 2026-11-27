@@ -571,13 +571,41 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .gift{width:130px;height:auto;display:block;margin:0 auto;overflow:visible}
 .gift-lid{transform-box:fill-box;transform-origin:0% 100%;animation:lidOpen .9s .5s cubic-bezier(.3,1.5,.5,1) forwards}
 @keyframes lidOpen{to{transform:translate(-4px,-16px) rotate(-18deg)}}
-.gift .p{transform-box:fill-box;transform-origin:center;opacity:0;animation:giftPop .9s 1.05s ease-out forwards}
-.gift .p1{--tx:-58px;--ty:-30px}
-.gift .p2{--tx:0px;--ty:-62px;animation-delay:1.15s}
-.gift .p3{--tx:56px;--ty:-34px;animation-delay:1.25s}
-.gift .p4{--tx:-34px;--ty:-66px;animation-delay:1.35s}
-.gift .p5{--tx:36px;--ty:-68px;animation-delay:1.45s}
-@keyframes giftPop{0%{opacity:0;transform:translate(0,24px) scale(.3)}50%{opacity:1}100%{opacity:1;transform:translate(var(--tx),var(--ty)) scale(1)}}
+.gift .p, .gift .pf{transform-box:fill-box;transform-origin:center;opacity:0}
+/* 後層糖果：向四周上空噴發 */
+.gift .p{animation:giftPop .95s 1.05s cubic-bezier(.25,1,.5,1) forwards}
+.gift .p1{--tx:-68px;--ty:-36px;--rot:-25deg;animation-delay:1.02s}
+.gift .p2{--tx:0px;--ty:-74px;--rot:45deg;animation-delay:1.06s}
+.gift .p3{--tx:64px;--ty:-38px;--rot:28deg;animation-delay:1.10s}
+.gift .p4{--tx:-38px;--ty:-72px;--rot:-35deg;animation-delay:1.14s}
+.gift .p5{--tx:40px;--ty:-75px;--rot:30deg;animation-delay:1.18s}
+.gift .p6{--tx:-82px;--ty:-15px;--rot:-50deg;animation-delay:1.08s}
+.gift .p7{--tx:80px;--ty:-16px;--rot:45deg;animation-delay:1.12s}
+.gift .p8{--tx:-15px;--ty:-88px;--rot:60deg;animation-delay:1.16s}
+.gift .p9{--tx:18px;--ty:-86px;--rot:-40deg;animation-delay:1.20s}
+
+@keyframes giftPop{
+  0%  {opacity:0;transform:translate(0,18px) scale(.2) rotate(0deg)}
+  40% {opacity:1;transform:translate(calc(var(--tx) * 0.5), calc(var(--ty) * 0.7 - 8px)) scale(1.15) rotate(calc(var(--rot) * 0.6))}
+  100%{opacity:1;transform:translate(var(--tx),var(--ty)) scale(1) rotate(var(--rot))}
+}
+
+/* 前層糖果：在箱子前面噴出飄落 */
+.gift .pf{animation:giftPopFront 1.05s 1.08s cubic-bezier(.34,1.4,.64,1) forwards}
+.gift .pf1{--tx:-54px;--ty:24px;--rot:-30deg;animation-delay:1.05s}
+.gift .pf2{--tx:-26px;--ty:42px;--rot:15deg;animation-delay:1.12s}
+.gift .pf3{--tx:28px;--ty:40px;--rot:-18deg;animation-delay:1.15s}
+.gift .pf4{--tx:56px;--ty:22px;--rot:35deg;animation-delay:1.08s}
+.gift .pf5{--tx:42px;--ty:52px;--rot:65deg;animation-delay:1.20s}
+.gift .pf6{--tx:-38px;--ty:50px;--rot:-45deg;animation-delay:1.18s}
+.gift .pf7{--tx:0px;--ty:56px;--rot:20deg;animation-delay:1.22s}
+
+@keyframes giftPopFront{
+  0%  {opacity:0;transform:translate(0,-6px) scale(.2) rotate(0deg)}
+  30% {opacity:1;transform:translate(calc(var(--tx) * 0.4), -18px) scale(1.2) rotate(calc(var(--rot) * 0.5))}
+  75% {opacity:1;transform:translate(calc(var(--tx) * 0.85), calc(var(--ty) * 0.8)) scale(1.05) rotate(calc(var(--rot) * 0.9))}
+  100%{opacity:1;transform:translate(var(--tx),var(--ty)) scale(1) rotate(var(--rot))}
+}
 /* 金光爆發動畫 (Glow Effect) */
 .gift-glow-wrap{transform-origin:100px 98px;animation:giftGlowBurst 2s .55s ease-out forwards;opacity:0;pointer-events:none}
 @keyframes giftGlowBurst{
@@ -625,7 +653,7 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 @media (prefers-reduced-motion:reduce){
   .candy-btn{animation:none}
   .gift-lid{animation:none;transform:translate(-4px,-16px) rotate(-18deg)}
-  .gift .p{animation:none;opacity:1;transform:translate(var(--tx),var(--ty))}
+  .gift .p, .gift .pf{animation:none;opacity:1;transform:translate(var(--tx),var(--ty))}
 }
 
 /* ===== 倒數計時器 ===== */
@@ -4301,15 +4329,67 @@ const GIFT_SVG = `<svg class="gift" viewBox="0 0 200 190" aria-hidden="true">
     <polygon points="100,96 50,22 150,22" fill="url(#giftGlowGrad)" opacity="0.5"/>
     <polygon points="100,96 75,10 125,10" fill="url(#giftGlowGrad)" opacity="0.65"/>
   </g>
-  <g class="gift-pop">
-    <g class="p p1"><rect x="86" y="74" width="28" height="14" rx="7" fill="#EF4444"/><path d="M86 81l-8-6v12zM114 81l8-6v12z" fill="#FCA5A5"/></g>
-    <path class="p p2" d="M100 62l6 13 14 2-10 9 3 14-13-7-13 7 3-14-10-9 14-2z" fill="#F2B94B"/>
-    <g class="p p3"><rect x="88" y="74" width="24" height="12" rx="6" fill="#22C55E"/><path d="M88 80l-7-5v10zM112 80l7-5v10z" fill="#86EFAC"/></g>
-    <path class="p p4" d="M100 68l4 9 10 1-8 6 3 10-9-5-9 5 3-10-8-6 10-1z" fill="#FDE68A"/>
-    <g class="p p5"><rect x="89" y="74" width="22" height="12" rx="6" fill="#60A5FA"/><path d="M89 80l-6-5v10zM111 80l6-5v10z" fill="#BFDBFE"/></g>
+
+  <!-- 1. 後層噴射糖果群（在箱子背後向四周上空飛揚） -->
+  <g class="gift-pop gift-pop-back">
+    <!-- p1: 紅色包裝糖（左上） -->
+    <g class="p p1"><rect x="86" y="74" width="28" height="14" rx="7" fill="#EF4444"/><path d="M86 81l-8-6v12zM114 81l8-6v12z" fill="#FCA5A5"/><circle cx="100" cy="81" r="2.5" fill="#FFF"/></g>
+    <!-- p2: 金色大五角星（高空拋） -->
+    <path class="p p2" d="M100 60l5 11 12 1.5-8.5 8 2.5 12-11-6-11 6 2.5-12-8.5-8 12-1.5z" fill="#F59E0B"/>
+    <!-- p3: 綠色薄荷糖（右上） -->
+    <g class="p p3"><rect x="88" y="74" width="24" height="12" rx="6" fill="#10B981"/><path d="M88 80l-7-5v10zM112 80l7-5v10z" fill="#A7F3D0"/><circle cx="100" cy="80" r="2" fill="#FFF"/></g>
+    <!-- p4: 黃色閃爍星（左高空） -->
+    <path class="p p4" d="M100 68l3.5 7.5 8 1-6 5.5 1.5 8-7-4-7 4 1.5-8-6-5.5 8-1z" fill="#FDE68A"/>
+    <!-- p5: 藍色包裝糖（右高空） -->
+    <g class="p p5"><rect x="89" y="74" width="22" height="12" rx="6" fill="#3B82F6"/><path d="M89 80l-6-5v10zM111 80l6-5v10z" fill="#BAE6FD"/></g>
+    <!-- p6: 紅白拐杖糖（左側大拋物線） -->
+    <g class="p p6">
+      <path d="M96 85v-16c0-6 5-11 11-11s11 5 11 11" fill="none" stroke="#EF4444" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M96 85v-16c0-6 5-11 11-11s11 5 11 11" fill="none" stroke="#FFF" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="3.5 3.5"/>
+    </g>
+    <!-- p7: 紫色圓形扭結糖（右側遠方） -->
+    <g class="p p7"><circle cx="100" cy="80" r="7" fill="#8B5CF6"/><path d="M93 80l-6-5v10zM107 80l6-5v10z" fill="#DDD6FE"/><circle cx="98" cy="78" r="2" fill="#FFF"/></g>
+    <!-- p8: 晶瑩雪花糖（正上方沖天） -->
+    <g class="p p8">
+      <circle cx="100" cy="72" r="5" fill="#E0F2FE"/>
+      <path d="M100 65v14M93 72h14M95 67l10 10M95 77l10-10" stroke="#0EA5E9" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+    <!-- p9: 橘色軟糖（左中高空） -->
+    <g class="p p9"><rect x="90" y="75" width="20" height="11" rx="5.5" fill="#F97316"/><path d="M90 80.5l-5-4v8zM110 80.5l5-4v8z" fill="#FED7AA"/></g>
   </g>
+
+  <!-- 2. 箱子本體（紅色禮物箱 + 金色緞帶） -->
   <rect x="40" y="100" width="120" height="82" rx="8" fill="#B91C1C"/>
   <rect x="91" y="100" width="18" height="82" fill="#F2B94B"/>
+  <rect x="40" y="100" width="120" height="6" fill="#7F1D1D" opacity="0.4"/>
+  <rect x="40" y="100" width="5" height="82" rx="3" fill="#EF4444" opacity="0.35"/>
+
+  <!-- 3. 前層糖果群（在箱子前面噴出飄落！） -->
+  <g class="gift-pop gift-pop-front">
+    <!-- pf1: 紅白棒棒糖（落在箱子左前緣） -->
+    <g class="pf pf1">
+      <line x1="100" y1="84" x2="100" y2="100" stroke="#FDE68A" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="100" cy="80" r="7.5" fill="#EF4444"/>
+      <path d="M96 80a4 4 0 0 1 8 0a2 2 0 0 1-4 0" fill="none" stroke="#FFF" stroke-width="1.6"/>
+    </g>
+    <!-- pf2: 粉紅雙扭結糖（落在箱子正前方左側） -->
+    <g class="pf pf2"><rect x="88" y="76" width="24" height="12" rx="6" fill="#EC4899"/><path d="M88 82l-6-5v10zM112 82l6-5v10z" fill="#FBCFE8"/><circle cx="100" cy="82" r="2.2" fill="#FFF"/></g>
+    <!-- pf3: 金黃心形糖果（落在箱子中央前方金色緞帶處） -->
+    <g class="pf pf3"><path d="M100 81c-2-4-7-4-8-1s1 6 8 10c7-4 9-7 8-10s-6-3-8 1z" fill="#F59E0B"/><path d="M98 79c-1-2-4-2-4 0" stroke="#FFF" stroke-width="0.8" fill="none"/></g>
+    <!-- pf4: 湖水藍糖果（落在箱子右前方） -->
+    <g class="pf pf4"><rect x="89" y="75" width="22" height="12" rx="6" fill="#06B6D4"/><path d="M89 81l-6-5v10zM111 81l6-5v10z" fill="#A5F3FC"/></g>
+    <!-- pf5: 前景拐杖糖（倒掛在箱子右側前緣） -->
+    <g class="pf pf5">
+      <path d="M100 78v16c0 5-4 9-9 9s-9-4-9-9" fill="none" stroke="#DC2626" stroke-width="4" stroke-linecap="round"/>
+      <path d="M100 78v16c0 5-4 9-9 9s-9-4-9-9" fill="none" stroke="#FFF" stroke-width="4" stroke-linecap="round" stroke-dasharray="3 3"/>
+    </g>
+    <!-- pf6: 閃爍小亮星（飄在箱子下前方） -->
+    <path class="pf pf6" d="M100 77l2.5 5 5.5 0.8-4 3.8 1 5.4-5-2.6-5 2.6 1-5.4-4-3.8 5.5-0.8z" fill="#FEF08A"/>
+    <!-- pf7: 薄荷綠圓糖（落在箱子前方下緣） -->
+    <g class="pf pf7"><circle cx="100" cy="80" r="6" fill="#10B981"/><circle cx="98" cy="78" r="1.8" fill="#FFF"/><path d="M94 80h12" stroke="#A7F3D0" stroke-width="1.2"/></g>
+  </g>
+
+  <!-- 4. 盒蓋（彈開傾斜） -->
   <g class="gift-lid">
     <rect x="32" y="80" width="136" height="26" rx="7" fill="#DC2626"/>
     <rect x="91" y="80" width="18" height="26" fill="#F2B94B"/>
