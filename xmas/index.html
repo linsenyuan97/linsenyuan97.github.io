@@ -744,9 +744,199 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .t3-dot.rej{background:#FEF2F2;border-color:#EF4444;color:#B91C1C}
 .t3-dot button{position:absolute;inset:0;border:none;background:transparent;border-radius:50%;cursor:pointer;width:100%;height:100%}
 .t3-upload-hint{font-size:12px;color:#6B7280;text-align:center;margin-top:4px}
+
+/* 全螢幕載入遮罩：三棟大樓背景＋聖誕老人進社區動畫 */
+.app-loader-mask{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:radial-gradient(circle at 50% 30%, #162A45 0%, #0A1424 100%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  transition:opacity .5s ease, visibility .5s ease;
+  overflow:hidden;
+}
+.app-loader-mask.fade-out{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.app-loader-stage{
+  position:relative;
+  width:360px;
+  height:240px;
+  max-width:95vw;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+}
+.app-loader-bld{
+  position:absolute;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+  width:320px;
+  height:140px;
+  opacity:0.92;
+  filter:drop-shadow(0 0 16px rgba(247,211,117,0.15));
+}
+.app-loader-ground{
+  position:absolute;
+  bottom:0;
+  left:-20px;
+  right:-20px;
+  height:40px;
+  background:linear-gradient(180deg, #E2F1F8 0%, #C4DCE9 100%);
+  border-radius:50% 50% 0 0 / 16px 16px 0 0;
+  box-shadow:0 -4px 14px rgba(255,255,255,0.3);
+}
+.app-loader-santa{
+  position:absolute;
+  bottom:26px;
+  left:-140px;
+  width:140px;
+  height:auto;
+  z-index:10;
+  animation:appSantaEnter 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,0.45));
+}
+@keyframes appSantaEnter{
+  0%{left:-140px;transform:translateY(6px) scale(0.92) rotate(-3deg);opacity:0}
+  25%{opacity:1}
+  65%{left:45%;transform:translateX(-50%) translateY(-2px) scale(1) rotate(1deg);opacity:1}
+  80%{left:50%;transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);opacity:1}
+  100%{left:50%;transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);opacity:1}
+}
+.app-loader-bob{
+  animation:appSleighBob 0.6s ease-in-out infinite alternate;
+}
+@keyframes appSleighBob{
+  0%{transform:translateY(0)}
+  100%{transform:translateY(-4px)}
+}
+.app-loader-text-box{
+  margin-top:20px;
+  text-align:center;
+  z-index:20;
+}
+.app-loader-who{
+  font-size:15px;
+  color:#FEF08A;
+  font-weight:700;
+  letter-spacing:0.5px;
+  text-shadow:0 0 10px rgba(254,240,138,0.3);
+}
+.app-loader-bar{
+  width:140px;
+  height:4px;
+  background:rgba(255,255,255,0.15);
+  border-radius:10px;
+  margin:12px auto 0;
+  overflow:hidden;
+  position:relative;
+}
+.app-loader-bar-fill{
+  position:absolute;
+  top:0;left:0;bottom:0;
+  width:30%;
+  background:linear-gradient(90deg, #F59E0B, #FEF08A);
+  border-radius:10px;
+  animation:appBarSlide 1.3s ease-in-out infinite alternate;
+}
+@keyframes appBarSlide{
+  0%{left:0%;width:25%}
+  100%{left:75%;width:25%}
+}
+
 </style>
 </head>
 <body>
+<!-- 全螢幕載入遮罩：三棟大樓背景＋聖誕老人進社區動畫 -->
+<div id="appLoader" class="app-loader-mask">
+  <div class="app-loader-stage">
+    <svg class="app-loader-bld" viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="bldLd" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3A4D6B"/><stop offset="100%" stop-color="#1E2A3C"/></linearGradient>
+      </defs>
+      <!-- 左棟 -->
+      <g transform="translate(14, 0)">
+        <rect x="0" y="22" width="76" height="98" rx="2" fill="url(#bldLd)"/>
+        <rect x="-2" y="17" width="80" height="7" rx="1" fill="#4B6182"/>
+        <rect x="14" y="12" width="48" height="6" rx="1" fill="#3A4D6B"/>
+        <ellipse cx="38" cy="12" rx="32" ry="3.5" fill="#fff" opacity=".85"/>
+        <rect x="8" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="42" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="25" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="59" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="8" y="68" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="42" y="68" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="25" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="59" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+      </g>
+      <!-- 中棟 -->
+      <g transform="translate(112, 0)">
+        <rect x="0" y="22" width="76" height="98" rx="2" fill="url(#bldLd)"/>
+        <rect x="-2" y="17" width="80" height="7" rx="1" fill="#4B6182"/>
+        <rect x="14" y="12" width="48" height="6" rx="1" fill="#3A4D6B"/>
+        <ellipse cx="38" cy="12" rx="32" ry="3.5" fill="#fff" opacity=".85"/>
+        <rect x="25" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
+        <rect x="59" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
+        <rect x="8" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
+        <rect x="42" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
+        <rect x="25" y="68" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
+        <rect x="8" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
+        <rect x="59" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
+      </g>
+      <!-- 右棟 -->
+      <g transform="translate(210, 0)">
+        <rect x="0" y="22" width="76" height="98" rx="2" fill="url(#bldLd)"/>
+        <rect x="-2" y="17" width="80" height="7" rx="1" fill="#4B6182"/>
+        <rect x="14" y="12" width="48" height="6" rx="1" fill="#3A4D6B"/>
+        <ellipse cx="38" cy="12" rx="32" ry="3.5" fill="#fff" opacity=".85"/>
+        <rect x="8" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="25" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="59" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="42" y="68" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="8" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+        <rect x="42" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
+      </g>
+    </svg>
+
+    <div class="app-loader-ground"></div>
+
+    <div class="app-loader-santa">
+      <div class="app-loader-bob">
+        <svg viewBox="15 28 505 170" width="140" height="48" style="overflow:visible">
+          <g transform="scale(0.85)">
+            <ellipse cx="380" cy="115" rx="28" ry="16" fill="#D9B792"/>
+            <circle cx="410" cy="95" r="14" fill="#D9B792"/>
+            <circle cx="424" cy="95" r="4.5" fill="#EF4444"/>
+            <path d="M412,85 C410,70 418,65 425,60 M415,75 C425,72 430,70 432,65" stroke="#78350F" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M195,125 C250,138 310,138 383,122" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M38,105 C32,72 52,56 80,58 L142,62 C165,62 180,82 188,110 L50,110 Z" fill="#991B1B"/>
+            <path d="M25,125 C80,128 170,128 195,120 C185,135 150,135 40,135 Z" fill="#F59E0B"/>
+            <path d="M42,120 C36,75 58,42 92,44 C116,46 132,68 128,118 Z" fill="#FAFAF9"/>
+            <path d="M128,74 C124,74 118,90 116,117 L182,117 C180,90 174,74 164,74 Z" fill="#EF4444"/>
+            <circle cx="149" cy="50" r="16" fill="#FBCFE8"/>
+            <path d="M135,52 Q149,78 163,52 Z" fill="#fff"/>
+            <circle cx="149" cy="50" r="3.5" fill="#EF4444"/>
+            <path d="M133,42 Q149,20 165,42 Z" fill="#DC2626"/>
+            <circle cx="165" cy="40" r="4.5" fill="#fff"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-loader-text-box">
+    <div class="app-loader-who" id="loaderWho">正在同步社區尋寶最新進度 🎄</div>
+    <div class="app-loader-bar"><div class="app-loader-bar-fill"></div></div>
+  </div>
+</div>
+
 <!-- 活動暖身期全覆蓋遮罩 -->
 <div id="warmupCover" class="warmup-cover hidden">
   <div class="warmup-content">
@@ -1982,10 +2172,12 @@ function startIntroTour(){
         <mask id="tourCutout">
           <rect width="100%" height="100%" fill="white"/>
           <circle id="tourHole" cx="-999" cy="-999" r="28" fill="black"/>
+          <rect id="tourHoleRect" x="-999" y="-999" width="0" height="0" rx="12" fill="black"/>
         </mask>
       </defs>
       <rect width="100%" height="100%" fill="rgba(0,0,0,0.78)" mask="url(#tourCutout)"/>
       <circle id="tourRing" cx="-999" cy="-999" r="30" fill="none" stroke="#F59E0B" stroke-width="3" style="filter:drop-shadow(0 0 8px #F59E0B)"/>
+      <rect id="tourRingRect" x="-999" y="-999" width="0" height="0" rx="14" fill="none" stroke="#F59E0B" stroke-width="3" style="filter:drop-shadow(0 0 8px #F59E0B)"/>
     </svg>
     <div id="tourBubbleBox" style="position:absolute;z-index:10012;transition:all .3s ease"></div>
   `;
@@ -1998,8 +2190,14 @@ function startIntroTour(){
     currentStep = step;
     const hole = $('tourHole');
     const ring = $('tourRing');
+    const holeRect = $('tourHoleRect');
+    const ringRect = $('tourRingRect');
     const box = $('tourBubbleBox');
     if(!hole || !ring || !box) return;
+
+    // Reset rects
+    if(holeRect) { holeRect.setAttribute('x', '-999'); holeRect.setAttribute('y', '-999'); }
+    if(ringRect) { ringRect.setAttribute('x', '-999'); ringRect.setAttribute('y', '-999'); }
 
     if(step === 1){
       setTreeFillFull(true);
@@ -2034,8 +2232,8 @@ function startIntroTour(){
               ${SANTA_SVG}
             </div>
             <div style="flex:1">
-              <div style="font-size:12px;font-weight:900;color:var(--berry);letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between"><span>🎅 尋寶小秘訣</span><span style="font-size:11px;color:#9CA3AF;font-weight:700">步驟 1 / 2</span></div>
-              <div style="font-size:15px;font-weight:900;color:var(--pine-dark);line-height:1.4">點此圖示可以快速了解任務完成率！</div>
+              <div style="font-size:12px;font-weight:900;color:var(--berry);letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between"><span>🎅 尋寶小秘訣</span><span style="font-size:11px;color:#9CA3AF;font-weight:700">步驟 1 / 3</span></div>
+              <div style="font-size:15px;font-weight:900;color:var(--pine-dark);line-height:1.4">點此圖示可以快速查看任務進度！</div>
             </div>
           </div>
 
@@ -2080,24 +2278,101 @@ function startIntroTour(){
               ${SANTA_SVG}
             </div>
             <div style="flex:1">
-              <div style="font-size:12px;font-weight:900;color:var(--berry);letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between"><span>🎅 尋寶小秘訣</span><span style="font-size:11px;color:#9CA3AF;font-weight:700">步驟 2 / 2</span></div>
+              <div style="font-size:12px;font-weight:900;color:var(--berry);letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between"><span>🎅 尋寶小秘訣</span><span style="font-size:11px;color:#9CA3AF;font-weight:700">步驟 2 / 3</span></div>
               <div style="font-size:15px;font-weight:900;color:var(--pine-dark);line-height:1.4">點此圖示可以確認目前登入資料！</div>
             </div>
           </div>
 
           <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:14px;padding-top:10px;border-top:1px solid #F3F4F6">
-            <button type="button" class="btn" id="btnTourDone" style="padding:7px 18px;font-size:13px;background:var(--pine);color:#fff;border-radius:20px;font-weight:900;border:none;cursor:pointer">✨ 開始尋寶</button>
+            <button type="button" class="btn" id="btnTourNext2" style="padding:7px 18px;font-size:13px;background:var(--pine);color:#fff;border-radius:20px;font-weight:900;border:none;cursor:pointer">下一步 👉</button>
           </div>
         </div>
       `;
 
-      if($('btnTourDone')) $('btnTourDone').onclick = (e) => { e.stopPropagation(); setTreeFillFull(false); mask.remove(); };
+      if($('btnTourNext2')) $('btnTourNext2').onclick = (e) => { e.stopPropagation(); renderTourStep(3); };
+
+    } else if(step === 3){
+      setTreeFillFull(false);
+      // 第 3 步：聚焦任務卡片上的「📸 拍照上傳」按鈕
+      hole.setAttribute('cx', '-999');
+      hole.setAttribute('cy', '-999');
+      ring.setAttribute('cx', '-999');
+      ring.setAttribute('cy', '-999');
+
+      const targetBtn = document.querySelector('.spot:not(.task3) .btn[data-spot]') || document.querySelector('[data-spot]') || document.querySelector('.spot .btn');
+      if(targetBtn){
+        targetBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      setTimeout(() => {
+        const r = targetBtn ? targetBtn.getBoundingClientRect() : {left: 20, top: window.innerHeight / 2, width: window.innerWidth - 40, height: 44};
+        const pad = 6;
+        if(holeRect){
+          holeRect.setAttribute('x', r.left - pad);
+          holeRect.setAttribute('y', r.top - pad);
+          holeRect.setAttribute('width', r.width + pad * 2);
+          holeRect.setAttribute('height', r.height + pad * 2);
+          holeRect.setAttribute('rx', 12);
+        }
+        if(ringRect){
+          ringRect.setAttribute('x', r.left - pad - 1);
+          ringRect.setAttribute('y', r.top - pad - 1);
+          ringRect.setAttribute('width', r.width + pad * 2 + 2);
+          ringRect.setAttribute('height', r.height + pad * 2 + 2);
+          ringRect.setAttribute('rx', 13);
+        }
+
+        const bWidth = Math.min(300, window.innerWidth - 24);
+        const bLeft = Math.max(12, Math.min(window.innerWidth - bWidth - 12, r.left + (r.width - bWidth) / 2));
+        const placeAbove = r.top > 220;
+        const bTop = placeAbove ? (r.top - 185) : (r.bottom + 14);
+
+        box.style.top = bTop + 'px';
+        box.style.left = bLeft + 'px';
+        box.style.right = 'auto';
+
+        const arrowStyle = placeAbove
+          ? `bottom:-10px;left:${Math.max(20, r.left + r.width/2 - bLeft - 8)}px;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid var(--gold);border-bottom:none`
+          : `top:-10px;left:${Math.max(20, r.left + r.width/2 - bLeft - 8)}px;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:10px solid var(--gold);border-top:none`;
+
+        const arrowInnerStyle = placeAbove
+          ? `bottom:-7px;left:${Math.max(20, r.left + r.width/2 - bLeft - 8)}px;border-left:8px solid transparent;border-right:8px solid transparent;border-top:9px solid #fff;border-bottom:none`
+          : `top:-7px;left:${Math.max(20, r.left + r.width/2 - bLeft - 8)}px;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:9px solid #fff;border-top:none`;
+
+        box.innerHTML = `
+          <div style="background:#fff;border-radius:18px;padding:16px;box-shadow:0 12px 36px rgba(0,0,0,.5);width:${bWidth}px;position:relative;border:2px solid var(--gold)">
+            <div style="position:absolute;${arrowStyle};width:0;height:0"></div>
+            <div style="position:absolute;${arrowInnerStyle};width:0;height:0"></div>
+
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+              <div style="width:42px;height:42px;border-radius:50%;background:#FEF2F2;border:2px solid var(--berry);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+                ${SANTA_SVG}
+              </div>
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:900;color:var(--berry);letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between"><span>🎅 尋寶小秘訣</span><span style="font-size:11px;color:#9CA3AF;font-weight:700">步驟 3 / 3</span></div>
+                <div style="font-size:15px;font-weight:900;color:var(--pine-dark);line-height:1.4">點「拍照上傳」完成任務！</div>
+              </div>
+            </div>
+
+            <div style="font-size:13px;color:#4B5563;line-height:1.5;margin:6px 0 12px">
+              找到目標或聖誕小物後，點擊任務下方的<b>「拍照上傳」</b>送出照片，審核通過就過關囉！
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #F3F4F6">
+              <button type="button" class="btn" id="btnTourDone" style="padding:7px 18px;font-size:13px;background:var(--pine);color:#fff;border-radius:20px;font-weight:900;border:none;cursor:pointer">✨ 開始尋寶！</button>
+            </div>
+          </div>
+        `;
+
+        if($('btnTourDone')) $('btnTourDone').onclick = (e) => { e.stopPropagation(); setTreeFillFull(false); mask.remove(); };
+      }, 180);
     }
   }
 
   mask.onclick = (e) => {
     if(e.target === mask){
       if(currentStep === 1) renderTourStep(2);
+      else if(currentStep === 2) renderTourStep(3);
       else { setTreeFillFull(false); mask.remove(); }
     }
   };
@@ -2147,7 +2422,7 @@ function showTreeProgressDialog(){
   if(me){
     const extraCompleted = okCount > need ? ('（共完成 ' + okCount + ' 項）') : '';
     const pendingMsg = pendCount ? ('・審核中 ' + pendCount + ' 項') : '';
-    rateHtml = '<div class="rate' + (done ? ' done' : '') + '" style="margin-bottom:8px;padding-bottom:8px"><div class="rate-main"><div class="rate-title">任務完成率 <b>' + pct + '%</b></div><div class="progress">' + bars + '</div><div class="rate-sub">已通過 <b>' + Math.min(okCount, need) + '</b>／' + need + ' 項' + extraCompleted + pendingMsg + '<span>' + subMsg + '</span></div></div></div>';
+    rateHtml = '<div class="rate' + (done ? ' done' : '') + '" style="margin-bottom:8px;padding-bottom:8px"><div class="rate-main"><div class="rate-title">任務進度</div><div class="progress">' + bars + '</div><div class="rate-sub">已通過 <b>' + Math.min(okCount, need) + '</b>／' + need + ' 項' + extraCompleted + pendingMsg + '<span>' + subMsg + '</span></div></div></div>';
   }
 
   const mask = document.createElement('div');
@@ -2248,6 +2523,7 @@ function showSantaAccountDialog(){
 
       <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--line)">
         <button type="button" class="btn" id="btnCloseSantaModal" style="width:100%;height:48px;font-size:16px;font-weight:900;background:var(--pine);color:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(20,83,45,.25);border:none;cursor:pointer">✨ 開始尋寶</button>
+        <button type="button" class="link-btn" id="btnReplayTour" style="display:block;margin:10px auto 0;color:var(--pine);font-size:13px;text-decoration:underline;cursor:pointer;background:none;border:none">💡 重看尋寶新手導覽</button>
       </div>
     </div>
   `;
@@ -2257,6 +2533,7 @@ function showSantaAccountDialog(){
   const close = () => mask.remove();
   if($('closeSantaX')) $('closeSantaX').onclick = close;
   $('btnCloseSantaModal').onclick = close;
+  if($('btnReplayTour')) $('btnReplayTour').onclick = () => { close(); startIntroTour(); };
   mask.onclick = (e) => { if(e.target === mask) close(); };
 
   const dialogPill = mask.querySelector('.cd-pill');
@@ -2470,25 +2747,38 @@ function checkUrlAnimationParams(){
 }
 
 async function initResident(){
+  showAppLoading();
+  const loadStartTime = Date.now();
   $('resident').classList.remove('hidden');
   initWarmupButtons();
-  // 先用預設活動時間＋手機時間立刻顯示倒數遮罩，不必等後端回應（Apps Script 常要 1～3 秒以上，
-  // 否則會先閃過活動內容、幾秒後才跳出倒數）；後端設定讀到後，倒數會自動改用後端的時間
-  makeSnow();          // 雪花也一打開就開始飄（開場遮罩上也看得到）
+  makeSnow();
   startCountdown();
   const t0 = Date.now();
   try{ cfg = await apiGet('config'); }
   catch(e){
     console.warn('apiGet config error, fallback to mock:', e);
     try{ cfg = await mockGet('config'); }
-    catch(err){ $('statusBanner').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
+    catch(err){
+      hideAppLoading();
+      $('statusBanner').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`;
+      return;
+    }
   }
   syncClock(cfg.serverTime, t0, Date.now());
-  if(IS_DEMO){ cfg.open = true; cfg.notStarted = false; }   // 測試模式：活動開始前也開放上傳（後端同樣只在開始前接受）
+  if(IS_DEMO){ cfg.open = true; cfg.notStarted = false; }
   me = loadMe();
   try{ if(cfg.start && cfg.end) $('heroDate').textContent = fmtPeriod(cfg.start, cfg.end); }catch(e){}
   renderStatusBanner();
   startCountdown();
+
+  // 若已有登入戶別，更新載入文字並先行等待進度讀取完畢
+  let news = [];
+  if(me){
+    showAppLoading(`正在同步 ${unitText(doneShownKey())}・${me.name} 的尋寶進度 🎄`);
+    lastNewsCheck = Date.now();
+    news = await refreshStatus({news:true});
+  }
+
   // 網址含 ?Finish 或 ?Snowman 時，立即跳過開場倒數遮罩與活動說明彈窗
   const urlKeys = [...new URLSearchParams(location.search).keys()].map(k => k.toLowerCase());
   const hashKey = (location.hash || '').toLowerCase();
@@ -2503,7 +2793,13 @@ async function initResident(){
   const st = new Date('2026-12-19T08:00:00+08:00').getTime();
   const isWarmup = (nowMs() < st) && !isCoverDismissed;
   if(!me && !isWarmup && !hasAnimParam) showIntroDialog();
+
+  // 重要：此時 status 已由 refreshStatus 完全取得！
+  // 再渲染畫面，確保一打開看到的就是正確的審核中／已通過狀態！
   renderResidentFlow();
+  renderProgress();
+  updateHeaderTreeBadge();
+  updateHeaderUserBadge();
 
   if($('cdPill')) $('cdPill').onclick = () => showIntroDialog();
   if($('hdrTreeBox')) $('hdrTreeBox').onclick = () => showTreeProgressDialog();
@@ -2511,17 +2807,17 @@ async function initResident(){
   if($('hdrUserBox')) $('hdrUserBox').onclick = () => showSantaAccountDialog();
   if($('btnHdrSanta')) $('btnHdrSanta').onclick = (e) => { e.stopPropagation(); showSantaAccountDialog(); };
 
-  if(me){
-    lastNewsCheck = Date.now();
-    const news = await refreshStatus({news:true});
-    if(news.length) showReviewNews(news);
-  }
-  renderProgress();
-  maybeOpenPending();
-  // 上次送出滿 4 項時沒看到「等待審核」提示（例如當時還是舊版網頁）：打開網頁時補跳一次（有其他視窗開著就不跳）
-  if(me && !document.querySelector('.sheet-mask, #doneMask, #tourMask, #introDialogMask')) maybeShowWaitReview();
-  hintTreeOnce();
-  checkUrlAnimationParams();
+  // 保證載入動畫至少播放 600ms（既有感又不會拖延），讀取完成後平滑淡出！
+  const elapsed = Date.now() - loadStartTime;
+  const minDelay = Math.max(0, 600 - elapsed);
+  setTimeout(() => {
+    hideAppLoading();
+    if(news && news.length) showReviewNews(news);
+    maybeOpenPending();
+    if(me && !document.querySelector('.sheet-mask, #doneMask, #tourMask, #introDialogMask')) maybeShowWaitReview();
+    hintTreeOnce();
+    checkUrlAnimationParams();
+  }, minDelay);
 }
 
 // 第一次進來（每支手機一次）：等開場遮罩、彈窗、教學導覽都關掉、真的看到主頁時，左上聖誕樹晃動幾秒
@@ -2598,12 +2894,13 @@ function renderIdCard(editing){
     if(!me || me.hao !== hao || me.lou !== lou || me.zhi !== zhi){ status = null; summary = null; }
     me = {hao, lou, zhi, name};
     saveMe(me);
-    renderResidentFlow();
+    showAppLoading(`正在讀取 ${unitText(doneShownKey())}・${me.name} 的尋寶進度 🎄`);
     await refreshStatus();
+    renderResidentFlow();
     renderProgress();
-    maybeOpenPending();
-
-    // 先顯示一個 Intro 的教學！
+    updateHeaderTreeBadge();
+    updateHeaderUserBadge();
+    hideAppLoading();
     startIntroTour();
   };
 }
@@ -2930,7 +3227,7 @@ function renderTask3Card(t, st, cfg_obj){
     const rs = (st[sp.id] || {}).reason;
     const stTag = c === 'ok' ? '<em class="sc-st sc-ok">✓ 已集章</em>' : c === 'pend' ? '<em class="sc-st">審核中</em>' : c === 'rej' ? `<em class="sc-st sc-reason">⚠ 未通過原因：${esc(rs || '請重新拍照上傳')}</em>` : '';
     const action = c === 'ok' ? ''   // 已集（通過）的格子不能再上傳；照片右下角蓋林森苑圓章
-      : isOpen ? `<button class="btn" type="button" data-spot="${sp.id}">${c === 'pend' ? '換一張照片' : c === 'rej' ? '重新拍照' : '拍照上傳'}</button>` : '';
+      : isOpen ? `<button class="btn" type="button" data-spot="${sp.id}">${c === 'pend' ? '換一張照片' : c === 'rej' ? '重新拍照' : '📸 拍照上傳'}</button>` : '';
     return `<div class="stamp-cell ${c}" data-cell="${sp.id}">
       <div class="sc-thumb">${mine ? `<img src="${mine}" alt="${esc(name)} 的照片">` : SANTA_SVG}${c === 'ok' ? LSY_SEAL_SVG : ''}</div>
       <div class="sc-main"><b>${esc(name)}</b>${stTag}${action}</div>
@@ -3079,7 +3376,7 @@ function buildTaskPreviewHtml(){
 
   return `<div class="rate">
     <div class="rate-main">
-      <div class="rate-title">任務完成率 <b>0%</b></div>
+      <div class="rate-title">任務進度</div>
       <div class="progress">${bars}</div>
     </div>
   </div>
@@ -3274,7 +3571,7 @@ function renderProgress(){
     const x = (st[t.id] || {}).status || '';
     const mine = (x === '通過' || x === '待審核') ? getMyPhoto(t.id) : '';
     // 已通過的任務不能再上傳；待審中可以重傳（取代原本那張）；未通過可以重拍
-    const btn = x === '待審核' ? '換一張照片' : x === '退回' ? '重新拍照' : '拍照上傳';
+    const btn = x === '待審核' ? '換一張照片' : x === '退回' ? '重新拍照' : '📸 拍照上傳';
     const scene = TASK_SCENE[t.id];
     return `<div class="spot${s.state === 'ok' ? ' ok' : ''}" data-tid="${t.id}">
       <div class="spot-head">
@@ -3318,7 +3615,7 @@ function renderProgress(){
     loadDoneStats();
   }else box.innerHTML = `<div class="rate${done ? ' done' : ''}">
       <div class="rate-main">
-        <div class="rate-title">任務完成率 <b>${pct}%</b></div>
+        <div class="rate-title">任務進度</div>
         <div class="progress">${bars}</div>
         <div class="rate-sub">已通過 <b>${Math.min(okN, need)}</b>／${need} 項${okN > need ? `（共完成 ${okN} 項）` : ''}${pendN ? `・審核中 ${pendN} 項` : ''}<span>${subMsg}</span></div>
       </div>
@@ -3364,7 +3661,7 @@ function candyGuideHtml(){
       <li>在櫃檯前按下面的按鈕，把畫面給工作人員看</li>
       <li>由<b>工作人員</b>發放糖果並按下確認</li>
     </ol>
-    <div class="cg-note">現在還沒到櫃檯的話，按「稍後再領」即可，之後可從任務完成率右邊的按鈕再打開。</div>
+    <div class="cg-note">現在還沒到櫃檯的話，按「稍後再領」即可，之後可從任務進度旁的按鈕再打開。</div>
   </div>`;
 }
 function doneShownKey(){ return me ? `${me.hao}-${me.lou}-${me.zhi}` : ''; }
@@ -4179,6 +4476,29 @@ async function review(r, newStatus, btn){
     }
     toast(e.message, true); return false;
   }
+}
+
+
+function showAppLoading(who){
+  const el = $('appLoader');
+  if(!el) return;
+  const w = $('loaderWho');
+  if(w){
+    if(who !== undefined) w.textContent = who;
+    else if(me) w.textContent = `正在同步 ${unitText(doneShownKey())}・${me.name} 的尋寶進度 🎄`;
+    else w.textContent = '正在同步社區尋寶最新進度 🎄';
+  }
+  el.classList.remove('fade-out');
+  el.style.display = 'flex';
+}
+
+function hideAppLoading(){
+  const el = $('appLoader');
+  if(!el) return;
+  el.classList.add('fade-out');
+  setTimeout(() => {
+    el.style.display = 'none';
+  }, 500);
 }
 
 /* ============ 完賽名單＋A4 名單卡片列印（抽獎改由物業現場進行） ============ */
