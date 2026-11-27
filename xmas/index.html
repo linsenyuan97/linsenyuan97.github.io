@@ -745,12 +745,12 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .t3-dot button{position:absolute;inset:0;border:none;background:transparent;border-radius:50%;cursor:pointer;width:100%;height:100%}
 .t3-upload-hint{font-size:12px;color:#6B7280;text-align:center;margin-top:4px}
 
-/* 全螢幕載入遮罩：三棟大樓背景＋聖誕老人進社區動畫 */
+/* 全螢幕載入遮罩：三棟大樓背景＋聖誕老人進社區動畫＋飄雪 */
 .app-loader-mask{
   position:fixed;
   inset:0;
   z-index:99999;
-  background:radial-gradient(circle at 50% 30%, #162A45 0%, #0A1424 100%);
+  background:radial-gradient(circle at 50% 25%, #182C48 0%, #0A1424 100%);
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -763,78 +763,155 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
   visibility:hidden;
   pointer-events:none;
 }
+.app-loader-snow{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:5;
+  overflow:hidden;
+}
+.snowflake{
+  position:absolute;
+  top:-20px;
+  background:#fff;
+  border-radius:50%;
+  opacity:0.8;
+  animation:snowFall linear infinite;
+}
+@keyframes snowFall{
+  0%{transform:translateY(-20px) translateX(0);opacity:0}
+  10%{opacity:0.9}
+  90%{opacity:0.8}
+  100%{transform:translateY(105vh) translateX(35px);opacity:0.2}
+}
 .app-loader-stage{
   position:relative;
   width:360px;
-  height:240px;
-  max-width:95vw;
+  height:360px;
+  max-width:96vw;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:flex-end;
+  z-index:10;
 }
+@media (max-height:640px){
+  .app-loader-stage{transform:scale(0.85);transform-origin:center bottom}
+}
+
+.heart-win{
+  animation:heartPulse 2s ease-in-out infinite alternate;
+}
+@keyframes heartPulse{
+  0%{fill:#FDE047;filter:drop-shadow(0 0 2px rgba(253,224,71,0.7))}
+  100%{fill:#FEF08A;filter:drop-shadow(0 0 6px rgba(254,240,138,1)) drop-shadow(0 0 10px rgba(245,158,11,0.6))}
+}
+
 .app-loader-bld{
   position:absolute;
-  bottom:30px;
+  bottom:25px;
   left:50%;
   transform:translateX(-50%);
-  width:320px;
-  height:140px;
-  opacity:0.92;
-  filter:drop-shadow(0 0 16px rgba(247,211,117,0.15));
+  width:330px;
+  height:310px;
+  opacity:0.95;
+  filter:drop-shadow(0 0 20px rgba(247,211,117,0.2));
 }
+
+.app-loader-bushes{
+  position:absolute;
+  bottom:26px;
+  left:50%;
+  transform:translateX(-50%);
+  width:340px;
+  height:44px;
+  z-index:3;
+  pointer-events:none;
+}
+.community-signboard{
+  position:absolute;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:20;
+  pointer-events:none;
+}
+.signboard-plate{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%);
+  border:1.5px solid #CBD5E1;
+  border-radius:8px;
+  padding:5px 22px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.45), 0 0 0 1.5px rgba(255,255,255,0.8) inset;
+}
+.signboard-text{
+  font-size:16px;
+  font-weight:900;
+  letter-spacing:5px;
+  color:#1E293B;
+  text-shadow:0 1px 1px rgba(255,255,255,0.8);
+  padding-left:5px;
+}
+
 .app-loader-ground{
   position:absolute;
   bottom:0;
-  left:-20px;
-  right:-20px;
-  height:40px;
-  background:linear-gradient(180deg, #E2F1F8 0%, #C4DCE9 100%);
-  border-radius:50% 50% 0 0 / 16px 16px 0 0;
-  box-shadow:0 -4px 14px rgba(255,255,255,0.3);
+  left:-30px;
+  right:-30px;
+  height:48px;
+  background:linear-gradient(180deg, #E6F3F9 0%, #B8D4E5 100%);
+  border-radius:50% 50% 0 0 / 20px 20px 0 0;
+  box-shadow:0 -4px 16px rgba(255,255,255,0.45);
 }
 .app-loader-santa{
   position:absolute;
-  bottom:26px;
-  left:-140px;
-  width:140px;
+  bottom:24px;
+  left:-180px;
+  width:175px;
   height:auto;
-  z-index:10;
-  animation:appSantaEnter 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
-  filter:drop-shadow(0 6px 10px rgba(0,0,0,0.45));
+  z-index:15;
+  animation:appSantaEnter 2.5s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  filter:drop-shadow(0 8px 14px rgba(0,0,0,0.5));
 }
 @keyframes appSantaEnter{
-  0%{left:-140px;transform:translateY(6px) scale(0.92) rotate(-3deg);opacity:0}
-  25%{opacity:1}
-  65%{left:45%;transform:translateX(-50%) translateY(-2px) scale(1) rotate(1deg);opacity:1}
+  0%{left:-190px;transform:translateY(8px) scale(0.92) rotate(-3deg);opacity:0}
+  20%{opacity:1}
+  65%{left:45%;transform:translateX(-50%) translateY(-3px) scale(1) rotate(1deg);opacity:1}
   80%{left:50%;transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);opacity:1}
   100%{left:50%;transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);opacity:1}
 }
 .app-loader-bob{
-  animation:appSleighBob 0.6s ease-in-out infinite alternate;
+  animation:appSleighBob 0.65s ease-in-out infinite alternate;
 }
 @keyframes appSleighBob{
   0%{transform:translateY(0)}
-  100%{transform:translateY(-4px)}
+  100%{transform:translateY(-5px)}
+}
+.loader-sleigh{
+  width:100%;
+  height:auto;
+  display:block;
 }
 .app-loader-text-box{
-  margin-top:20px;
+  margin-top:14px;
   text-align:center;
   z-index:20;
 }
 .app-loader-who{
-  font-size:15px;
+  font-size:14.5px;
   color:#FEF08A;
   font-weight:700;
   letter-spacing:0.5px;
-  text-shadow:0 0 10px rgba(254,240,138,0.3);
+  text-shadow:0 0 10px rgba(254,240,138,0.35);
 }
 .app-loader-bar{
   width:140px;
   height:4px;
   background:rgba(255,255,255,0.15);
   border-radius:10px;
-  margin:12px auto 0;
+  margin:10px auto 0;
   overflow:hidden;
   position:relative;
 }
@@ -850,83 +927,434 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
   0%{left:0%;width:25%}
   100%{left:75%;width:25%}
 }
-
 </style>
 </head>
 <body>
-<!-- 全螢幕載入遮罩：三棟大樓背景＋聖誕老人進社區動畫 -->
+<!-- 全螢幕載入遮罩：三棟大樓背景＋聖誕老人進社區動畫＋飄雪 -->
 <div id="appLoader" class="app-loader-mask">
+  <!-- 飄雪粒子層 -->
+  <div class="app-loader-snow" aria-hidden="true">
+    <div class="snowflake" style="left:0.0vw;width:2.0px;height:2.0px;animation-duration:2.4s;animation-delay:0.00s;opacity:0.35;"></div><div class="snowflake" style="left:5.1vw;width:3.2px;height:3.2px;animation-duration:2.9s;animation-delay:0.28s;opacity:0.47;"></div><div class="snowflake" style="left:10.2vw;width:4.4px;height:4.4px;animation-duration:3.4s;animation-delay:0.56s;opacity:0.59;"></div><div class="snowflake" style="left:15.3vw;width:5.6px;height:5.6px;animation-duration:3.9s;animation-delay:0.84s;opacity:0.71;"></div><div class="snowflake" style="left:20.4vw;width:2.0px;height:2.0px;animation-duration:4.4s;animation-delay:1.12s;opacity:0.83;"></div><div class="snowflake" style="left:18.0vw;width:3.2px;height:3.2px;animation-duration:4.9s;animation-delay:1.40s;opacity:0.35;"></div><div class="snowflake" style="left:23.1vw;width:4.4px;height:4.4px;animation-duration:2.4s;animation-delay:1.68s;opacity:0.47;"></div><div class="snowflake" style="left:28.2vw;width:5.6px;height:5.6px;animation-duration:2.9s;animation-delay:1.96s;opacity:0.59;"></div><div class="snowflake" style="left:33.3vw;width:2.0px;height:2.0px;animation-duration:3.4s;animation-delay:2.24s;opacity:0.71;"></div><div class="snowflake" style="left:38.4vw;width:3.2px;height:3.2px;animation-duration:3.9s;animation-delay:2.52s;opacity:0.83;"></div><div class="snowflake" style="left:36.0vw;width:4.4px;height:4.4px;animation-duration:4.4s;animation-delay:2.80s;opacity:0.35;"></div><div class="snowflake" style="left:41.1vw;width:5.6px;height:5.6px;animation-duration:4.9s;animation-delay:3.08s;opacity:0.47;"></div><div class="snowflake" style="left:46.2vw;width:2.0px;height:2.0px;animation-duration:2.4s;animation-delay:3.36s;opacity:0.59;"></div><div class="snowflake" style="left:51.3vw;width:3.2px;height:3.2px;animation-duration:2.9s;animation-delay:0.14s;opacity:0.71;"></div><div class="snowflake" style="left:56.4vw;width:4.4px;height:4.4px;animation-duration:3.4s;animation-delay:0.42s;opacity:0.83;"></div><div class="snowflake" style="left:54.0vw;width:5.6px;height:5.6px;animation-duration:3.9s;animation-delay:0.70s;opacity:0.35;"></div><div class="snowflake" style="left:59.1vw;width:2.0px;height:2.0px;animation-duration:4.4s;animation-delay:0.98s;opacity:0.47;"></div><div class="snowflake" style="left:64.2vw;width:3.2px;height:3.2px;animation-duration:4.9s;animation-delay:1.26s;opacity:0.59;"></div><div class="snowflake" style="left:69.3vw;width:4.4px;height:4.4px;animation-duration:2.4s;animation-delay:1.54s;opacity:0.71;"></div><div class="snowflake" style="left:74.4vw;width:5.6px;height:5.6px;animation-duration:2.9s;animation-delay:1.82s;opacity:0.83;"></div><div class="snowflake" style="left:72.0vw;width:2.0px;height:2.0px;animation-duration:3.4s;animation-delay:2.10s;opacity:0.35;"></div><div class="snowflake" style="left:77.1vw;width:3.2px;height:3.2px;animation-duration:3.9s;animation-delay:2.38s;opacity:0.47;"></div><div class="snowflake" style="left:82.2vw;width:4.4px;height:4.4px;animation-duration:4.4s;animation-delay:2.66s;opacity:0.59;"></div><div class="snowflake" style="left:87.3vw;width:5.6px;height:5.6px;animation-duration:4.9s;animation-delay:2.94s;opacity:0.71;"></div><div class="snowflake" style="left:92.4vw;width:2.0px;height:2.0px;animation-duration:2.4s;animation-delay:3.22s;opacity:0.83;"></div><div class="snowflake" style="left:90.0vw;width:3.2px;height:3.2px;animation-duration:2.9s;animation-delay:0.00s;opacity:0.35;"></div><div class="snowflake" style="left:95.1vw;width:4.4px;height:4.4px;animation-duration:3.4s;animation-delay:0.28s;opacity:0.47;"></div><div class="snowflake" style="left:100.2vw;width:5.6px;height:5.6px;animation-duration:3.9s;animation-delay:0.56s;opacity:0.59;"></div>
+  </div>
+
   <div class="app-loader-stage">
-    <svg class="app-loader-bld" viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <defs>
-        <linearGradient id="bldLd" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3A4D6B"/><stop offset="100%" stop-color="#1E2A3C"/></linearGradient>
-      </defs>
-      <!-- 左棟 -->
-      <g transform="translate(14, 0)">
-        <rect x="0" y="22" width="76" height="98" rx="2" fill="url(#bldLd)"/>
-        <rect x="-2" y="17" width="80" height="7" rx="1" fill="#4B6182"/>
-        <rect x="14" y="12" width="48" height="6" rx="1" fill="#3A4D6B"/>
-        <ellipse cx="38" cy="12" rx="32" ry="3.5" fill="#fff" opacity=".85"/>
-        <rect x="8" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="42" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="25" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="59" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="8" y="68" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="42" y="68" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="25" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="59" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-      </g>
-      <!-- 中棟 -->
-      <g transform="translate(112, 0)">
-        <rect x="0" y="22" width="76" height="98" rx="2" fill="url(#bldLd)"/>
-        <rect x="-2" y="17" width="80" height="7" rx="1" fill="#4B6182"/>
-        <rect x="14" y="12" width="48" height="6" rx="1" fill="#3A4D6B"/>
-        <ellipse cx="38" cy="12" rx="32" ry="3.5" fill="#fff" opacity=".85"/>
-        <rect x="25" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
-        <rect x="59" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
-        <rect x="8" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
-        <rect x="42" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
-        <rect x="25" y="68" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
-        <rect x="8" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
-        <rect x="59" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".95"/>
-      </g>
-      <!-- 右棟 -->
-      <g transform="translate(210, 0)">
-        <rect x="0" y="22" width="76" height="98" rx="2" fill="url(#bldLd)"/>
-        <rect x="-2" y="17" width="80" height="7" rx="1" fill="#4B6182"/>
-        <rect x="14" y="12" width="48" height="6" rx="1" fill="#3A4D6B"/>
-        <ellipse cx="38" cy="12" rx="32" ry="3.5" fill="#fff" opacity=".85"/>
-        <rect x="8" y="36" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="25" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="59" y="52" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="42" y="68" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="8" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-        <rect x="42" y="84" width="11" height="9" rx="1" fill="#F7D375" opacity=".9"/>
-      </g>
+    <!-- 三棟拉高三倍的林森苑大樓 -->
+    <svg class="app-loader-bld" viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <linearGradient id="bldLdGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#364966"/>
+      <stop offset="100%" stop-color="#162233"/>
+    </linearGradient>
+    <filter id="heartGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  
+  <!-- 左棟 (A棟・愛心左側峰頂與左翼) -->
+  <rect x="14" y="20" width="78" height="270" rx="3" fill="url(#bldLdGrad)"/>
+  <rect x="12" y="15" width="82" height="7" rx="1.5" fill="#4B6182"/>
+  <rect x="29" y="10" width="50" height="6" rx="1.5" fill="#3A4D6B"/>
+  <ellipse cx="54" cy="10" rx="34" ry="3.5" fill="#fff" opacity=".9"/>
+  <rect x="23" y="34" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="40" y="34" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="57" y="34" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="74" y="34" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="23" y="51" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="40" y="51" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="57" y="51" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="74" y="51" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="23" y="68" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="40" y="68" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="57" y="68" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="74" y="68" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="23" y="85" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="40" y="85" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="57" y="85" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="74" y="85" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="23" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="40" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="57" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="74" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="23" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="40" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="57" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="74" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="23" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="40" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="57" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="74" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="23" y="153" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="40" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="57" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="74" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="23" y="170" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="40" y="170" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="57" y="170" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="74" y="170" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="23" y="187" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="40" y="187" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="57" y="187" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="74" y="187" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="23" y="204" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="40" y="204" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="57" y="204" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="74" y="204" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="23" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="40" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="57" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="74" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="23" y="238" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="40" y="238" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="57" y="238" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="74" y="238" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="23" y="255" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="40" y="255" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="57" y="255" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="74" y="255" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+
+  
+  <!-- 中棟 (B棟・愛心中央深凹槽與收束尖端，已移除重覆標牌) -->
+  <rect x="121" y="20" width="78" height="270" rx="3" fill="url(#bldLdGrad)"/>
+  <rect x="119" y="15" width="82" height="7" rx="1.5" fill="#4B6182"/>
+  <rect x="136" y="10" width="50" height="6" rx="1.5" fill="#3A4D6B"/>
+  <ellipse cx="161" cy="10" rx="34" ry="3.5" fill="#fff" opacity=".9"/>
+  <rect x="130" y="34" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="147" y="34" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="164" y="34" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="181" y="34" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="130" y="51" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="147" y="51" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="164" y="51" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="181" y="51" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="130" y="68" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="147" y="68" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="164" y="68" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="181" y="68" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="130" y="85" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="147" y="85" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="164" y="85" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="181" y="85" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="130" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="147" y="102" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="164" y="102" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="181" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="130" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="147" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="164" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="181" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="130" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="147" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="164" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="181" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="130" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="147" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="164" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="181" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="130" y="170" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="147" y="170" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="164" y="170" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="181" y="170" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="130" y="187" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="147" y="187" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="164" y="187" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="181" y="187" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="130" y="204" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="147" y="204" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="164" y="204" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="181" y="204" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="130" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="147" y="221" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="164" y="221" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="181" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="130" y="238" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="147" y="238" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="164" y="238" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="181" y="238" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="130" y="255" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="147" y="255" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="164" y="255" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="181" y="255" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+
+  
+  <!-- 右棟 (C棟・愛心右側峰頂與右翼) -->
+  <rect x="228" y="20" width="78" height="270" rx="3" fill="url(#bldLdGrad)"/>
+  <rect x="226" y="15" width="82" height="7" rx="1.5" fill="#4B6182"/>
+  <rect x="243" y="10" width="50" height="6" rx="1.5" fill="#3A4D6B"/>
+  <ellipse cx="268" cy="10" rx="34" ry="3.5" fill="#fff" opacity=".9"/>
+  <rect x="237" y="34" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="254" y="34" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="271" y="34" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="288" y="34" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="237" y="51" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="254" y="51" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="271" y="51" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="288" y="51" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="237" y="68" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="254" y="68" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="271" y="68" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="288" y="68" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="237" y="85" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="254" y="85" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="271" y="85" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="288" y="85" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="237" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="254" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="271" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="288" y="102" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="237" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="254" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="271" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="288" y="119" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="237" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="254" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="271" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="288" y="136" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="237" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="254" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="271" y="153" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="288" y="153" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="237" y="170" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect class="heart-win" x="254" y="170" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="271" y="170" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="288" y="170" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect class="heart-win" x="237" y="187" width="11" height="10" rx="1.5" fill="#FDE047" opacity="1" filter="url(#heartGlow)"/>
+<rect x="254" y="187" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="271" y="187" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="288" y="187" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="237" y="204" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="254" y="204" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="271" y="204" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="288" y="204" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="237" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="254" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="271" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="288" y="221" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="237" y="238" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="254" y="238" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="271" y="238" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="288" y="238" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="237" y="255" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="254" y="255" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+<rect x="271" y="255" width="11" height="10" rx="1.5" fill="#E2B14C" opacity="0.4"/>
+<rect x="288" y="255" width="11" height="10" rx="1.5" fill="#233245" opacity="0.22"/>
+
+</svg>
+
+    <!-- 雪地地面 -->
+    <!-- 附圖風格之綠色灌木造景 -->
+    <svg class="app-loader-bushes" viewBox="0 0 350 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <ellipse cx="40" cy="40" rx="45" ry="25" fill="#4ADE80" opacity="0.85"/>
+      <ellipse cx="75" cy="38" rx="35" ry="22" fill="#22C55E" opacity="0.95"/>
+      <ellipse cx="115" cy="42" rx="40" ry="26" fill="#16A34A" opacity="0.9"/>
+      <ellipse cx="235" cy="42" rx="40" ry="26" fill="#16A34A" opacity="0.9"/>
+      <ellipse cx="275" cy="38" rx="35" ry="22" fill="#22C55E" opacity="0.95"/>
+      <ellipse cx="310" cy="40" rx="45" ry="25" fill="#4ADE80" opacity="0.85"/>
+      <ellipse cx="175" cy="45" rx="55" ry="25" fill="#15803D" opacity="0.85"/>
     </svg>
 
+    <!-- 雪地地面 -->
     <div class="app-loader-ground"></div>
 
+    <!-- 底座獨立標牌：林森苑（依附圖增設之立體社區門牌） -->
+    <div class="community-signboard" aria-label="社區門牌：林森苑">
+      <div class="signboard-plate">
+        <span class="signboard-text">林森苑</span>
+      </div>
+    </div>
+
+    <!-- 聖誕老公公進社區（右上角同款向量圖，帶鹿與雪橇） -->
     <div class="app-loader-santa">
       <div class="app-loader-bob">
-        <svg viewBox="15 28 505 170" width="140" height="48" style="overflow:visible">
-          <g transform="scale(0.85)">
-            <ellipse cx="380" cy="115" rx="28" ry="16" fill="#D9B792"/>
-            <circle cx="410" cy="95" r="14" fill="#D9B792"/>
-            <circle cx="424" cy="95" r="4.5" fill="#EF4444"/>
-            <path d="M412,85 C410,70 418,65 425,60 M415,75 C425,72 430,70 432,65" stroke="#78350F" stroke-width="3" fill="none" stroke-linecap="round"/>
-            <path d="M195,125 C250,138 310,138 383,122" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M38,105 C32,72 52,56 80,58 L142,62 C165,62 180,82 188,110 L50,110 Z" fill="#991B1B"/>
-            <path d="M25,125 C80,128 170,128 195,120 C185,135 150,135 40,135 Z" fill="#F59E0B"/>
-            <path d="M42,120 C36,75 58,42 92,44 C116,46 132,68 128,118 Z" fill="#FAFAF9"/>
-            <path d="M128,74 C124,74 118,90 116,117 L182,117 C180,90 174,74 164,74 Z" fill="#EF4444"/>
-            <circle cx="149" cy="50" r="16" fill="#FBCFE8"/>
-            <path d="M135,52 Q149,78 163,52 Z" fill="#fff"/>
-            <circle cx="149" cy="50" r="3.5" fill="#EF4444"/>
-            <path d="M133,42 Q149,20 165,42 Z" fill="#DC2626"/>
-            <circle cx="165" cy="40" r="4.5" fill="#fff"/>
-          </g>
-        </svg>
+        <svg class="loader-sleigh" id="loaderSantaSvg" aria-label="查看住戶資料與活動倒數" role="button" tabindex="0" viewBox="15 28 505 170">
+      <defs>
+        <linearGradient id="ldHGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFE082"/><stop offset="50%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient>
+        <linearGradient id="ldHRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#EF4444"/><stop offset="100%" stop-color="#991B1B"/></linearGradient>
+        <linearGradient id="ldHGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981"/><stop offset="100%" stop-color="#064E3B"/></linearGradient>
+        <linearGradient id="ldHBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#1D4ED8"/></linearGradient>
+        <linearGradient id="ldHqDeer" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D9B792"/><stop offset="100%" stop-color="#BF976E"/></linearGradient>
+        <filter id="ldHGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.5" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
+        <linearGradient id="ldHCoat" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#E5BA88"/>
+          <stop offset="60%" stop-color="#D7A874"/>
+          <stop offset="100%" stop-color="#C2915C"/>
+        </linearGradient>
+        <linearGradient id="ldHBelly" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FFFDF7"/>
+          <stop offset="100%" stop-color="#F3E7D3"/>
+        </linearGradient>
+        <linearGradient id="ldHAntler" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#8D6541"/>
+          <stop offset="100%" stop-color="#6B4627"/>
+        </linearGradient>
+      </defs>
+
+      <!-- 韁繩：從聖誕老人雙手連至小鹿項圈與鞍帶 -->
+      <path d="M 195,125 C 250,138 310,138 383,122" fill="none" stroke="#78350F" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M 195,130 C 255,148 315,146 383,126" fill="none" stroke="#78350F" stroke-width="2.2" stroke-linecap="round" opacity="0.85"/>
+
+      <!-- ==================== 雪橇、禮物與聖誕老人 ==================== -->
+      <g transform="translate(15, 30)">
+        <!-- 雪橇背部暗面 -->
+        <path d="M38,105 C32,72 52,56 80,58 L142,62 C165,62 180,82 188,110 L50,110 Z" fill="#6B111A"/>
+
+        <!-- 後座大禮物袋（白色經典大麻袋，束紅蝴蝶結） -->
+        <path d="M42,120 C36,75 58,42 92,44 C116,46 132,68 128,118 Z" fill="#FAFAF9" stroke="#E7E5E4" stroke-width="2"/>
+        <!-- 禮物袋紅絲帶蝴蝶結 -->
+        <ellipse cx="78" cy="52" rx="4" ry="3" fill="#DC2626"/>
+        <path d="M78,52 C70,44 64,48 72,54 Z" fill="#DC2626"/>
+        <path d="M78,52 C86,44 92,48 84,54 Z" fill="#DC2626"/>
+        <path d="M76,54 L68,66 M80,54 L86,66" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- 豐富彩色禮物盒堆疊 -->
+        <g transform="translate(56, 52) rotate(-10)">
+          <rect x="0" y="0" width="32" height="30" rx="3.5" fill="url(#ldHGreen)" stroke="#065F46" stroke-width="1"/>
+          <rect x="13" y="0" width="6" height="30" fill="url(#ldHGold)"/>
+          <rect x="0" y="12" width="32" height="6" fill="url(#ldHGold)"/>
+          <ellipse cx="16" cy="-2" rx="3.5" ry="2.5" fill="url(#ldHGold)"/>
+          <path d="M16,-1 C10,-8 5,-6 12,-1 Z" fill="url(#ldHGold)"/>
+          <path d="M16,-1 C22,-8 27,-6 20,-1 Z" fill="url(#ldHGold)"/>
+        </g>
+        <g transform="translate(86, 46) rotate(12)">
+          <rect x="0" y="0" width="28" height="26" rx="3" fill="url(#ldHBlue)" stroke="#1E40AF" stroke-width="1"/>
+          <rect x="11" y="0" width="6" height="26" fill="#FFFFFF"/>
+          <rect x="0" y="10" width="28" height="6" fill="#FFFFFF"/>
+          <ellipse cx="14" cy="-2" rx="3" ry="2.5" fill="#EF4444"/>
+          <path d="M14,-1 C9,-7 5,-5 11,-1 Z" fill="#EF4444"/>
+          <path d="M14,-1 C19,-7 23,-5 17,-1 Z" fill="#EF4444"/>
+        </g>
+
+        <!-- 聖誕老公公（坐姿明顯、慈祥圓臉大白鬍） -->
+        <g transform="translate(116, 12)">
+          <!-- 大紅袍身體 -->
+          <path d="M12,62 C8,62 2,78 0,105 L66,105 C64,78 58,62 48,62 Z" fill="url(#ldHRed)"/>
+          <!-- 黑色腰帶與大金扣 -->
+          <rect x="2" y="88" width="62" height="11" fill="#18181B"/>
+          <rect x="24" y="84" width="16" height="18" rx="2" fill="none" stroke="url(#ldHGold)" stroke-width="3.5"/>
+          <rect x="30" y="90" width="4" height="6" fill="url(#ldHGold)"/>
+          <!-- 白毛領前襟 -->
+          <rect x="27" y="62" width="10" height="26" fill="#FFFFFF" rx="2"/>
+
+          <!-- 雙手戴黑手套向前拉韁繩 -->
+          <path d="M46,70 Q64,76 72,86" stroke="url(#ldHRed)" stroke-width="12" stroke-linecap="round" fill="none"/>
+          <circle cx="70" cy="85" r="5.5" fill="#FFFFFF"/>
+          <circle cx="76" cy="88" r="6.5" fill="#1F2937"/>
+
+          <!-- 圓圓大頭與紅潤臉龐 -->
+          <circle cx="33" cy="38" r="18" fill="#FDE047" opacity="0.1"/>
+          <circle cx="33" cy="38" r="17" fill="#FBCFE8"/>
+          <circle cx="21" cy="40" r="4.5" fill="#F43F5E" opacity="0.5"/>
+          <circle cx="45" cy="40" r="4.5" fill="#F43F5E" opacity="0.5"/>
+          <!-- 慈祥微笑瞇瞇眼 -->
+          <path d="M22,34 Q25,30 29,34" stroke="#1F2937" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+          <path d="M37,34 Q40,30 44,34" stroke="#1F2937" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+          <!-- 圓圓小紅鼻 -->
+          <ellipse cx="33" cy="38" rx="4.5" ry="3.5" fill="#FB7185"/>
+
+          <!-- 蓬鬆大白鬍子 -->
+          <path d="M14,44 C10,60 18,78 33,80 C48,78 56,60 52,44 C46,48 39,49 33,49 C27,49 20,48 14,44 Z" fill="#FFFFFF" filter="url(#ldHGlow)"/>
+          <path d="M16,45 C12,60 19,74 33,76 C47,74 54,60 50,45 C44,48 38,49 33,49 C28,49 22,48 16,45 Z" fill="#FFFFFF"/>
+          <path d="M33,43 C24,43 18,50 16,53 C22,53 28,49 33,47 C38,49 44,53 50,53 C48,50 42,43 33,43 Z" fill="#F3F4F6"/>
+
+          <!-- 經典大紅聖誕帽 -->
+          <path d="M14,26 C14,12 28,4 46,9 C51,19 47,26 47,26 Z" fill="url(#ldHRed)"/>
+          <rect x="12" y="22" width="38" height="10" rx="5" fill="#FFFFFF"/>
+          <path d="M45,9 Q62,10 64,28" fill="none" stroke="url(#ldHRed)" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="65" cy="30" r="6.5" fill="#FFFFFF" filter="url(#ldHGlow)"/>
+        </g>
+
+        <!-- 雪橇前側車體（優雅森林綠或經典紅，金色滾邊） -->
+        <path d="M36,108 C32,94 45,90 75,92 L146,96 C176,96 195,106 204,126 C208,140 185,144 155,142 L58,142 C40,142 34,128 36,108 Z" fill="url(#ldHRed)"/>
+        <!-- 金色滾邊裝飾 -->
+        <path d="M36,105 C33,92 46,88 76,90 L148,94 C178,94 198,105 206,128" fill="none" stroke="url(#ldHGold)" stroke-width="4.8" stroke-linecap="round"/>
+        <path d="M65,120 Q115,138 175,116" fill="none" stroke="url(#ldHGold)" stroke-width="3.2" stroke-linecap="round" opacity="0.95"/>
+        <circle cx="65" cy="120" r="3.5" fill="url(#ldHGold)"/>
+        <circle cx="175" cy="116" r="3.5" fill="url(#ldHGold)"/>
+
+        <!-- 金色雙滑軌底座 -->
+        <path d="M70,140 L60,165 M116,140 L110,165 M170,140 L168,165" stroke="url(#ldHGold)" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M18,165 L198,165 C222,165 236,150 232,138 C228,126 214,126 210,134 C208,142 218,148 226,146" fill="none" stroke="url(#ldHGold)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- ==================== 可愛Q版日系聖誕麋鹿 ==================== -->
+      <g transform="translate(315, 38)">
+        <!-- 1. 後腳 (遠處左後腿) -->
+        <path d="M 38,98 C 30,112 24,126 18,142 C 16,146 22,148 25,144 C 30,132 38,120 48,110 Z" fill="#BA8752"/>
+        <path d="M 16,138 C 15,144 20,147 24,144 C 25,140 22,137 16,138 Z" fill="#FFFDF7"/>
+        <path d="M 16,143 L 14,148 C 14,151 18,152 21,150 L 23,144 Z" fill="#3E2413"/>
+
+        <!-- 2. 後腳 (近處右後腿) -->
+        <path d="M 52,102 C 50,118 48,134 46,150 C 46,155 52,156 54,151 C 56,138 58,124 64,112 Z" fill="url(#ldHCoat)"/>
+        <ellipse cx="48" cy="148" rx="6" ry="4" fill="#FFFDF7"/>
+        <path d="M 44,150 L 43,156 C 43,159 49,160 52,158 L 53,151 Z" fill="#3E2413"/>
+
+        <!-- 3. 蓬鬆白尾巴 -->
+        <path d="M 24,78 C 10,72 6,60 14,56 C 22,54 26,66 28,74 Z" fill="#FFFDF7" stroke="#E5DAC8" stroke-width="1.2"/>
+        <path d="M 22,76 C 14,72 12,64 16,61" stroke="#D3C5AE" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+
+        <!-- 4. 身體主幹 -->
+        <path d="M 26,82 C 22,66 40,54 62,56 C 82,58 98,64 106,78 C 112,88 110,104 98,114 C 82,126 56,128 38,118 C 26,110 24,94 26,82 Z" fill="url(#ldHCoat)"/>
+        <path d="M 38,112 C 50,122 72,122 88,110 C 94,104 96,98 94,94 C 84,106 64,112 44,106 C 38,107 36,110 38,112 Z" fill="url(#ldHBelly)"/>
+
+        <!-- 5. 前腳 (遠處左前腿) -->
+        <path d="M 96,96 C 108,108 122,122 134,136 C 138,140 142,136 139,132 C 128,118 116,106 106,92 Z" fill="#BA8752"/>
+        <ellipse cx="134" cy="133" rx="5" ry="4" fill="#FFFDF7" transform="rotate(-35, 134, 133)"/>
+        <path d="M 134,134 L 139,139 C 142,142 145,139 143,136 L 138,131 Z" fill="#3E2413"/>
+
+        <!-- 6. 前腳 (近處右前腿) -->
+        <path d="M 88,102 C 92,116 100,128 108,138 C 112,143 118,139 115,135 C 108,124 102,114 98,100 Z" fill="url(#ldHCoat)"/>
+        <ellipse cx="111" cy="135" rx="5.5" ry="4" fill="#FFFDF7" transform="rotate(-25, 111, 135)"/>
+        <path d="M 110,136 L 114,142 C 116,145 120,143 119,139 L 115,134 Z" fill="#3E2413"/>
+
+        <!-- 7. 蓬鬆白毛領 -->
+        <path d="M 76,56 C 72,70 68,84 76,96 C 84,104 95,105 101,96 C 108,103 118,100 120,90 C 124,78 118,66 112,56 C 100,52 86,52 76,56 Z" fill="url(#ldHBelly)" stroke="#EBE0CC" stroke-width="1.2"/>
+        <path d="M 82,78 C 86,86 94,88 98,82" stroke="#DECDB5" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M 94,92 C 98,98 106,97 108,91" stroke="#DECDB5" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+
+        <!-- 8. 聖誕韁繩胸帶 -->
+        <path d="M 52,86 C 68,82 86,80 102,82" stroke="#DC2626" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path d="M 68,64 C 70,82 70,102 66,118" stroke="#DC2626" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <circle cx="68" cy="84" r="5" fill="#F59E0B" stroke="#B45309" stroke-width="1.2"/>
+        <circle cx="68" cy="84" r="2" fill="#FEF3C7"/>
+        <path d="M 88,68 C 96,65 106,66 114,72" stroke="#DC2626" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <!-- 金色大鈴鐺 -->
+        <g transform="translate(104, 76)">
+          <circle cx="0" cy="0" r="9.5" fill="#F59E0B" filter="url(#ldHGlow)"/>
+          <circle cx="0" cy="0" r="9" fill="#FBBF24" stroke="#D97706" stroke-width="1.5"/>
+          <ellipse cx="-2.5" cy="-3" rx="3.5" ry="2" fill="#FEF3C7" opacity="0.8"/>
+          <line x1="-7" y1="2" x2="7" y2="2" stroke="#78350F" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="0" cy="4" r="2" fill="#78350F"/>
+        </g>
+
+        <!-- 9. 頭部 -->
+        <path d="M 96,48 C 92,30 106,14 126,16 C 146,18 158,32 157,48 C 156,64 142,72 126,71 C 108,70 98,62 96,48 Z" fill="url(#ldHCoat)"/>
+        <ellipse cx="140" cy="54" rx="14" ry="11" fill="url(#ldHBelly)"/>
+        <ellipse cx="122" cy="54" rx="6" ry="4" fill="#FCA5A5" opacity="0.6"/>
+        <!-- 耳朵 -->
+        <path d="M 100,24 C 88,14 88,0 98,4 C 108,8 112,18 108,28 Z" fill="url(#ldHCoat)" stroke="#BA8752" stroke-width="1"/>
+        <path d="M 99,21 C 92,14 93,6 98,8 C 104,11 106,17 103,23 Z" fill="#FBCFE8"/>
+        <!-- 大眼睛 -->
+        <ellipse cx="126" cy="40" rx="6.5" ry="7.5" fill="#1C130D"/>
+        <circle cx="124" cy="37" r="2.8" fill="#FFFFFF"/>
+        <circle cx="128.5" cy="43" r="1.3" fill="#FFFFFF"/>
+        <ellipse cx="126" cy="44.5" rx="3.5" ry="1.2" fill="#78350F" opacity="0.4"/>
+        <path d="M 119,37 C 122,32 130,32 134,36" stroke="#1C130D" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M 121,30 Q 126,27 131,30" stroke="#78350F" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+        <!-- 魯道夫紅鼻子 -->
+        <ellipse cx="155" cy="48" rx="6.5" ry="5.5" fill="#EF4444" filter="url(#ldHGlow)"/>
+        <ellipse cx="155" cy="48" rx="6" ry="5" fill="#DC2626"/>
+        <circle cx="153" cy="46" r="2" fill="#FFFFFF" opacity="0.85"/>
+        <!-- 微笑 -->
+        <path d="M 144,56 Q 149,61 154,57" stroke="#78350F" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+        <!-- 10. 鹿角 -->
+        <path d="M 110,18 C 108,6 112,-4 116,-12 M 111,4 C 117,1 122,3 125,-2 M 110,11 C 116,9 120,11 123,7" stroke="#6B4627" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path d="M 116,18 C 116,2 122,-8 130,-16 M 120,5 C 127,-1 134,0 138,-5 M 118,12 C 126,8 132,10 136,5" stroke="url(#ldHAntler)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+        <polygon points="130,-19 131,-16 134,-16 132,-14 133,-11 130,-13 127,-11 128,-14 126,-16 129,-16" fill="#FBBF24"/>
+        <polygon points="138,-7 139,-5 141,-5 140,-3 141,-1 138,-2 136,-1 137,-3 135,-5 137,-5" fill="#FBBF24"/>
+        <circle cx="116" cy="-12" r="1.5" fill="#FDE68A"/>
+      </g>
+    </svg>
       </div>
     </div>
   </div>
@@ -936,7 +1364,6 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
     <div class="app-loader-bar"><div class="app-loader-bar-fill"></div></div>
   </div>
 </div>
-
 <!-- 活動暖身期全覆蓋遮罩 -->
 <div id="warmupCover" class="warmup-cover hidden">
   <div class="warmup-content">
