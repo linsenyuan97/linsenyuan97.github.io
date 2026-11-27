@@ -129,10 +129,14 @@ th{color:var(--ink-soft);font-size:12px}
 .rv-toolbar{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
 .rv-toolbar .filters{flex:1;margin:0}
 .rv-toolbar select{width:auto;height:36px;font-size:14px;padding:0 10px}
-.rv-card{display:flex;gap:14px;align-items:stretch}
-.rv-left{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
-.rv-left .thumb{width:112px;height:112px}
-.rv-st{display:inline-block;font-size:13px;font-weight:900;padding:3px 12px;border-radius:999px;white-space:nowrap}
+.rv-card{display:flex;flex-direction:column;gap:10px;padding:14px;position:relative}
+.rv-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:2px}
+.rv-head .rv-st{margin:0}
+.rv-meta-top{font-size:12px;color:var(--ink-muted)}
+.rv-body{display:flex;gap:14px;align-items:stretch}
+.rv-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.rv-left .thumb{width:140px;height:140px;border-radius:12px}
+.rv-st{display:inline-block;font-size:13px;font-weight:900;padding:3.5px 12px;border-radius:999px;white-space:nowrap}
 .rv-st.pend{background:var(--amber-light);color:var(--amber)}
 .rv-st.ok{background:var(--pine-light);color:var(--pine-dark)}
 .rv-st.rej{background:var(--berry-light);color:var(--berry-dark)}
@@ -322,7 +326,27 @@ header{background:linear-gradient(95deg,#0F3D21 0%,#1B6B3A 50%,#9B1C1C 100%)!imp
 .hdr-deco{margin-left:auto;color:var(--gold);font-size:13px;letter-spacing:.2em;opacity:.9;white-space:nowrap}
 .admin-tag + .hdr-deco,.hdr-deco + .admin-tag{margin-left:8px}
 .admin-tag{margin-left:0}
-.admin-clear{margin-left:auto;border:1.5px solid var(--berry);background:#fff;color:var(--berry);font-size:13px;font-weight:900;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.admin-clear{border:1.5px solid var(--berry);background:#fff;color:var(--berry);font-size:13px;font-weight:900;padding:5px 12px;border-radius:999px;white-space:nowrap}
+body.is-admin #hdrUserPill{display:none!important}
+body.is-admin .hdr-user-box{cursor:default}
+body.is-admin #adminTag{
+  margin-top:-6px;
+  position:relative;
+  z-index:10;
+  border:1.5px solid #FCA5A5;
+  background:#B91C1C;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  line-height:1.2;
+  padding:3px 10px;
+  border-radius:999px;
+  white-space:nowrap;
+  cursor:pointer;
+  box-shadow:0 2px 6px rgba(0,0,0,.35);
+  transition:transform .15s ease, background-color .15s ease;
+}
+body.is-admin #adminTag:hover{background:#991B1B;transform:scale(1.05)}
 .clear-mask{align-items:center;padding:16px}
 .clear-dialog{width:100%;max-width:340px;background:#fff;border-radius:16px;padding:20px 18px 16px;text-align:center;box-shadow:0 16px 40px rgba(0,0,0,.3)}
 .clear-dialog h3{margin:0 0 16px;font-size:18px;font-weight:900;color:var(--ink);line-height:1.5}
@@ -1982,8 +2006,8 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
       </g>
     </svg>
       <span class="hdr-user-pill unauth" id="hdrUserPill">填寫門牌 ›</span>
+      <button type="button" class="admin-tag admin-clear hidden" id="adminTag">清除所有資料</button>
     </div>
-    <button type="button" class="admin-tag admin-clear hidden" id="adminTag">清除所有資料</button>
   </div>
 </header>
 
@@ -3262,16 +3286,13 @@ function checkUrlAnimationParams(){
       t3.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // 如果還沒有完成任務三，點 Snowman 就是進到跳到任務三（不自動播放組裝動畫）
-    if(!isTask3Completed()){
-      return;
+    // 只要有解鎖部位：自動播放雪人組裝動畫
+    const pts = getTask3UnlockedPts();
+    if(pts > 0){
+      setTimeout(() => {
+        replaySnowman(pts, '#t3scene');
+      }, 450);
     }
-
-    // 已完成任務三：自動播放雪人組裝動畫（只播放到目前已完成的任務階段）
-    const pts = getTask3Pts();
-    setTimeout(() => {
-      replaySnowman(pts, '#t3scene');
-    }, 450);
   }
 }
 
@@ -3678,7 +3699,7 @@ function buildingSceneSvg(){
 }
 
 function snowmanSvg(pts, pend){
-  // 通過的部位是實心；審核中（pend 個）先拼上去但半透明，通過後變實心
+  // 只要上傳（待審核或通過）就直接解鎖實心部位，不用等審核通過
   pend = pend || 0;
   const partsHtml = SNOWMAN_PARTS.map((p, i) => {
     const cls = i < pts ? ' revealed' : i < pts + pend ? ' revealed pending' : '';
@@ -3723,7 +3744,7 @@ function replaySnowman(pts, containerSelector){
   // 1. 全部部位暫時隱藏
   parts.forEach(p => { p.classList.remove('revealed','popping'); });
 
-  // 2. 嚴格「只播放到目前已完成的任務階段 (pts)」
+  // 2. 嚴格「只播放到目前已解鎖的部位階段 (pts)」
   const maxParts = Math.min(Number(pts) || 0, parts.length);
   for(let i = 0; i < maxParts; i++){
     const timer = setTimeout(() => {
@@ -3736,12 +3757,25 @@ function replaySnowman(pts, containerSelector){
   }
 }
 
+// 任務三審核通過數（算過關用）
 function getTask3Pts(){
   const st = status || {};
   const tasks = (cfg && cfg.tasks) || TASKS_DEMO;
   const t3 = tasks.find(t => t.id === 3 || t.spots);
   if(!t3 || !t3.spots) return 0;
   return t3.spots.filter(s => (st[s.id] || {}).status === '通過').length;
+}
+
+// 任務三動畫解鎖數（只要上傳一個即解鎖一個組裝動畫部位，包含待審核與通過）
+function getTask3UnlockedPts(){
+  const st = status || {};
+  const tasks = (cfg && cfg.tasks) || TASKS_DEMO;
+  const t3 = tasks.find(t => t.id === 3 || t.spots);
+  if(!t3 || !t3.spots) return 0;
+  return t3.spots.filter(s => {
+    const x = (st[s.id] || {}).status;
+    return x === '通過' || x === '待審核';
+  }).length;
 }
 
 // 任務三：集章卡，一個地點一格、兩格一排（地點名稱只是代號，看縮圖就知道自己拍過哪裡）
@@ -3756,6 +3790,9 @@ function renderTask3Card(t, st, cfg_obj){
   const need = (cfg_obj && cfg_obj.t3Need) || 6;
   const isOpen = !!(cfg_obj && cfg_obj.open);
   const pts = t.spots.filter(sp => (st[sp.id] || {}).status === '通過').length;
+  const pend = t.spots.filter(sp => (st[sp.id] || {}).status === '待審核').length;
+  // 只要上傳一個（待審核或通過）就解鎖一個組裝動畫，不用等審核通過
+  const unlockedPts = pts + pend;
   const cells = t.spots.map((sp, i) => {
     const x = (st[sp.id] || {}).status || '';
     const c = x === '通過' ? 'ok' : x === '待審核' ? 'pend' : x === '退回' ? 'rej' : '';
@@ -3770,19 +3807,19 @@ function renderTask3Card(t, st, cfg_obj){
       <div class="sc-main"><b>${esc(name)}</b>${stTag}${action}</div>
     </div>`;
   }).join('');
-  // 上方：A／B／C 三棟前的雪人，每集一個信物就多拼上一個部位（預覽畫面不加 id，避免和主畫面重複）
+  // 上方：A／B／C 三棟前的雪人，每上傳一個信物就解鎖拼上一個部位（不用等審核通過）
   const preview = !!(cfg_obj && cfg_obj.preview);
   const scene = `<div class="t3-scene"${preview ? '' : ' id="t3scene"'} style="height:170px">
     <div class="t3-scene-stars">${starfieldSvg()}</div>
-    ${pts >= 10 ? '<div class="t3-aurora t3-aurora-active">' + auroraSvg() + '</div>' : ''}
+    ${unlockedPts >= 10 ? '<div class="t3-aurora t3-aurora-active">' + auroraSvg() + '</div>' : ''}
     <div class="t3-buildings">${buildingSceneSvg()}</div>
-    <div class="t3-snowman">${snowmanSvg(pts, preview ? 0 : t.spots.filter(sp => (st[sp.id] || {}).status === '待審核').length)}</div>
+    <div class="t3-snowman">${snowmanSvg(unlockedPts)}</div>
     <div class="t3-ground"></div>
-    ${pts > 0 && !preview ? `<button type="button" class="t3-replay-btn" onclick="replaySnowman(${pts}, '#t3scene')" aria-label="重播雪人組裝動畫">▶ 重播組裝 (${pts}/10)</button>` : ''}
+    ${unlockedPts > 0 && !preview ? `<button type="button" class="t3-replay-btn" onclick="replaySnowman(${unlockedPts}, '#t3scene')" aria-label="重播雪人組裝動畫">▶ 重播組裝 (${unlockedPts}/10)</button>` : ''}
   </div>`;
   return `${scene}<div class="stamp-card">
     <div class="stamp-head" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <span>已集 <b>${pts}</b>／${need} 個信物${pts >= need ? '・任務完成！' : ''}</span>
+      <span>已集 <b>${pts}</b>／${need} 個信物${pend ? `（${pend} 個審核中）` : ''}${pts >= need ? '・任務完成！' : ''}</span>
       <button type="button" class="chip on" onclick="showPropDialog(3)" style="margin:0;font-size:12px;padding:3px 10px;background:#14532D;color:#FDE68A;border:none;border-radius:999px;cursor:pointer">🔍 小物長什麼樣子？</button>
     </div>
     <div class="stamp-grid">${cells}</div>
@@ -4159,7 +4196,12 @@ function renderProgress(){
     }).length, 0);
     const moreTag = okN >= tasks.length ? '已完成全部 ' + tasks.length + ' 項任務，太厲害了！'
       : [pendN ? `${pendN} 項審核中` : '', rejN ? `${rejN} 項未通過` : ''].filter(Boolean).join('、');
-    box.innerHTML = `<div class="fin-tree" id="finTree">${communityTreeHtml()}</div>
+    box.innerHTML = `<div class="fin-tree" id="finTree" style="position:relative">
+        ${communityTreeHtml()}
+        <button type="button" class="fin-replay-btn" id="btnProgReplay" title="重播完成任務慶祝動畫" style="position:absolute;right:12px;top:14px;z-index:5;display:inline-flex;align-items:center;gap:4px;padding:6px 12px;font-size:12px;font-weight:700;color:#FDE68A;background:rgba(15,61,33,0.85);backdrop-filter:blur(6px);border:1.5px solid #F2B94B;border-radius:999px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:all .2s">
+          ▶ 重播完成任務
+        </button>
+      </div>
       <div class="fin-card">
         <div class="fin-title">🎉 恭喜完成這次聖誕尋寶任務！</div>
         <div class="fin-count">已挑選 <b>${okN}</b>／${tasks.length} 項</div>
@@ -4346,13 +4388,20 @@ function showDoneModal(view, customPts){
   mask.onclick = e => { if(e.target === mask) close(); };
 
   const renderDone = () => {
-    const realPts = getTask3Pts();
+    const realPts = getTask3UnlockedPts();
     const pts = (typeof customPts === 'number') ? customPts : (realPts || (customPts === 'preview' ? 10 : 0));
     const uText = me ? `${esc(unitText(doneShownKey()))}・${esc(me.name)}` : '林森苑社區・展示模式';
     mask.innerHTML = `<div class="done-panel" role="dialog" aria-modal="true" aria-label="任務完成">
       <button type="button" class="done-x" aria-label="關閉">✕</button>
-      ${santaSvg()}
-      <div class="done-gift-wrap" id="doneGiftWrap">${GIFT_SVG}</div>
+      <div class="done-anim-box" style="position:relative;display:flex;align-items:center;justify-content:center;margin:0 auto">
+        <div style="width:100%;display:flex;flex-direction:column;align-items:center">
+          ${santaSvg()}
+          <div class="done-gift-wrap" id="doneGiftWrap">${GIFT_SVG}</div>
+        </div>
+        <button type="button" class="done-replay-btn" id="doneReplay" title="重播完成任務動畫" style="position:absolute;right:0;top:45%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:4px;padding:6px 12px;font-size:12px;font-weight:900;color:#FFFBEB;background:rgba(20,83,45,0.85);backdrop-filter:blur(6px);border:1.5px solid var(--gold);border-radius:999px;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,0.35);z-index:2">
+          ▶ 重播完成任務
+        </button>
+      </div>
       <div class="done-sm-card">
         <div class="done-sm-scene">
           <div class="t3-buildings" style="bottom:6px;transform:translateX(-50%) scale(0.68);transform-origin:bottom center">${buildingSceneSvg()}</div>
@@ -4368,10 +4417,7 @@ function showDoneModal(view, customPts){
       <p>可以領取聖誕糖果了 🍬<br><small>${uText}</small></p>
       ${candyGuideHtml()}
       <button type="button" class="candy-btn big" id="doneClaim">我在櫃檯了，出示給工作人員</button>
-      <div class="done-sub-btns">
-        <button type="button" class="done-replay-btn" id="doneReplay">▶ 重播完賽慶祝動畫</button>
-        <button type="button" class="done-later" id="doneLater">稍後再領</button>
-      </div>
+      <button type="button" class="done-later" id="doneLater" style="display:block;margin:12px auto 0">稍後再領</button>
       ${followUpHtml()}
     </div>`;
     mask.querySelector('.done-x').onclick = close;
@@ -4791,42 +4837,42 @@ const unitOfRow = r => {
 
 function reviewList(){
   return adminRows.filter(r => r.status !== '已取代'
-    && (adminFilter === '全部' || r.status === adminFilter)
-    && (!adminTaskFilter || taskOfRow(r) === adminTaskFilter));
+    && (adminFilter === '全部' || r.status === adminFilter));
 }
 
 function renderReview(){
   const body = $('adminBody');
-  const base = adminRows.filter(r => r.status !== '已取代' && (!adminTaskFilter || taskOfRow(r) === adminTaskFilter));
+  const base = adminRows.filter(r => r.status !== '已取代');
   const cnt = s => base.filter(r => r.status === s).length;
   const filters = ['待審核', '通過', '退回', '全部'];
   const list = reviewList();
-  const taskOpts = [`<option value="0">全部任務</option>`].concat([1,2,3,4,5,6].map(n => `<option value="${n}"${adminTaskFilter === n ? ' selected' : ''}>任務${TASK_CN[n - 1]}</option>`)).join('');
   body.innerHTML = `<div class="rv-toolbar">
       <div class="filters">${filters.map(f => `<button class="chip${adminFilter === f ? ' on' : ''}" data-f="${f}">${ST_LABEL[f] || f}${f !== '全部' ? '（' + cnt(f) + '）' : ''}</button>`).join('')}</div>
-      <select id="rvTask" aria-label="依任務篩選">${taskOpts}</select>
     </div>
     ${list.length ? '' : '<div class="empty">沒有符合的資料</div>'}
     <div id="rvList"></div>`;
   body.querySelectorAll('.filters .chip').forEach(b => b.onclick = () => { adminFilter = b.dataset.f; renderReview(); });
-  $('rvTask').onchange = e => { adminTaskFilter = Number(e.target.value); renderReview(); };
   const holder = $('rvList');
   list.forEach(r => {
     const el = document.createElement('div');
     el.className = 'card rv-card';
     el.innerHTML = `
-      <div class="rv-left">
+      <div class="rv-head">
         <span class="rv-st ${ST_CLASS[r.status]}">${ST_LABEL[r.status] || esc(r.status)}</span>
-        <button class="thumb" type="button" aria-label="放大照片">載入中…</button>
+        <span class="rv-meta-top">${fmtTime(r.time)}${r.nth > 1 ? `<span class="rv-nth">第 ${r.nth} 次上傳</span>` : ''}</span>
       </div>
-      <div class="rv-right">
-        <div class="rv-unit">${esc(unitOfRow(r))}</div>
-        <div class="rv-name">${esc(r.name)}</div>
-        <div class="rv-task">${esc(r.spotName)}</div>
-        <div class="rv-meta">${fmtTime(r.time)}${r.nth > 1 ? `<span class="rv-nth">第 ${r.nth} 次上傳</span>` : ''}</div>
-        ${dupWarn(r)}
-        ${r.note ? `<div class="rv-meta">備註：${esc(r.note)}</div>` : ''}
-        <div class="rv-actions">${reviewBtns(r)}</div>
+      <div class="rv-body">
+        <div class="rv-left">
+          <button class="thumb" type="button" aria-label="放大照片">載入中…</button>
+        </div>
+        <div class="rv-right">
+          <div class="rv-unit">${esc(unitOfRow(r))}</div>
+          <div class="rv-name">${esc(r.name)}</div>
+          <div class="rv-task">${esc(r.spotName)}</div>
+          ${dupWarn(r)}
+          ${r.note ? `<div class="rv-meta">備註：${esc(r.note)}</div>` : ''}
+          <div class="rv-actions">${reviewBtns(r)}</div>
+        </div>
       </div>`;
     holder.appendChild(el);
     const thumb = el.querySelector('.thumb');
