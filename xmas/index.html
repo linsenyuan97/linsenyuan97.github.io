@@ -3588,7 +3588,7 @@ function busyNote(msg){
   return () => el.remove();
 }
 
-// 上傳照片（有進度）：用 XMLHttpRequest 才拿得到上傳百分比；onStage(階段, 百分比)
+// 上傳照片（有進度）：onStage(階段, 百分比)；百分比依照片大小估算（原因見下方註解）
 //  ・'upload'：上傳中 0～100%　・'process'：上傳完成，等後端存檔審核登記
 //  ・最多等 90 秒；逾時或斷線會提示「再按一次送出」（後端會比對照片，重送不會重複上傳）
 function apiPostWithProgress(event, payload, onStage){
@@ -3602,25 +3602,32 @@ function apiPostWithProgress(event, payload, onStage){
       }, 150);
     });
   }
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', XMAS_GAS_URL);
-    xhr.setRequestHeader('Content-Type', 'text/plain');
-    xhr.timeout = 90000;
-    xhr.upload.onprogress = e => { if(e.lengthComputable) onStage('upload', Math.round(e.loaded / e.total * 100)); };
-    xhr.upload.onload = () => onStage('process', 100);
-    xhr.onload = () => {
+  // 注意：不能用 XMLHttpRequest 的 upload.onprogress——掛了上傳進度監聽，瀏覽器會先送 CORS 預檢（OPTIONS），
+  // Apps Script 不回 CORS 標頭，瀏覽器就直接判定「網路錯誤」。所以改用 fetch（簡單請求），百分比依照片大小估算
+  const body = JSON.stringify({event, payload});
+  const estMs = Math.min(20000, Math.max(1500, body.length / 60));   // 約 60KB/秒估算上傳時間
+  const t0 = Date.now();
+  onStage('upload', 0);
+  const timer = setInterval(() => {
+    const pct = Math.min(95, Math.round((Date.now() - t0) / estMs * 95));
+    if(pct >= 95){ clearInterval(timer); onStage('process', 100); }
+    else onStage('upload', pct);
+  }, 250);
+  const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+  const killer = setTimeout(() => ctrl && ctrl.abort(), 90000);
+  return fetch(XMAS_GAS_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body, signal:ctrl ? ctrl.signal : undefined})
+    .then(r => r.text())
+    .then(txt => {
       let j = null;
-      try{ j = JSON.parse(xhr.responseText); }catch(e){}
-      if(!j) return reject(new Error('伺服器沒有正確回應，請再按一次送出'));
-      if(!j.ok) return reject(new Error(j.error || '送出失敗'));
-      resolve(j);
-    };
-    xhr.onerror = () => reject(new Error('網路不穩，照片沒有送出。請再按一次送出（不會重複上傳）'));
-    xhr.ontimeout = () => reject(new Error('上傳太久沒有完成，請確認網路後再按一次送出（不會重複上傳）'));
-    onStage('upload', 0);
-    xhr.send(JSON.stringify({event, payload}));
-  });
+      try{ j = JSON.parse(txt); }catch(e){}
+      if(!j) throw new Error('伺服器沒有正確回應，請再按一次送出');
+      if(!j.ok) throw new Error(j.error || '送出失敗');
+      return j;
+    }, err => {
+      if(err && err.name === 'AbortError') throw new Error('上傳太久沒有完成，請確認網路後再按一次送出（不會重複上傳）');
+      throw new Error('網路不穩，照片沒有送出。請再按一次送出（不會重複上傳）');
+    })
+    .finally(() => { clearInterval(timer); clearTimeout(killer); });
 }
 
 function openUpload(spotId, gesture = true){
