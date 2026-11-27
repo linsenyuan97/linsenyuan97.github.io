@@ -318,6 +318,12 @@ header{background:linear-gradient(95deg,#0F3D21 0%,#1B6B3A 50%,#9B1C1C 100%)!imp
 .clear-dialog h3{margin:0 0 16px;font-size:18px;font-weight:900;color:var(--ink);line-height:1.5}
 .clear-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .clear-btns .btn{height:46px}
+.wait-dialog{max-width:360px}
+.wait-icon{font-size:36px;line-height:1;margin-bottom:6px}
+.wait-dialog h3{margin-bottom:8px}
+.wait-desc{margin:0 0 14px;font-size:14px;line-height:1.7;color:var(--ink-soft)}
+.wait-line{margin:0 0 12px;padding:12px;border-radius:12px;background:#F0FDF4;border:1px solid #BBF7D0;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.6;color:var(--ink)}
+.wait-line b{color:#15803D;font-size:14px}
 .news-dialog{max-width:380px;text-align:left}
 .news-dialog h3{text-align:center;margin-bottom:12px}
 .news-list{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:8px;max-height:55vh;overflow-y:auto}
@@ -706,6 +712,7 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
 .t3-snowman{position:absolute;bottom:28px;left:50%;transform:translateX(-50%)}
 .snow-part{opacity:0;transform-box:fill-box;transform-origin:50% 100%}
 .snow-part.revealed{opacity:1}
+.snow-part.revealed.pending{opacity:.4}
 .snow-part.popping{animation:snowPartPop .65s cubic-bezier(.34,1.5,.64,1) forwards}
 .t3-aurora-active{animation:auroraGlow 3s ease-in-out infinite}
 @keyframes snowPartPop{0%{transform:scale(0) translateY(10px);opacity:0}60%{transform:scale(1.15) translateY(-2px);opacity:1}100%{transform:scale(1) translateY(0);opacity:1}}
@@ -1379,7 +1386,7 @@ const TASKS_DEMO = [
   {id:1, name:'感謝聖誕守護神', desc:'向工作人員獻上聖誕祝福，並在大廳任一聖誕裝飾旁，與社區工作人員（物業秘書、保全或清潔人員皆可）手持活動手牌合照一張。'},
   {id:2, name:'遇見聖誕好鄰居', desc:'向鄰居獻上聖誕祝福，邀請「非同戶別」的社區鄰居，一起在社區大廳聖誕樹前手持活動手牌合照一張。'},
   {id:3, name:'林森苑聖誕大尋寶', desc:'在社區公共區域尋找藏起來的聖誕小物！後續將公佈小物的參考圖（包含一般版與隱藏版），在社區找到後拍下照片上傳即可完成任務。公設內的小物放在靠近窗戶處，隔著玻璃就能拍，不用刷卡進入。',
-   spots:[{id:31},{id:32},{id:33},{id:34},{id:35},{id:36},{id:37},{id:38},{id:39},{id:40}]},
+   spots:[{id:31,name:'小物地點A'},{id:32,name:'小物地點B'},{id:33,name:'小物地點C'},{id:34,name:'小物地點D'},{id:35,name:'小物地點E'},{id:36,name:'小物地點F'},{id:37,name:'小物地點G'},{id:38,name:'小物地點H'},{id:39,name:'小物地點I'},{id:40,name:'小物地點J'}]},
   {id:4, name:'聖誕紅綠穿搭秀', desc:'穿戴含有「紅色」或「綠色」元素的服飾或配件（如帽子、圍巾、髮飾、襪子等），於社區內任一角落留下穿搭照片。'},
   {id:5, name:'聖誕樹下的祝福', desc:'向大廳櫃檯索取聖誕祝福小卡，親手寫下聖誕或新年祝福並掛上大廳聖誕樹，拍下「手寫小卡片（含祝福文字）」上傳。'},
   {id:6, name:'林森苑聖誕小小畫家', desc:'向大廳櫃檯領取專用塗色畫紙，完成創意塗色後拍照上傳，並將實體畫作繳交給物業櫃檯（由工作人員張貼佈置，打造社區聖誕畫廊）。'}
@@ -2684,7 +2691,7 @@ const TASK_SCENE = {1:'images/spot1.jpg', 2:'images/spot1.jpg', 4:'images/spot4.
 function allSlots(){
   const out = [];
   (cfg && cfg.tasks || []).forEach(t => {
-    if(t.spots) t.spots.forEach(s => out.push({id:s.id, taskId:t.id, name:'任務三・' + s.name, short:s.name}));
+    if(t.spots) t.spots.forEach((s, i) => { const nm = s.name || ('小物地點' + 'ABCDEFGHIJ'[i]); out.push({id:s.id, taskId:t.id, name:'任務三・' + nm, short:nm}); });
     else out.push({id:t.id, taskId:t.id, name:`任務${TASK_CN[t.id - 1]}・${t.name}`, short:t.name});
   });
   return out;
@@ -2696,11 +2703,13 @@ function taskState(t, st){
   if(t.spots){
     const xs = t.spots.map(s => (st[s.id] || {}).status || '');
     const pts = xs.filter(x => x === '通過').length;
-    const need = cfg.t3Need || 6;
-    if(pts >= need) return {state:'ok', pts, need};
-    if(xs.includes('待審核')) return {state:'pend', pts, need};
-    if(pts > 0 || xs.includes('退回')) return {state:'part', pts, need};
-    return {state:'', pts, need};
+    const pend = xs.filter(x => x === '待審核').length;
+    const need = (cfg && cfg.t3Need) || 6;
+    if(pts >= need) return {state:'ok', pts, need, pend};
+    // 已上傳（審核中＋通過）滿 need 個，任務三才算「審核中」；不滿 need 個都是「集章中」
+    if(pend && pts + pend >= need) return {state:'pend', pts, need, pend};
+    if(pts > 0 || pend > 0 || xs.includes('退回')) return {state:'part', pts, need, pend};
+    return {state:'', pts, need, pend};
   }
   const x = (st[t.id] || {}).status || '';
   return {state: x === '通過' ? 'ok' : x === '待審核' ? 'pend' : x === '退回' ? 'rej' : ''};
@@ -2758,18 +2767,39 @@ function buildingSceneSvg(){
 </svg>`;
 }
 
-function snowmanSvg(pts){
-  // Build SVG with revealed parts based on pts (number completed)
+function snowmanSvg(pts, pend){
+  // 通過的部位是實心；審核中（pend 個）先拼上去但半透明，通過後變實心
+  pend = pend || 0;
   const partsHtml = SNOWMAN_PARTS.map((p, i) => {
-    const revealed = i < pts;
-    // Add revealed class inline since we're generating static HTML
-    return p.replace('class="snow-part"', `class="snow-part${revealed ? ' revealed' : ''}"`);
+    const cls = i < pts ? ' revealed' : i < pts + pend ? ' revealed pending' : '';
+    return p.replace('class="snow-part"', `class="snow-part${cls}"`);
   }).join('\n  ');
   return `<svg viewBox="-60 -115 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="90" height="90" style="filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))">
   ${partsHtml}
 </svg>`;
 }
 
+// 任務三上傳後：捲到雪人場景，新拼上的部位跳出來，剛上傳的那格閃一下
+function playT3UploadAnim(spotId){
+  const scene = $('t3scene');
+  if(!scene) return;
+  scene.scrollIntoView({behavior:'smooth', block:'center'});
+  setTimeout(() => {
+    const parts = scene.querySelectorAll('.snow-part.revealed');
+    const last = parts[parts.length - 1];
+    if(last){
+      last.classList.remove('popping'); void last.getBoundingClientRect();
+      last.classList.add('popping');
+      last.addEventListener('animationend', () => last.classList.remove('popping'), {once:true});
+    }
+    const cell = document.querySelector(`.stamp-cell[data-cell="${spotId}"]`);
+    if(cell){
+      cell.classList.remove('flash-new'); void cell.offsetWidth;
+      cell.classList.add('flash-new');
+      cell.addEventListener('animationend', () => cell.classList.remove('flash-new'), {once:true});
+    }
+  }, 450);
+}
 let replaySnowmanTimers = [];
 function replaySnowman(pts, containerSelector){
   replaySnowmanTimers.forEach(t => clearTimeout(t));
@@ -2836,7 +2866,7 @@ function renderTask3Card(t, st, cfg_obj){
     <div class="t3-scene-stars">${starfieldSvg()}</div>
     ${pts >= 10 ? '<div class="t3-aurora t3-aurora-active">' + auroraSvg() + '</div>' : ''}
     <div class="t3-buildings">${buildingSceneSvg()}</div>
-    <div class="t3-snowman">${snowmanSvg(pts)}</div>
+    <div class="t3-snowman">${snowmanSvg(pts, preview ? 0 : t.spots.filter(sp => (st[sp.id] || {}).status === '待審核').length)}</div>
     <div class="t3-ground"></div>
     ${pts > 0 && !preview ? `<button type="button" class="t3-replay-btn" onclick="replaySnowman(${pts}, '#t3scene')" aria-label="重播雪人組裝動畫">▶ 重播組裝 (${pts}/10)</button>` : ''}
   </div>`;
@@ -2938,9 +2968,9 @@ function rejectReasonHtml(reason){
 
 const STATE_UI = {
   ok:   {badge:'已通過', cls:'done', chip:''},
-  pend: {badge:'審核中', cls:'pend', chip:'<span class="st-tag st-pend-t">（審核中）</span>'},
-  rej:  {badge:'未通過', cls:'', chip:'<span class="st-tag st-rej-t">（審核未通過）</span>'},
-  part: {badge:'進行中', cls:'pend', chip:''},
+  pend: {badge:'審核中', cls:'pend', chip:''},   // 左邊狀態方塊已顯示「審核中」，標題後不再重複
+  rej:  {badge:'未通過', cls:'', chip:''},   // 左邊狀態方塊＋下方黃色原因框已說明，標題後不再重複
+  part: {badge:'集章中', cls:'pend', chip:''},
   '':   {badge:'尚未上傳', cls:'', chip:''}
 };
 
@@ -3103,8 +3133,10 @@ function renderProgress(){
   // 完成率：6 格，一格對應一項任務（依任務順序）；通過亮紅綠、審核中亮黃。通過 need 項即可領糖果，也可以繼續挑戰全部完成
   const bars = states.map((s, i) => `<i class="${s.state === 'ok' ? (i % 2 ? 'red' : 'grn') : s.state === 'pend' ? 'pend' : ''}"></i>`).join('');
   const left = Math.max(0, need - okN);
+  const sentN = okN + pendN;   // 已送出＝通過＋審核中（任務三要上傳滿 6 個才算）
   const subMsg = okN >= tasks.length ? '・全部完成，太厲害了！🎉'
     : done ? '・已達領糖果門檻 🍬，也可以繼續挑戰全部完成！'
+    : sentN >= need ? `・已送出 ${sentN} 項，等待審核中`
     : `・再通過 ${left} 項即可領糖果`;
   const candyBtn = !done ? '' : candy.claimed
     ? `<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
@@ -3636,6 +3668,8 @@ function showUploadDialog(spot, photo){
       }
       busy = false; close();
       renderProgress();
+      if(!res.duplicate && spot.taskId === 3) playT3UploadAnim(spot.id);
+      if(!res.duplicate && !HAND_IN[spot.taskId]) maybeShowWaitReview();
     }catch(err){
       busy = false;
       $('sendBtn').textContent = '送出';
@@ -3694,8 +3728,42 @@ function showHandInDialog(spot){
       <div class="clear-btns" style="grid-template-columns:1fr"><button type="button" class="btn" id="handInOk">我知道了</button></div>
     </div>`;
   document.body.appendChild(mask);
-  const close = () => mask.remove();
+  const close = () => { mask.remove(); maybeShowWaitReview(); };
   $("handInOk").onclick = close;
+  mask.onclick = e => { if(e.target === mask) close(); };
+}
+
+// 送出滿 need 項（審核中＋通過）但還沒完賽：提示等待審核，並建議加入林森苑住戶服務站 LINE。每戶在這支手機只跳一次
+const WAIT_SHOWN_KEY = 'ls-xmas-wait-shown';
+function maybeShowWaitReview(){
+  if(!me || !cfg || !status || (summary && summary.completed)) return;
+  const tasks = cfg.tasks || [], need = cfg.tasksNeed || 4;
+  const sentN = tasks.map(t => taskState(t, status).state).filter(x => x === 'ok' || x === 'pend').length;
+  if(sentN < need) return;
+  let shown = {};
+  try{ shown = JSON.parse(localStorage.getItem(WAIT_SHOWN_KEY) || '{}') || {}; }catch(e){}
+  if(shown[doneShownKey()]) return;
+  shown[doneShownKey()] = Date.now();
+  try{ localStorage.setItem(WAIT_SHOWN_KEY, JSON.stringify(shown)); }catch(e){}
+  const old = $('waitMask'); if(old) old.remove();
+  const line = cfg.lineOaId;
+  const mask = document.createElement('div');
+  mask.id = 'waitMask';
+  mask.className = 'sheet-mask clear-mask';
+  mask.innerHTML = `<div class="clear-dialog wait-dialog" role="alertdialog" aria-modal="true" aria-labelledby="waitTitle">
+      <div class="wait-icon">📮</div>
+      <h3 id="waitTitle">已送出 ${sentN} 項任務，等待審核</h3>
+      <p class="wait-desc">審核通過 ${need} 項後，就可以到 ${esc(CANDY_PLACE)} 領取聖誕糖果 🍬<br>審核結果會顯示在每個任務卡片上，重新打開網頁就看得到。</p>
+      ${line ? `<div class="wait-line">
+        <b>想第一時間知道結果？</b>
+        <span>加入林森苑住戶服務站 LINE 並綁定門牌，審核後會通知您。</span>
+        <a class="df-line-btn" href="${lineAddUrl()}">加入林森苑住戶服務站 LINE</a>
+      </div>` : ''}
+      <div class="clear-btns" style="grid-template-columns:1fr"><button type="button" class="btn ghost" id="waitOk">我知道了</button></div>
+    </div>`;
+  document.body.appendChild(mask);
+  const close = () => mask.remove();
+  $('waitOk').onclick = close;
   mask.onclick = e => { if(e.target === mask) close(); };
 }
 
