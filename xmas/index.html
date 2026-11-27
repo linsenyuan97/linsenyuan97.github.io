@@ -362,6 +362,23 @@ header{background:linear-gradient(95deg,#0F3D21 0%,#1B6B3A 50%,#9B1C1C 100%)!imp
 .brand-icon.tree-complete{filter:drop-shadow(0 0 6px rgba(245,158,11,.9));animation:treeGlowPulse 2.4s ease-in-out infinite}
 @keyframes treeGlowPulse{0%,100%{filter:drop-shadow(0 0 4px rgba(245,158,11,.7))}50%{filter:drop-shadow(0 0 10px rgba(245,158,11,1))}}
 
+/* 左上角聖誕樹第 4~6 階段動態特效（星星亮起、吊飾、星星閃亮） */
+.tree-star-twinkle{animation:treeStarSparkle 1.1s ease-in-out infinite alternate!important}
+@keyframes treeStarSparkle{
+  0%{transform:scale(1);filter:drop-shadow(0 0 2px #FBBF24) drop-shadow(0 0 6px #F59E0B)}
+  50%{transform:scale(1.22);filter:drop-shadow(0 0 6px #FEF08A) drop-shadow(0 0 12px #F59E0B) drop-shadow(0 0 16px #FFF)}
+  100%{transform:scale(1.06);filter:drop-shadow(0 0 4px #FBBF24) drop-shadow(0 0 8px #F59E0B)}
+}
+.star-rays{opacity:0;transition:opacity .4s ease;pointer-events:none}
+.tree-star-twinkle .star-rays{opacity:1;animation:raysPulse 1.2s ease-in-out infinite alternate}
+@keyframes raysPulse{
+  0%{opacity:.5;transform:rotate(0deg);transform-origin:20px 9px}
+  100%{opacity:1;transform:rotate(30deg);transform-origin:20px 9px}
+}
+@media (prefers-reduced-motion:reduce){
+  .tree-star-twinkle, .tree-star-twinkle .star-rays{animation:none!important}
+}
+
 .tree-badge{
   position:absolute;
   top:-5px;
@@ -1043,20 +1060,35 @@ body.is-admin .brand-title{color:var(--pine)!important;text-shadow:none}
           <path d="M20 8L31 22H26L34 32H28L38 42H2L12 32H6L14 22H9Z" fill="rgba(245,158,11,0.08)" stroke="#F59E0B" stroke-width="1.8" stroke-linejoin="round"/>
           <rect x="17" y="41" width="6" height="3" fill="none" stroke="#F59E0B" stroke-width="1.4"/>
         </g>
-        <!-- 2. 上層：彩色實心樹（依完成 1/4、2/4、3/4、4/4 由下而上填滿） -->
+        <!-- 2. 樹身實心葉片層（前三次各亮一層：由 treeFillClip 控制） -->
         <g clip-path="url(#treeFillClip)">
-          <!-- 頂部實心金星 -->
-          <polygon points="20,1 22.5,7 29,7 23.8,11 25.8,17 20,13.5 14.2,17 16.2,11 11,7 17.5,7" fill="#F2B94B"/>
           <!-- 雙色翠綠樹葉 -->
           <path d="M20 8L31 22H26L34 32H28L38 42H2L12 32H6L14 22H9Z" fill="#22C55E"/>
           <path d="M20 8L31 22H26L34 32H28L38 42H20Z" fill="#16A34A"/>
           <!-- 實心棕色樹幹 -->
           <rect x="17" y="41" width="6" height="3" fill="#7A4A24"/>
-          <!-- 閃亮小彩燈 -->
-          <circle cx="16" cy="28" r="2.2" fill="#EF4444"/>
-          <circle cx="24" cy="34" r="2.2" fill="#F2B94B"/>
-          <circle cx="13" cy="38" r="2.2" fill="#60A5FA"/>
-          <circle cx="27" cy="39" r="1.8" fill="#F43F5E"/>
+        </g>
+        <!-- 3. 吊飾群（第 5 次增加吊飾） -->
+        <g id="treeOrnaments" class="tree-ornaments" style="opacity:0; transition:opacity .45s ease, transform .45s cubic-bezier(.34,1.4,.64,1); transform-origin:20px 28px;">
+          <circle cx="16" cy="28" r="2.2" fill="#EF4444" filter="drop-shadow(0 0 1px rgba(0,0,0,.3))"/>
+          <circle cx="24" cy="34" r="2.2" fill="#F2B94B" filter="drop-shadow(0 0 1px rgba(0,0,0,.3))"/>
+          <circle cx="13" cy="38" r="2.2" fill="#60A5FA" filter="drop-shadow(0 0 1px rgba(0,0,0,.3))"/>
+          <circle cx="27" cy="39" r="1.8" fill="#F43F5E" filter="drop-shadow(0 0 1px rgba(0,0,0,.3))"/>
+          <circle cx="19" cy="18" r="1.9" fill="#F59E0B" filter="drop-shadow(0 0 1px rgba(0,0,0,.3))"/>
+          <circle cx="22" cy="24" r="1.7" fill="#EC4899" filter="drop-shadow(0 0 1px rgba(0,0,0,.3))"/>
+        </g>
+        <!-- 4. 頂部實心金星（第 4 次亮上面的星星；第 6 次增加星星會閃亮） -->
+        <g id="treeStarGroup" class="tree-star-group" style="opacity:0; transition:opacity .45s ease, transform .45s cubic-bezier(.34,1.4,.64,1); transform-origin:20px 9px;">
+          <polygon points="20,1 22.5,7 29,7 23.8,11 25.8,17 20,13.5 14.2,17 16.2,11 11,7 17.5,7" fill="#F2B94B" stroke="#D97706" stroke-width="0.6"/>
+          <polygon points="20,3 21.8,7.5 26.5,7.5 22.8,10.2 24.2,14.5 20,11.8 15.8,14.5 17.2,10.2 13.5,7.5 18.2,7.5" fill="#FEF08A" opacity="0.75"/>
+          <!-- 第六次閃亮星芒 -->
+          <g id="treeStarRays" class="star-rays">
+            <line x1="20" y1="-2" x2="20" y2="2" stroke="#FFF" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="20" y1="16" x2="20" y2="20" stroke="#FFF" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="10" y1="9" x2="14" y2="9" stroke="#FFF" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="26" y1="9" x2="30" y2="9" stroke="#FFF" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="20" cy="9" r="1.5" fill="#FFF"/>
+          </g>
         </g>
       </svg>
     </div>
@@ -1923,10 +1955,14 @@ function renderResidentFlow(){
 /* ============ 住戶確認後的 Intro 教學導覽 ============ */
 function setTreeFillFull(isFull){
   const clipRect = $('treeFillRect');
+  const starGroup = $('treeStarGroup');
+  const ornaments = $('treeOrnaments');
   if(!clipRect) return;
   if(isFull){
-    clipRect.setAttribute('y', '0');
-    clipRect.setAttribute('height', '44');
+    clipRect.setAttribute('y', '7');
+    clipRect.setAttribute('height', '38');
+    if(starGroup){ starGroup.style.opacity = '1'; starGroup.style.transform = 'scale(1)'; starGroup.classList.add('tree-star-twinkle'); }
+    if(ornaments){ ornaments.style.opacity = '1'; ornaments.style.transform = 'scale(1)'; }
   } else {
     updateHeaderTreeBadge();
   }
@@ -3067,6 +3103,8 @@ function updateHeaderUserBadge(){
 function updateHeaderTreeBadge(){
   const clipRect = $('treeFillRect');
   const treeSvg = $('btnHdrTree');
+  const starGroup = $('treeStarGroup');
+  const ornaments = $('treeOrnaments');
   if(!clipRect) return;
 
   const tasks = (cfg && cfg.tasks) || TASKS_DEMO;
@@ -3074,28 +3112,59 @@ function updateHeaderTreeBadge(){
   const st = status || {};
   const states = tasks.map(t => taskState(t, st));
   const okN = me ? states.filter(s => s.state === 'ok').length : 0;
+
+  // 任務「完成」或「審核中」，都讓左上角聖誕樹一層一層亮起來（範圍 0 ~ 6）
+  const activeN = me ? states.filter(s => s.state === 'ok' || s.state === 'pend').length : 0;
   const done = okN >= need;
 
-  // 4 階進度填色（每過 1 關，由下而上填滿 1/4）：
-  // 0 關（或未登入）：純金邊線框樹 (y=44, h=0)
-  // 1 關：填滿底層樹葉與樹幹 (y=33, h=11)
-  // 2 關：填滿下半部兩層 (y=22, h=22)
-  // 3 關：填滿三層樹身 (y=11, h=33)
-  // 4 關（滿額過關）：整棵樹 100% 翠綠、金星點亮並散發微光 (y=0, h=44)
-  const step = Math.max(0, Math.min(okN, need));
+  // 六段式進化：
+  // 前三次各亮一層：
+  //   0: 未開始 (y=44, h=0)
+  //   1: 亮最底層樹葉與樹幹 (y=32, h=13)
+  //   2: 亮中間層 (y=22, h=23)
+  //   3: 亮頂層樹身，三層綠葉全亮 (y=7, h=38)
+  // 第四次亮上面的星星 (activeN >= 4)
+  // 第五次增加吊飾 (activeN >= 5)
+  // 第六次增加星星會閃亮 (activeN >= 6)
   const fillLevels = [
     { y: 44, h: 0 },
-    { y: 33, h: 11 },
-    { y: 22, h: 22 },
-    { y: 11, h: 33 },
-    { y: 0,  h: 44 }
+    { y: 32, h: 13 },
+    { y: 22, h: 23 },
+    { y: 7,  h: 38 },
+    { y: 7,  h: 38 },
+    { y: 7,  h: 38 },
+    { y: 7,  h: 38 }
   ];
-  const lvl = fillLevels[step] || fillLevels[0];
+  const lvl = fillLevels[Math.min(activeN, 6)] || fillLevels[0];
   clipRect.setAttribute('y', lvl.y);
   clipRect.setAttribute('height', lvl.h);
 
+  // 第四次（activeN >= 4）：亮上面的星星
+  if(starGroup){
+    if(activeN >= 4){
+      starGroup.style.opacity = '1';
+      starGroup.style.transform = 'scale(1)';
+    }else{
+      starGroup.style.opacity = '0';
+      starGroup.style.transform = 'scale(0.5)';
+    }
+    // 第六次（activeN >= 6）：星星會閃亮
+    starGroup.classList.toggle('tree-star-twinkle', activeN >= 6);
+  }
+
+  // 第五次（activeN >= 5）：增加吊飾
+  if(ornaments){
+    if(activeN >= 5){
+      ornaments.style.opacity = '1';
+      ornaments.style.transform = 'scale(1)';
+    }else{
+      ornaments.style.opacity = '0';
+      ornaments.style.transform = 'scale(0.5)';
+    }
+  }
+
   if(treeSvg){
-    treeSvg.classList.toggle('tree-complete', done);
+    treeSvg.classList.toggle('tree-complete', done || activeN >= need);
   }
 }
 
@@ -3706,11 +3775,13 @@ function showUploadDialog(spot, photo){
           b.innerHTML = stage === 'upload' ? `<span class="spin"></span>上傳中 ${pct}%` : '<span class="spin"></span>處理中…';
         });
       setBound();   // 記下這支手機最近一次上傳的戶別和時間
+      if(res && res.status && (!res.status[spot.id] || !res.status[spot.id].status)){
+        res.status[spot.id] = { status: '待審核', attempts: Math.max(1, (res.status[spot.id] && res.status[spot.id].attempts ? res.status[spot.id].attempts : 0) + 1) };
+      }
       applyStatus(res);
       if(res.duplicate) toast(`這張照片剛剛已經送出過了，不用重複上傳`);
       else{
         if(HAND_IN[spot.taskId]) showHandInDialog(spot);
-        else toast(`已送出「${spot.short}」，等待審核`);
         const th = await makeThumb(photo); if(th) saveMyPhoto(spot.id, th);
       }
       busy = false; close();
@@ -3770,7 +3841,6 @@ function showHandInDialog(spot){
   mask.id = "handInMask";
   mask.className = "sheet-mask clear-mask";
   mask.innerHTML = `<div class="clear-dialog" role="alertdialog" aria-modal="true" aria-labelledby="handInTitle">
-      <div class="muted" style="margin-bottom:6px">已送出「${esc(spot.short)}」，等待審核</div>
       <h3 id="handInTitle" style="margin-bottom:16px;color:#B91C1C">${HAND_IN[spot.taskId]}</h3>
       <div class="clear-btns" style="grid-template-columns:1fr"><button type="button" class="btn" id="handInOk">我知道了</button></div>
     </div>`;
@@ -3897,7 +3967,17 @@ const ST_LABEL = {'待審核':'待審', '通過':'通過', '退回':'未通過'}
 const ST_CLASS = {'待審核':'pend', '通過':'ok', '退回':'rej'};
 let adminTaskFilter = 0;          // 0＝全部任務
 const taskOfRow = r => Number(r.spotId) >= 31 ? 3 : Number(r.spotId);
-const unitOfRow = r => r.addrKey ? unitText(r.addrKey) : r.addr;
+const unitOfRow = r => {
+  const k = cleanAddrKey(r.addrKey, r.addr);
+  const u = unitText(k);
+  if(u && !u.includes('undefined')) return u;
+  if(r.addr){
+    const m = String(r.addr).match(/(\d+)\s*號\s*(\d+)\s*樓之\s*(\d+)/);
+    if(m) return `${DONG_MAP[m[1]] || m[1]}棟${m[2]}F-${m[3]}`;
+    return r.addr;
+  }
+  return u || '';
+};
 
 function reviewList(){
   return adminRows.filter(r => r.status !== '已取代'
@@ -4102,10 +4182,42 @@ async function review(r, newStatus, btn){
 }
 
 /* ============ 完賽名單＋A4 名單卡片列印（抽獎改由物業現場進行） ============ */
+function cleanAddrKey(v, addrText){
+  var m = String(addrText || '').match(/(\d+)\s*號\s*(\d+)\s*樓之\s*(\d+)/);
+  if(m) return m[1] + '-' + m[2] + '-' + m[3];
+  var mb = String(addrText || '').match(/([ABCabc])\s*棟\s*(\d+)\s*F?\s*-?\s*(\d+)/i);
+  if(mb){
+    var dongToHao = { 'A': '95', 'B': '97', 'C': '99', 'a': '95', 'b': '97', 'c': '99' };
+    var hao = dongToHao[mb[1]];
+    if(hao) return hao + '-' + mb[2] + '-' + mb[3];
+  }
+  if(v && (typeof v.getTime === 'function' || Object.prototype.toString.call(v) === '[object Date]')){
+    var d = new Date(v);
+    if(!isNaN(d.getTime())){
+      var yr = d.getFullYear() % 100;
+      return yr + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    }
+  }
+  var s = String(v || '').replace(/^'/, '').trim();
+  if(s.indexOf('GMT') >= 0 || s.indexOf('199') >= 0 || s.indexOf('標準時間') >= 0){
+    var d2 = new Date(s);
+    if(!isNaN(d2.getTime())){
+      var yr2 = d2.getFullYear() % 100;
+      return yr2 + '-' + (d2.getMonth() + 1) + '-' + d2.getDate();
+    }
+  }
+  return s;
+}
+
 // addrKey「95-5-2」→「A棟5F-2」
 function unitText(addrKey){
-  const p = String(addrKey).split('-');
-  return `${DONG_MAP[p[0]] || p[0]}棟${p[1]}F-${p[2]}`;
+  if(!addrKey) return '';
+  const clean = cleanAddrKey(addrKey);
+  const p = String(clean).split('-');
+  if(p.length >= 3 && p[0] && p[1] && p[2] && p[1] !== 'undefined' && p[2] !== 'undefined'){
+    return `${DONG_MAP[p[0]] || p[0]}棟${p[1]}F-${p[2]}`;
+  }
+  return String(addrKey);
 }
 
 async function renderDone(){
