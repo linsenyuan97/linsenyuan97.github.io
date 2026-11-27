@@ -1366,7 +1366,7 @@ function toast(msg, bad){
 
 /* ============ API（含示範模式） ============ */
 async function apiGet(action, params){
-  if(DEMO || IS_DEMO) return mockGet(action, params || {});
+  if(DEMO) return mockGet(action, params || {});
   const qs = new URLSearchParams(Object.assign({action}, params || {}));
   const r = await fetch(XMAS_GAS_URL + '?' + qs);
   const j = await r.json();
@@ -1374,7 +1374,7 @@ async function apiGet(action, params){
   return j;
 }
 async function apiPost(event, payload){
-  if(DEMO || IS_DEMO) return mockPost(event, payload);
+  if(DEMO) return mockPost(event, payload);
   const r = await fetch(XMAS_GAS_URL, {method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify({event, payload})});
   const j = await r.json();
   if(!j.ok) throw new Error(j.error || '送出失敗');
@@ -1398,6 +1398,36 @@ TASKS_DEMO.forEach(t => {
   else SPOTS_DEMO.push({id:t.id, taskId:t.id, name:'任務' + '一二三四五六'[t.id - 1] + '・' + t.name});
 });
 const mock = {rows:[], photos:{}, seq:2, candy:{}};
+// 示範模式（?demo）的資料存在這個瀏覽器（localStorage），住戶頁 ?demo 和管理頁 ?admin&demo 共用：
+// 可以在住戶頁上傳、到管理頁審核、再回住戶頁看結果。不會寫進正式後端；管理頁「清除所有資料」可清空
+const MOCK_KEY = 'ls-xmas-demo-data';
+function mockLoad(){
+  if(!DEMO) return;
+  try{
+    const j = JSON.parse(localStorage.getItem(MOCK_KEY) || 'null');
+    if(j){ mock.rows = j.rows || []; mock.photos = j.photos || {}; mock.seq = j.seq || 2; mock.candy = j.candy || {}; }
+  }catch(e){}
+}
+function mockSave(){
+  if(!DEMO) return;
+  try{ localStorage.setItem(MOCK_KEY, JSON.stringify(mock)); }
+  catch(e){ toast('示範資料太多，瀏覽器存不下了，請到管理頁按「清除所有資料」', true); }
+}
+// 示範模式的照片縮小再存（瀏覽器儲存空間約 5MB），審核時看得清楚就好
+function mockShrinkPhoto(url){
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 640 / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      resolve(cv.toDataURL('image/jpeg', 0.6));
+    };
+    img.onerror = () => resolve(url);
+    img.src = url;
+  });
+}
 function mockKey(a){ return a.hao+'-'+a.lou+'-'+a.zhi; }
 function mockHash(s){ let h = 0; for(let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return String(h) + ':' + s.length; }
 function mockStatus(key){
@@ -1432,6 +1462,7 @@ function mockDoneList(){
 }
 async function mockGet(action, p){
   await new Promise(r => setTimeout(r, 250));
+  mockLoad();   // 別的分頁（例如管理頁）可能剛改過示範資料
   if(action === 'config'){
     const now = Date.now(), st = new Date('2026-12-19T08:00:00+08:00').getTime(), et = new Date('2026-12-24T22:00:00+08:00').getTime();
     const isOpen = IS_DEMO || (now >= st && now <= et);
@@ -1459,6 +1490,12 @@ async function mockGet(action, p){
 }
 async function mockPost(event, p){
   await new Promise(r => setTimeout(r, 700));
+  mockLoad();
+  const res = await mockPostRun(event, p);
+  mockSave();
+  return res;
+}
+async function mockPostRun(event, p){
   if(event === 'submit'){
     const a = {hao:Number(p.hao), lou:Number(p.lou), zhi:Number(p.zhi)};
     const key = mockKey(a), spot = SPOTS_DEMO.find(s => s.id === Number(p.spotId));
@@ -1475,7 +1512,7 @@ async function mockPost(event, p){
     const pending = mock.rows.filter(r => r.addrKey === key && r.spotId === spot.id && r.status === '待審核').pop();
     if(!pending && st.attempts >= 5) throw new Error('「' + spot.name + '」上傳次數已達上限（5 次），請洽物業櫃檯');
     const id = 'photo' + (mock.seq++);
-    mock.photos[id] = p.photo;
+    mock.photos[id] = await mockShrinkPhoto(p.photo);
     if(pending){
       // 待審中重傳：蓋掉同一筆（舊照片刪除）
       delete mock.photos[pending.photoId];
@@ -2411,6 +2448,7 @@ async function initResident(){
     catch(err){ $('statusBanner').innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
   }
   syncClock(cfg.serverTime, t0, Date.now());
+  if(IS_DEMO){ cfg.open = true; cfg.notStarted = false; }   // 測試模式：活動開始前也開放上傳（後端同樣只在開始前接受）
   me = loadMe();
   try{ if(cfg.start && cfg.end) $('heroDate').textContent = fmtPeriod(cfg.start, cfg.end); }catch(e){}
   renderStatusBanner();
@@ -2444,6 +2482,8 @@ async function initResident(){
   }
   renderProgress();
   maybeOpenPending();
+  // 上次送出滿 4 項時沒看到「等待審核」提示（例如當時還是舊版網頁）：打開網頁時補跳一次（有其他視窗開著就不跳）
+  if(me && !document.querySelector('.sheet-mask, #doneMask, #tourMask, #introDialogMask')) maybeShowWaitReview();
   hintTreeOnce();
   checkUrlAnimationParams();
 }
@@ -3552,7 +3592,7 @@ function busyNote(msg){
 //  ・'upload'：上傳中 0～100%　・'process'：上傳完成，等後端存檔審核登記
 //  ・最多等 90 秒；逾時或斷線會提示「再按一次送出」（後端會比對照片，重送不會重複上傳）
 function apiPostWithProgress(event, payload, onStage){
-  if(DEMO || IS_DEMO){
+  if(DEMO){
     // 示範模式：模擬上傳進度
     return new Promise(resolve => {
       let p = 0;
@@ -3653,7 +3693,7 @@ function showUploadDialog(spot, photo){
     $('sendBtn').innerHTML = '<span class="spin"></span>上傳中 0%';
     $('sendBtn').disabled = true; $('cancelBtn').disabled = true; $('retakeBtn').disabled = true;
     try{
-      const res = await apiPostWithProgress('submit', {hao:me.hao, lou:me.lou, zhi:me.zhi, name:me.name, spotId:spot.id, photo, deviceId:deviceId()},
+      const res = await apiPostWithProgress('submit', {hao:me.hao, lou:me.lou, zhi:me.zhi, name:me.name, spotId:spot.id, photo, deviceId:deviceId(), demo:IS_DEMO},
         (stage, pct) => {
           const b = $('sendBtn'); if(!b) return;
           b.innerHTML = stage === 'upload' ? `<span class="spin"></span>上傳中 ${pct}%` : '<span class="spin"></span>處理中…';
@@ -3733,27 +3773,36 @@ function showHandInDialog(spot){
   mask.onclick = e => { if(e.target === mask) close(); };
 }
 
-// 送出滿 need 項（審核中＋通過）但還沒完賽：提示等待審核，並建議加入林森苑住戶服務站 LINE。每戶在這支手機只跳一次
+// 送出（審核中＋通過）滿 need 項跳一次、6 項全部送出再跳一次：提示等待審核，並建議加入林森苑住戶服務站 LINE
+// 每戶在這支手機記住已跳過哪一階段（4 → 6）；完成彈窗開著時先不跳，下次打開網頁再補
 const WAIT_SHOWN_KEY = 'ls-xmas-wait-shown';
 function maybeShowWaitReview(){
-  if(!me || !cfg || !status || (summary && summary.completed)) return;
+  if(!me || !cfg || !status || $('doneMask')) return;
   const tasks = cfg.tasks || [], need = cfg.tasksNeed || 4;
   const sentN = tasks.map(t => taskState(t, status).state).filter(x => x === 'ok' || x === 'pend').length;
-  if(sentN < need) return;
+  const okN = tasks.map(t => taskState(t, status).state).filter(x => x === 'ok').length;
+  const level = sentN >= tasks.length ? tasks.length : sentN >= need ? need : 0;
+  if(!level) return;
+  if(level === need && summary && summary.completed) return;   // 已完賽：由完成彈窗處理
+  if(level === tasks.length && okN >= tasks.length) return;     // 6 項都通過了，不用再等審核
   let shown = {};
   try{ shown = JSON.parse(localStorage.getItem(WAIT_SHOWN_KEY) || '{}') || {}; }catch(e){}
-  if(shown[doneShownKey()]) return;
-  shown[doneShownKey()] = Date.now();
+  const had = Number(shown[doneShownKey()]) >= 1000000 ? need : Number(shown[doneShownKey()]) || 0;   // 舊版存的是時間＝已跳過 4 項
+  if(had >= level) return;
+  shown[doneShownKey()] = level;
   try{ localStorage.setItem(WAIT_SHOWN_KEY, JSON.stringify(shown)); }catch(e){}
+  const all = level === tasks.length;
   const old = $('waitMask'); if(old) old.remove();
   const line = cfg.lineOaId;
   const mask = document.createElement('div');
   mask.id = 'waitMask';
   mask.className = 'sheet-mask clear-mask';
   mask.innerHTML = `<div class="clear-dialog wait-dialog" role="alertdialog" aria-modal="true" aria-labelledby="waitTitle">
-      <div class="wait-icon">📮</div>
-      <h3 id="waitTitle">已送出 ${sentN} 項任務，等待審核</h3>
-      <p class="wait-desc">審核通過 ${need} 項後，就可以到 ${esc(CANDY_PLACE)} 領取聖誕糖果 🍬<br>審核結果會顯示在每個任務卡片上，重新打開網頁就看得到。</p>
+      <div class="wait-icon">${all ? '🎉' : '📮'}</div>
+      <h3 id="waitTitle">${all ? `太厲害了！${tasks.length} 項任務全部送出` : `已送出 ${sentN} 項任務，等待審核`}</h3>
+      <p class="wait-desc">${all
+        ? `請等待審核結果。${summary && summary.completed ? '' : `審核通過 ${need} 項後，就可以到 ${esc(CANDY_PLACE)} 領取聖誕糖果 🍬<br>`}`
+        : `審核通過 ${need} 項後，就可以到 ${esc(CANDY_PLACE)} 領取聖誕糖果 🍬<br>`}審核結果會顯示在每個任務卡片上，重新打開網頁就看得到。</p>
       ${line ? `<div class="wait-line">
         <b>想第一時間知道結果？</b>
         <span>加入林森苑住戶服務站 LINE 並綁定門牌，審核後會通知您。</span>
@@ -4179,6 +4228,7 @@ ${pages.join('')}
 
 /* ============ 啟動 ============ */
 if(DEMO) $('demoBanner').classList.remove('hidden');
+else if(IS_DEMO){ $('demoBanner').textContent = '測試模式：活動開始前也可以上傳，照片和資料會寫入正式後端，請到管理頁（?admin）審核。測完請在管理頁按「清除所有資料」。'; $('demoBanner').classList.remove('hidden'); }
 /* ---- LINE／Facebook／Instagram 內建瀏覽器 ----
    這些 App 裡的瀏覽器常擋相機權限、上傳不穩：
    ・LINE：網址加上 openExternalBrowser=1，LINE 會自動改用手機的 Safari／Chrome 開啟
